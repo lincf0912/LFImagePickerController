@@ -49,7 +49,6 @@
     BOOL _shouldScrollToBottom;
     BOOL _showTakePhotoBtn;
 }
-@property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 @property (nonatomic, strong) LFCollectionView *collectionView;
 
 @end
@@ -62,38 +61,49 @@ static CGSize AssetGridThumbnailSize;
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    _isSelectOriginalPhoto = imagePickerVc.isSelectOriginalPhoto;
+    
     _shouldScrollToBottom = YES;
     self.view.backgroundColor = [UIColor whiteColor];
     self.navigationItem.title = _model.name;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
     _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
     
-    if (self.model) {
-        if (!imagePickerVc.sortAscendingByModificationDate && !iOS8Later) {
-            [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByModificationDate completion:^(NSArray<LFAsset *> *models) {
-                _models = [NSMutableArray arrayWithArray:models];
-                [self initSubviews];
-            }];
-        } else {
-            _models = [NSMutableArray arrayWithArray:_model.models];
-            [self initSubviews];
-        }
+    if (self.model.models.count) { /** 使用缓存数据 */
+        _models = [NSMutableArray arrayWithArray:_model.models];
+        [self initSubviews];
     } else {
-        /** 没有相片 */
+        /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+        BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+        if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+            ascending = !imagePickerVc.sortAscendingByCreateDate;
+        }
+        [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+            /** 缓存数据 */
+            _model.models = models;
+            _models = [NSMutableArray arrayWithArray:models];
+            [self initSubviews];
+        }];
     }
 }
 
 - (void)initSubviews {
-    [self checkSelectedModels];
-    [self configCollectionView];
-    [self configBottomToolBar];
+    
+    if (_models.count == 0) {
+        /** 没有数据UI */
+    } else {        
+        [self checkSelectedModels];
+        [self configCollectionView];
+        [self configBottomToolBar];
+    }
+    
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    imagePickerVc.isSelectOriginalPhoto = _isSelectOriginalPhoto;
+}
+
+- (void)dealloc
+{
     if (self.backButtonClickHandle) {
         self.backButtonClickHandle(_model);
     }
@@ -203,9 +213,9 @@ static CGSize AssetGridThumbnailSize;
         [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:[UIColor blackColor] forState:UIControlStateSelected];
-        [_originalPhotoButton setImage:[UIImage imageNamed:imagePickerVc.photoOriginDefImageName] forState:UIControlStateNormal];
-        [_originalPhotoButton setImage:[UIImage imageNamed:imagePickerVc.photoOriginSelImageName] forState:UIControlStateSelected];
-        _originalPhotoButton.selected = _isSelectOriginalPhoto;
+        [_originalPhotoButton setImage:imageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
+        [_originalPhotoButton setImage:imageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
+        _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
         _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
         
         _originalPhotoLabel = [[UILabel alloc] init];
@@ -213,7 +223,7 @@ static CGSize AssetGridThumbnailSize;
         _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
         _originalPhotoLabel.font = [UIFont systemFontOfSize:16];
         _originalPhotoLabel.textColor = [UIColor blackColor];
-        if (_isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+        if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
     }
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -226,7 +236,7 @@ static CGSize AssetGridThumbnailSize;
     [_doneButton setTitleColor:imagePickerVc.oKButtonTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.enabled = imagePickerVc.selectedModels.count;
     
-    _numberImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:imagePickerVc.photoNumberIconImageName]];
+    _numberImageView = [[UIImageView alloc] initWithImage:imageNamed(imagePickerVc.photoNumberIconImageName)];
     _numberImageView.frame = CGRectMake(self.view.width - 56 - 28, 10, 30, 30);
     _numberImageView.hidden = imagePickerVc.selectedModels.count <= 0;
     _numberImageView.backgroundColor = [UIColor clearColor];
@@ -258,16 +268,18 @@ static CGSize AssetGridThumbnailSize;
 #pragma mark - Click Event
 
 - (void)previewButtonClick {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] init];
-    photoPreviewVc.models = _models;
+    photoPreviewVc.models = [imagePickerVc.selectedModels mutableCopy];
     [self pushPhotoPrevireViewController:photoPreviewVc];
 }
 
 - (void)originalPhotoButtonClick {
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
-    _isSelectOriginalPhoto = _originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
-    if (_isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;;
+    if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
 }
 
 - (void)doneButtonClick {
@@ -322,7 +334,7 @@ static CGSize AssetGridThumbnailSize;
     
     for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
         LFAsset *model = imagePickerVc.selectedModels[i];
-        if ([[self valueForKey:@"isSelectOriginalPhoto"] boolValue]) {
+        if (imagePickerVc.isSelectOriginalPhoto) {
             [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                 photosComplete(thumbnail, source, info, i, model.asset);
             }];
@@ -380,9 +392,10 @@ static CGSize AssetGridThumbnailSize;
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     // the cell lead to take a picture / 去拍照的cell
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (((imagePickerVc.sortAscendingByModificationDate && indexPath.row >= _models.count) || (!imagePickerVc.sortAscendingByModificationDate && indexPath.row == 0)) && _showTakePhotoBtn) {
+    if (((imagePickerVc.sortAscendingByCreateDate && indexPath.row >= _models.count) || (!imagePickerVc.sortAscendingByCreateDate && indexPath.row == 0)) && _showTakePhotoBtn) {
         LFAssetCameraCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetCameraCell" forIndexPath:indexPath];
-        cell.imageView.image = [UIImage imageNamed:imagePickerVc.takePictureImageName];
+        cell.posterImage = imageNamed(imagePickerVc.takePictureImageName);
+        
         return cell;
     }
     // the cell dipaly photo or video / 展示照片或视频的cell
@@ -390,7 +403,7 @@ static CGSize AssetGridThumbnailSize;
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
     cell.photoSelImageName = imagePickerVc.photoSelImageName;
     LFAsset *model;
-    if (imagePickerVc.sortAscendingByModificationDate || !_showTakePhotoBtn) {
+    if (imagePickerVc.sortAscendingByCreateDate || !_showTakePhotoBtn) {
         model = _models[indexPath.row];
     } else {
         model = _models[indexPath.row - 1];
@@ -438,12 +451,12 @@ static CGSize AssetGridThumbnailSize;
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     // take a photo / 去拍照
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (((imagePickerVc.sortAscendingByModificationDate && indexPath.row >= _models.count) || (!imagePickerVc.sortAscendingByModificationDate && indexPath.row == 0)) && _showTakePhotoBtn)  {
+    if (((imagePickerVc.sortAscendingByCreateDate && indexPath.row >= _models.count) || (!imagePickerVc.sortAscendingByCreateDate && indexPath.row == 0)) && _showTakePhotoBtn)  {
         [self takePhoto]; return;
     }
     // preview phote or video / 预览照片或视频
     NSInteger index = indexPath.row;
-    if (!imagePickerVc.sortAscendingByModificationDate && _showTakePhotoBtn) {
+    if (!imagePickerVc.sortAscendingByCreateDate && _showTakePhotoBtn) {
         index = indexPath.row - 1;
     }
     LFAsset *model = _models[index];
@@ -520,21 +533,18 @@ static CGSize AssetGridThumbnailSize;
     _numberLabel.text = [NSString stringWithFormat:@"%zd",imagePickerVc.selectedModels.count];
     
     _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
-    _originalPhotoButton.selected = (_isSelectOriginalPhoto && _originalPhotoButton.enabled);
+    _originalPhotoButton.selected = (imagePickerVc.isSelectOriginalPhoto && _originalPhotoButton.enabled);
     _originalPhotoLabel.hidden = (!_originalPhotoButton.isSelected);
-    if (_isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+    if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
 }
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
     __weak typeof(self) weakSelf = self;
-    photoPreviewVc.isSelectOriginalPhoto = _isSelectOriginalPhoto;
-    [photoPreviewVc setBackButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
-        weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
+    [photoPreviewVc setBackButtonClickBlock:^{
         [weakSelf.collectionView reloadData];
         [weakSelf refreshBottomToolBarStatus];
     }];
-    [photoPreviewVc setDoneButtonClickBlock:^(BOOL isSelectOriginalPhoto) {
-        weakSelf.isSelectOriginalPhoto = isSelectOriginalPhoto;
+    [photoPreviewVc setDoneButtonClickBlock:^{
         [weakSelf doneButtonClick];
     }];
     [self.navigationController pushViewController:photoPreviewVc animated:YES];
@@ -561,7 +571,7 @@ static CGSize AssetGridThumbnailSize;
 
 - (void)scrollCollectionViewToBottom {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (_shouldScrollToBottom && _models.count > 0 && imagePickerVc.sortAscendingByModificationDate) {
+    if (_shouldScrollToBottom && _models.count > 0 && imagePickerVc.sortAscendingByCreateDate) {
         NSInteger item = _models.count - 1;
         if (_showTakePhotoBtn) {
             LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
@@ -590,10 +600,6 @@ static CGSize AssetGridThumbnailSize;
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)dealloc {
-    //NSLog(@"TZPhotoPickerController dealloc");
 }
 
 - (void)didReceiveMemoryWarning {

@@ -68,7 +68,8 @@ static CGFloat LFAM_ScreenScale;
     if (iOS8Later) {
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld",                                                    PHAssetMediaTypeVideo];
+        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+//        option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:ascending]];
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
         if (iOS9Later) {
             option.fetchLimit = fetchLimit;
@@ -102,9 +103,8 @@ static CGFloat LFAM_ScreenScale;
     if (iOS8Later) {
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld",
-                                                    PHAssetMediaTypeVideo];
-        // option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:self.sortAscendingByModificationDate]];
+        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+        
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
 
         // 我的照片流 1.6.10重新加入..
@@ -292,10 +292,10 @@ static CGFloat LFAM_ScreenScale;
 
         NSString *timeLength = type == LFAssetMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",phAsset.duration] : @"";
         timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-        model = [LFAsset modelWithAsset:asset type:type timeLength:timeLength];
+        model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
     } else {
         if (!allowPickingVideo){
-            model = [LFAsset modelWithAsset:asset type:type];
+            model = [[LFAsset alloc] initWithAsset:asset type:type];
             return model;
         }
         /// Allow picking video
@@ -304,14 +304,14 @@ static CGFloat LFAM_ScreenScale;
             NSTimeInterval duration = [[asset valueForProperty:ALAssetPropertyDuration] integerValue];
             NSString *timeLength = [NSString stringWithFormat:@"%0.0f",duration];
             timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-            model = [LFAsset modelWithAsset:asset type:type timeLength:timeLength];
+            model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
         } else {
             // 过滤掉尺寸不满足要求的图片
             if (![self isPhotoSelectableWithAsset:asset]) {
                 return nil;
             }
 
-            model = [LFAsset modelWithAsset:asset type:type];
+            model = [[LFAsset alloc] initWithAsset:asset type:type];
         }
     }
     return model;
@@ -928,11 +928,13 @@ static CGFloat LFAM_ScreenScale;
             asset = [model.result firstObject];
         }
         [self getPhotoWithAsset:asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            model.posterImage = photo;
             if (completion) completion(photo);
         }];
     } else {
         ALAssetsGroup *group = model.result;
         UIImage *postImage = [UIImage imageWithCGImage:group.posterImage];
+        model.posterImage = postImage;
         if (completion) completion(postImage);
     }
 }
@@ -1067,16 +1069,7 @@ static CGFloat LFAM_ScreenScale;
 #pragma mark - Private Method
 
 - (LFAlbum *)modelWithResult:(id)result name:(NSString *)name{
-    LFAlbum *model = [[LFAlbum alloc] init];
-    model.result = result;
-    model.name = name;
-    if ([result isKindOfClass:[PHFetchResult class]]) {
-        PHFetchResult *fetchResult = (PHFetchResult *)result;
-        model.count = fetchResult.count;
-    } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
-        ALAssetsGroup *group = (ALAssetsGroup *)result;
-        model.count = [group numberOfAssets];
-    }
+    LFAlbum *model = [[LFAlbum alloc] initWithName:name result:result];
     return model;
 }
 

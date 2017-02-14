@@ -10,4 +10,22 @@
 
 @implementation LFAsset
 
+- (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type
+{
+    self = [super init];
+    if (self) {
+        _asset = asset;
+        _type = type;
+    }
+    return self;
+}
+
+- (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type timeLength:(NSString *)timeLength
+{
+    self = [self initWithAsset:asset type:type];
+    if (self) {
+        _timeLength = timeLength;
+    }
+    return self;
+}
 @end

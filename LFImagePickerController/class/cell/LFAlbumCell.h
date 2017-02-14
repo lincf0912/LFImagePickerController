@@ -12,6 +12,9 @@
 @interface LFAlbumCell : UITableViewCell
 
 @property (nonatomic, strong) LFAlbum *model;
-@property (weak, nonatomic) UIButton *selectedCountButton;
+/** 封面 */
+@property (nonatomic, strong) UIImage *posterImage;
+
++ (CGFloat)cellHeight;
 
 @end

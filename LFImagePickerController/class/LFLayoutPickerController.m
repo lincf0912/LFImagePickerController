@@ -34,6 +34,15 @@
     return self;
 }
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        [self customInit];
+    }
+    return self;
+}
+
 - (void)customInit
 {
     [self configDefaultSetting];

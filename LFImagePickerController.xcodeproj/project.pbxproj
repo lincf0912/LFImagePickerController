@@ -33,6 +33,7 @@
 		6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */; };
 		6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */; };
 		6F1201F31E51AE2E00EA2198 /* LFVideoPlayerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */; };
+		6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -86,6 +87,8 @@
 		6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewController.m; sourceTree = "<group>"; };
 		6F1201F11E51AE2E00EA2198 /* LFVideoPlayerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFVideoPlayerController.h; sourceTree = "<group>"; };
 		6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFVideoPlayerController.m; sourceTree = "<group>"; };
+		6F2EEAF11E52F4A500765689 /* LFPhotoPreviewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewCell.h; sourceTree = "<group>"; };
+		6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +179,8 @@
 				6F1201991E513ECD00EA2198 /* LFAssetCell.m */,
 				6F12019B1E513EE100EA2198 /* LFAlbumCell.h */,
 				6F12019C1E513EE100EA2198 /* LFAlbumCell.m */,
+				6F2EEAF11E52F4A500765689 /* LFPhotoPreviewCell.h */,
+				6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */,
 			);
 			name = cell;
 			path = LFImagePickerController/class/cell;
@@ -340,6 +345,7 @@
 				6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */,
 				6F12017F1E513D1B00EA2198 /* ViewController.m in Sources */,
 				6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */,
+				6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */,
 				6F1201951E513E5500EA2198 /* LFAsset.m in Sources */,
 				6F1201791E513D1B00EA2198 /* main.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,

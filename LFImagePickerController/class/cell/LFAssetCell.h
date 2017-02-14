@@ -10,21 +10,24 @@
 #import <Photos/Photos.h>
 
 @class LFAsset;
+
+/// 宫格图片视图
+
 @interface LFAssetCell : UICollectionViewCell
 
 @property (weak, nonatomic) UIButton *selectPhotoButton;
 @property (nonatomic, strong) LFAsset *model;
 @property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL);
-@property (nonatomic, copy) NSString *representedAssetIdentifier;
-@property (nonatomic, assign) PHImageRequestID imageRequestID;
 
 @property (nonatomic, copy) NSString *photoSelImageName;
 @property (nonatomic, copy) NSString *photoDefImageName;
 
 @end
 
+/// 拍照视图
+
 @interface LFAssetCameraCell : UICollectionViewCell
 
-@property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, copy) UIImage *posterImage;
 
 @end

@@ -23,22 +23,32 @@
 
 @implementation LFAlbumPickerController
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        // 采用微信的方式，只在相册列表页定义backBarButtonItem为返回，其余的顺系统的做法
+        self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"返回" style:UIBarButtonItemStylePlain target:nil action:nil];
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
     [self configTableView];
-    // 采用微信的方式，只在相册列表页定义backBarButtonItem为返回，其余的顺系统的做法
-    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"返回" style:UIBarButtonItemStylePlain target:nil action:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc hideProgressHUD];
-    
-    [self configTableView];
+    /** 移除数据源 */
+    [imagePickerVc.selectedModels removeAllObjects];
+    /** 恢复原图 */
+    imagePickerVc.isSelectOriginalPhoto = NO;
     
     if (imagePickerVc.allowPickingImage) {
         self.navigationItem.title = @"相册";
@@ -49,7 +59,7 @@
 
 - (void)configTableView {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:YES completion:^(NSArray<LFAlbum *> *models) {
+    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
         
         _albumArr = [NSMutableArray arrayWithArray:models];
 
@@ -68,7 +78,6 @@
             }
             
             _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, top, self.view.width, tableViewHeight) style:UITableViewStylePlain];
-            _tableView.rowHeight = 70;
             _tableView.tableFooterView = [[UIView alloc] init];
             _tableView.dataSource = self;
             _tableView.delegate = self;
@@ -89,9 +98,18 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     LFAlbumCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LFAlbumCell"];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    cell.selectedCountButton.backgroundColor = imagePickerVc.oKButtonTitleColorNormal;
-    cell.model = _albumArr[indexPath.row];
+    LFAlbum *model = _albumArr[indexPath.row];
+    cell.model = model;
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    if (model.posterImage) {
+        cell.posterImage = model.posterImage;
+    } else {        
+        [[LFAssetManager manager] getPostImageWithAlbumModel:model ascending:imagePickerVc.sortAscendingByCreateDate completion:^( UIImage *postImage) {
+            if ([cell.model isEqual:model]) {
+                cell.posterImage = postImage;
+            }
+        }];
+    }
     return cell;
 }
 
@@ -102,6 +120,11 @@
     photoPickerVc.model = model;
     [self.navigationController pushViewController:photoPickerVc animated:YES];
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [LFAlbumCell cellHeight];
 }
 
 

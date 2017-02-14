@@ -34,6 +34,30 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
+        _tipLabel = [[UILabel alloc] init];
+        _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
+        _tipLabel.textAlignment = NSTextAlignmentCenter;
+        _tipLabel.numberOfLines = 0;
+        _tipLabel.font = [UIFont systemFontOfSize:16];
+        _tipLabel.textColor = [UIColor blackColor];
+        NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
+        if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
+        NSString *tipText = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-照片\"选项中，\r允许%@访问你的手机相册",appName];
+        _tipLabel.text = tipText;
+        [self.view addSubview:_tipLabel];
+        
+        _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+        [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
+        _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
+        _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+        [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
+        [self.view addSubview:_settingBtn];
+        
+        _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
+    } else {
+        [self pushPhotoPickerVc];
+    }
 }
 
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate {
@@ -46,9 +70,7 @@
 
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc {
     _pushPhotoPickerVc = pushPhotoPickerVc;
-    LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-    albumPickerVc.columnNumber = columnNumber;
-    self = [super initWithRootViewController:albumPickerVc];
+    self = [super init];
     if (self) {
         self.maxImagesCount = maxImagesCount > 0 ? maxImagesCount : 9; // Default is 9 / 默认最大可选9张图片
         self.pickerDelegate = delegate;
@@ -60,34 +82,10 @@
         self.allowPickingVideo = YES;
         self.allowPickingImage = YES;
         self.allowTakePicture = YES;
-        self.sortAscendingByModificationDate = YES;
+        self.allowPreview = YES;
+        self.sortAscendingByCreateDate = YES;
         self.autoDismiss = YES;
         self.columnNumber = columnNumber;
-        
-        if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
-            _tipLabel = [[UILabel alloc] init];
-            _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
-            _tipLabel.textAlignment = NSTextAlignmentCenter;
-            _tipLabel.numberOfLines = 0;
-            _tipLabel.font = [UIFont systemFontOfSize:16];
-            _tipLabel.textColor = [UIColor blackColor];
-            NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
-            if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-            NSString *tipText = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-照片\"选项中，\r允许%@访问你的手机相册",appName];
-            _tipLabel.text = tipText;
-            [self.view addSubview:_tipLabel];
-            
-            _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
-            _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
-            _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
-            [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
-            [self.view addSubview:_settingBtn];
-            
-            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
-        } else {
-            [self pushPhotoPickerVc];
-        }
     }
     return self;
 }
@@ -130,12 +128,20 @@
     if (!_didPushPhotoPickerVc && _pushPhotoPickerVc) {
         LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
         photoPickerVc.columnNumber = self.columnNumber;
-        [[LFAssetManager manager] getCameraRollAlbum:self.allowPickingVideo allowPickingImage:self.allowPickingImage fetchLimit:0 ascending:self.sortAscendingByModificationDate completion:^(LFAlbum *model) {
+        [[LFAssetManager manager] getCameraRollAlbum:self.allowPickingVideo allowPickingImage:self.allowPickingImage fetchLimit:0 ascending:self.sortAscendingByCreateDate completion:^(LFAlbum *model) {
             
             photoPickerVc.model = model;
-            [self pushViewController:photoPickerVc animated:YES];
+//            [self pushViewController:photoPickerVc animated:YES];
+            LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
+            albumPickerVc.columnNumber = self.columnNumber;
+            [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
             _didPushPhotoPickerVc = YES;
         }];
+    } else if (!_didPushPhotoPickerVc && !_pushPhotoPickerVc) {
+        LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
+        albumPickerVc.columnNumber = self.columnNumber;
+        _didPushPhotoPickerVc = YES;
+        [self setViewControllers:@[albumPickerVc] animated:YES];
     }
 }
 
@@ -152,11 +158,11 @@
 }
 
 - (void)setSelectedAssets:(NSMutableArray *)selectedAssets {
-    _selectedAssets = selectedAssets;
+    
     _selectedModels = [NSMutableArray array];
     for (id asset in selectedAssets) {
         LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
-        LFAsset *model = [LFAsset modelWithAsset:asset type:type];
+        LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
         model.isSelected = YES;
         [_selectedModels addObject:model];
     }
@@ -178,9 +184,22 @@
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (iOS7Later) viewController.automaticallyAdjustsScrollViewInsets = NO;
+    if (iOS7Later) {
+        viewController.automaticallyAdjustsScrollViewInsets = NO;
+    }
     if (_timer) { [_timer invalidate]; _timer = nil;}
     [super pushViewController:viewController animated:animated];
+}
+
+- (void)setViewControllers:(NSArray<__kindof UIViewController *> *)viewControllers animated:(BOOL)animated
+{
+    if (iOS7Later) {
+        for (UIViewController *controller in viewControllers) {
+            controller.automaticallyAdjustsScrollViewInsets = NO;
+        }
+    }
+    if (_timer) { [_timer invalidate]; _timer = nil;}
+    [super setViewControllers:viewControllers animated:animated];
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {

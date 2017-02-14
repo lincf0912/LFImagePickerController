@@ -28,7 +28,7 @@
 
 /// Sort photos ascending by modificationDate，Default is YES
 /// 对照片排序，按修改时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
-@property (nonatomic, assign) BOOL sortAscendingByModificationDate;
+@property (nonatomic, assign) BOOL sortAscendingByCreateDate;
 
 /// Default is 828px / 默认828像素宽
 @property (nonatomic, assign) CGFloat photoWidth;
@@ -62,8 +62,8 @@
 
 /// The photos user have selected
 /// 用户选中过的图片数组
-@property (nonatomic, strong) NSMutableArray *selectedAssets;
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
+- (void)setSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets;
 /** 是否选择原图 */
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 

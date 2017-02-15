@@ -17,7 +17,6 @@
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate>
 {
     UICollectionView *_collectionView;
-    NSArray *_photosTemp;
     
     UIView *_naviBar;
     UIButton *_backButton;
@@ -30,6 +29,12 @@
     UIButton *_originalPhotoButton;
     UILabel *_originalPhotoLabel;
 }
+
+@property (nonatomic, strong) NSMutableArray <LFAsset *>*models;                  ///< All photo models / 所有图片模型数组
+@property (nonatomic, assign) NSInteger currentIndex;           ///< Index of the photo user click / 用户点击的图片的索引
+
+@property (nonatomic, assign) BOOL isPreviewPhoto;
+
 @property (nonatomic, assign) BOOL isHideNaviBar;
 
 @property (nonatomic, assign) double progress;
@@ -37,19 +42,57 @@
 
 @implementation LFPhotoPreviewController
 
+- (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
+{
+    self = [super init];
+    if (self) {
+        if (models) {
+            _models = [NSMutableArray arrayWithArray:models];
+            _currentIndex = index;
+            if (excludeVideo) {
+                NSMutableArray *models = [_models mutableCopy];
+                /** 移除视频对象 */
+                for (NSInteger i = 0; i<models.count; i++) {
+                    LFAsset *model = models[i];
+                    if (model.type == LFAssetMediaTypeVideo) {
+                        [models removeObjectAtIndex:i];
+                        if (index > i) {
+                            index--;
+                        }
+                        i--;
+                    }
+                }
+                _currentIndex = index;
+                _models = models;
+            }
+        }
+    }
+    return self;
+}
+- (instancetype)initWithPhotos:(NSArray <UIImage *>*)photos index:(NSInteger)index
+{
+    self = [super init];
+    if (self) {
+        if (photos) {
+            _models = [@[] mutableCopy];
+            _currentIndex = index;
+            for (UIImage *image in photos) {
+                LFAsset *model = [[LFAsset alloc] initWithAsset:nil type:LFAssetMediaTypePhoto];
+                model.previewImage = image;
+                [_models addObject:model];
+            }
+        }
+        _isPreviewPhoto = YES;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     
     [self configCollectionView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
-    self.view.clipsToBounds = YES;
-}
-
-- (void)setPhotos:(NSMutableArray *)photos {
-    _photos = photos;
-    _photosTemp = [NSArray arrayWithArray:photos];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -81,12 +124,14 @@
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
-    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
-    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
-    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
-    [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
+    if (!_isPreviewPhoto) { /** 非图片预览模式 */
+        _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
+        [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
+        [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
+        [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
+        [_naviBar addSubview:_selectButton];
+    }
     
-    [_naviBar addSubview:_selectButton];
     [_naviBar addSubview:_backButton];
     [self.view addSubview:_naviBar];
 }
@@ -164,7 +209,7 @@
     _collectionView.scrollsToTop = NO;
     _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.contentOffset = CGPointMake(0, 0);
-    _collectionView.contentSize = CGSizeMake(self.models.count * (self.view.width + 20), 0);
+    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + 20), 0);
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
 }
@@ -183,9 +228,6 @@
             // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
         } else {
             [imagePickerVc.selectedModels addObject:model];
-            if (self.photos) {
-                [self.photos addObject:_photosTemp[_currentIndex]];
-            }
         }
     } else {
         NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
@@ -199,9 +241,6 @@
                         [imagePickerVc.selectedModels removeObjectAtIndex:i];
                         break;
                     }
-                }
-                if (self.photos) {
-                    [self.photos removeObject:_photosTemp[_currentIndex]];
                 }
                 break;
             }
@@ -218,9 +257,9 @@
 - (void)backButtonClick {
     if (self.navigationController.childViewControllers.count < 2) {
         [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-        return;
+    } else {
+        [self.navigationController popViewControllerAnimated:YES];
     }
-    [self.navigationController popViewControllerAnimated:YES];
     if (self.backButtonClickBlock) {
         self.backButtonClickBlock();
     }
@@ -232,12 +271,18 @@
     if (_progress > 0 && _progress < 1) {
         [imagePickerVc showAlertWithTitle:@"正在从iCloud同步照片"]; return;
     }
-    
     // 如果没有选中过照片 点击确定时选中当前预览的照片
     if (imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
         LFAsset *model = _models[_currentIndex];
         [imagePickerVc.selectedModels addObject:model];
     }
+    
+    if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
+        NSString *title = [NSString stringWithFormat:@"请至少选择%zd张照片", imagePickerVc.minImagesCount];
+        [imagePickerVc showAlertWithTitle:title];
+        return;
+    }
+
     if (self.doneButtonClickBlock) {
         self.doneButtonClickBlock();
     }
@@ -313,10 +358,6 @@
 }
 
 #pragma mark - Private Method
-
-- (void)dealloc {
-    //NSLog(@"TZPhotoPreviewController dealloc");
-}
 
 - (void)refreshNaviBarAndBottomBarState {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;

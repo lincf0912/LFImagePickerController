@@ -293,7 +293,7 @@ static CGFloat LFAM_ScreenScale;
         NSString *timeLength = type == LFAssetMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",phAsset.duration] : @"";
         timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
         model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
-    } else {
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
         if (!allowPickingVideo){
             model = [[LFAsset alloc] initWithAsset:asset type:type];
             return model;
@@ -1024,14 +1024,15 @@ static CGFloat LFAM_ScreenScale;
 }
 
 - (NSString *)getAssetIdentifier:(id)asset {
-    if (iOS8Later) {
+    if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         return phAsset.localIdentifier;
-    } else {
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         NSURL *assetUrl = [alAsset valueForProperty:ALAssetPropertyAssetURL];
         return assetUrl.absoluteString;
     }
+    return nil;
 }
 
 /// 检查照片大小是否满足最小要求
@@ -1046,13 +1047,14 @@ static CGFloat LFAM_ScreenScale;
 }
 
 - (CGSize)photoSizeWithAsset:(id)asset {
-    if (iOS8Later) {
+    if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         return CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight);
-    } else {
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         return alAsset.defaultRepresentation.dimensions;
     }
+    return CGSizeZero;
 }
 
 - (LFAssetMediaType)mediaTypeWithModel:(id)asset
@@ -1062,7 +1064,7 @@ static CGFloat LFAM_ScreenScale;
         PHAsset *phAsset = (PHAsset *)asset;
         if (phAsset.mediaType == PHAssetMediaTypeVideo)      type = LFAssetMediaTypeVideo;
         else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
-    } else {
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
         if ([[asset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
             type = LFAssetMediaTypeVideo;
         }

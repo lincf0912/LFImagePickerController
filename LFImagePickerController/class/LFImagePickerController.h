@@ -17,17 +17,18 @@
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate;
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc;
 /// This init method just for previewing photos / 用这个初始化方法以预览图片
-- (instancetype)initWithSelectedAssets:(NSMutableArray *)selectedAssets selectedPhotos:(NSMutableArray *)selectedPhotos index:(NSInteger)index;
+- (instancetype)initWithSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo complete:(void (^)(NSArray *assets))complete;
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray *photos))complete;
 
 /// Default is 9 / 默认最大可选9张图片
 @property (nonatomic, assign) NSInteger maxImagesCount;
 
-/// The minimum count photos user must pick, Default is 1
-/// 最小照片必选张数,默认是1
+/// The minimum count photos user must pick, Default is 0
+/// 最小照片必选张数,默认是0
 @property (nonatomic, assign) NSInteger minImagesCount;
 
-/// Sort photos ascending by modificationDate，Default is YES
-/// 对照片排序，按修改时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
+/// Sort photos ascending by creationDate，Default is YES
+/// 对照片排序，按创建时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
 @property (nonatomic, assign) BOOL sortAscendingByCreateDate;
 
 /// Default is YES, if set NO, the original photo button will hide. user can't picking original photo.
@@ -57,7 +58,7 @@
 /// The photos user have selected
 /// 用户选中过的图片数组
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
-- (void)setSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets;
+@property (nonatomic, setter=setSelectedAssets:) NSMutableArray /**<PHAsset/ALAsset *>*/*selectedAssets;
 /** 是否选择原图 */
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 

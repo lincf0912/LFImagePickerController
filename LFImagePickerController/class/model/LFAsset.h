@@ -24,6 +24,8 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 
 /** 自定义封面 */
 @property (nonatomic, strong) UIImage *posterImage;
+/** 自定义预览图 */
+@property (nonatomic, strong) UIImage *previewImage;
 
 /// Init a photo dataModel With a asset
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型

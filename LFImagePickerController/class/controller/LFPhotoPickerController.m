@@ -273,9 +273,8 @@ static CGSize AssetGridThumbnailSize;
 
 - (void)previewButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] init];
-    /** 复制对象避免修改 */
-    photoPreviewVc.models = [imagePickerVc.selectedModels mutableCopy];
+    NSArray *models = [imagePickerVc.selectedModels copy];
+    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:0 excludeVideo:YES];
     [self pushPhotoPrevireViewController:photoPreviewVc];
 }
 
@@ -301,6 +300,7 @@ static CGSize AssetGridThumbnailSize;
     NSMutableArray *originalImages = [NSMutableArray array];
     NSMutableArray *assets = [NSMutableArray array];
     NSMutableArray *infoArr = [NSMutableArray array];
+    
     
     for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) { [assets addObject:@1];[infoArr addObject:@1]; [thumbnailImages addObject:@1];[originalImages addObject:@1];}
     
@@ -463,9 +463,7 @@ static CGSize AssetGridThumbnailSize;
             [self.navigationController pushViewController:videoPlayerVc animated:YES];
         }
     } else {
-        LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] init];
-        photoPreviewVc.currentIndex = index;
-        photoPreviewVc.models = _models;
+        LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index excludeVideo:YES];
         [self pushPhotoPrevireViewController:photoPreviewVc];
     }
 }
@@ -533,22 +531,6 @@ static CGSize AssetGridThumbnailSize;
 }
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
-    
-    NSInteger index = photoPreviewVc.currentIndex;
-    NSMutableArray *models = [photoPreviewVc.models mutableCopy];
-    /** 移除视频对象 */
-    for (NSInteger i = 0; i<models.count; i++) {
-        LFAsset *model = models[i];
-        if (model.type == LFAssetMediaTypeVideo) {
-            [models removeObjectAtIndex:i];
-            if (index > i) {
-                index--;
-            }
-            i--;
-        }
-    }
-    photoPreviewVc.currentIndex = index;
-    photoPreviewVc.models = models;
     
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{

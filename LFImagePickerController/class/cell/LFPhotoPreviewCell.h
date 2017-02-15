@@ -15,8 +15,6 @@
 @property (nonatomic, copy) void (^singleTapGestureBlock)();
 @property (nonatomic, copy) void (^imageProgressUpdateBlock)(double progress);
 
-//@property (nonatomic, strong) TZPhotoPreviewView *previewView;
-
 - (void)recoverSubviews;
 
 @end

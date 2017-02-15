@@ -29,15 +29,6 @@
 
 @implementation LFAssetCell
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        self.onlySelected = NO;
-    }
-    return self;
-}
-
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
@@ -106,6 +97,7 @@
 - (UIButton *)selectPhotoButton {
     if (_selectImageView == nil) {
         UIButton *selectPhotoButton = [[UIButton alloc] init];
+        selectPhotoButton.frame = CGRectMake(self.width - 44, 0, 44, 44);
         [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:selectPhotoButton];
         _selectPhotoButton = selectPhotoButton;

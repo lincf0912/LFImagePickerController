@@ -115,28 +115,32 @@
 - (void)setModel:(LFAsset *)model
 {
     _model = model;
-    [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-        if ([model isEqual:self.model]) {
-            self.imageView.image = photo;
-            [self resizeSubviews];
-            _progressView.hidden = YES;
-            if (self.imageProgressUpdateBlock) {
-                self.imageProgressUpdateBlock(1);
+    if (model.asset == nil) { /** 显示自定义图片 */
+        self.imageView.image = model.previewImage;
+        [self resizeSubviews];
+    } else {
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if ([model isEqual:self.model]) {
+                self.imageView.image = photo;
+                [self resizeSubviews];
+                _progressView.hidden = YES;
+                if (self.imageProgressUpdateBlock) {
+                    self.imageProgressUpdateBlock(1);
+                }
             }
-        }
-    } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-        if ([model isEqual:self.model]) {
-            _progressView.hidden = NO;
-            [self bringSubviewToFront:_progressView];
-            progress = progress > 0.02 ? progress : 0.02;;
-            _progressView.progress = progress;
-            if (self.imageProgressUpdateBlock) {
-                self.imageProgressUpdateBlock(progress);
+        } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+            if ([model isEqual:self.model]) {
+                _progressView.hidden = NO;
+                [self bringSubviewToFront:_progressView];
+                progress = progress > 0.02 ? progress : 0.02;;
+                _progressView.progress = progress;
+                if (self.imageProgressUpdateBlock) {
+                    self.imageProgressUpdateBlock(progress);
+                }
             }
-        }
-    } networkAccessAllowed:YES];
+        } networkAccessAllowed:YES];
+    }
 }
-
 
 - (void)recoverSubviews {
     [self resizeSubviews];

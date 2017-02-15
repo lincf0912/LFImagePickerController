@@ -15,6 +15,7 @@
 
 #import "LFAlbumPickerController.h"
 #import "LFPhotoPickerController.h"
+#import "LFPhotoPreviewController.h"
 
 @interface LFImagePickerController ()
 {
@@ -91,25 +92,62 @@
 }
 
 /// This init method just for previewing photos / 用这个初始化方法以预览图片
-- (instancetype)initWithSelectedAssets:(NSMutableArray *)selectedAssets selectedPhotos:(NSMutableArray *)selectedPhotos index:(NSInteger)index{
-//    TZPhotoPreviewController *previewVc = [[TZPhotoPreviewController alloc] init];
-//    self = [super initWithRootViewController:previewVc];
-//    if (self) {
-//        self.selectedAssets = [NSMutableArray arrayWithArray:selectedAssets];
-//        self.allowPickingOriginalPhoto = self.allowPickingOriginalPhoto;
-//        [self configDefaultSetting];
-//        
-//        previewVc.photos = [NSMutableArray arrayWithArray:selectedPhotos];
-//        previewVc.currentIndex = index;
-//        __weak typeof(self) weakSelf = self;
-//        [previewVc setDoneButtonClickBlockWithPreviewType:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
-//            [weakSelf dismissViewControllerAnimated:YES completion:^{
-//                if (weakSelf.didFinishPickingPhotosHandle) {
-//                    weakSelf.didFinishPickingPhotosHandle(photos,assets,isSelectOriginalPhoto);
-//                }
-//            }];
-//        }];
-//    }
+- (instancetype)initWithSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo complete:(void (^)(NSArray *assets))complete
+{
+    NSMutableArray *models = [@[] mutableCopy];
+    for (id asset in selectedAssets) {
+        LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
+        LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
+        [models addObject:model];
+    }
+    LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index excludeVideo:excludeVideo];
+    self = [super initWithRootViewController:previewVc];
+    if (self) {
+        __weak typeof(self) weakSelf = self;
+        [previewVc setDoneButtonClickBlock:^{
+            
+            NSMutableArray *assets = [@[] mutableCopy];
+            for (LFAsset *model in weakSelf.selectedModels) {
+                if (model.asset) {
+                    [assets addObject:model.asset];
+                }
+            }
+            if (weakSelf.autoDismiss) {
+                [weakSelf dismissViewControllerAnimated:YES completion:^{
+                    if (complete) complete(assets);
+                }];
+            } else {
+                if (complete) complete(assets);
+            }
+        }];
+    }
+    return self;
+}
+
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray *photos))complete
+{
+    LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:selectedPhotos index:index];
+    self = [super initWithRootViewController:previewVc];
+    if (self) {
+        __weak typeof(self) weakSelf = self;
+        [previewVc setDoneButtonClickBlock:^{
+            
+            NSMutableArray *photos = [@[] mutableCopy];
+            for (LFAsset *model in weakSelf.selectedModels) {
+                if (model.previewImage) {
+                    [photos addObject:model.previewImage];
+                }
+            }
+            if (weakSelf.autoDismiss) {
+                [weakSelf dismissViewControllerAnimated:YES completion:^{
+                    if (complete) complete(photos);
+                }];
+            } else {
+                if (complete) complete(photos);
+            }
+        }];
+
+    }
     return self;
 }
 

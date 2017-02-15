@@ -30,12 +30,6 @@
 /// 对照片排序，按修改时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
 @property (nonatomic, assign) BOOL sortAscendingByCreateDate;
 
-/// Default is 828px / 默认828像素宽
-@property (nonatomic, assign) CGFloat photoWidth;
-
-/// Default is 600px / 默认600像素宽
-@property (nonatomic, assign) CGFloat photoPreviewMaxWidth;
-
 /// Default is YES, if set NO, the original photo button will hide. user can't picking original photo.
 /// 默认为YES，如果设置为NO,原图按钮将隐藏，用户不能选择发送原图
 @property (nonatomic, assign) BOOL allowPickingOriginalPhoto;

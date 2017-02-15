@@ -36,7 +36,6 @@
 
 - (void)setPosterImage:(UIImage *)posterImage
 {
-    _posterImage = posterImage;
     [self.posterImageView setImage:posterImage];
 }
 

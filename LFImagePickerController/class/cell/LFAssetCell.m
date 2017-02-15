@@ -19,25 +19,40 @@
 @property (weak, nonatomic) UIImageView *imageView;       // The photo / 照片
 @property (weak, nonatomic) UIImageView *selectImageView;
 @property (weak, nonatomic) UIView *bottomView;
+@property (weak, nonatomic) UIButton *selectPhotoButton;
 
 @property (nonatomic, weak) UIImageView *videoImgView;
 @property (weak, nonatomic) UILabel *timeLength;
+
+@property (weak, nonatomic) UIView *maskHitView;
 @end
 
 @implementation LFAssetCell
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.onlySelected = NO;
+    }
+    return self;
+}
+
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
-    [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-        
-        if ([model.asset isEqual:self.model.asset]) {
-            self.imageView.image = photo;
-        }
-
-    } progressHandler:nil networkAccessAllowed:NO];
+    self.imageView.image = model.posterImage;
+    if (!model.posterImage) {
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if ([model.asset isEqual:self.model.asset]) {
+                self.imageView.image = photo;
+            }
+            
+        } progressHandler:nil networkAccessAllowed:NO];
+    }
     
     self.selectPhotoButton.selected = model.isSelected;
-    self.selectImageView.image = self.selectPhotoButton.isSelected ? imageNamed(self.photoSelImageName) : imageNamed(self.photoDefImageName);
+    self.selectImageView.image = self.selectPhotoButton.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     
     [self setType:model.type];
 }
@@ -60,11 +75,27 @@
     }
 }
 
+- (void)setOnlySelected:(BOOL)onlySelected
+{
+    _onlySelected = onlySelected;
+    if (onlySelected) {
+        _selectPhotoButton.frame = self.bounds;
+    } else {
+        _selectPhotoButton.frame = CGRectMake(self.width - 44, 0, 44, 44);
+    }
+}
+
+- (void)setNoSelected:(BOOL)noSelected
+{
+    _noSelected = noSelected;
+    self.maskHitView.hidden = !noSelected;
+}
+
 - (void)selectPhotoButtonClick:(UIButton *)sender {
     if (self.didSelectPhotoBlock) {
-        self.didSelectPhotoBlock(sender.isSelected);
+        self.didSelectPhotoBlock(sender);
     }
-    self.selectImageView.image = sender.isSelected ? imageNamed(self.photoSelImageName) : imageNamed(self.photoDefImageName);
+    self.selectImageView.image = sender.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     if (sender.isSelected) {
         [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
     }
@@ -75,7 +106,6 @@
 - (UIButton *)selectPhotoButton {
     if (_selectImageView == nil) {
         UIButton *selectPhotoButton = [[UIButton alloc] init];
-        selectPhotoButton.frame = CGRectMake(self.width - 44, 0, 44, 44);
         [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:selectPhotoButton];
         _selectPhotoButton = selectPhotoButton;
@@ -124,7 +154,7 @@
     if (_videoImgView == nil) {
         UIImageView *videoImgView = [[UIImageView alloc] init];
         videoImgView.frame = CGRectMake(8, 0, 17, 17);
-        [videoImgView setImage:imageNamed(@"VideoSendIcon.png")];
+        [videoImgView setImage:bundleImageNamed(@"VideoSendIcon.png")];
         [self.bottomView addSubview:videoImgView];
         _videoImgView = videoImgView;
     }
@@ -142,6 +172,20 @@
         _timeLength = timeLength;
     }
     return _timeLength;
+}
+
+- (UIView *)maskHitView
+{
+    if (_maskHitView == nil) {
+        UIView *view = [[UIButton alloc] init];
+        view.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.5f];
+        view.frame = self.bounds;
+        view.hidden = YES;
+        [self.contentView addSubview:view];
+        _maskHitView = view;
+    }
+    [self.contentView bringSubviewToFront:_maskHitView];
+    return _maskHitView;
 }
 
 @end

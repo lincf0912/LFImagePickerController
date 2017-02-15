@@ -13,7 +13,7 @@
 
 @property (nonatomic, strong) LFAlbum *model;
 /** 封面 */
-@property (nonatomic, strong) UIImage *posterImage;
+@property (nonatomic, setter=setPosterImage:) UIImage *posterImage;
 
 + (CGFloat)cellHeight;
 

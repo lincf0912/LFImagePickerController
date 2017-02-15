@@ -15,9 +15,12 @@
 
 @interface LFAssetCell : UICollectionViewCell
 
-@property (weak, nonatomic) UIButton *selectPhotoButton;
 @property (nonatomic, strong) LFAsset *model;
-@property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL);
+@property (nonatomic, copy) void (^didSelectPhotoBlock)(UIButton *selectPhotoButton);
+/** 只能选中 */
+@property (nonatomic, assign) BOOL onlySelected;
+/** 不能选中 */
+@property (nonatomic, assign) BOOL noSelected;
 
 @property (nonatomic, copy) NSString *photoSelImageName;
 @property (nonatomic, copy) NSString *photoDefImageName;

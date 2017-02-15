@@ -77,13 +77,13 @@
     _naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
     
     _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
-    [_backButton setImage:imageNamed(@"navi_back.png") forState:UIControlStateNormal];
+    [_backButton setImage:bundleImageNamed(@"navi_back.png") forState:UIControlStateNormal];
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
-    [_selectButton setImage:imageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
-    [_selectButton setImage:imageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
+    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
+    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
     [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
     
     [_naviBar addSubview:_selectButton];
@@ -107,10 +107,10 @@
         _originalPhotoButton.titleLabel.font = [UIFont systemFontOfSize:13];
         [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
         [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
-        [_originalPhotoButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+        [_originalPhotoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-        [_originalPhotoButton setImage:imageNamed(imagePickerVc.photoPreviewOriginDefImageName) forState:UIControlStateNormal];
-        [_originalPhotoButton setImage:imageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
+        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoPreviewOriginDefImageName) forState:UIControlStateNormal];
+        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, 44);
@@ -128,7 +128,7 @@
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     [_doneButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
     
-    _numberImageView = [[UIImageView alloc] initWithImage:imageNamed(imagePickerVc.photoNumberIconImageName)];
+    _numberImageView = [[UIImageView alloc] initWithImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName)];
     _numberImageView.backgroundColor = [UIColor clearColor];
     _numberImageView.frame = CGRectMake(self.view.width - 56 - 28, 7, 30, 30);
     _numberImageView.hidden = imagePickerVc.selectedModels.count <= 0;

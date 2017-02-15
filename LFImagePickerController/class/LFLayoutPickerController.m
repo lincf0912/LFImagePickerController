@@ -149,8 +149,8 @@
 - (void)configDefaultSetting {
     self.timeout = 15;
     
-    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(83/255.0) green:(179/255.0) blue:(17/255.0) alpha:1.0];
-    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(83/255.0) green:(179/255.0) blue:(17/255.0) alpha:0.5];
+    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:1.0];
+    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:0.5];
     self.naviTitleColor = [UIColor whiteColor];
     self.naviTitleFont = [UIFont systemFontOfSize:17];
     self.barItemTextFont = [UIFont systemFontOfSize:15];

@@ -114,10 +114,8 @@
 
 - (void)setModel:(LFAsset *)model
 {
-    self.imageView.image = nil;
     _model = model;
     [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-        
         if ([model isEqual:self.model]) {
             self.imageView.image = photo;
             [self resizeSubviews];

@@ -17,9 +17,6 @@
 @property (nonatomic, readonly) id result;             ///< PHFetchResult<PHAsset> or ALAssetsGroup<ALAsset>
 
 /** 缓存数据 */
-
-/** 封面 */
-@property (nonatomic, strong) UIImage *posterImage;
 @property (nonatomic, strong) NSArray <LFAsset *>*models;
 
 - (instancetype)initWithName:(NSString *)name result:(id)result;

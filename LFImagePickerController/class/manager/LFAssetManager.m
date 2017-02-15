@@ -653,7 +653,7 @@ static CGFloat LFAM_ScreenScale;
 - (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion
 {
     if (completion == nil) return;
-    NSString *cache = [self CacheVideoPath];
+    NSString *cache = [LFAssetManager CacheVideoPath];
     if ([asset isKindOfClass:[PHAsset class]]) {
         [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:nil resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
             if ([asset isKindOfClass:[AVURLAsset class]]) {
@@ -928,13 +928,11 @@ static CGFloat LFAM_ScreenScale;
             asset = [model.result firstObject];
         }
         [self getPhotoWithAsset:asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            model.posterImage = photo;
             if (completion) completion(photo);
         }];
     } else {
         ALAssetsGroup *group = model.result;
         UIImage *postImage = [UIImage imageWithCGImage:group.posterImage];
-        model.posterImage = postImage;
         if (completion) completion(postImage);
     }
 }
@@ -978,7 +976,9 @@ static CGFloat LFAM_ScreenScale;
 - (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * _Nullable, NSDictionary * _Nullable))completion {
     if ([asset isKindOfClass:[PHAsset class]]) {
         [[PHImageManager defaultManager] requestPlayerItemForVideo:asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
-            if (completion) completion(playerItem,info);
+            dispatch_main_async_safe(^{
+                if (completion) completion(playerItem,info);
+            });
         }];
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
@@ -986,7 +986,11 @@ static CGFloat LFAM_ScreenScale;
         NSString *uti = [defaultRepresentation UTI];
         NSURL *videoURL = [[asset valueForProperty:ALAssetPropertyURLs] valueForKey:uti];
         AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoURL];
-        if (completion && playerItem) completion(playerItem,nil);
+        if (completion && playerItem) {
+            dispatch_main_async_safe(^{
+                completion(playerItem,nil);
+            });
+        }
     }
 }
 
@@ -1074,7 +1078,7 @@ static CGFloat LFAM_ScreenScale;
 }
 
 /// Return Cache Path
-- (NSString *)CacheVideoPath
++ (NSString *)CacheVideoPath
 {
     NSString *bundleId = [[NSBundle mainBundle] objectForInfoDictionaryKey:(id)kCFBundleIdentifierKey];
     NSString *fullNamespace = [bundleId stringByAppendingPathComponent:@"videoCache"];
@@ -1086,7 +1090,7 @@ static CGFloat LFAM_ScreenScale;
     return cachePath;
 }
 
-- (BOOL)cleanCacheVideoPath
++ (BOOL)cleanCacheVideoPath
 {
     NSString *path = [self CacheVideoPath];
     return [LF_FileUtility removeFile:path];

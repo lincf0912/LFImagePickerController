@@ -149,10 +149,10 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 - (LFAssetMediaType)mediaTypeWithModel:(id)asset;
 
 /// Return Cache Path 返回压缩缓存视频路径
-- (NSString *)CacheVideoPath;
++ (NSString *)CacheVideoPath;
 
 /** 清空视频缓存 */
-- (BOOL)cleanCacheVideoPath;
++ (BOOL)cleanCacheVideoPath;
 
 - (NSURL *)getURLInPlayer:(AVPlayer *)player;
 

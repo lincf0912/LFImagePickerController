@@ -101,15 +101,11 @@
     LFAlbum *model = _albumArr[indexPath.row];
     cell.model = model;
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    if (model.posterImage) {
-        cell.posterImage = model.posterImage;
-    } else {        
-        [[LFAssetManager manager] getPostImageWithAlbumModel:model ascending:imagePickerVc.sortAscendingByCreateDate completion:^( UIImage *postImage) {
-            if ([cell.model isEqual:model]) {
-                cell.posterImage = postImage;
-            }
-        }];
-    }
+    [[LFAssetManager manager] getPostImageWithAlbumModel:model ascending:imagePickerVc.sortAscendingByCreateDate completion:^( UIImage *postImage) {
+        if ([cell.model isEqual:model]) {
+            cell.posterImage = postImage;
+        }
+    }];
     return cell;
 }
 

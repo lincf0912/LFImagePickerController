@@ -6,7 +6,7 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
@@ -21,6 +21,9 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 @property (nonatomic, assign) BOOL isSelected;      ///< The select status of a photo, default is No
 @property (nonatomic, readonly) LFAssetMediaType type;
 @property (nonatomic, copy, readonly) NSString *timeLength;
+
+/** 自定义封面 */
+@property (nonatomic, strong) UIImage *posterImage;
 
 /// Init a photo dataModel With a asset
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型

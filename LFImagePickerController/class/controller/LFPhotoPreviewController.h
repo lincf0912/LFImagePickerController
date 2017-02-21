@@ -15,8 +15,12 @@
 @property (nonatomic, copy) void (^backButtonClickBlock)();
 @property (nonatomic, copy) void (^doneButtonClickBlock)();
 
+/** 是否开启编辑模式 */
+@property (nonatomic, assign) BOOL photoEditting;
+
 /** 初始化 */
 - (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo;
+/** 图片预览模式 */
 - (instancetype)initWithPhotos:(NSArray <UIImage *>*)photos index:(NSInteger)index;
 
 @end

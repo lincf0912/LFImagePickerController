@@ -40,6 +40,7 @@
 {
     NSMutableArray *_models;
     
+    UIButton *_editButton;
     UIButton *_previewButton;
     UIButton *_doneButton;
     UIImageView *_numberImageView;
@@ -188,25 +189,42 @@ static CGSize AssetGridThumbnailSize;
     CGFloat rgb = 253 / 255.0;
     bottomToolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1.0];
     
-    CGFloat previewWidth = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
-    if (!imagePickerVc.allowPreview) {
-        previewWidth = 0.0;
+    CGFloat buttonX = 0;
+    
+    CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
+    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _editButton.frame = CGRectMake(10, 3, editWidth, 44);
+    [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    _editButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
+    [_editButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_editButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    _editButton.enabled = imagePickerVc.selectedModels.count==1;
+    
+    buttonX = CGRectGetMaxX(_editButton.frame);
+    
+    
+    if (imagePickerVc.allowPreview) {
+        CGFloat previewWidth = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
+        _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        _previewButton.frame = CGRectMake(buttonX+10, 3, previewWidth, 44);
+        [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        _previewButton.titleLabel.font = [UIFont systemFontOfSize:16];
+        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
+        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
+        [_previewButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [_previewButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        _previewButton.enabled = imagePickerVc.selectedModels.count;
+        
+        buttonX = CGRectGetMaxX(_previewButton.frame);
     }
-    _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _previewButton.frame = CGRectMake(10, 3, previewWidth, 44);
-    _previewButton.width = previewWidth;
-    [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    _previewButton.titleLabel.font = [UIFont systemFontOfSize:16];
-    [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
-    [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
-    [_previewButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [_previewButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-    _previewButton.enabled = imagePickerVc.selectedModels.count;
+    
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _originalPhotoButton.frame = CGRectMake(CGRectGetMaxX(_previewButton.frame), self.view.height - 50, fullImageWidth + 56, 50);
+        _originalPhotoButton.frame = CGRectMake(buttonX, 0, fullImageWidth + 56, 50);
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = [UIFont systemFontOfSize:16];
@@ -227,6 +245,8 @@ static CGSize AssetGridThumbnailSize;
         _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
         _originalPhotoLabel.font = [UIFont systemFontOfSize:16];
         _originalPhotoLabel.textColor = [UIColor blackColor];
+        
+        [_originalPhotoButton addSubview:_originalPhotoLabel];
         if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
     }
     
@@ -260,16 +280,27 @@ static CGSize AssetGridThumbnailSize;
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
     
     [bottomToolBar addSubview:divide];
-    [bottomToolBar addSubview:_previewButton];
+    [bottomToolBar addSubview:_editButton];
+    if (_previewButton) {
+        [bottomToolBar addSubview:_previewButton];
+    }
+    if (_originalPhotoButton) {
+        [bottomToolBar addSubview:_originalPhotoButton];
+    }
     [bottomToolBar addSubview:_doneButton];
     [bottomToolBar addSubview:_numberImageView];
     [bottomToolBar addSubview:_numberLabel];
     [self.view addSubview:bottomToolBar];
-    [self.view addSubview:_originalPhotoButton];
-    [_originalPhotoButton addSubview:_originalPhotoLabel];
 }
 
 #pragma mark - Click Event
+- (void)editButtonClick {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    NSArray *models = [imagePickerVc.selectedModels copy];
+    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:0 excludeVideo:YES];
+    photoPreviewVc.photoEditting = YES;
+    [self pushPhotoPrevireViewController:photoPreviewVc];
+}
 
 - (void)previewButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
@@ -516,6 +547,7 @@ static CGSize AssetGridThumbnailSize;
 - (void)refreshBottomToolBarStatus {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
+    _editButton.enabled = imagePickerVc.selectedModels.count == 1;
     _previewButton.enabled = imagePickerVc.selectedModels.count > 0;
     _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
     _doneButton.enabled = imagePickerVc.selectedModels.count;

@@ -14,6 +14,19 @@
 #import "LFPhotoPreviewCell.h"
 #import "LFAssetManager.h"
 
+typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
+    /** 绘画 */
+    LFEditPhotoType_draw = 0,
+    /** 贴图 */
+    LFEditPhotoType_sticker,
+    /** 文本 */
+    LFEditPhotoType_text,
+    /** 模糊 */
+    LFEditPhotoType_splash,
+    /** 修剪 */
+    LFEditPhotoType_crop,
+};
+
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate>
 {
     UICollectionView *_collectionView;
@@ -28,6 +41,11 @@
     UILabel *_numberLabel;
     UIButton *_originalPhotoButton;
     UILabel *_originalPhotoLabel;
+    UIButton *_editButton;
+    
+    /** 编辑模式 */
+    UIView *_edit_naviBar;
+    UIView *_edit_toolBar;
 }
 
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;                  ///< All photo models / 所有图片模型数组
@@ -93,6 +111,10 @@
     [self configCollectionView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
+    
+    if (self.photoEditting) { /** 开启编辑模式 */
+        [self editButtonClick];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -142,10 +164,20 @@
     _toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
     
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    
+    CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15]} context:nil].size.width;
+    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _editButton.frame = CGRectMake(10, 0, editWidth, 44);
+    _editButton.titleLabel.font = [UIFont systemFontOfSize:15];
+    [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+    [_editButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
+    
     if (imagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _originalPhotoButton.frame = CGRectMake(0, 0, fullImageWidth + 56, 44);
+        CGFloat width = fullImageWidth + 56;
+        _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2-fullImageWidth/2, 0, width, 44);
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -168,7 +200,7 @@
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _doneButton.frame = CGRectMake(self.view.width - 44 - 12, 0, 44, 44);
-    _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
+    _doneButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     [_doneButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
@@ -188,8 +220,9 @@
     _numberLabel.backgroundColor = [UIColor clearColor];
     
     [_originalPhotoButton addSubview:_originalPhotoLabel];
-    [_toolBar addSubview:_doneButton];
+    [_toolBar addSubview:_editButton];
     [_toolBar addSubview:_originalPhotoButton];
+    [_toolBar addSubview:_doneButton];
     [_toolBar addSubview:_numberImageView];
     [_toolBar addSubview:_numberLabel];
     [self.view addSubview:_toolBar];
@@ -288,6 +321,14 @@
     }
 }
 
+- (void)editButtonClick {
+    [_naviBar removeFromSuperview];
+    [self.view addSubview:self.edit_naviBar];
+    
+    [_toolBar removeFromSuperview];
+    [self.view addSubview:self.edit_toolBar];
+}
+
 - (void)originalPhotoButtonClick {
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
@@ -332,11 +373,15 @@
     if (!cell.singleTapGestureBlock) {
         __weak typeof(_naviBar) weakNaviBar = _naviBar;
         __weak typeof(_toolBar) weakToolBar = _toolBar;
+        __weak typeof(_edit_naviBar) weakEditNaviBar = self.edit_naviBar;
+        __weak typeof(_edit_toolBar) weakEditToolBar = self.edit_toolBar;
         cell.singleTapGestureBlock = ^(){
             // show or hide naviBar / 显示或隐藏导航栏
             weakSelf.isHideNaviBar = !weakSelf.isHideNaviBar;
             weakNaviBar.hidden = weakSelf.isHideNaviBar;
             weakToolBar.hidden = weakSelf.isHideNaviBar;
+            weakEditNaviBar.hidden = weakSelf.isHideNaviBar;
+            weakEditToolBar.hidden = weakSelf.isHideNaviBar;
         };
     }
     [cell setImageProgressUpdateBlock:^(double progress) {
@@ -402,4 +447,95 @@
     }];
 }
 
+#pragma mark - 编辑模式
+
+#pragma mark 懒加载
+- (UIView *)edit_naviBar
+{
+    if (_edit_naviBar == nil) {
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        
+        _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
+        _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
+        
+        UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+        [_edit_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+        _edit_cancelButton.titleLabel.font = [UIFont systemFontOfSize:15];
+        [_edit_cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
+        [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
+
+        UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 44, 44)];
+        [_edit_finishButton setTitle:@"完成" forState:UIControlStateNormal];
+        _edit_finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
+        [_edit_finishButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_naviBar addSubview:_edit_finishButton];
+        [_edit_naviBar addSubview:_edit_cancelButton];
+    }
+    return _edit_naviBar;
+}
+
+- (UIView *)edit_toolBar
+{
+    if (_edit_toolBar == nil) {
+        
+        _edit_toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
+        static CGFloat rgb = 34 / 255.0;
+        _edit_toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+        
+        NSInteger buttonCount = 5;
+        
+        CGFloat width = CGRectGetWidth(_edit_toolBar.frame)/buttonCount;
+        
+        for (NSInteger i=0; i<buttonCount; i++) {
+            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+            button.tag = i;
+            button.frame = CGRectMake(width*i, 0, width, 44);
+            button.titleLabel.font = [UIFont systemFontOfSize:14];
+//            [button setImage:<#(nullable UIImage *)#> forState:UIControlStateNormal];
+            [button setTitle:[NSString stringWithFormat:@"%zd", i] forState:UIControlStateNormal];
+            [button addTarget:self action:@selector(edit_toolBar_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+            [_edit_toolBar addSubview:button];
+        }
+    }
+    return _edit_toolBar;
+}
+
+
+
+- (void)cancelButtonClick
+{
+    [self.edit_naviBar removeFromSuperview];
+    [self.view addSubview:_naviBar];
+    
+    [self.edit_toolBar removeFromSuperview];
+    [self.view addSubview:_toolBar];
+}
+
+- (void)finishButtonClick
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [imagePickerVc showProgressHUD];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        [imagePickerVc hideProgressHUD];
+        [self cancelButtonClick];
+    });
+}
+
+- (void)edit_toolBar_buttonClick:(UIButton *)button
+{
+    switch (button.tag) {
+        case LFEditPhotoType_draw:
+            break;
+        case LFEditPhotoType_sticker:
+            break;
+        case LFEditPhotoType_text:
+            break;
+        case LFEditPhotoType_splash:
+            break;
+        case LFEditPhotoType_crop:
+            break;
+    }
+}
 @end

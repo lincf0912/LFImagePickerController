@@ -174,6 +174,7 @@
     self.doneBtnTitleStr = @"完成";
     self.cancelBtnTitleStr = @"取消";
     self.previewBtnTitleStr = @"预览";
+    self.editBtnTitleStr = @"编辑";
     self.fullImageBtnTitleStr = @"原图";
     self.settingBtnTitleStr = @"设置";
     self.processHintStr = @"正在处理...";
@@ -197,6 +198,7 @@
     if (!_progressHUD) {
         _progressHUD = [UIButton buttonWithType:UIButtonTypeCustom];
         [_progressHUD setBackgroundColor:[UIColor clearColor]];
+        _progressHUD.frame = [UIScreen mainScreen].bounds;
         
         _HUDContainer = [[UIView alloc] init];
         _HUDContainer.frame = CGRectMake((self.view.width - 120) / 2, (self.view.height - 90) / 2, 120, 90);

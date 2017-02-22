@@ -10,5 +10,4 @@
 
 @interface LFAlbumPickerController : UIViewController
 
-@property (nonatomic, assign) NSInteger columnNumber;
 @end

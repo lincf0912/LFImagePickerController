@@ -20,6 +20,9 @@
 - (instancetype)initWithSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo complete:(void (^)(NSArray *assets))complete;
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray *photos))complete;
 
+/** 每行的数量 */
+@property (nonatomic, readonly) NSInteger columnNumber;
+
 /// Default is 9 / 默认最大可选9张图片
 @property (nonatomic, assign) NSInteger maxImagesCount;
 

@@ -164,20 +164,19 @@
 - (void)pushPhotoPickerVc {
     _didPushPhotoPickerVc = NO;
     if (!_didPushPhotoPickerVc && _pushPhotoPickerVc) {
+        LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
+        if (self.allowPickingImage) {
+            albumPickerVc.navigationItem.title = @"相册";
+        } else if (self.allowPickingVideo) {
+            albumPickerVc.navigationItem.title = @"视频";
+        }
+        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
+
         LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-        photoPickerVc.columnNumber = self.columnNumber;
-        [[LFAssetManager manager] getCameraRollAlbum:self.allowPickingVideo allowPickingImage:self.allowPickingImage fetchLimit:0 ascending:self.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-            
-            photoPickerVc.model = model;
-//            [self pushViewController:photoPickerVc animated:YES];
-            LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-            albumPickerVc.columnNumber = self.columnNumber;
-            [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
-            _didPushPhotoPickerVc = YES;
-        }];
+        [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
+        _didPushPhotoPickerVc = YES;
     } else if (!_didPushPhotoPickerVc && !_pushPhotoPickerVc) {
         LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-        albumPickerVc.columnNumber = self.columnNumber;
         _didPushPhotoPickerVc = YES;
         [self setViewControllers:@[albumPickerVc] animated:YES];
     }
@@ -190,9 +189,6 @@
     } else if (columnNumber >= 6) {
         _columnNumber = 6;
     }
-    
-    LFAlbumPickerController *albumPickerVc = [self.childViewControllers firstObject];
-    albumPickerVc.columnNumber = _columnNumber;
 }
 
 - (void)setSelectedAssets:(NSMutableArray *)selectedAssets {

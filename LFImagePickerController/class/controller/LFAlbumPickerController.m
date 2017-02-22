@@ -37,7 +37,17 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+    if (self.navigationItem.title == nil) {
+        if (imagePickerVc.allowPickingImage) {
+            self.navigationItem.title = @"相册";
+        } else if (imagePickerVc.allowPickingVideo) {
+            self.navigationItem.title = @"视频";
+        }
+    }
+    if (self.navigationItem.rightBarButtonItem == nil) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+    }
+    
     [self configTableView];
 }
 
@@ -49,44 +59,45 @@
     [imagePickerVc.selectedModels removeAllObjects];
     /** 恢复原图 */
     imagePickerVc.isSelectOriginalPhoto = NO;
-    
-    if (imagePickerVc.allowPickingImage) {
-        self.navigationItem.title = @"相册";
-    } else if (imagePickerVc.allowPickingVideo) {
-        self.navigationItem.title = @"视频";
-    }
 }
 
 - (void)configTableView {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
-        
-        _albumArr = [NSMutableArray arrayWithArray:models];
-
-        if (!_tableView) {
+    [imagePickerVc showProgressHUD];
+    
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
             
-            CGFloat top = 0;
-            CGFloat tableViewHeight = 0;
-            if (self.navigationController.navigationBar.isTranslucent) {
-                top = 44;
-                if (iOS7Later) top += 20;
-                tableViewHeight = self.view.height - top;
-            } else {
-                CGFloat navigationHeight = 44;
-                if (iOS7Later) navigationHeight += 20;
-                tableViewHeight = self.view.height - navigationHeight;
-            }
+            _albumArr = [NSMutableArray arrayWithArray:models];
             
-            _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, top, self.view.width, tableViewHeight) style:UITableViewStylePlain];
-            _tableView.tableFooterView = [[UIView alloc] init];
-            _tableView.dataSource = self;
-            _tableView.delegate = self;
-            [_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
-            [self.view addSubview:_tableView];
-        } else {
-            [_tableView reloadData];
-        }
-    }];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [imagePickerVc hideProgressHUD];
+                if (!_tableView) {
+                    
+                    CGFloat top = 0;
+                    CGFloat tableViewHeight = 0;
+                    if (self.navigationController.navigationBar.isTranslucent) {
+                        top = 44;
+                        if (iOS7Later) top += 20;
+                        tableViewHeight = self.view.height - top;
+                    } else {
+                        CGFloat navigationHeight = 44;
+                        if (iOS7Later) navigationHeight += 20;
+                        tableViewHeight = self.view.height - navigationHeight;
+                    }
+                    
+                    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, top, self.view.width, tableViewHeight) style:UITableViewStylePlain];
+                    _tableView.tableFooterView = [[UIView alloc] init];
+                    _tableView.dataSource = self;
+                    _tableView.delegate = self;
+                    [_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
+                    [self.view addSubview:_tableView];
+                } else {
+                    [_tableView reloadData];
+                }
+            });
+        }];
+    });
 }
 
 #pragma mark - UITableViewDataSource && Delegate
@@ -111,7 +122,6 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-    photoPickerVc.columnNumber = self.columnNumber;
     LFAlbum *model = _albumArr[indexPath.row];
     photoPickerVc.model = model;
     [self.navigationController pushViewController:photoPickerVc animated:YES];

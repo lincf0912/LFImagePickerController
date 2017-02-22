@@ -66,33 +66,52 @@ static CGSize AssetGridThumbnailSize;
     
     _shouldScrollToBottom = YES;
     self.view.backgroundColor = [UIColor whiteColor];
-    self.navigationItem.title = _model.name;
+    
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
     _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
+    /** 优先赋值 */
+    self.navigationItem.title = _model.name;
+    [imagePickerVc showProgressHUD];
     
-    if (self.model.models.count) { /** 使用缓存数据 */
-        _models = [NSMutableArray arrayWithArray:_model.models];
-        [self initSubviews];
-    } else {
-        /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
-        BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-        if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-            ascending = !imagePickerVc.sortAscendingByCreateDate;
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
+            [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
+                self.model = model;
+            }];
         }
-        [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-            /** 缓存数据 */
-            _model.models = models;
-            _models = [NSMutableArray arrayWithArray:models];
-            [self initSubviews];
-        }];
-    }
+        
+        if (self.model.models.count) { /** 使用缓存数据 */
+            _models = [NSMutableArray arrayWithArray:_model.models];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self initSubviews];
+            });
+        } else {
+            /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+            BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+            if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+                ascending = !imagePickerVc.sortAscendingByCreateDate;
+            }
+            [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                /** 缓存数据 */
+                _model.models = models;
+                _models = [NSMutableArray arrayWithArray:models];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self initSubviews];
+                });
+            }];
+        }
+    });
 }
 
 - (void)initSubviews {
+    /** 可能没有model的情况，补充赋值 */
+    self.navigationItem.title = _model.name;
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [imagePickerVc hideProgressHUD];
     
     if (_models.count == 0) {
-        /** 没有数据UI */
-    } else {        
+        [self configNonePhotoView];
+    } else {
         [self checkSelectedModels];
         [self configCollectionView];
         [self configBottomToolBar];
@@ -106,13 +125,39 @@ static CGSize AssetGridThumbnailSize;
 
 - (void)dealloc
 {
-    if (self.backButtonClickHandle) {
-        self.backButtonClickHandle(_model);
-    }
+    
 }
 
 - (BOOL)prefersStatusBarHidden {
     return NO;
+}
+
+- (void)configNonePhotoView {
+    CGFloat top = 0;
+    CGFloat height = 0;
+    if (self.navigationController.navigationBar.isTranslucent) {
+        top = 44;
+        if (iOS7Later) top += 20;
+        height = self.view.height - top;;
+    } else {
+        CGFloat navigationHeight = 44;
+        if (iOS7Later) navigationHeight += 20;
+        height = self.view.height - navigationHeight;
+    }
+    UIView *nonePhotoView = [[UIView alloc] initWithFrame:CGRectMake(0, top, self.view.width, height)];
+    nonePhotoView.backgroundColor = [UIColor clearColor];
+    
+    NSString *text = @"没有图片或视频";
+    UIFont *font = [UIFont systemFontOfSize:18];
+    CGSize textSize = [text boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size;
+    
+    UILabel *label = [[UILabel alloc] initWithFrame:(CGRect){{(CGRectGetWidth(nonePhotoView.frame)-textSize.width)/2, (CGRectGetHeight(nonePhotoView.frame)-textSize.height)/2}, textSize}];
+    label.font = font;
+    label.text = text;
+    label.textColor = [UIColor lightGrayColor];
+    
+    [nonePhotoView addSubview:label];
+    [self.view addSubview:nonePhotoView];
 }
 
 - (void)configCollectionView {
@@ -120,7 +165,7 @@ static CGSize AssetGridThumbnailSize;
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     CGFloat margin = 5;
-    CGFloat itemWH = (self.view.width - (self.columnNumber + 1) * margin) / self.columnNumber;
+    CGFloat itemWH = (self.view.width - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
     layout.itemSize = CGSizeMake(itemWH, itemWH);
     layout.minimumInteritemSpacing = margin;
     layout.minimumLineSpacing = margin;
@@ -145,9 +190,9 @@ static CGSize AssetGridThumbnailSize;
     _collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
     
     if (_showTakePhotoBtn && imagePickerVc.allowTakePicture ) {
-        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + self.columnNumber) / self.columnNumber) * self.view.width);
+        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
     } else {
-        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + self.columnNumber - 1) / self.columnNumber) * self.view.width);
+        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
     }
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetCell"];

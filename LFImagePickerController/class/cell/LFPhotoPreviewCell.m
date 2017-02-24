@@ -9,6 +9,8 @@
 #import "LFPhotoPreviewCell.h"
 #import "UIView+LFFrame.h"
 #import "LFAssetManager.h"
+#import "LFPhotoEditManager.h"
+#import "LFPhotoEdit.h"
 
 @interface LFProgressView : UIView
 
@@ -112,33 +114,51 @@
     return self;
 }
 
+- (UIImage *)previewImage
+{
+    return self.imageView.image;
+}
+
 - (void)setModel:(LFAsset *)model
 {
     _model = model;
-    if (model.asset == nil) { /** 显示自定义图片 */
+    /** 优先显示编辑图片 */
+    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+    if (photoEdit.editPreviewImage) {
+        self.imageView.image = photoEdit.editPreviewImage;
+        [self resizeSubviews];
+    } else if (model.asset == nil) { /** 显示自定义图片 */
         self.imageView.image = model.previewImage;
         [self resizeSubviews];
     } else {
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            if ([model isEqual:self.model]) {
-                self.imageView.image = photo;
-                [self resizeSubviews];
-                _progressView.hidden = YES;
-                if (self.imageProgressUpdateBlock) {
-                    self.imageProgressUpdateBlock(1);
+        if (model.previewImage) {
+            self.imageView.image = model.previewImage;
+            [self resizeSubviews];
+        } else {
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+                if (!isDegraded) { /** 缓存清晰图片 */
+                    model.previewImage = photo;
                 }
-            }
-        } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-            if ([model isEqual:self.model]) {
-                _progressView.hidden = NO;
-                [self bringSubviewToFront:_progressView];
-                progress = progress > 0.02 ? progress : 0.02;;
-                _progressView.progress = progress;
-                if (self.imageProgressUpdateBlock) {
-                    self.imageProgressUpdateBlock(progress);
+                if ([model isEqual:self.model]) {
+                    self.imageView.image = photo;
+                    [self resizeSubviews];
+                    _progressView.hidden = YES;
+                    if (self.imageProgressUpdateBlock) {
+                        self.imageProgressUpdateBlock(1);
+                    }
                 }
-            }
-        } networkAccessAllowed:YES];
+            } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                if ([model isEqual:self.model]) {
+                    _progressView.hidden = NO;
+                    [self bringSubviewToFront:_progressView];
+                    progress = progress > 0.02 ? progress : 0.02;;
+                    _progressView.progress = progress;
+                    if (self.imageProgressUpdateBlock) {
+                        self.imageProgressUpdateBlock(progress);
+                    }
+                }
+            } networkAccessAllowed:YES];
+        }
     }
 }
 

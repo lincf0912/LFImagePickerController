@@ -12,8 +12,11 @@
 
 /** 修正图片方向 */
 - (UIImage *)fixOrientation;
-/** 缩放图片 */
-- (UIImage *)scaleToSize:(CGSize)size;
 
+/** 计算图片的缩放大小 */
++ (CGSize)scaleImageSizeBySize:(CGSize)imageSize targetSize:(CGSize)size isBoth:(BOOL)isBoth;
+
+/** 缩放图片到指定大小 */
+- (UIImage*)scaleToSize:(CGSize)size;
 
 @end

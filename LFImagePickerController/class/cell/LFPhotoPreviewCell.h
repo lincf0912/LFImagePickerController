@@ -15,6 +15,9 @@
 @property (nonatomic, copy) void (^singleTapGestureBlock)();
 @property (nonatomic, copy) void (^imageProgressUpdateBlock)(double progress);
 
+/** 当前展示的图片 */
+@property (nonatomic, readonly) UIImage *previewImage;
+
 - (void)recoverSubviews;
 
 @end

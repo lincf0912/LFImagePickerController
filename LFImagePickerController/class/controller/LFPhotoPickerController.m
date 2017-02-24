@@ -9,6 +9,7 @@
 #import "LFPhotoPickerController.h"
 #import "LFImagePickerController.h"
 #import "LFPhotoPreviewController.h"
+#import "LFPhotoEdittingController.h"
 #import "LFVideoPlayerController.h"
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"
@@ -20,6 +21,8 @@
 #import "LFAsset.h"
 #import "LFAssetCell.h"
 #import "LFAssetManager+Authorization.h"
+#import "LFPhotoEditManager.h"
+#import "LFPhotoEdit.h"
 
 @interface LFCollectionView : UICollectionView
 
@@ -55,8 +58,6 @@
 
 @end
 
-static CGSize AssetGridThumbnailSize;
-
 @implementation LFPhotoPickerController
 
 - (void)viewDidLoad {
@@ -73,7 +74,7 @@ static CGSize AssetGridThumbnailSize;
     self.navigationItem.title = _model.name;
     [imagePickerVc showProgressHUD];
     
-    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
             [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
                 self.model = model;
@@ -103,6 +104,29 @@ static CGSize AssetGridThumbnailSize;
     });
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self scrollCollectionViewToBottom];
+    // Determine the size of the thumbnails to request from the PHCachingImageManager
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+}
+
+- (void)dealloc
+{
+
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return NO;
+}
+
 - (void)initSubviews {
     /** 可能没有model的情况，补充赋值 */
     self.navigationItem.title = _model.name;
@@ -117,19 +141,6 @@ static CGSize AssetGridThumbnailSize;
         [self configBottomToolBar];
     }
     
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-}
-
-- (void)dealloc
-{
-    
-}
-
-- (BOOL)prefersStatusBarHidden {
-    return NO;
 }
 
 - (void)configNonePhotoView {
@@ -197,25 +208,6 @@ static CGSize AssetGridThumbnailSize;
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetCell"];
     [_collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self scrollCollectionViewToBottom];
-    // Determine the size of the thumbnails to request from the PHCachingImageManager
-    CGFloat scale = 2.0;
-    if ([UIScreen mainScreen].bounds.size.width > 600) {
-        scale = 1.0;
-    }
-    CGSize cellSize = ((UICollectionViewFlowLayout *)_collectionView.collectionViewLayout).itemSize;
-    AssetGridThumbnailSize = CGSizeMake(cellSize.width * scale, cellSize.height * scale);
-}
-
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    if (iOS8Later) {
-        // [self updateCachedAssets];
-    }
 }
 
 - (void)configBottomToolBar {
@@ -324,7 +316,6 @@ static CGSize AssetGridThumbnailSize;
     divide.backgroundColor = [UIColor colorWithRed:rgb2 green:rgb2 blue:rgb2 alpha:1.0];
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
     
-    [bottomToolBar addSubview:divide];
     [bottomToolBar addSubview:_editButton];
     if (_previewButton) {
         [bottomToolBar addSubview:_previewButton];
@@ -335,6 +326,7 @@ static CGSize AssetGridThumbnailSize;
     [bottomToolBar addSubview:_doneButton];
     [bottomToolBar addSubview:_numberImageView];
     [bottomToolBar addSubview:_numberLabel];
+    [bottomToolBar addSubview:divide];
     [self.view addSubview:bottomToolBar];
 }
 
@@ -343,8 +335,27 @@ static CGSize AssetGridThumbnailSize;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     NSArray *models = [imagePickerVc.selectedModels copy];
     LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:0 excludeVideo:YES];
-    photoPreviewVc.photoEditting = YES;
-    [self pushPhotoPrevireViewController:photoPreviewVc];
+    LFPhotoEdittingController *photoEdittingVC = [[LFPhotoEdittingController alloc] init];
+    
+    /** 抽取第一个对象 */
+    LFAsset *model = models.firstObject;
+    /** 获取缓存编辑对象 */
+    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+    photoEdittingVC.photoEdit = photoEdit;
+    /** 读取缓存 */
+    if (model.previewImage) {
+        photoEdittingVC.editImage = model.previewImage;
+    } else {
+        /** 获取对应的图片 */
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            photoEdittingVC.editImage = photo;
+            /** 缓存清晰图 */
+            if (!isDegraded) {
+                model.previewImage = photo;
+            }
+        }];
+    }
+    [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:photoEdittingVC];
 }
 
 - (void)previewButtonClick {
@@ -405,14 +416,21 @@ static CGSize AssetGridThumbnailSize;
     
     for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
         LFAsset *model = imagePickerVc.selectedModels[i];
-        if (imagePickerVc.isSelectOriginalPhoto) {
-            [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+        if (photoEdit.isWork) {
+            [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                 photosComplete(thumbnail, source, info, i, model.asset);
             }];
         } else {
-            [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                photosComplete(thumbnail, source, info, i, model.asset);
-            }];
+            if (imagePickerVc.isSelectOriginalPhoto) {
+                [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    photosComplete(thumbnail, source, info, i, model.asset);
+                }];
+            } else {
+                [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    photosComplete(thumbnail, source, info, i, model.asset);
+                }];
+            }
         }
     }
 }
@@ -609,6 +627,14 @@ static CGSize AssetGridThumbnailSize;
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
     
+    [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:nil];
+}
+
+- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEdittingViewController:(LFPhotoEdittingController *)photoEdittingVC {
+    
+    /** 关联代理 */
+    photoEdittingVC.delegate = photoPreviewVc;
+    
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{
         [weakSelf.collectionView reloadData];
@@ -617,8 +643,17 @@ static CGSize AssetGridThumbnailSize;
     [photoPreviewVc setDoneButtonClickBlock:^{
         [weakSelf doneButtonClick];
     }];
-    [self.navigationController pushViewController:photoPreviewVc animated:YES];
+    
+    if (photoEdittingVC) {
+        NSMutableArray *viewControllers = [self.navigationController.viewControllers mutableCopy];
+        [viewControllers addObject:photoPreviewVc];
+        [viewControllers addObject:photoEdittingVC];
+        [self.navigationController setViewControllers:viewControllers animated:YES];
+    } else {
+        [self.navigationController pushViewController:photoPreviewVc animated:YES];
+    }
 }
+
 
 - (void)getSelectedPhotoBytes {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;

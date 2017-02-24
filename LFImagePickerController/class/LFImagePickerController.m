@@ -10,6 +10,7 @@
 #import "LFImagePickerHeader.h"
 #import "LFAssetManager.h"
 #import "LFAssetManager+Authorization.h"
+#import "LFPhotoEditManager.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 
@@ -61,6 +62,13 @@
     }
 }
 
+- (void)dealloc
+{
+    /** 清空单例 */
+    [LFAssetManager free];
+    [LFPhotoEditManager free];
+}
+
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate {
     return [self initWithMaxImagesCount:maxImagesCount columnNumber:4 delegate:delegate pushPhotoPickerVc:YES];
 }
@@ -79,13 +87,7 @@
         
         // Allow user picking original photo and video, you also can set No after this method
         // 默认准许用户选择原图和视频, 你也可以在这个方法后置为NO
-        self.allowPickingOriginalPhoto = YES;
-        self.allowPickingVideo = YES;
-        self.allowPickingImage = YES;
-        self.allowTakePicture = YES;
-        self.allowPreview = YES;
-        self.sortAscendingByCreateDate = YES;
-        self.autoDismiss = YES;
+        [self defaultConfig];
         self.columnNumber = columnNumber;
     }
     return self;
@@ -103,6 +105,7 @@
     LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index excludeVideo:excludeVideo];
     self = [super initWithRootViewController:previewVc];
     if (self) {
+        [self defaultConfig];
         __weak typeof(self) weakSelf = self;
         [previewVc setDoneButtonClickBlock:^{
             
@@ -129,6 +132,7 @@
     LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:selectedPhotos index:index];
     self = [super initWithRootViewController:previewVc];
     if (self) {
+        [self defaultConfig];
         __weak typeof(self) weakSelf = self;
         [previewVc setDoneButtonClickBlock:^{
             
@@ -151,6 +155,18 @@
     return self;
 }
 
+- (void)defaultConfig
+{
+    self.allowPickingOriginalPhoto = YES;
+    self.allowPickingVideo = YES;
+    self.allowPickingImage = YES;
+    self.allowTakePicture = YES;
+    self.allowPreview = YES;
+    self.allowEditting = YES;
+    self.sortAscendingByCreateDate = YES;
+    self.autoDismiss = YES;
+}
+
 - (void)observeAuthrizationStatusChange {
     if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
         [_tipLabel removeFromSuperview];
@@ -163,7 +179,7 @@
 
 - (void)pushPhotoPickerVc {
     _didPushPhotoPickerVc = NO;
-    if (!_didPushPhotoPickerVc && _pushPhotoPickerVc) {
+    if (!_didPushPhotoPickerVc) {
         LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
         if (self.allowPickingImage) {
             albumPickerVc.navigationItem.title = @"相册";
@@ -171,14 +187,14 @@
             albumPickerVc.navigationItem.title = @"视频";
         }
         albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
+        if (_pushPhotoPickerVc) {
+            LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
+            [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
+        } else {
+            [self setViewControllers:@[albumPickerVc] animated:YES];
+        }
 
-        LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-        [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
         _didPushPhotoPickerVc = YES;
-    } else if (!_didPushPhotoPickerVc && !_pushPhotoPickerVc) {
-        LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-        _didPushPhotoPickerVc = YES;
-        [self setViewControllers:@[albumPickerVc] animated:YES];
     }
 }
 

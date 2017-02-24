@@ -54,6 +54,10 @@
 /// 默认为YES，如果设置为NO,预览按钮将隐藏,用户将不能去预览照片
 @property (nonatomic, assign) BOOL allowPreview;
 
+/// Default is YES, if set NO, user can't editting photo.
+/// 默认为YES，如果设置为NO,编辑按钮将隐藏,用户将不能去编辑照片
+@property (nonatomic, assign) BOOL allowEditting;
+
 /// Default is YES, if set NO, the picker don't dismiss itself.
 /// 默认为YES，如果设置为NO, 选择器将不会自己dismiss
 @property(nonatomic, assign) BOOL autoDismiss;

@@ -92,15 +92,6 @@
 }
 */
 
-- (void)setTimeout:(NSInteger)timeout {
-    _timeout = timeout;
-    if (timeout < 5) {
-        _timeout = 5;
-    } else if (_timeout > 60) {
-        _timeout = 60;
-    }
-}
-
 - (void)setNaviBgColor:(UIColor *)naviBgColor {
     _naviBgColor = naviBgColor;
     self.navigationBar.barTintColor = naviBgColor;
@@ -147,7 +138,6 @@
 }
 
 - (void)configDefaultSetting {
-    self.timeout = 15;
     
     self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:1.0];
     self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:0.5];
@@ -225,11 +215,6 @@
     
     [_HUDIndicatorView startAnimating];
     [[UIApplication sharedApplication].keyWindow addSubview:_progressHUD];
-    
-    // if over time, dismiss HUD automatic
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self hideProgressHUD];
-    });
 }
 
 - (void)showProgressHUD {

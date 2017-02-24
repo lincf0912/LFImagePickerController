@@ -13,6 +13,8 @@
 #import "UIView+LFFrame.h"
 #import "LFAssetManager+Authorization.h"
 #import "LFAlbumCell.h"
+#import "LFPhotoEditManager.h"
+#import "LFPhotoEdit.h"
 
 @interface LFAlbumPickerController ()<UITableViewDataSource,UITableViewDelegate> {
     UITableView *_tableView;
@@ -22,6 +24,24 @@
 @end
 
 @implementation LFAlbumPickerController
+
+- (void)setReplaceModel:(LFAlbum *)replaceModel
+{
+    _replaceModel = replaceModel;
+    if (_albumArr && _replaceModel) {
+        for (NSInteger i=0; i<_albumArr.count; i++) {
+            LFAlbum *model = _albumArr[i];
+            if ([model.name isEqualToString:_replaceModel.name]) {
+                [_albumArr replaceObjectAtIndex:i withObject:_replaceModel];
+                _replaceModel = nil;
+                /** 刷新 */
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
+                [_tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+                break;
+            }
+        }
+    }
+}
 
 - (instancetype)init
 {
@@ -36,17 +56,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (self.navigationItem.title == nil) {
-        if (imagePickerVc.allowPickingImage) {
-            self.navigationItem.title = @"相册";
-        } else if (imagePickerVc.allowPickingVideo) {
-            self.navigationItem.title = @"视频";
-        }
-    }
-    if (self.navigationItem.rightBarButtonItem == nil) {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
-    }
     
     [self configTableView];
 }
@@ -59,16 +68,30 @@
     [imagePickerVc.selectedModels removeAllObjects];
     /** 恢复原图 */
     imagePickerVc.isSelectOriginalPhoto = NO;
+    
+    if (imagePickerVc.allowEditting) {
+        [_tableView reloadData];
+    }
 }
 
 - (void)configTableView {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc showProgressHUD];
     
-    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
             
             _albumArr = [NSMutableArray arrayWithArray:models];
+            if (_replaceModel) { /** 替换对象 */
+                for (NSInteger i=0; i<_albumArr.count; i++) {
+                    LFAlbum *model = _albumArr[i];
+                    if ([model.name isEqualToString:_replaceModel.name]) {
+                        [_albumArr replaceObjectAtIndex:i withObject:_replaceModel];
+                        _replaceModel = nil;
+                        break;
+                    }
+                }
+            }
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [imagePickerVc hideProgressHUD];
@@ -109,14 +132,29 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     LFAlbumCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LFAlbumCell"];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    LFAlbum *model = _albumArr[indexPath.row];
-    cell.model = model;
+    LFAlbum *album = _albumArr[indexPath.row];
+    cell.model = album;
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    [[LFAssetManager manager] getPostImageWithAlbumModel:model ascending:imagePickerVc.sortAscendingByCreateDate completion:^( UIImage *postImage) {
-        if ([cell.model isEqual:model]) {
-            cell.posterImage = postImage;
+    
+    NSInteger index = 0;
+    if (imagePickerVc.sortAscendingByCreateDate) {
+        index = album.count-1;
+    }
+    [[LFAssetManager manager] getAssetFromFetchResult:album.result atIndex:index allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage completion:^(LFAsset *model) {
+        /** 优先显示编辑图片 */
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+        if ([cell.model isEqual:album] && photoEdit.editPosterImage) {
+            cell.posterImage = photoEdit.editPosterImage;
+        } else {
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+                if ([cell.model isEqual:album]) {
+                    cell.posterImage = photo;
+                }
+                
+            } progressHandler:nil networkAccessAllowed:NO];
         }
     }];
+    
     return cell;
 }
 

@@ -12,12 +12,15 @@
 #import "LFAssetManager.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
+#import "LFPhotoEditManager.h"
+#import "LFPhotoEdit.h"
 
 #pragma mark - /// 宫格图片视图
 
 @interface LFAssetCell ()
 @property (weak, nonatomic) UIImageView *imageView;       // The photo / 照片
 @property (weak, nonatomic) UIImageView *selectImageView;
+@property (weak, nonatomic) UIImageView *editMaskImageView;
 @property (weak, nonatomic) UIView *bottomView;
 @property (weak, nonatomic) UIButton *selectPhotoButton;
 
@@ -32,8 +35,11 @@
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
-    self.imageView.image = model.posterImage;
-    if (!model.posterImage) {
+    /** 优先显示编辑图片 */
+    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+    if (photoEdit.editPreviewImage) {
+        self.imageView.image = photoEdit.editPreviewImage;
+    } else {
         [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([model.asset isEqual:self.model.asset]) {
                 self.imageView.image = photo;
@@ -41,6 +47,9 @@
             
         } progressHandler:nil networkAccessAllowed:NO];
     }
+    
+    /** 显示编辑标记 */
+    self.editMaskImageView.hidden = (photoEdit.editPreviewImage == nil);
     
     self.selectPhotoButton.selected = model.isSelected;
     self.selectImageView.image = self.selectPhotoButton.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
@@ -128,6 +137,18 @@
         _selectImageView = selectImageView;
     }
     return _selectImageView;
+}
+
+- (UIImageView *)editMaskImageView
+{
+    if (_editMaskImageView == nil) {
+        UIImageView *editMaskImageView = [[UIImageView alloc] init];
+        editMaskImageView.frame = CGRectMake(5, self.height - 27, 22, 22);
+        editMaskImageView.backgroundColor = [UIColor redColor];
+        [self.contentView addSubview:editMaskImageView];
+        _editMaskImageView = editMaskImageView;
+    }
+    return _editMaskImageView;
 }
 
 - (UIView *)bottomView {

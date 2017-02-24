@@ -1,6 +1,6 @@
 //
 //  UIImage+LF_ImageCompress.m
-//  TZImagePickerController
+//  LFImagePickerController
 //
 //  Created by LamTsanFeng on 2017/2/9.
 //  Copyright © 2017年 Miracle. All rights reserved.

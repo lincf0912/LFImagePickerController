@@ -24,10 +24,6 @@ dispatch_async(dispatch_get_main_queue(), block);\
 #define dispatch_globalQueue_async_safe(block)\
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), block);
 
-NSString *const kImageInfoFileName = @"ImageInfoFileName";     // 图片名称
-NSString *const kImageInfoFileSize = @"ImageInfoFileSize";     // 图片大小［长、宽］
-NSString *const kImageInfoFileByte = @"ImageInfoFileByte";     // 图片大小［字节］
-
 @interface LFAssetManager ()
 
 @end
@@ -38,20 +34,30 @@ NSString *const kImageInfoFileByte = @"ImageInfoFileByte";     // 图片大小�
 static CGFloat LFAM_ScreenWidth;
 static CGFloat LFAM_ScreenScale;
 
+static LFAssetManager *manager;
 + (instancetype)manager {
-    static LFAssetManager *manager;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        manager = [[self alloc] init];
 
+    if (manager == nil) {        
+        manager = [[self alloc] init];
+        
         LFAM_ScreenWidth = [UIScreen mainScreen].bounds.size.width;
         // 测试发现，如果scale在plus真机上取到3.0，内存会增大特别多。故这里写死成2.0
         LFAM_ScreenScale = 2.0;
         if (LFAM_ScreenWidth > 700) {
             LFAM_ScreenScale = 1.5;
         }
-    });
+    }
     return manager;
+}
+
++ (void)free
+{
+    manager = nil;
+}
+
+- (CGFloat)screenScale
+{
+    return LFAM_ScreenScale;
 }
 
 - (ALAssetsLibrary *)assetLibrary {
@@ -523,13 +529,7 @@ static CGFloat LFAM_ScreenScale;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        // CGFloat multiple = [UIScreen mainScreen].scale;
-        // 测试发现，如果scale在plus真机上取到3.0，内存会增大特别多。故这里写死成2.0
-        CGFloat multiple = 2.0f;
-        if ([UIScreen mainScreen].bounds.size.width > 700) {
-            multiple = 1.5f;
-        }
-        CGFloat th_pixelWidth = 80 * multiple;
+        CGFloat th_pixelWidth = 80 * LFAM_ScreenScale;
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         
         // 修复获取图片时出现的瞬间内存过高问题
@@ -549,7 +549,7 @@ static CGFloat LFAM_ScreenScale;
             }
         }];
         if (isOrigin == NO) {
-            CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * 0.5 * multiple;
+            CGFloat pixelWidth = LFAM_ScreenWidth * 0.5 * LFAM_ScreenScale;
             CGFloat pixelHeight = pixelWidth / aspectRatio;
             size = CGSizeMake(pixelWidth, pixelHeight);
         }

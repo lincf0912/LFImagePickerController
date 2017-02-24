@@ -13,19 +13,8 @@
 #import "UIView+LFAnimate.h"
 #import "LFPhotoPreviewCell.h"
 #import "LFAssetManager.h"
-
-typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
-    /** 绘画 */
-    LFEditPhotoType_draw = 0,
-    /** 贴图 */
-    LFEditPhotoType_sticker,
-    /** 文本 */
-    LFEditPhotoType_text,
-    /** 模糊 */
-    LFEditPhotoType_splash,
-    /** 修剪 */
-    LFEditPhotoType_crop,
-};
+#import "UIImage+LFCommon.h"
+#import "LFPhotoEditManager.h"
 
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate>
 {
@@ -42,10 +31,6 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
     UIButton *_originalPhotoButton;
     UILabel *_originalPhotoLabel;
     UIButton *_editButton;
-    
-    /** 编辑模式 */
-    UIView *_edit_naviBar;
-    UIView *_edit_toolBar;
 }
 
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;                  ///< All photo models / 所有图片模型数组
@@ -111,10 +96,6 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
     [self configCollectionView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
-    
-    if (self.photoEditting) { /** 开启编辑模式 */
-        [self editButtonClick];
-    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -322,11 +303,15 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
 }
 
 - (void)editButtonClick {
-    [_naviBar removeFromSuperview];
-    [self.view addSubview:self.edit_naviBar];
-    
-    [_toolBar removeFromSuperview];
-    [self.view addSubview:self.edit_toolBar];
+    LFPhotoEdittingController *photoEdittingVC = [[LFPhotoEdittingController alloc] init];
+    /** 获取缓存编辑对象 */
+    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+    photoEdittingVC.photoEdit = photoEdit;
+    /** 当前显示的图片 */
+    photoEdittingVC.editImage = model.previewImage;
+    photoEdittingVC.delegate = self;
+    [self.navigationController pushViewController:photoEdittingVC animated:NO];
 }
 
 - (void)originalPhotoButtonClick {
@@ -373,15 +358,11 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
     if (!cell.singleTapGestureBlock) {
         __weak typeof(_naviBar) weakNaviBar = _naviBar;
         __weak typeof(_toolBar) weakToolBar = _toolBar;
-        __weak typeof(_edit_naviBar) weakEditNaviBar = self.edit_naviBar;
-        __weak typeof(_edit_toolBar) weakEditToolBar = self.edit_toolBar;
         cell.singleTapGestureBlock = ^(){
             // show or hide naviBar / 显示或隐藏导航栏
             weakSelf.isHideNaviBar = !weakSelf.isHideNaviBar;
             weakNaviBar.hidden = weakSelf.isHideNaviBar;
             weakToolBar.hidden = weakSelf.isHideNaviBar;
-            weakEditNaviBar.hidden = weakSelf.isHideNaviBar;
-            weakEditToolBar.hidden = weakSelf.isHideNaviBar;
         };
     }
     [cell setImageProgressUpdateBlock:^(double progress) {
@@ -400,6 +381,30 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
     if ([cell isKindOfClass:[LFPhotoPreviewCell class]]) {
         [(LFPhotoPreviewCell *)cell recoverSubviews];
     }
+}
+
+#pragma mark - LFPhotoEdittingControllerDelegate
+- (void)lf_PhotoEdittingController:(LFPhotoEdittingController *)photoEdittingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
+{
+    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+    /** 缓存对象 */
+    [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
+    [self.navigationController popViewControllerAnimated:NO];
+}
+- (void)lf_PhotoEdittingController:(LFPhotoEdittingController *)photoEdittingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
+{
+    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+    /** 缓存对象 */
+    [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
+    
+    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView visibleCells].firstObject;
+    if (cell) {
+        NSIndexPath *indexPath = [_collectionView indexPathForCell:cell];
+        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
+    }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.navigationController popViewControllerAnimated:NO];
+    });
 }
 
 #pragma mark - Private Method
@@ -445,97 +450,5 @@ typedef NS_ENUM(NSUInteger, LFEditPhotoType) {
     [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytes) {
         _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
     }];
-}
-
-#pragma mark - 编辑模式
-
-#pragma mark 懒加载
-- (UIView *)edit_naviBar
-{
-    if (_edit_naviBar == nil) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        
-        _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
-        _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
-        
-        UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
-        [_edit_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
-        _edit_cancelButton.titleLabel.font = [UIFont systemFontOfSize:15];
-        [_edit_cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
-        [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
-
-        UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 44, 44)];
-        [_edit_finishButton setTitle:@"完成" forState:UIControlStateNormal];
-        _edit_finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
-        [_edit_finishButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
-        [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_naviBar addSubview:_edit_finishButton];
-        [_edit_naviBar addSubview:_edit_cancelButton];
-    }
-    return _edit_naviBar;
-}
-
-- (UIView *)edit_toolBar
-{
-    if (_edit_toolBar == nil) {
-        
-        _edit_toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
-        static CGFloat rgb = 34 / 255.0;
-        _edit_toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
-        
-        NSInteger buttonCount = 5;
-        
-        CGFloat width = CGRectGetWidth(_edit_toolBar.frame)/buttonCount;
-        
-        for (NSInteger i=0; i<buttonCount; i++) {
-            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-            button.tag = i;
-            button.frame = CGRectMake(width*i, 0, width, 44);
-            button.titleLabel.font = [UIFont systemFontOfSize:14];
-//            [button setImage:<#(nullable UIImage *)#> forState:UIControlStateNormal];
-            [button setTitle:[NSString stringWithFormat:@"%zd", i] forState:UIControlStateNormal];
-            [button addTarget:self action:@selector(edit_toolBar_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-            [_edit_toolBar addSubview:button];
-        }
-    }
-    return _edit_toolBar;
-}
-
-
-
-- (void)cancelButtonClick
-{
-    [self.edit_naviBar removeFromSuperview];
-    [self.view addSubview:_naviBar];
-    
-    [self.edit_toolBar removeFromSuperview];
-    [self.view addSubview:_toolBar];
-}
-
-- (void)finishButtonClick
-{
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    [imagePickerVc showProgressHUD];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        
-        [imagePickerVc hideProgressHUD];
-        [self cancelButtonClick];
-    });
-}
-
-- (void)edit_toolBar_buttonClick:(UIButton *)button
-{
-    switch (button.tag) {
-        case LFEditPhotoType_draw:
-            break;
-        case LFEditPhotoType_sticker:
-            break;
-        case LFEditPhotoType_text:
-            break;
-        case LFEditPhotoType_splash:
-            break;
-        case LFEditPhotoType_crop:
-            break;
-    }
 }
 @end

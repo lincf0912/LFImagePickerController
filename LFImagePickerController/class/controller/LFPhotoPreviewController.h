@@ -7,16 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LFPhotoEdittingController.h"
 
 @class LFAsset;
-@interface LFPhotoPreviewController : UIViewController
+@interface LFPhotoPreviewController : UIViewController <LFPhotoEdittingControllerDelegate>
 
 /// Return the new selected photos / 返回最新的选中图片数组
 @property (nonatomic, copy) void (^backButtonClickBlock)();
 @property (nonatomic, copy) void (^doneButtonClickBlock)();
-
-/** 是否开启编辑模式 */
-@property (nonatomic, assign) BOOL photoEditting;
 
 /** 初始化 */
 - (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo;

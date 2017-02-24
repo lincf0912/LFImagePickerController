@@ -10,10 +10,6 @@
 
 @interface LFLayoutPickerController : UINavigationController
 
-/// Default is 15, While fetching photo, HUD will dismiss automatic if timeout;
-/// 超时时间，默认为15秒，当取图片时间超过15秒还没有取成功时，会自动dismiss HUD；
-@property (nonatomic, assign) NSInteger timeout;
-
 /// 自定义图片
 @property (nonatomic, copy) NSString *takePictureImageName;
 @property (nonatomic, copy) NSString *photoSelImageName;

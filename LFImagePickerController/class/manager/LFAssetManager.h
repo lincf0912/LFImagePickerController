@@ -14,23 +14,14 @@
 #import "LFAlbum.h"
 #import "LFAsset.h"
 
-/**
- *  NSString;
- */
-extern NSString *const kImageInfoFileName;     // 图片名称
-/**
- *  NSValue; CGSize size;[value getValue:&size];
- */
-extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
-/**
- *  NSNumber;
- */
-extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
-
 
 @interface LFAssetManager : NSObject
 
 + (instancetype)manager NS_SWIFT_NAME(default());
++ (void)free;
+
+/** 缩放值 */
+@property (nonatomic, readonly) CGFloat screenScale;
 
 @property (nonatomic, assign) BOOL shouldFixOrientation;
 
@@ -70,7 +61,7 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
  *
  *  Get Assets 获得Asset数组
  *
- *  @param result            TZAlbumModel.result
+ *  @param result            LFAlbum.result
  *  @param allowPickingVideo 是否包含视频
  *  @param allowPickingImage 是否包含相片
  *  @param fetchLimit        相片最大数量

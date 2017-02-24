@@ -13,6 +13,6 @@
 
 @property (nonatomic, strong) LFAlbum *model;
 /** 拍照回调 */
-@property (nonatomic, strong) void (^takePhotoHandle)();
+@property (nonatomic, copy) void (^takePhotoHandle)();
 
 @end

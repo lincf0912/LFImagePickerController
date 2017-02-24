@@ -146,19 +146,25 @@
     
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15]} context:nil].size.width;
-    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _editButton.frame = CGRectMake(10, 0, editWidth, 44);
-    _editButton.titleLabel.font = [UIFont systemFontOfSize:15];
-    [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
-    [_editButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
+    if (imagePickerVc.allowEditting) {
+        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15]} context:nil].size.width;
+        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        _editButton.frame = CGRectMake(10, 0, editWidth, 44);
+        _editButton.titleLabel.font = [UIFont systemFontOfSize:15];
+        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
+    }
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
-        _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2-fullImageWidth/2, 0, width, 44);
+        if (!imagePickerVc.allowEditting) { /** 非编辑模式 原图显示在左边 */
+            _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
+        } else {
+            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2-fullImageWidth/2, 0, width, 44);
+        }
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];

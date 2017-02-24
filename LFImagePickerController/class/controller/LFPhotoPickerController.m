@@ -228,18 +228,21 @@
     
     CGFloat buttonX = 0;
     
-    CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
-    _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _editButton.frame = CGRectMake(10, 3, editWidth, 44);
-    [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    _editButton.titleLabel.font = [UIFont systemFontOfSize:16];
-    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
-    [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
-    [_editButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [_editButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-    _editButton.enabled = imagePickerVc.selectedModels.count==1;
-    
-    buttonX = CGRectGetMaxX(_editButton.frame);
+    if (imagePickerVc.allowEditting) {
+        
+        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
+        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
+        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        _editButton.titleLabel.font = [UIFont systemFontOfSize:16];
+        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
+        [_editButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [_editButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        _editButton.enabled = imagePickerVc.selectedModels.count==1;
+        
+        buttonX = CGRectGetMaxX(_editButton.frame);
+    }
     
     
     if (imagePickerVc.allowPreview) {
@@ -316,13 +319,10 @@
     divide.backgroundColor = [UIColor colorWithRed:rgb2 green:rgb2 blue:rgb2 alpha:1.0];
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
     
+    
     [bottomToolBar addSubview:_editButton];
-    if (_previewButton) {
-        [bottomToolBar addSubview:_previewButton];
-    }
-    if (_originalPhotoButton) {
-        [bottomToolBar addSubview:_originalPhotoButton];
-    }
+    [bottomToolBar addSubview:_previewButton];
+    [bottomToolBar addSubview:_originalPhotoButton];
     [bottomToolBar addSubview:_doneButton];
     [bottomToolBar addSubview:_numberImageView];
     [bottomToolBar addSubview:_numberLabel];

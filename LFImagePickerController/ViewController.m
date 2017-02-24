@@ -53,6 +53,7 @@
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
     imagePicker.doneBtnTitleStr = @"发送";
+//    imagePicker.allowEditting = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 

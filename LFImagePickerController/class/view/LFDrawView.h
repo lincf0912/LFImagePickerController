@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface LFDrawView : UIView
+@interface LFDrawView : UIView <NSCopying>
 
 @property (nonatomic, assign) CGFloat lineWidth;
 @property (nonatomic, strong) UIColor *lineColor;
@@ -21,10 +21,4 @@
 //撤销
 - (void)undo;
 
-/** 是否发生改变 */
-- (BOOL)isChanged;
-/** 提交 */
-- (void)commit;
-/** 回滚 */
-- (void)rollback;
 @end

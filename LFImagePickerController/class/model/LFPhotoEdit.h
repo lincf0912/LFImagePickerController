@@ -21,9 +21,9 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
     LFPhotoEdittingType_crop,
 };
 
-@protocol LFPhotoEditDrawDelegate;
+@protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate;
 
-@interface LFPhotoEdit : NSObject
+@interface LFPhotoEdit : NSObject <NSCopying>
 
 /** 编辑封面 */
 @property (nonatomic, readonly) UIImage *editPosterImage;
@@ -46,12 +46,11 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 
 /** 生成编辑图片 NO->编辑没有变动 YES->生成编辑图片 */
 - (BOOL)mergedContainerLayer;
-/** 回滚功能 */
-- (void)rollback;
 
 /** 代理 */
-@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate> delegate;
+@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate> delegate;
 
+/** =======绘画功能======= */
 
 /** 启用绘画功能 */
 @property (nonatomic, assign) BOOL drawEnable;
@@ -61,12 +60,28 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 - (void)drawUndo;
 
 
+/** =======贴图功能======= */
+
+/** 创建贴图 */
+- (void)createStickerImage:(UIImage *)image;
+
+/** =======文字功能======= */
+
+/** 创建文字 */
+- (void)createStickerText:(NSString *)text;
+
 @end
 
 /** ====绘画代理==== */
 @protocol LFPhotoEditDrawDelegate <NSObject>
 /** 开始绘画 */
-- (void)lf_photoEditDrawBegan:(LFPhotoEdit *)manager;
+- (void)lf_photoEditDrawBegan:(LFPhotoEdit *)editer;
 /** 结束绘画 */
-- (void)lf_photoEditDrawEnded:(LFPhotoEdit *)manager;
+- (void)lf_photoEditDrawEnded:(LFPhotoEdit *)editer;
+@end
+
+/** ====贴图代理==== */
+@protocol LFPhotoEditStickerDelegate <NSObject>
+/** 点击贴图 */
+- (void)lf_photoEditsticker:(LFPhotoEdit *)editer didSelectView:(UIView *)view;
 @end

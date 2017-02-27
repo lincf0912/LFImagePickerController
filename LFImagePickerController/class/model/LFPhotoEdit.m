@@ -8,6 +8,8 @@
 
 #import "LFPhotoEdit.h"
 #import "LFDrawView.h"
+#import "LFStickerView.h"
+
 #import "UIImage+LFCommon.h"
 #import "UIView+LFCommon.h"
 
@@ -18,6 +20,8 @@
 
 /** 绘画 */
 @property (nonatomic, strong) LFDrawView *drawView;
+/** 贴图 */
+@property (nonatomic, strong) LFStickerView *stickerView;
 @end
 
 @implementation LFPhotoEdit
@@ -33,7 +37,7 @@
 
 + (NSArray <Class>*)touchClass
 {
-    return @[[LFDrawView class]];
+    return @[[LFDrawView class], [LFStickerView class]];
 }
 
 #pragma mark - 初始化控件容器
@@ -52,6 +56,7 @@
     [self clearContainer];
     _container = container;
     [_container addSubview:self.drawView];
+    [_container addSubview:self.stickerView];
     
 }
 
@@ -59,12 +64,20 @@
 - (void)clearContainer
 {
     [_drawView removeFromSuperview];
+    [_stickerView removeFromSuperview];
     
     /** 关闭功能 */
     [self setDrawEnable:NO];
-    
     /** 清除代理 */
     self.delegate = nil;
+}
+
+/** 是否有效->有编辑过 */
+- (BOOL)isWork
+{
+    return self.drawView.canUndo /** 绘画没有可撤销->没有绘画 */
+            || self.stickerView.subviews.count /** 贴图没有子控件->没有贴图 */
+    ;
 }
 
 #pragma mark - 生成编辑图片
@@ -76,37 +89,15 @@
             _editPosterImage = nil;
             _editPreviewImage = nil;
             return NO;
-        } else if (self.isChanged) { /** 有改变编辑 */
-            [self commit]; /** 提交功能 */
+        } else {
             [self setEditImage:[_container captureImage]];
             return YES;
         }
     }
     return NO;
 }
-/** 是否有效->有编辑过 */
-- (BOOL)isWork
-{
-    return self.drawView.canUndo; /** 绘画没有可撤销->没有绘画 */
-}
-/** 是否有改变编辑 */
-- (BOOL)isChanged
-{
-    return self.drawView.isChanged; /** 绘画发生改变 */
-}
 
-/** 提交 */
-- (void)commit
-{
-    [self.drawView commit]; /** 提交绘画 */
-}
-/** 回滚 */
-- (void)rollback
-{
-    [self.drawView rollback]; /** 回滚绘画 */
-}
-
-- (void)setDelegate:(id<LFPhotoEditDrawDelegate>)delegate
+- (void)setDelegate:(id)delegate
 {
     _delegate = delegate;
     /** 设置代理回调 */
@@ -121,6 +112,12 @@
     _drawView.drawEnded = ^{
         if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawEnded:)]) {
             [weakSelf.delegate lf_photoEditDrawEnded:weakSelf];
+        }
+    };
+    
+    _stickerView.tapEnded = ^(UIView *view){
+        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditsticker:didSelectView:)]) {
+            [weakSelf.delegate lf_photoEditsticker:weakSelf didSelectView:view];
         }
     };
 }
@@ -141,6 +138,22 @@
     [_drawView undo];
 }
 
+#pragma mark - 贴图功能
+/** 创建贴图 */
+- (void)createStickerImage:(UIImage *)image
+{
+    [_stickerView createImage:image];
+}
+
+#pragma mark - 文字功能
+/** 创建文字 */
+- (void)createStickerText:(NSString *)text
+{
+    if (text.length) {
+        [_stickerView createText:text];
+    }
+}
+
 #pragma mark - 懒加载
 - (LFDrawView *)drawView
 {
@@ -154,6 +167,31 @@
     }
     
     return _drawView;
+}
+
+- (LFStickerView *)stickerView
+{
+    if (_stickerView == nil) {
+        _stickerView = [[LFStickerView alloc] init];
+//        _stickerView.userInteractionEnabled = NO;
+    }
+    
+    if (_stickerView && _container) {
+        [_stickerView setFrame:_container.bounds];
+    }
+    
+    return _stickerView;
+}
+
+#pragma mark - NSCopying
+- (id)copyWithZone:(NSZone *)zone{
+    LFPhotoEdit *photoEdit = [[[self class] allocWithZone:zone] init];
+    /** 编辑图片 */
+    [photoEdit setEditImage:self.editPreviewImage];
+    photoEdit.drawView = [self.drawView copy];
+    photoEdit.stickerView = [self.stickerView copy];
+    
+    return photoEdit;
 }
 
 @end

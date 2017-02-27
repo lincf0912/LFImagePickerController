@@ -119,6 +119,11 @@
     return self.imageView.image;
 }
 
+- (void)setPreviewImage:(UIImage *)previewImage
+{
+    self.imageView.image = previewImage;
+}
+
 - (void)setModel:(LFAsset *)model
 {
     _model = model;

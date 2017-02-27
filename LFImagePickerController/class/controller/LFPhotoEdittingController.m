@@ -12,6 +12,8 @@
 #import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
 
+#pragma mark - 自定义ScrollView
+
 @interface LFScrollView : UIScrollView
 
 @end
@@ -57,7 +59,9 @@
 
 @end
 
-@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate>
+
+
+@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate>
 {
     /** 编辑模式 */
     LFScrollView *_scrollView;
@@ -79,6 +83,9 @@
 
 /** 当前点击按钮 */
 @property (nonatomic, weak) UIButton *selectButton;
+
+/** 旧编辑对象 */
+@property (nonatomic, strong) LFPhotoEdit *oldPhotoEdit;
 @end
 
 @implementation LFPhotoEdittingController
@@ -102,6 +109,8 @@
     /** 移除旧 */
     [_photoEdit clearContainer];
     _photoEdit = photoEdit;
+    /** 保存一份作为旧编辑 */
+    _oldPhotoEdit = [_photoEdit copy];
     /** 设置新 */
     [_photoEdit setContainer:_containsView];
     _photoEdit.delegate = self;
@@ -133,7 +142,6 @@
 - (BOOL)prefersStatusBarHidden {
     return YES;
 }
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -254,9 +262,8 @@
 }
 - (void)cancelButtonClick
 {
-    [self.photoEdit rollback];
     if ([self.delegate respondsToSelector:@selector(lf_PhotoEdittingController:didCancelPhotoEdit:)]) {
-        [self.delegate lf_PhotoEdittingController:self didCancelPhotoEdit:self.photoEdit];
+        [self.delegate lf_PhotoEdittingController:self didCancelPhotoEdit:self.oldPhotoEdit];
     }
 }
 
@@ -298,8 +305,15 @@
         }
             break;
         case LFPhotoEdittingType_sticker:
+        {
+            UIImage *image = bundleStickerImageNamed(@"001.png");
+            [self.photoEdit createStickerImage:image];
+        }
             break;
         case LFPhotoEdittingType_text:
+        {
+            [self.photoEdit createStickerText:@"挖泥机"];
+        }
             break;
         case LFPhotoEdittingType_splash:
         {
@@ -423,17 +437,24 @@
 
 #pragma mark - LFPhotoEditDrawDelegate
 /** 开始绘画 */
-- (void)lf_photoEditDrawBegan:(LFPhotoEdit *)manager
+- (void)lf_photoEditDrawBegan:(LFPhotoEdit *)editer
 {
     _isHideNaviBar = YES;
     [self changedBarState];
 }
 /** 结束绘画 */
-- (void)lf_photoEditDrawEnded:(LFPhotoEdit *)manager
+- (void)lf_photoEditDrawEnded:(LFPhotoEdit *)editer
 {
     /** 撤销生效 */
     _edit_drawMenu_revoke.enabled = _photoEdit.drawCanUndo;
     
+    _isHideNaviBar = NO;
+    [self changedBarState];
+}
+
+#pragma mark - LFPhotoEditStickerDelegate
+- (void)lf_photoEditsticker:(LFPhotoEdit *)editer didSelectView:(UIView *)view
+{
     _isHideNaviBar = NO;
     [self changedBarState];
 }
@@ -448,8 +469,11 @@
 
 - (void)changedBarState
 {
-    _edit_naviBar.hidden = _isHideNaviBar;
-    _edit_toolBar.hidden = _isHideNaviBar;
-    _edit_menuView.hidden = _isHideNaviBar;
+    [UIView animateWithDuration:.25f animations:^{
+        CGFloat alpha = _isHideNaviBar ? 0.f : 1.f;
+        _edit_naviBar.alpha = alpha;
+        _edit_toolBar.alpha = alpha;
+        _edit_menuView.alpha = alpha;
+    }];
 }
 @end

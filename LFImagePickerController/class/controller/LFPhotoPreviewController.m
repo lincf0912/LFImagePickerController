@@ -403,14 +403,10 @@
     /** 缓存对象 */
     [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
     
-    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView visibleCells].firstObject;
-    if (cell) {
-        NSIndexPath *indexPath = [_collectionView indexPathForCell:cell];
-        [_collectionView reloadItemsAtIndexPaths:@[indexPath]];
-    }
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.1f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.navigationController popViewControllerAnimated:NO];
-    });
+    /** 刷新图片 */
+    [_collectionView reloadData];
+    
+    [self.navigationController popViewControllerAnimated:NO];
 }
 
 #pragma mark - Private Method

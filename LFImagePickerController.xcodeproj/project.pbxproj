@@ -40,6 +40,8 @@
 		6FF286151E5EDA400008FB5B /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286141E5EDA400008FB5B /* LFPhotoEdit.m */; };
 		6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */; };
 		6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */; };
+		6FF286231E6013F50008FB5B /* LFMovingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286221E6013F50008FB5B /* LFMovingView.m */; };
+		6FF286261E6014160008FB5B /* LFStickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286251E6014160008FB5B /* LFStickerView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +108,10 @@
 		6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoEditManager.m; sourceTree = "<group>"; };
 		6FF2861A1E5FFF170008FB5B /* LFImagePickerHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFImagePickerHeader.h; sourceTree = "<group>"; };
 		6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFImagePickerHeader.m; sourceTree = "<group>"; };
+		6FF286211E6013F50008FB5B /* LFMovingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFMovingView.h; sourceTree = "<group>"; };
+		6FF286221E6013F50008FB5B /* LFMovingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFMovingView.m; sourceTree = "<group>"; };
+		6FF286241E6014160008FB5B /* LFStickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFStickerView.h; sourceTree = "<group>"; };
+		6FF286251E6014160008FB5B /* LFStickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFStickerView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -298,8 +304,20 @@
 			children = (
 				6FF2860A1E5E6DDD0008FB5B /* LFDrawView.h */,
 				6FF2860B1E5E6DDD0008FB5B /* LFDrawView.m */,
+				6FF286241E6014160008FB5B /* LFStickerView.h */,
+				6FF286251E6014160008FB5B /* LFStickerView.m */,
+				6FF286201E6013F50008FB5B /* other */,
 			);
 			path = view;
+			sourceTree = "<group>";
+		};
+		6FF286201E6013F50008FB5B /* other */ = {
+			isa = PBXGroup;
+			children = (
+				6FF286211E6013F50008FB5B /* LFMovingView.h */,
+				6FF286221E6013F50008FB5B /* LFMovingView.m */,
+			);
+			path = other;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -389,6 +407,8 @@
 				6F1201791E513D1B00EA2198 /* main.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
+				6FF286261E6014160008FB5B /* LFStickerView.m in Sources */,
+				6FF286231E6013F50008FB5B /* LFMovingView.m in Sources */,
 				6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */,
 				6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */,
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,

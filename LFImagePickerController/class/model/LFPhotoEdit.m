@@ -9,6 +9,7 @@
 #import "LFPhotoEdit.h"
 #import "LFDrawView.h"
 #import "LFStickerView.h"
+#import "LFSplashView.h"
 
 #import "UIImage+LFCommon.h"
 #import "UIView+LFCommon.h"
@@ -22,6 +23,8 @@
 @property (nonatomic, strong) LFDrawView *drawView;
 /** 贴图 */
 @property (nonatomic, strong) LFStickerView *stickerView;
+/** 模糊（马赛克） */
+@property (nonatomic, strong) LFSplashView *splashView;
 @end
 
 @implementation LFPhotoEdit
@@ -55,6 +58,8 @@
 {
     [self clearContainer];
     _container = container;
+    /** 指派控件层级关系 */
+    [_container addSubview:self.splashView];
     [_container addSubview:self.drawView];
     [_container addSubview:self.stickerView];
     
@@ -63,6 +68,7 @@
 #pragma mark - 清空容器控件
 - (void)clearContainer
 {
+    [_splashView removeFromSuperview];
     [_drawView removeFromSuperview];
     [_stickerView removeFromSuperview];
     
@@ -75,8 +81,9 @@
 /** 是否有效->有编辑过 */
 - (BOOL)isWork
 {
-    return self.drawView.canUndo /** 绘画没有可撤销->没有绘画 */
-            || self.stickerView.subviews.count /** 贴图没有子控件->没有贴图 */
+    return _drawView.canUndo /** 绘画没有可撤销->没有绘画 */
+            || _stickerView.subviews.count /** 贴图没有子控件->没有贴图 */
+            || _splashView.canUndo /** 模糊没有可撤销->没有模糊 */
     ;
 }
 
@@ -102,6 +109,8 @@
     _delegate = delegate;
     /** 设置代理回调 */
     __weak typeof(self) weakSelf = self;
+    
+    /** 绘画 */
     _drawView.drawBegan = ^{
         __strong typeof(self) strongSelf = weakSelf;
         if ([strongSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan:)]) {
@@ -115,9 +124,24 @@
         }
     };
     
+    /** 贴图 */
     _stickerView.tapEnded = ^(UIView *view){
         if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditsticker:didSelectView:)]) {
             [weakSelf.delegate lf_photoEditsticker:weakSelf didSelectView:view];
+        }
+    };
+    
+    /** 模糊 */
+    _splashView.splashBegan = ^{
+        __strong typeof(self) strongSelf = weakSelf;
+        if ([strongSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan:)]) {
+            [strongSelf.delegate lf_photoEditSplashBegan:weakSelf];
+        }
+    };
+    
+    _splashView.splashEnded = ^{
+        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashEnded:)]) {
+            [weakSelf.delegate lf_photoEditSplashEnded:weakSelf];
         }
     };
 }
@@ -154,6 +178,31 @@
     }
 }
 
+#pragma mark - 模糊功能
+/** 启用模糊功能 */
+- (void)setSplashEnable:(BOOL)splashEnable
+{
+    _splashEnable = splashEnable;
+    _splashView.userInteractionEnabled = splashEnable;
+    if (splashEnable && _splashView.image == nil) {
+        if ([self.delegate respondsToSelector:@selector(lf_photoEditSplashMosaicImage:)]) {
+            UIImage *image = [self.delegate lf_photoEditSplashMosaicImage:self];
+            /** 创建马赛克模糊 */
+            [_splashView setImage:image mosaicLevel:10];
+        }
+    }
+}
+/** 是否可撤销 */
+- (BOOL)splashCanUndo
+{
+    return _splashView.canUndo;
+}
+/** 撤销模糊 */
+- (void)splashUndo
+{
+    [_splashView undo];
+}
+
 #pragma mark - 懒加载
 - (LFDrawView *)drawView
 {
@@ -183,13 +232,26 @@
     return _stickerView;
 }
 
+- (LFSplashView *)splashView
+{
+    if (_splashView == nil) {
+        _splashView = [[LFSplashView alloc] init];
+        _splashView.userInteractionEnabled = NO;
+    }
+    if (_splashView && _container) {
+        [_splashView setFrame:_container.bounds];
+    }
+    return _splashView;
+}
+
 #pragma mark - NSCopying
 - (id)copyWithZone:(NSZone *)zone{
     LFPhotoEdit *photoEdit = [[[self class] allocWithZone:zone] init];
     /** 编辑图片 */
     [photoEdit setEditImage:self.editPreviewImage];
-    photoEdit.drawView = [self.drawView copy];
-    photoEdit.stickerView = [self.stickerView copy];
+    photoEdit.drawView = [_drawView copy];
+    photoEdit.stickerView = [_stickerView copy];
+    photoEdit.splashView = [_splashView copy];
     
     return photoEdit;
 }

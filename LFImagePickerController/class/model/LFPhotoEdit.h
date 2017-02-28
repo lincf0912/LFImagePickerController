@@ -21,7 +21,7 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
     LFPhotoEdittingType_crop,
 };
 
-@protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate;
+@protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate;
 
 @interface LFPhotoEdit : NSObject <NSCopying>
 
@@ -48,7 +48,7 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 - (BOOL)mergedContainerLayer;
 
 /** 代理 */
-@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate> delegate;
+@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate> delegate;
 
 /** =======绘画功能======= */
 
@@ -70,10 +70,20 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 /** 创建文字 */
 - (void)createStickerText:(NSString *)text;
 
+/** =======模糊功能======= */
+
+/** 启用模糊功能 */
+@property (nonatomic, assign) BOOL splashEnable;
+/** 是否可撤销 */
+@property (nonatomic, readonly) BOOL splashCanUndo;
+/** 撤销模糊 */
+- (void)splashUndo;
+
 @end
 
 /** ====绘画代理==== */
 @protocol LFPhotoEditDrawDelegate <NSObject>
+@optional
 /** 开始绘画 */
 - (void)lf_photoEditDrawBegan:(LFPhotoEdit *)editer;
 /** 结束绘画 */
@@ -82,6 +92,19 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 
 /** ====贴图代理==== */
 @protocol LFPhotoEditStickerDelegate <NSObject>
+@optional
 /** 点击贴图 */
 - (void)lf_photoEditsticker:(LFPhotoEdit *)editer didSelectView:(UIView *)view;
+@end
+
+/** ====模糊代理==== */
+@protocol LFPhotoEditSplashDelegate <NSObject>
+@optional
+/** 开始模糊 */
+- (void)lf_photoEditSplashBegan:(LFPhotoEdit *)editer;
+/** 结束模糊 */
+- (void)lf_photoEditSplashEnded:(LFPhotoEdit *)editer;
+@required
+/** 创建马赛克图片 */
+- (UIImage *)lf_photoEditSplashMosaicImage:(LFPhotoEdit *)editer;
 @end

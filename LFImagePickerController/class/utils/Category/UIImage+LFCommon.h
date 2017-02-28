@@ -19,4 +19,8 @@
 /** 缩放图片到指定大小 */
 - (UIImage*)scaleToSize:(CGSize)size;
 
+/*
+ *转换成马赛克,level代表一个点转为多少level*level的正方形
+ */
+- (UIImage *)transToMosaicLevel:(NSUInteger)level;
 @end

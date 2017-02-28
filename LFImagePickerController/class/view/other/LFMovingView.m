@@ -83,7 +83,6 @@
         _contentView.center = self.center;
         [_contentView addSubview:view];
         view.frame = _contentView.bounds;
-        view.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
         [self addSubview:_contentView];
         
         _deleteButton = [UIButton buttonWithType:UIButtonTypeCustom];

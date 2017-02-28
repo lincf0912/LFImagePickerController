@@ -61,7 +61,7 @@
 
 
 
-@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate>
+@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate>
 {
     /** 编辑模式 */
     LFScrollView *_scrollView;
@@ -291,6 +291,8 @@
     switch (button.tag) {
         case LFPhotoEdittingType_draw:
         {
+            /** 关闭模糊 */
+            self.photoEdit.splashEnable = NO;
             if ([self changedButton:button]) {
                 /** 显示菜单 */
                 [self showMenuView:[self drawMenu]];
@@ -322,9 +324,14 @@
             if ([self changedButton:button]) {
                 /** 显示菜单 */
                 [self showMenuView:[self splashMenu]];
+                /** 开启模糊 */
+                self.photoEdit.splashEnable = YES;
+                
             } else {
                 /** 关闭菜单 */
                 [self hidenMenuView];
+                /** 关闭模糊 */
+                self.photoEdit.splashEnable = NO;
             }
         }
             break;
@@ -397,14 +404,14 @@
         _edit_splashMenu_revoke = [self revokeButtonWithType:LFPhotoEdittingType_splash];
         [_edit_splashMenu addSubview:_edit_splashMenu_revoke];
     }
-//    _edit_splashMenu_revoke.enabled = 
+    _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
     return _edit_splashMenu;
 }
 
 - (UIButton *)revokeButtonWithType:(LFPhotoEdittingType)type
 {
     UIButton *revoke = [UIButton buttonWithType:UIButtonTypeCustom];
-    revoke.frame = CGRectMake(CGRectGetWidth(_edit_drawMenu.frame)-44-5, 0, 44, 55);
+    revoke.frame = CGRectMake(_edit_toolBar.width-44-5, 0, 44, 55);
     [revoke setTitle:@"撤销" forState:UIControlStateNormal];
     revoke.titleLabel.font = [UIFont systemFontOfSize:14.f];
     revoke.tag = type;
@@ -420,7 +427,8 @@
         /** 撤销失效 */
         _edit_drawMenu_revoke.enabled = _photoEdit.drawCanUndo;
     } else if (button.tag == LFPhotoEdittingType_splash) {
-        
+        [_photoEdit splashUndo];
+        _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
     }
 }
 
@@ -459,6 +467,27 @@
     [self changedBarState];
 }
 
+#pragma mark - LFPhotoEditSplashDelegate
+/** 开始模糊 */
+- (void)lf_photoEditSplashBegan:(LFPhotoEdit *)editer
+{
+    _isHideNaviBar = YES;
+    [self changedBarState];
+}
+/** 结束模糊 */
+- (void)lf_photoEditSplashEnded:(LFPhotoEdit *)editer
+{
+    /** 撤销生效 */
+    _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
+    
+    _isHideNaviBar = NO;
+    [self changedBarState];
+}
+/** 创建马赛克图片 */
+- (UIImage *)lf_photoEditSplashMosaicImage:(LFPhotoEdit *)editer
+{
+    return self.editImage;
+}
 
 #pragma mark - Private
 - (void)refreshImageZoomViewCenter {

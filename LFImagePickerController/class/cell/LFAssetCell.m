@@ -92,19 +92,20 @@
 }
 
 - (void)selectPhotoButtonClick:(UIButton *)sender {
-    if (self.didSelectPhotoBlock) {
-        self.didSelectPhotoBlock(sender);
-    }
+    sender.selected = !sender.isSelected;
     self.selectImageView.image = sender.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     if (sender.isSelected) {
         [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
+    }
+    if (self.didSelectPhotoBlock) {
+        self.didSelectPhotoBlock(sender.selected, self.model);
     }
 }
 
 #pragma mark - Lazy load
 
 - (UIButton *)selectPhotoButton {
-    if (_selectImageView == nil) {
+    if (_selectPhotoButton == nil) {
         UIButton *selectPhotoButton = [[UIButton alloc] init];
         selectPhotoButton.frame = CGRectMake(self.width - 30, 0, 30, 30);
         [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];

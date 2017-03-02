@@ -69,7 +69,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
-    _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
+
     /** 优先赋值 */
     self.navigationItem.title = _model.name;
     [imagePickerVc showProgressHUD];
@@ -132,6 +132,7 @@
     self.navigationItem.title = _model.name;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc hideProgressHUD];
+    _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
     
     if (_models.count == 0) {
         [self configNonePhotoView];
@@ -502,29 +503,35 @@
     
     __weak typeof(self) weakSelf = self;
     __weak typeof(_numberImageView.layer) weakLayer = _numberImageView.layer;
-    cell.didSelectPhotoBlock = ^(UIButton *selectPhotoButton) {
+    cell.didSelectPhotoBlock = ^(BOOL *isSelected, LFAsset *cellModel) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)weakSelf.navigationController;
         // 1. cancel select / 取消选择
-        if (selectPhotoButton.isSelected) {
-            selectPhotoButton.selected = NO;
-            model.isSelected = NO;
+        if (!isSelected) {
+            cellModel.isSelected = NO;
             NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
             for (LFAsset *model_item in selectedModels) {
-                if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
+                if ([[[LFAssetManager manager] getAssetIdentifier:cellModel.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
                     [imagePickerVc.selectedModels removeObject:model_item];
                     break;
                 }
             }
-            [weakSelf.collectionView reloadData];
             [weakSelf refreshBottomToolBarStatus];
+            
+            /** 没有选择需要刷新视频恢复显示 */
+            if (imagePickerVc.selectedModels.count == 0) {
+                [weakSelf refreshVideoCell];
+            }
         } else {
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
             if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
-                selectPhotoButton.selected = YES;
-                model.isSelected = YES;
-                [imagePickerVc.selectedModels addObject:model];
-                [weakSelf.collectionView reloadData];
+                cellModel.isSelected = YES;
+                [imagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
+                
+                /** 首次有选择需要刷新视频隐藏显示 */
+                if (imagePickerVc.selectedModels.count == 1) {
+                    [weakSelf refreshVideoCell];
+                }
             } else {
                 NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", imagePickerVc.maxImagesCount];
                 [imagePickerVc showAlertWithTitle:title];
@@ -604,6 +611,24 @@
         } else {
             NSLog(@"模拟器中无法打开照相机,请在真机中使用");
         }
+    }
+}
+
+- (void)refreshVideoCell
+{
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([cell isKindOfClass:[LFAssetCell class]] && cell.model.type == LFAssetMediaTypeVideo) {
+            NSInteger index = [_models indexOfObject:cell.model];
+            LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+            if (_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
+                index += 1;
+            }
+            [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+        }
+    }];
+    if (indexPaths.count) {
+        [self.collectionView reloadItemsAtIndexPaths:indexPaths];
     }
 }
 

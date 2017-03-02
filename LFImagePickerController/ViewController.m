@@ -52,6 +52,7 @@
     NSLog(@"启动图片选择器");
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
+//    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
 //    imagePicker.allowEditting = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];

@@ -78,6 +78,8 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 @property (nonatomic, readonly) BOOL splashCanUndo;
 /** 撤销模糊 */
 - (void)splashUndo;
+/** 改变模糊状态 */
+@property (nonatomic, readwrite) BOOL splashState;
 
 @end
 
@@ -106,5 +108,5 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 - (void)lf_photoEditSplashEnded:(LFPhotoEdit *)editer;
 @required
 /** 创建马赛克图片 */
-- (UIImage *)lf_photoEditSplashMosaicImage:(LFPhotoEdit *)editer;
+- (UIImage *)lf_photoEditSplashImage:(LFPhotoEdit *)editer;
 @end

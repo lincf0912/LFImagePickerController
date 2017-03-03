@@ -40,7 +40,7 @@
 
 + (NSArray <Class>*)touchClass
 {
-    return @[[LFDrawView class], [LFStickerView class]];
+    return @[[LFDrawView class], [LFStickerView class], [LFSplashView class]];
 }
 
 #pragma mark - 初始化控件容器
@@ -112,9 +112,8 @@
     
     /** 绘画 */
     _drawView.drawBegan = ^{
-        __strong typeof(self) strongSelf = weakSelf;
-        if ([strongSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan:)]) {
-            [strongSelf.delegate lf_photoEditDrawBegan:weakSelf];
+        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan:)]) {
+            [weakSelf.delegate lf_photoEditDrawBegan:weakSelf];
         }
     };
     
@@ -133,9 +132,8 @@
     
     /** 模糊 */
     _splashView.splashBegan = ^{
-        __strong typeof(self) strongSelf = weakSelf;
-        if ([strongSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan:)]) {
-            [strongSelf.delegate lf_photoEditSplashBegan:weakSelf];
+        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan:)]) {
+            [weakSelf.delegate lf_photoEditSplashBegan:weakSelf];
         }
     };
     
@@ -185,10 +183,10 @@
     _splashEnable = splashEnable;
     _splashView.userInteractionEnabled = splashEnable;
     if (splashEnable && _splashView.image == nil) {
-        if ([self.delegate respondsToSelector:@selector(lf_photoEditSplashMosaicImage:)]) {
-            UIImage *image = [self.delegate lf_photoEditSplashMosaicImage:self];
+        if ([self.delegate respondsToSelector:@selector(lf_photoEditSplashImage:)]) {
+            UIImage *image = [self.delegate lf_photoEditSplashImage:self];
             /** 创建马赛克模糊 */
-            [_splashView setImage:image mosaicLevel:10];
+            [self.splashView setImage:image mosaicLevel:10];
         }
     }
 }
@@ -201,6 +199,20 @@
 - (void)splashUndo
 {
     [_splashView undo];
+}
+
+- (void)setSplashState:(BOOL)splashState
+{
+    if (splashState) {
+        _splashView.state = LFSplashStateType_Blurry;
+    } else {
+        _splashView.state = LFSplashStateType_Mosaic;
+    }
+}
+
+- (BOOL)splashState
+{
+    return _splashView.state == LFSplashStateType_Blurry;
 }
 
 #pragma mark - 懒加载

@@ -16,7 +16,7 @@
 @interface LFAssetCell : UICollectionViewCell
 
 @property (nonatomic, strong) LFAsset *model;
-@property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL *isSelected, LFAsset *model);
+@property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL isSelected, LFAsset *model);
 /** 只能选中 */
 @property (nonatomic, assign) BOOL onlySelected;
 /** 不能选中 */

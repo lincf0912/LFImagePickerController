@@ -23,4 +23,7 @@
  *转换成马赛克,level代表一个点转为多少level*level的正方形
  */
 - (UIImage *)transToMosaicLevel:(NSUInteger)level;
+
+/** 高斯模糊 */
+- (UIImage *)transToBlurLevel:(NSUInteger)blurRadius;
 @end

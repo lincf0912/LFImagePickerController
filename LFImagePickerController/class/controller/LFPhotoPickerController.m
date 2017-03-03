@@ -503,7 +503,7 @@
     
     __weak typeof(self) weakSelf = self;
     __weak typeof(_numberImageView.layer) weakLayer = _numberImageView.layer;
-    cell.didSelectPhotoBlock = ^(BOOL *isSelected, LFAsset *cellModel) {
+    cell.didSelectPhotoBlock = ^(BOOL isSelected, LFAsset *cellModel) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)weakSelf.navigationController;
         // 1. cancel select / 取消选择
         if (!isSelected) {

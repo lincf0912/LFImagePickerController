@@ -7,6 +7,7 @@
 //
 
 #import "LFSplashView.h"
+#import "LFMaskLayer.h"
 #import "UIImage+LFCommon.h"
 
 @interface LFSplashView ()
@@ -14,11 +15,14 @@
     BOOL _isWork;
     BOOL _isBegan;
 }
-@property (nonatomic, strong) UIImageView *surfaceImageView;
 
-@property (nonatomic, strong) CALayer *imageLayer;
+/** 马赛克 */
+@property (nonatomic, strong) CALayer *imageLayer_mosaic;
+@property (nonatomic, strong) LFMaskLayer *mosaicLayer;
+/** 高斯模糊 */
+@property (nonatomic, strong) CALayer *imageLayer_blurry;
+@property (nonatomic, strong) LFMaskLayer *blurLayer;
 
-@property (nonatomic, strong) CAShapeLayer *shapeLayer;
 //设置手指的涂抹路径
 @property (nonatomic, strong) NSMutableArray *lineArray;
 /** 线粗 */
@@ -49,36 +53,41 @@
 - (void)customInit
 {
     _lineArray = [@[] mutableCopy];
+    
     _lineWidth = 20.f;
     _state = LFSplashStateType_Mosaic;
     
-    //添加imageview（surfaceImageView）到self上
-    self.surfaceImageView = [[UIImageView alloc]initWithFrame:self.bounds];
-    self.surfaceImageView.contentMode = UIViewContentModeScaleAspectFit;
-    [self addSubview:self.surfaceImageView];
-    //添加layer（imageLayer）到self上
-    self.imageLayer = [CALayer layer];
-    self.imageLayer.frame = self.bounds;
-    [self.layer addSublayer:self.imageLayer];
+    //添加layer（imageLayer_mosaic）到self上
+    self.imageLayer_mosaic = [CALayer layer];
+    self.imageLayer_mosaic.frame = self.bounds;
+    [self.layer addSublayer:self.imageLayer_mosaic];
     
-    self.shapeLayer = [CAShapeLayer layer];
-    self.shapeLayer.frame = self.bounds;
-    self.shapeLayer.lineCap = kCALineCapRound;
-    self.shapeLayer.lineJoin = kCALineJoinRound;
-    self.shapeLayer.lineWidth = _lineWidth;
-    self.shapeLayer.strokeColor = [UIColor blackColor].CGColor;
-    self.shapeLayer.fillColor = nil;//此处设置颜色有异常效果，可以自己试试
+    self.mosaicLayer = [[LFMaskLayer alloc] init];
+    self.mosaicLayer.frame = self.bounds;
+    [self.layer addSublayer:self.mosaicLayer];
     
-    [self.layer addSublayer:self.shapeLayer];
-    self.imageLayer.mask = self.shapeLayer;
+    self.imageLayer_mosaic.mask = self.mosaicLayer;
+    
+    /** 高斯模糊 */
+    self.imageLayer_blurry = [CALayer layer];
+    self.imageLayer_blurry.frame = self.bounds;
+    [self.layer addSublayer:self.imageLayer_blurry];
+    
+    self.blurLayer = [[LFMaskLayer alloc] init];
+    self.blurLayer.frame = self.bounds;
+    [self.layer addSublayer:self.blurLayer];
+    
+    self.imageLayer_blurry.mask = self.blurLayer;
+    
 }
 
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];
-    self.surfaceImageView.frame = self.bounds;
-    self.imageLayer.frame = self.bounds;
-    self.shapeLayer.frame = self.bounds;
+    self.imageLayer_mosaic.frame = self.bounds;
+    self.mosaicLayer.frame = self.bounds;
+    self.imageLayer_blurry.frame = self.bounds;
+    self.blurLayer.frame = self.bounds;
 }
 
 /** 设置图片 */
@@ -87,8 +96,8 @@
     //底图
     _image = image;
     _level = level;
-    self.imageLayer.contents = (id)[image transToMosaicLevel:level].CGImage;
-    self.surfaceImageView.image = image;
+    self.imageLayer_mosaic.contents = (id)[_image transToMosaicLevel:level].CGImage;
+    self.imageLayer_blurry.contents = (id)[_image transToBlurLevel:level].CGImage;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -99,9 +108,20 @@
         
         UITouch *touch = [touches anyObject];
         CGPoint point = [touch locationInView:self];
-        UIBezierPath *path = [UIBezierPath new];
+        LFBlurBezierPath *path = [LFBlurBezierPath new];
+        [path setLineCapStyle:kCGLineCapRound];
+        [path setLineJoinStyle:kCGLineJoinRound];
+        path.lineWidth = _lineWidth;
         [path moveToPoint:point];
-        [self.lineArray addObject:path];
+        [self.lineArray addObject:@1];
+        
+        LFBlurBezierPath *mosaicPath = [path copy];
+        mosaicPath.isClear = (self.state != LFSplashStateType_Mosaic);
+        [self.mosaicLayer.lineArray addObject:mosaicPath];
+        
+        LFBlurBezierPath *blurryPath = [path copy];
+        blurryPath.isClear = (self.state != LFSplashStateType_Blurry);
+        [self.blurLayer.lineArray addObject:blurryPath];
     } else {
         [super touchesBegan:touches withEvent:event];
     }
@@ -117,8 +137,12 @@
 
         UITouch *touch = [touches anyObject];
         CGPoint point = [touch locationInView:self];
-        UIBezierPath *path = self.lineArray.lastObject;
-        [path addLineToPoint:point];
+        
+        UIBezierPath *mosaicPath = self.mosaicLayer.lineArray.lastObject;
+        [mosaicPath addLineToPoint:point];
+        
+        UIBezierPath *blurryPath = self.blurLayer.lineArray.lastObject;
+        [blurryPath addLineToPoint:point];
         
         [self drawLine];
     } else {
@@ -141,15 +165,8 @@
 
 - (void)drawLine
 {
-    if (self.state == LFSplashStateType_Mosaic) {
-        UIBezierPath *allPath = [UIBezierPath new];
-        for (UIBezierPath *path in self.lineArray) {
-            [allPath appendPath:path];
-        }
-        self.shapeLayer.path = allPath.CGPath;
-    } else if (self.state == LFSplashStateType_Paint) {
-        
-    }
+    [self.mosaicLayer setNeedsDisplay];
+    [self.blurLayer setNeedsDisplay];
 }
 
 /** 是否可撤销 */
@@ -162,10 +179,10 @@
 - (void)undo
 {
     [self.lineArray removeLastObject];
+    [self.mosaicLayer.lineArray removeLastObject];
+    [self.blurLayer.lineArray removeLastObject];
     [self drawLine];
 }
-
-
 
 #pragma mark - NSCopying
 - (id)copyWithZone:(NSZone *)zone{
@@ -173,6 +190,8 @@
     splashView.frame = self.frame;
     [splashView setImage:self.image mosaicLevel:self.level];
     splashView.lineArray = [self.lineArray mutableCopy];
+    splashView.mosaicLayer.lineArray = [self.mosaicLayer.lineArray mutableCopy];
+    splashView.blurLayer.lineArray = [self.blurLayer.lineArray mutableCopy];
     [splashView drawLine];
     
     return splashView;

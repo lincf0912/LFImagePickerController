@@ -33,6 +33,7 @@ static LFPhotoEditManager *manager;
 
 + (void)free
 {
+    [manager.photoEditDict removeAllObjects];
     manager = nil;
 }
 

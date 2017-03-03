@@ -11,7 +11,7 @@
 typedef NS_ENUM(NSUInteger, LFSplashStateType) {
     /** 马赛克 */
     LFSplashStateType_Mosaic,
-    LFSplashStateType_Paint,
+    LFSplashStateType_Blurry,
 };
 
 @interface LFSplashView : UIView <NSCopying>

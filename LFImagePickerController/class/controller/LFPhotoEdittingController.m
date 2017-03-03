@@ -11,6 +11,7 @@
 #import "LFImagePickerController.h"
 #import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
+#import "UIImage+LF_ImageCompress.h"
 
 #pragma mark - 自定义ScrollView
 
@@ -59,6 +60,8 @@
 
 @end
 
+#define kSplashMenu_Button_Tag1 95
+#define kSplashMenu_Button_Tag2 96
 
 
 @interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate>
@@ -76,6 +79,10 @@
     UIButton *_edit_drawMenu_revoke;
     UIView *_edit_splashMenu;
     UIButton *_edit_splashMenu_revoke;
+    
+    /** 当前激活菜单按钮 */
+    UIButton *_edit_drawMenu_action_button;
+    UIButton *_edit_splashMenu_action_button;
 }
 
 /** 隐藏控件 */
@@ -106,11 +113,15 @@
 
 - (void)setPhotoEdit:(LFPhotoEdit *)photoEdit
 {
-    /** 移除旧 */
-    [_photoEdit clearContainer];
-    _photoEdit = photoEdit;
-    /** 保存一份作为旧编辑 */
-    _oldPhotoEdit = [_photoEdit copy];
+    if (_photoEdit != photoEdit) {
+        _oldPhotoEdit = nil;
+        /** 移除旧 */
+        [_photoEdit clearContainer];
+        _photoEdit = photoEdit;
+        /** 保存一份作为旧编辑 */
+        _oldPhotoEdit = [_photoEdit copy];
+    }
+    
     /** 设置新 */
     [_photoEdit setContainer:_containsView];
     _photoEdit.delegate = self;
@@ -141,6 +152,10 @@
 
 - (BOOL)prefersStatusBarHidden {
     return YES;
+}
+
+- (void)dealloc{
+    [self.photoEdit clearContainer];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -403,6 +418,31 @@
         
         _edit_splashMenu_revoke = [self revokeButtonWithType:LFPhotoEdittingType_splash];
         [_edit_splashMenu addSubview:_edit_splashMenu_revoke];
+        
+        /** 剩余长度 */
+        CGFloat width = CGRectGetMinX(_edit_splashMenu_revoke.frame);
+        /** 按钮个数 */
+        int count = 2;
+        /** 平分空间 */
+        CGFloat averageWidth = width/(count+1);
+        
+        UIButton *action1 = [UIButton buttonWithType:UIButtonTypeCustom];
+        action1.frame = CGRectMake(averageWidth*1-44/2, (CGRectGetHeight(_edit_splashMenu.frame)-30)/2, 44, 30);
+        [action1 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+        action1.backgroundColor = [UIColor redColor];
+        action1.tag = kSplashMenu_Button_Tag1;
+        [_edit_splashMenu addSubview:action1];
+        /** 优先激活首个按钮 */
+        action1.selected = YES;
+        _edit_splashMenu_action_button = action1;
+        
+        UIButton *action2 = [UIButton buttonWithType:UIButtonTypeCustom];
+        action2.frame = CGRectMake(averageWidth*2-44/2, (CGRectGetHeight(_edit_splashMenu.frame)-30)/2, 44, 30);
+        [action2 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+        action2.backgroundColor = [UIColor redColor];
+        action2.tag = kSplashMenu_Button_Tag2;
+        [_edit_splashMenu addSubview:action2];
+        
     }
     _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
     return _edit_splashMenu;
@@ -429,6 +469,20 @@
     } else if (button.tag == LFPhotoEdittingType_splash) {
         [_photoEdit splashUndo];
         _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
+    }
+}
+
+- (void)splashMenu_buttonClick:(UIButton *)button
+{
+    if (_edit_splashMenu_action_button != button) {
+        _edit_splashMenu_action_button.selected = NO;
+        button.selected = YES;
+        _edit_splashMenu_action_button = button;
+        if (button.tag == kSplashMenu_Button_Tag1) {
+            self.photoEdit.splashState = NO;
+        } else if (button.tag == kSplashMenu_Button_Tag2) {
+            self.photoEdit.splashState = YES;
+        }
     }
 }
 
@@ -484,9 +538,10 @@
     [self changedBarState];
 }
 /** 创建马赛克图片 */
-- (UIImage *)lf_photoEditSplashMosaicImage:(LFPhotoEdit *)editer
+- (UIImage *)lf_photoEditSplashImage:(LFPhotoEdit *)editer
 {
-    return self.editImage;
+    /** 压缩图片 */
+    return [self.editImage fastestCompressImageWithSize:200];
 }
 
 #pragma mark - Private

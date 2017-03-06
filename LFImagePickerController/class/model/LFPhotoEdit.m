@@ -102,6 +102,8 @@
             _editPreviewImage = nil;
             return NO;
         } else {
+            /** 还原放大 */
+            _container.transform = CGAffineTransformIdentity;
             [self setEditImage:[_container captureImage]];
             return YES;
         }

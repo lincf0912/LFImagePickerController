@@ -35,6 +35,15 @@
 
 @implementation LFDrawView
 
+/** 重置 */
+- (void)reset
+{
+    _lineWidth = 3.f;
+    _lineColor = [UIColor redColor];
+    self.drawBegan = nil;
+    self.drawEnded = nil;
+}
+
 - (instancetype)init
 {
     self = [super init];

@@ -141,6 +141,14 @@
 
 - (void)setScale:(CGFloat)scale
 {
+    [self setScale:scale rotation:MAXFLOAT];
+}
+
+- (void)setScale:(CGFloat)scale rotation:(CGFloat)rotation
+{
+    if (rotation != MAXFLOAT) {
+        _arg = rotation;
+    }
     _scale = MIN(MAX(scale, _minScale), _maxScale);
     
     self.transform = CGAffineTransformIdentity;
@@ -160,6 +168,16 @@
     
     _contentView.layer.borderWidth = 1/_scale;
     _contentView.layer.cornerRadius = 3/_scale;
+}
+
+- (CGFloat)scale
+{
+    return _scale;
+}
+
+- (CGFloat)rotation
+{
+    return _arg;
 }
 
 #pragma mark - Touch Event
@@ -248,4 +266,13 @@
     _arg = _initialArg + arg - tmpA;
     [self setScale:(_initialScale * R / tmpR)];
 }
+
+- (id)copyWithZone:(NSZone *)zone{
+    LFMovingView *movingView = [[[self class] allocWithZone:zone] initWithView:self.view];
+    movingView.frame = self.frame;
+    
+    
+    return movingView;
+}
+
 @end

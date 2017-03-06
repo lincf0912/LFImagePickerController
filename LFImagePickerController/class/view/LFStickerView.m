@@ -16,6 +16,15 @@
 
 @implementation LFStickerView
 
+- (void)reset
+{
+    [LFMovingView setActiveEmoticonView:nil];
+    [self.subviews enumerateObjectsUsingBlock:^(LFMovingView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
+        view.tapEnded = nil;
+    }];
+    self.tapEnded = nil;
+}
+
 - (instancetype)init
 {
     self = [super init];
@@ -47,12 +56,23 @@
     return (view == self ? nil : view);
 }
 
-- (void)setTapEnded:(void (^)(UIView *))tapEnded
+- (void)setTapEnded:(void (^)(UIView *, LFStickerViewType))tapEnded
 {
     _tapEnded = tapEnded;
+    __weak typeof(self) weakSelf = self;
     for (LFMovingView *subView in self.subviews) {
         if ([subView isKindOfClass:[LFMovingView class]]) {
-            [subView setTapEnded:tapEnded];
+            if (self.tapEnded) {
+                [subView setTapEnded:^(UIView *view) {
+                    LFStickerViewType type = LFStickerViewType_image;
+                    if ([view isKindOfClass:[UILabel class]]) {
+                        type = LFStickerViewType_text;
+                    }
+                    weakSelf.tapEnded(view, type);
+                }];
+            } else {
+                [subView setTapEnded:nil];
+            }
         }
     }
 }
@@ -68,7 +88,14 @@
     [self addSubview:movingView];
     
     if (self.tapEnded) {
-        [movingView setTapEnded:self.tapEnded];
+        __weak typeof(self) weakSelf = self;
+        [movingView setTapEnded:^(UIView *view) {
+            LFStickerViewType type = LFStickerViewType_image;
+            if ([view isKindOfClass:[UILabel class]]) {
+                type = LFStickerViewType_text;
+            }
+            weakSelf.tapEnded(view, type);
+        }];
     }
     
     return movingView;
@@ -127,6 +154,9 @@
         } else if ([movingView.view isKindOfClass:[UILabel class]]) { /** 文字贴图 */
             [stickerView createText:((UILabel *)movingView.view).text];
         }
+        LFMovingView *newMovingView = stickerView.subviews.lastObject;
+        newMovingView.frame = movingView.frame;
+        [newMovingView setScale:movingView.scale rotation:movingView.rotation];
     }
     
     return stickerView;

@@ -18,6 +18,7 @@
 
 /** 缩放率 0.2~3.0 */
 - (void)setScale:(CGFloat)scale;
+- (void)setScale:(CGFloat)scale rotation:(CGFloat)rotation;
 
 /** 最小缩放率 默认0.2 */
 @property (nonatomic, assign) CGFloat minScale;
@@ -25,6 +26,9 @@
 @property (nonatomic, assign) CGFloat maxScale;
 
 @property (nonatomic, readonly) UIView *view;
+@property (nonatomic, readonly) CGFloat scale;
+@property (nonatomic, readonly) CGFloat rotation;
+
 
 @property (nonatomic, copy) void(^tapEnded)(UIView *view);
 

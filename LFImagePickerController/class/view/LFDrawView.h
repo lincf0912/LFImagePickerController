@@ -10,6 +10,9 @@
 
 @interface LFDrawView : UIView <NSCopying>
 
+/** 重置 */
+- (void)reset;
+
 @property (nonatomic, assign) CGFloat lineWidth;
 @property (nonatomic, strong) UIColor *lineColor;
 

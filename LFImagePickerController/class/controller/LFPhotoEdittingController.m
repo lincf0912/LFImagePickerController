@@ -119,7 +119,9 @@
         [_photoEdit clearContainer];
         _photoEdit = photoEdit;
         /** 保存一份作为旧编辑 */
-        _oldPhotoEdit = [_photoEdit copy];
+        if ([photoEdit isWork]) {
+            _oldPhotoEdit = [photoEdit copy];
+        }
     }
     
     /** 设置新 */
@@ -432,8 +434,6 @@
         action1.backgroundColor = [UIColor redColor];
         action1.tag = kSplashMenu_Button_Tag1;
         [_edit_splashMenu addSubview:action1];
-        /** 优先激活首个按钮 */
-        action1.selected = YES;
         _edit_splashMenu_action_button = action1;
         
         UIButton *action2 = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -443,6 +443,8 @@
         action2.tag = kSplashMenu_Button_Tag2;
         [_edit_splashMenu addSubview:action2];
         
+        /** 优先激活首个按钮 */
+        action1.selected = YES;
     }
     _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
     return _edit_splashMenu;

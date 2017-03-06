@@ -90,6 +90,11 @@
 #pragma mark - 生成编辑图片
 - (BOOL)mergedContainerLayer
 {
+    /** 重置控件 */
+    [_drawView reset];
+    [_stickerView reset];
+    [_splashView reset];
+    
     /** 必须存在背景 */
     if (_container) {
         if (!self.isWork) { /** 无效编辑 */
@@ -124,7 +129,7 @@
     };
     
     /** 贴图 */
-    _stickerView.tapEnded = ^(UIView *view){
+    _stickerView.tapEnded = ^(UIView *view, LFStickerViewType type){
         if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditsticker:didSelectView:)]) {
             [weakSelf.delegate lf_photoEditsticker:weakSelf didSelectView:view];
         }

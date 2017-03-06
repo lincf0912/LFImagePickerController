@@ -32,6 +32,13 @@
 
 @implementation LFSplashView
 
+- (void)reset
+{
+    _state = LFSplashStateType_Mosaic;
+    self.splashBegan = nil;
+    self.splashEnded = nil;
+}
+
 - (instancetype)init
 {
     self = [super init];
@@ -188,6 +195,7 @@
 - (id)copyWithZone:(NSZone *)zone{
     LFSplashView *splashView = [[[self class] allocWithZone:zone] init];
     splashView.frame = self.frame;
+    splashView.state = self.state;
     [splashView setImage:self.image mosaicLevel:self.level];
     splashView.lineArray = [self.lineArray mutableCopy];
     splashView.mosaicLayer.lineArray = [self.mosaicLayer.lineArray mutableCopy];

@@ -16,6 +16,9 @@ typedef NS_ENUM(NSUInteger, LFSplashStateType) {
 
 @interface LFSplashView : UIView <NSCopying>
 
+/** 重置 */
+- (void)reset;
+
 /** 设置图片 */
 - (void)setImage:(UIImage *)image mosaicLevel:(NSUInteger)level;
 

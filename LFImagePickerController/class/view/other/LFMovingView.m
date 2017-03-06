@@ -267,12 +267,4 @@
     [self setScale:(_initialScale * R / tmpR)];
 }
 
-- (id)copyWithZone:(NSZone *)zone{
-    LFMovingView *movingView = [[[self class] allocWithZone:zone] initWithView:self.view];
-    movingView.frame = self.frame;
-    
-    
-    return movingView;
-}
-
 @end

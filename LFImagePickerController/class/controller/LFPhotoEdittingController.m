@@ -54,6 +54,8 @@
 {
     if ([[LFPhotoEdit touchClass] containsObject:[view class]]) {
         return NO;
+    } else if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
+        return NO;
     }
     return [super touchesShouldCancelInContentView:view];
 }

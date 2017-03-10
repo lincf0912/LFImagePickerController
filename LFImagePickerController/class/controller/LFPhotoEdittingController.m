@@ -66,7 +66,7 @@
 #define kSplashMenu_Button_Tag2 96
 
 
-@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate>
+@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate, LFPhotoEditClippingDelegate>
 {
     /** 编辑模式 */
     LFScrollView *_scrollView;
@@ -85,6 +85,12 @@
     /** 当前激活菜单按钮 */
     UIButton *_edit_drawMenu_action_button;
     UIButton *_edit_splashMenu_action_button;
+    
+    /** 剪切菜单 */
+    UIView *_edit_clipping_toolBar;
+    
+    /** 单击手势 */
+    UITapGestureRecognizer *singleTapRecognizer;
 }
 
 /** 隐藏控件 */
@@ -194,7 +200,7 @@
     }
     
     /** 单击的 Recognizer */
-    UITapGestureRecognizer *singleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singlePressed)];
+    singleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singlePressed)];
     /** 点击的次数 */
     singleTapRecognizer.numberOfTapsRequired = 1; // 单击
     /** 给view添加一个手势监测 */
@@ -355,6 +361,13 @@
         }
             break;
         case LFPhotoEdittingType_crop:
+        {
+            self.photoEdit.clippingEnable = YES;
+            /** 切换菜单 */
+            [self.view addSubview:self.edit_clipping_toolBar];
+            singleTapRecognizer.enabled = NO;
+            [self singlePressed];
+        }
             break;
     }
 }
@@ -490,6 +503,60 @@
     }
 }
 
+#pragma mark - 剪切底部栏（懒加载）
+- (UIView *)edit_clipping_toolBar
+{
+    if (_edit_clipping_toolBar == nil) {
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        
+        _edit_clipping_toolBar = [[UIView alloc] initWithFrame:_edit_toolBar.frame];
+        _edit_clipping_toolBar.backgroundColor = _edit_toolBar.backgroundColor;
+        
+        CGSize size = CGSizeMake(44, _edit_clipping_toolBar.frame.size.height);
+        /** 左 */
+        UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        leftButton.frame = (CGRect){{10,0}, size};
+        [leftButton setTitle:@"cancel" forState:UIControlStateNormal];
+        [leftButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [leftButton addTarget:self action:@selector(clippingCancel:) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_clipping_toolBar addSubview:leftButton];
+        
+        /** 中 */
+        UIButton *centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        centerButton.frame = (CGRect){{(CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width)/2,0}, size};
+        [centerButton setTitle:@"还原" forState:UIControlStateNormal];
+        [centerButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        [centerButton addTarget:self action:@selector(clippingReset:) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_clipping_toolBar addSubview:centerButton];
+        
+        /** 右 */
+        UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        rightButton.frame = (CGRect){{CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width-10,0}, size};
+        [rightButton setTitle:@"ok" forState:UIControlStateNormal];
+        [rightButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [rightButton addTarget:self action:@selector(clippingOk:) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_clipping_toolBar addSubview:rightButton];
+    }
+    return _edit_clipping_toolBar;
+}
+
+- (void)clippingCancel:(UIButton *)button
+{
+    singleTapRecognizer.enabled = YES;
+    self.photoEdit.clippingEnable = NO;
+    [self.edit_clipping_toolBar removeFromSuperview];
+    [self singlePressed];
+}
+
+- (void)clippingReset:(UIButton *)button
+{
+    [self.photoEdit clippingReset];
+}
+
+- (void)clippingOk:(UIButton *)button
+{
+    
+}
 
 #pragma mark - UIScrollViewDelegate
 - (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
@@ -546,6 +613,13 @@
 {
     /** 压缩图片 */
     return [self.editImage fastestCompressImageWithSize:200];
+}
+
+#pragma mark - LFPhotoEditClippingDelegate
+/** 提供需要剪切的图片 */
+- (UIImage *)lf_photoEditClippingImage:(LFPhotoEdit *)editer
+{
+    return self.editImage;
 }
 
 #pragma mark - Private

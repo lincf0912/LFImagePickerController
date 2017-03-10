@@ -25,15 +25,6 @@
     self.tapEnded = nil;
 }
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        [self customInit];
-    }
-    return self;
-}
-
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];

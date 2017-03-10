@@ -21,7 +21,7 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
     LFPhotoEdittingType_crop,
 };
 
-@protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate;
+@protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate, LFPhotoEditClippingDelegate;
 
 @interface LFPhotoEdit : NSObject <NSCopying>
 
@@ -48,7 +48,7 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 - (BOOL)mergedContainerLayer;
 
 /** 代理 */
-@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate> delegate;
+@property (nonatomic ,weak) id<LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate, LFPhotoEditClippingDelegate> delegate;
 
 /** =======绘画功能======= */
 
@@ -81,6 +81,13 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 /** 改变模糊状态 */
 @property (nonatomic, readwrite) BOOL splashState;
 
+/** =======剪裁功能======= */
+
+/** 启用剪裁功能 */
+@property (nonatomic, assign) BOOL clippingEnable;
+/** 剪裁还原 */
+- (void)clippingReset;
+
 @end
 
 /** ====绘画代理==== */
@@ -109,4 +116,11 @@ typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
 @required
 /** 创建马赛克图片 */
 - (UIImage *)lf_photoEditSplashImage:(LFPhotoEdit *)editer;
+@end
+
+/** ====剪切代理==== */
+@protocol LFPhotoEditClippingDelegate <NSObject>
+@required
+/** 提供需要剪切的图片 */
+- (UIImage *)lf_photoEditClippingImage:(LFPhotoEdit *)editer;
 @end

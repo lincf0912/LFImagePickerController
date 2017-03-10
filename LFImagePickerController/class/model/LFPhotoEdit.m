@@ -10,6 +10,7 @@
 #import "LFDrawView.h"
 #import "LFStickerView.h"
 #import "LFSplashView.h"
+#import "LFClippingView.h"
 
 #import "UIImage+LFCommon.h"
 #import "UIView+LFCommon.h"
@@ -23,8 +24,10 @@
 @property (nonatomic, strong) LFDrawView *drawView;
 /** 贴图 */
 @property (nonatomic, strong) LFStickerView *stickerView;
-/** 模糊（马赛克） */
+/** 模糊（马赛克、高斯模糊） */
 @property (nonatomic, strong) LFSplashView *splashView;
+/** 剪切 */
+@property (nonatomic, strong) LFClippingView *clippingView;
 @end
 
 @implementation LFPhotoEdit
@@ -59,10 +62,11 @@
     [self clearContainer];
     _container = container;
     /** 指派控件层级关系 */
-    [_container addSubview:self.splashView];
-    [_container addSubview:self.drawView];
-    [_container addSubview:self.stickerView];
-    
+    if (container) {
+        [_container addSubview:self.splashView];
+        [_container addSubview:self.drawView];
+        [_container addSubview:self.stickerView];
+    }
 }
 
 #pragma mark - 清空容器控件
@@ -71,6 +75,7 @@
     [_splashView removeFromSuperview];
     [_drawView removeFromSuperview];
     [_stickerView removeFromSuperview];
+    [_clippingView removeFromSuperview];
     
     /** 关闭功能 */
     [self setDrawEnable:NO];
@@ -149,6 +154,7 @@
             [weakSelf.delegate lf_photoEditSplashEnded:weakSelf];
         }
     };
+
 }
 
 #pragma mark - 绘画功能
@@ -222,6 +228,30 @@
     return _splashView.state == LFSplashStateType_Blurry;
 }
 
+#pragma mark - 剪裁功能
+/** 启用剪裁功能 */
+- (void)setClippingEnable:(BOOL)clippingEnable
+{
+    _clippingEnable = clippingEnable;
+#warning 增加切换动画
+    if (clippingEnable) {
+        if ([self.delegate respondsToSelector:@selector(lf_photoEditClippingImage:)]) {
+            UIImage *image = [self.delegate lf_photoEditClippingImage:self];
+            /** 设置剪切图片 */
+            self.clippingView.image = image;
+        }
+        [_container addSubview:self.clippingView];
+    } else {
+        [self.clippingView removeFromSuperview];
+    }
+}
+
+/** 剪裁还原 */
+- (void)clippingReset
+{
+    [_clippingView reset];
+}
+
 #pragma mark - 懒加载
 - (LFDrawView *)drawView
 {
@@ -261,6 +291,15 @@
         [_splashView setFrame:_container.bounds];
     }
     return _splashView;
+}
+
+- (LFClippingView *)clippingView
+{
+    if (_clippingView == nil) {
+        _clippingView = [[LFClippingView alloc] initWithFrame:_container.bounds];
+    }
+    
+    return _clippingView;
 }
 
 #pragma mark - NSCopying

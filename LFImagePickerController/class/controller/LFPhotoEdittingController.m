@@ -12,79 +12,22 @@
 #import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
 #import "UIImage+LF_ImageCompress.h"
+#import "LFImagePickerType.h"
 
-#pragma mark - 自定义ScrollView
-
-@interface LFScrollView : UIScrollView
-
-@end
-
-@implementation LFScrollView
-
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        self.delaysContentTouches = NO;
-    }
-    return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.delaysContentTouches = NO;
-    }
-    return self;
-}
-
-- (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view {
-    if ([[LFPhotoEdit touchClass] containsObject:[view class]]) {
-        if (event.allTouches.count == 1) { /** 1个手指 */
-            return YES;
-        } else if (event.allTouches.count == 2) { /** 2个手指 */
-            return NO;
-        }
-    }
-    return [super touchesShouldBegin:touches withEvent:event inContentView:view];
-}
-
-- (BOOL)touchesShouldCancelInContentView:(UIView *)view
-{
-    if ([[LFPhotoEdit touchClass] containsObject:[view class]]) {
-        return NO;
-    } else if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
-        return NO;
-    }
-    return [super touchesShouldCancelInContentView:view];
-}
-
-@end
+#import "LFEditToolbar.h"
+#import "LFEdittingView.h"
 
 #define kSplashMenu_Button_Tag1 95
 #define kSplashMenu_Button_Tag2 96
 
 
-@interface LFPhotoEdittingController () <UIScrollViewDelegate, LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate, LFPhotoEditClippingDelegate>
+@interface LFPhotoEdittingController () <LFEditToolbarDelegate>
 {
     /** 编辑模式 */
-    LFScrollView *_scrollView;
-    UIView *_containsView;
-    UIImageView *_imageView;
+    LFEdittingView *_edittingView;
     
     UIView *_edit_naviBar;
-    UIView *_edit_toolBar;
-    UIView *_edit_menuView;
-    
-    UIView *_edit_drawMenu;
-    UIButton *_edit_drawMenu_revoke;
-    UIView *_edit_splashMenu;
-    UIButton *_edit_splashMenu_revoke;
-    
-    /** 当前激活菜单按钮 */
-    UIButton *_edit_drawMenu_action_button;
-    UIButton *_edit_splashMenu_action_button;
+    LFEditToolbar *_edit_toolBar;
     
     /** 剪切菜单 */
     UIView *_edit_clipping_toolBar;
@@ -96,9 +39,6 @@
 /** 隐藏控件 */
 @property (nonatomic, assign) BOOL isHideNaviBar;
 
-/** 当前点击按钮 */
-@property (nonatomic, weak) UIButton *selectButton;
-
 /** 旧编辑对象 */
 @property (nonatomic, strong) LFPhotoEdit *oldPhotoEdit;
 @end
@@ -108,33 +48,7 @@
 - (void)setEditImage:(UIImage *)editImage
 {
     _editImage = editImage;
-    if (_imageView) {
-        [_imageView setImage:_editImage];
-        [_scrollView setZoomScale:1.f animated:NO];
-        UIImage *image = _imageView.image;
-        CGSize imageSize = [UIImage scaleImageSizeBySize:image.size targetSize:_containsView.size isBoth:NO];
-        _containsView.size = imageSize;
-        [self refreshImageZoomViewCenter];
-        _imageView.frame = _containsView.bounds;
-    }
-}
-
-- (void)setPhotoEdit:(LFPhotoEdit *)photoEdit
-{
-    if (_photoEdit != photoEdit) {
-        _oldPhotoEdit = nil;
-        /** 移除旧 */
-        [_photoEdit clearContainer];
-        _photoEdit = photoEdit;
-        /** 保存一份作为旧编辑 */
-        if ([photoEdit isWork]) {
-            _oldPhotoEdit = [photoEdit copy];
-        }
-    }
-    
-    /** 设置新 */
-    [_photoEdit setContainer:_containsView];
-    _photoEdit.delegate = self;
+    _edittingView.image = editImage;
 }
 
 - (void)viewDidLoad {
@@ -145,7 +59,7 @@
     [self configCustomNaviBar];
     [self configBottomToolBar];
 
-    [self configPhotoEditManager];
+//    [self configPhotoEditManager];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -176,25 +90,7 @@
 #pragma mark - 创建视图
 - (void)configScrollView
 {
-    _scrollView = [[LFScrollView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, self.view.height)];
-    _scrollView.backgroundColor = [UIColor blackColor];
-    _scrollView.delegate = self;
-    _scrollView.scrollsToTop = NO;
-    _scrollView.showsHorizontalScrollIndicator = NO;
-    _scrollView.contentOffset = CGPointMake(0, 0);
-    /** 缩放 */
-    _scrollView.bouncesZoom = YES;
-    _scrollView.maximumZoomScale = 2.5;
-    _scrollView.minimumZoomScale = 1.0;
-    _scrollView.multipleTouchEnabled = YES;
-    _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
-    _containsView = [[UIView alloc] initWithFrame:_scrollView.bounds];
-    _containsView.contentMode = UIViewContentModeScaleAspectFit;
-    
-    _imageView = [[UIImageView alloc] init];
-    _imageView.contentMode = UIViewContentModeScaleAspectFit;
-    
+    _edittingView = [[LFEdittingView alloc] initWithFrame:self.view.bounds];
     if (_editImage) {
         [self setEditImage:_editImage];
     }
@@ -206,10 +102,7 @@
     /** 给view添加一个手势监测 */
     [self.view addGestureRecognizer:singleTapRecognizer];
     
-    [_containsView addSubview:_imageView];
-    [_scrollView addSubview:_containsView];
-    
-    [self.view addSubview:_scrollView];
+    [self.view addSubview:_edittingView];
 }
 
 - (void)configCustomNaviBar
@@ -238,35 +131,8 @@
 
 - (void)configBottomToolBar
 {
-    _edit_toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
-    static CGFloat rgb = 34 / 255.0;
-    _edit_toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
-    
-    NSInteger buttonCount = 5;
-    
-    CGFloat width = CGRectGetWidth(_edit_toolBar.frame)/buttonCount;
-    
-    for (NSInteger i=0; i<buttonCount; i++) {
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        button.tag = i;
-        button.frame = CGRectMake(width*i, 0, width, 44);
-        button.titleLabel.font = [UIFont systemFontOfSize:14];
-        //            [button setImage:<#(nullable UIImage *)#> forState:UIControlStateNormal];
-        [button setTitle:[NSString stringWithFormat:@"%zd", i] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor redColor] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
-        [button addTarget:self action:@selector(edit_toolBar_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_toolBar addSubview:button];
-    }
-    
-    UIView *divide = [[UIView alloc] init];
-    CGFloat rgb2 = 40 / 255.0;
-    divide.backgroundColor = [UIColor colorWithRed:rgb2 green:rgb2 blue:rgb2 alpha:1.0];
-    divide.frame = CGRectMake(0, 0, self.view.width, 1);
-    
-    [_edit_toolBar addSubview:divide];
-    
+    _edit_toolBar = [[LFEditToolbar alloc] init];
+    _edit_toolBar.delegate = self;
     [self.view addSubview:_edit_toolBar];
 }
 
@@ -308,200 +174,58 @@
     });
 }
 
-#pragma mark - 底部栏(action)
-- (void)edit_toolBar_buttonClick:(UIButton *)button
+#pragma mark - LFEditToolbarDelegate 底部栏(action)
+
+/** 一级菜单点击事件 */
+- (void)lf_editToolbar:(LFEditToolbar *)editToolbar mainDidSelectAtIndex:(NSUInteger)index
 {
-    if (self.editImage == nil) return;
-    
-    switch (button.tag) {
-        case LFPhotoEdittingType_draw:
+    switch (index) {
+        case 0:
         {
-            /** 关闭模糊 */
-            self.photoEdit.splashEnable = NO;
-            if ([self changedButton:button]) {
-                /** 显示菜单 */
-                [self showMenuView:[self drawMenu]];
-                /** 开启绘画 */
-                self.photoEdit.drawEnable = YES;
-            } else {
-                /** 关闭菜单 */
-                [self hidenMenuView];
-                /** 关闭绘画 */
-                self.photoEdit.drawEnable = NO;
-            }
+            
         }
             break;
-        case LFPhotoEdittingType_sticker:
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
         {
-            UIImage *image = bundleStickerImageNamed(@"001.png");
-            [self.photoEdit createStickerImage:image];
+            
         }
             break;
-        case LFPhotoEdittingType_text:
+        case 4:
         {
-            [self.photoEdit createStickerText:@"挖泥机"];
-        }
-            break;
-        case LFPhotoEdittingType_splash:
-        {
-            /** 模糊模式需要停止绘画状态 */
-            self.photoEdit.drawEnable = NO;
-            if ([self changedButton:button]) {
-                /** 显示菜单 */
-                [self showMenuView:[self splashMenu]];
-                /** 开启模糊 */
-                self.photoEdit.splashEnable = YES;
-                
-            } else {
-                /** 关闭菜单 */
-                [self hidenMenuView];
-                /** 关闭模糊 */
-                self.photoEdit.splashEnable = NO;
-            }
-        }
-            break;
-        case LFPhotoEdittingType_crop:
-        {
-            self.photoEdit.clippingEnable = YES;
+            [_edittingView setIsClipping:YES animated:YES];
             /** 切换菜单 */
             [self.view addSubview:self.edit_clipping_toolBar];
+            [UIView animateWithDuration:0.25f animations:^{
+                self.edit_clipping_toolBar.alpha = 1.f;
+            }];
             singleTapRecognizer.enabled = NO;
             [self singlePressed];
         }
             break;
+        default:
+            break;
     }
 }
-
-- (BOOL)changedButton:(UIButton *)button
+/** 二级菜单点击事件-撤销 */
+- (void)lf_editToolbar:(LFEditToolbar *)editToolbar subDidRevokeAtIndex:(NSUInteger)index
 {
-    /** 选中按钮 */
-    _selectButton.selected = !_selectButton.selected;
-    if (_selectButton != button) {
-        _selectButton = button;
-        _selectButton.selected = !_selectButton.selected;
-    } else {
-        _selectButton = nil;
-    }
-    return _selectButton;
+    
+}
+/** 二级菜单点击事件-按钮 */
+- (void)lf_editToolbar:(LFEditToolbar *)editToolbar subDidSelectAtIndex:(NSIndexPath *)indexPath
+{
+    
+}
+/** 撤销允许权限获取 */
+- (BOOL)lf_editToolbar:(LFEditToolbar *)editToolbar canRevokeAtIndex:(NSUInteger)index
+{
+    return YES;
 }
 
-#pragma mark - 菜单栏
-- (void)showMenuView:(UIView *)menu
-{
-    /** 将显示的菜单先关闭 */
-    if (_edit_menuView) {
-        [self hidenMenuView];
-    }
-    /** 显示新菜单 */
-    _edit_menuView = menu;
-    [self.view addSubview:_edit_menuView];
-}
-- (void)hidenMenuView
-{
-    [_edit_menuView removeFromSuperview];
-    _edit_menuView = nil;
-}
-
-#pragma mark - 菜单栏(懒加载)
-- (UIView *)drawMenu
-{
-    if (_edit_drawMenu == nil) {
-        _edit_drawMenu = [[UIView alloc] initWithFrame:CGRectMake(_edit_toolBar.x, _edit_toolBar.y-55, _edit_toolBar.width, 55)];
-        _edit_drawMenu.backgroundColor = _edit_toolBar.backgroundColor;
-        
-        /** 添加按钮获取点击 */
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        button.frame = _edit_drawMenu.bounds;
-        [_edit_drawMenu addSubview:button];
-        
-        _edit_drawMenu_revoke = [self revokeButtonWithType:LFPhotoEdittingType_draw];
-        [_edit_drawMenu addSubview:_edit_drawMenu_revoke];
-        
-        _edit_drawMenu_revoke.enabled = _photoEdit.drawCanUndo;
-    }
-    return _edit_drawMenu;
-}
-
-- (UIView *)splashMenu
-{
-    if (_edit_splashMenu == nil) {
-        _edit_splashMenu = [[UIView alloc] initWithFrame:CGRectMake(_edit_toolBar.x, _edit_toolBar.y-55, _edit_toolBar.width, 55)];
-        _edit_splashMenu.backgroundColor = _edit_toolBar.backgroundColor;
-        
-        /** 添加按钮获取点击 */
-        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-        button.frame = _edit_splashMenu.bounds;
-        [_edit_splashMenu addSubview:button];
-        
-        _edit_splashMenu_revoke = [self revokeButtonWithType:LFPhotoEdittingType_splash];
-        [_edit_splashMenu addSubview:_edit_splashMenu_revoke];
-        
-        /** 剩余长度 */
-        CGFloat width = CGRectGetMinX(_edit_splashMenu_revoke.frame);
-        /** 按钮个数 */
-        int count = 2;
-        /** 平分空间 */
-        CGFloat averageWidth = width/(count+1);
-        
-        UIButton *action1 = [UIButton buttonWithType:UIButtonTypeCustom];
-        action1.frame = CGRectMake(averageWidth*1-44/2, (CGRectGetHeight(_edit_splashMenu.frame)-30)/2, 44, 30);
-        [action1 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-        action1.backgroundColor = [UIColor redColor];
-        action1.tag = kSplashMenu_Button_Tag1;
-        [_edit_splashMenu addSubview:action1];
-        _edit_splashMenu_action_button = action1;
-        
-        UIButton *action2 = [UIButton buttonWithType:UIButtonTypeCustom];
-        action2.frame = CGRectMake(averageWidth*2-44/2, (CGRectGetHeight(_edit_splashMenu.frame)-30)/2, 44, 30);
-        [action2 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-        action2.backgroundColor = [UIColor redColor];
-        action2.tag = kSplashMenu_Button_Tag2;
-        [_edit_splashMenu addSubview:action2];
-        
-        /** 优先激活首个按钮 */
-        action1.selected = YES;
-    }
-    _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
-    return _edit_splashMenu;
-}
-
-- (UIButton *)revokeButtonWithType:(LFPhotoEdittingType)type
-{
-    UIButton *revoke = [UIButton buttonWithType:UIButtonTypeCustom];
-    revoke.frame = CGRectMake(_edit_toolBar.width-44-5, 0, 44, 55);
-    [revoke setTitle:@"撤销" forState:UIControlStateNormal];
-    revoke.titleLabel.font = [UIFont systemFontOfSize:14.f];
-    revoke.tag = type;
-    [revoke addTarget:self action:@selector(revoke_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-    return revoke;
-}
-
-#pragma mark - 菜单栏(action)
-- (void)revoke_buttonClick:(UIButton *)button
-{
-    if (button.tag == LFPhotoEdittingType_draw) {
-        [_photoEdit drawUndo];
-        /** 撤销失效 */
-        _edit_drawMenu_revoke.enabled = _photoEdit.drawCanUndo;
-    } else if (button.tag == LFPhotoEdittingType_splash) {
-        [_photoEdit splashUndo];
-        _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
-    }
-}
-
-- (void)splashMenu_buttonClick:(UIButton *)button
-{
-    if (_edit_splashMenu_action_button != button) {
-        _edit_splashMenu_action_button.selected = NO;
-        button.selected = YES;
-        _edit_splashMenu_action_button = button;
-        if (button.tag == kSplashMenu_Button_Tag1) {
-            self.photoEdit.splashState = NO;
-        } else if (button.tag == kSplashMenu_Button_Tag2) {
-            self.photoEdit.splashState = YES;
-        }
-    }
-}
 
 #pragma mark - 剪切底部栏（懒加载）
 - (UIView *)edit_clipping_toolBar
@@ -509,8 +233,10 @@
     if (_edit_clipping_toolBar == nil) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
         
-        _edit_clipping_toolBar = [[UIView alloc] initWithFrame:_edit_toolBar.frame];
-        _edit_clipping_toolBar.backgroundColor = _edit_toolBar.backgroundColor;
+        _edit_clipping_toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
+        CGFloat rgb = 34 / 255.0;
+        _edit_clipping_toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+        _edit_clipping_toolBar.alpha = 0.f;
         
         CGSize size = CGSizeMake(44, _edit_clipping_toolBar.frame.size.height);
         /** 左 */
@@ -543,8 +269,13 @@
 - (void)clippingCancel:(UIButton *)button
 {
     singleTapRecognizer.enabled = YES;
-    self.photoEdit.clippingEnable = NO;
-    [self.edit_clipping_toolBar removeFromSuperview];
+    [_edittingView setIsClipping:NO animated:YES];
+    [UIView animateWithDuration:.25f animations:^{
+        self.edit_clipping_toolBar.alpha = 0.f;
+    } completion:^(BOOL finished) {
+        [self.edit_clipping_toolBar removeFromSuperview];
+    }];
+
     [self singlePressed];
 }
 
@@ -555,18 +286,8 @@
 
 - (void)clippingOk:(UIButton *)button
 {
-    
+    [self clippingCancel:button];
 }
-
-#pragma mark - UIScrollViewDelegate
-- (nullable UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return _containsView;
-}
-
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
-    [self refreshImageZoomViewCenter];
-}
-
 
 #pragma mark - LFPhotoEditDrawDelegate
 /** 开始绘画 */
@@ -579,7 +300,7 @@
 - (void)lf_photoEditDrawEnded:(LFPhotoEdit *)editer
 {
     /** 撤销生效 */
-    _edit_drawMenu_revoke.enabled = _photoEdit.drawCanUndo;
+    if (_photoEdit.drawCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_draw];
     
     _isHideNaviBar = NO;
     [self changedBarState];
@@ -603,7 +324,7 @@
 - (void)lf_photoEditSplashEnded:(LFPhotoEdit *)editer
 {
     /** 撤销生效 */
-    _edit_splashMenu_revoke.enabled = _photoEdit.splashCanUndo;
+    if (_photoEdit.splashCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_splash];
     
     _isHideNaviBar = NO;
     [self changedBarState];
@@ -622,20 +343,12 @@
     return self.editImage;
 }
 
-#pragma mark - Private
-- (void)refreshImageZoomViewCenter {
-    CGFloat offsetX = (_scrollView.width > _scrollView.contentSize.width) ? ((_scrollView.width - _scrollView.contentSize.width) * 0.5) : 0.0;
-    CGFloat offsetY = (_scrollView.height > _scrollView.contentSize.height) ? ((_scrollView.height - _scrollView.contentSize.height) * 0.5) : 0.0;
-    _containsView.center = CGPointMake(_scrollView.contentSize.width * 0.5 + offsetX, _scrollView.contentSize.height * 0.5 + offsetY);
-}
-
 - (void)changedBarState
 {
     [UIView animateWithDuration:.25f animations:^{
         CGFloat alpha = _isHideNaviBar ? 0.f : 1.f;
         _edit_naviBar.alpha = alpha;
         _edit_toolBar.alpha = alpha;
-        _edit_menuView.alpha = alpha;
     }];
 }
 @end

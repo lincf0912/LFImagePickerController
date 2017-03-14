@@ -34,6 +34,7 @@ extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
  */
 extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 
+
 @interface LFImagePickerHeader : NSObject
 
 @end

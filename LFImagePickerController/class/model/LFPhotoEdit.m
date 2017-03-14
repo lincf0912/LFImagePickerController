@@ -238,7 +238,7 @@
         if ([self.delegate respondsToSelector:@selector(lf_photoEditClippingImage:)]) {
             UIImage *image = [self.delegate lf_photoEditClippingImage:self];
             /** 设置剪切图片 */
-            self.clippingView.image = image;
+//            self.clippingView.image = image;
         }
         [_container addSubview:self.clippingView];
     } else {
@@ -249,7 +249,7 @@
 /** 剪裁还原 */
 - (void)clippingReset
 {
-    [_clippingView reset];
+//    [_clippingView reset];
 }
 
 #pragma mark - 懒加载

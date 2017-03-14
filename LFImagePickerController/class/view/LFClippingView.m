@@ -2,25 +2,17 @@
 //  LFClippingView.m
 //  LFImagePickerController
 //
-//  Created by LamTsanFeng on 2017/3/6.
+//  Created by LamTsanFeng on 2017/3/13.
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
 #import "LFClippingView.h"
-#import "LFGridView.h"
-#import "LFZoomView.h"
 
-#import <AVFoundation/AVFoundation.h>
+@interface LFClippingView () <UIScrollViewDelegate>
 
-const CGFloat minClipSize = 50.f;
+@property (nonatomic, weak) UIView *zoomingView;
+@property (nonatomic, weak) UIImageView *imageView;
 
-@interface LFClippingView () <lf_zoomViewDelegate, lf_gridViewDelegate>
-
-@property (nonatomic, weak) LFGridView *gridView;
-@property (nonatomic, weak) LFZoomView *zoomView;
-
-/** 剪裁尺寸, CGRectInset(self.bounds, 50, 50) */
-@property (nonatomic, assign) CGRect clippingRect;
 @end
 
 @implementation LFClippingView
@@ -36,117 +28,64 @@ const CGFloat minClipSize = 50.f;
 
 - (void)customInit
 {
-    self.backgroundColor = [UIColor blackColor];
+    self.backgroundColor = [UIColor blueColor];
+    self.clipsToBounds = NO;
+    self.delegate = self;
+    self.maximumZoomScale = 5.0f;
+    self.showsHorizontalScrollIndicator = NO;
+    self.showsVerticalScrollIndicator = NO;
+    self.alwaysBounceHorizontal = YES;
+    self.alwaysBounceVertical = YES;
     
-    LFZoomView *zoomView = [[LFZoomView alloc] initWithFrame:self.bounds];
-    zoomView.delegate = self;
-    [self addSubview:zoomView];
-    self.zoomView = zoomView;
+    UIView *zoomingView = [[UIView alloc] initWithFrame:self.bounds];
+    zoomingView.backgroundColor = [UIColor clearColor];
+    [self addSubview:zoomingView];
+    self.zoomingView = zoomingView;
     
-    LFGridView *gridView = [[LFGridView alloc] initWithFrame:self.bounds];
-    gridView.delegate = self;
-    [self addSubview:gridView];
-    self.gridView = gridView;
-    
-    self.clippingRect = CGRectInset(self.bounds, minClipSize, minClipSize);
-    self.clippingMinSize = CGSizeMake(80, 80);
-    self.clippingMaxRect = CGRectInset(self.bounds, 30, 50);
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:self.zoomingView.bounds];
+    imageView.backgroundColor = [UIColor clearColor];
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.zoomingView addSubview:imageView];
+    self.imageView = imageView;
+}
+
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    self.zoomingView.frame = self.bounds;
+    self.imageView.frame = self.zoomingView.bounds;
 }
 
 - (void)setImage:(UIImage *)image
 {
     _image = image;
-    self.zoomView.image = image;
-    /** 计算图片剪裁尺寸 */
-    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.clippingMaxRect);
-    self.clippingRect = cropRect;
-    CGFloat minSize = MIN(cropRect.size.width, cropRect.size.height);
-    if (minSize < MIN(self.clippingMinSize.width, self.clippingMinSize.height)) {
-        self.clippingMinSize = CGSizeMake(minSize, minSize);
-    }
+    [self.imageView setImage:image];
+    [self setZoomScale:1.f];
 }
 
-- (void)setClippingRect:(CGRect)clippingRect
+#pragma mark - UIScrollViewDelegate
+
+#pragma mark - 重写父类方法
+
+- (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view
+{    
+    
+    return [super touchesShouldBegin:touches withEvent:event inContentView:view];
+}
+
+- (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
-    _clippingRect = clippingRect;
-    self.gridView.gridRect = clippingRect;
-    self.zoomView.cropRect = clippingRect;
+   
+    return [super touchesShouldCancelInContentView:view];
 }
-
-- (void)setClippingMinSize:(CGSize)clippingMinSize
-{
-    if (CGSizeEqualToSize(CGSizeZero, _clippingMinSize) || (clippingMinSize.width < CGRectGetWidth(_clippingMaxRect) && clippingMinSize.height < CGRectGetHeight(_clippingMaxRect))) {
-        _clippingMinSize = clippingMinSize;
-        self.gridView.controlMinSize = clippingMinSize;
-    }
-}
-
-- (void)setClippingMaxRect:(CGRect)clippingMaxRect
-{
-    if (CGRectEqualToRect(CGRectZero, _clippingMaxRect) || (CGRectGetWidth(clippingMaxRect) > _clippingMinSize.width && CGRectGetHeight(clippingMaxRect) > _clippingMinSize.height)) {
-        _clippingMaxRect = clippingMaxRect;
-        self.gridView.controlMaxRect = clippingMaxRect;
-        self.zoomView.editRect = clippingMaxRect;
-    }
-}
-
-/** 还原 */
-- (void)reset
-{
-    self.clippingRect = _clippingRect;
-}
-
-
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
 {
     UIView *view = [super hitTest:point withEvent:event];
-    if (self == view) {
-        return nil;
+    if (view == self.zoomingView) { /** 不触发下一层UI响应 */
+        return self;
     }
     return view;
-}
-
-#pragma mark - lf_zoomViewDelegate
-
-- (void (^)(CGRect))lf_zoomViewWillBeginZooming:(LFZoomView *)zoomView
-{
-    __weak typeof(self) weakSelf = self;
-    void (^block)(CGRect) = ^(CGRect rect){
-        [weakSelf.gridView setGridRect:rect animated:YES];
-    };
-    return block;
-}
-
-- (void)lf_zoomViewDidEndZooming:(LFZoomView *)zoomView
-{
-    self.gridView.showMaskLayer = YES;
-}
-
-- (void)lf_zoomViewWillBeginDragging:(LFZoomView *)zoomView
-{
-    self.gridView.showMaskLayer = NO;
-}
-- (void)lf_zoomViewDidEndDecelerating:(LFZoomView *)zoomView
-{
-    self.gridView.showMaskLayer = YES;
-}
-
-#pragma mark - lf_gridViewDelegate
-
-- (void)lf_gridViewDidBeginResizing:(LFGridView *)gridView
-{
-    gridView.showMaskLayer = NO;
-}
-- (void)lf_gridViewDidResizing:(LFGridView *)gridView
-{
-    [self.zoomView zoomInToRect:gridView.gridRect];
-}
-- (void)lf_gridViewDidEndResizing:(LFGridView *)gridView
-{
-    [self.zoomView zoomOutToRect:gridView.gridRect];
-    /** 让zoomView的动画回调后才显示showMaskLayer */
-//    self.gridView.showMaskLayer = YES;
 }
 
 @end

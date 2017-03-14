@@ -8,19 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSUInteger, LFPhotoEdittingType) {
-    /** 绘画 */
-    LFPhotoEdittingType_draw = 0,
-    /** 贴图 */
-    LFPhotoEdittingType_sticker,
-    /** 文本 */
-    LFPhotoEdittingType_text,
-    /** 模糊 */
-    LFPhotoEdittingType_splash,
-    /** 修剪 */
-    LFPhotoEdittingType_crop,
-};
-
 @protocol LFPhotoEditDrawDelegate, LFPhotoEditStickerDelegate, LFPhotoEditSplashDelegate, LFPhotoEditClippingDelegate;
 
 @interface LFPhotoEdit : NSObject <NSCopying>

@@ -281,7 +281,7 @@
 
 - (void)clippingReset:(UIButton *)button
 {
-    [self.photoEdit clippingReset];
+    [_edittingView reset];
 }
 
 - (void)clippingOk:(UIButton *)button

@@ -15,10 +15,13 @@
 
 /** 最小尺寸 CGSizeMake(80, 80) */
 @property (nonatomic, assign) CGSize clippingMinSize;
-/** 最大尺寸 self.bounds */
+/** 最大尺寸 CGRectInset(self.frame , 20, 50) */
 @property (nonatomic, assign) CGRect clippingMaxRect;
 
 @property (nonatomic, assign) BOOL isClipping;
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated;
+
+/** 还原 isClipping=YES 的情况有效 */
+- (void)reset;
 
 @end

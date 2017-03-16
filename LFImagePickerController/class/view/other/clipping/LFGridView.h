@@ -8,11 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol lf_gridViewDelegate;
+@protocol LFGridViewDelegate;
 @interface LFGridView : UIView
 
 @property (nonatomic, assign) CGRect gridRect;
 - (void)setGridRect:(CGRect)gridRect animated:(BOOL)animated;
+- (void)setGridRect:(CGRect)gridRect maskLayer:(BOOL)isMaskLayer animated:(BOOL)animated;
 /** 最小尺寸 CGSizeMake(80, 80); */
 @property (nonatomic, assign) CGSize controlMinSize;
 /** 最大尺寸 CGRectInset(self.bounds, 50, 50) */
@@ -21,11 +22,11 @@
 /** 显示遮罩层 */
 @property (nonatomic, assign) BOOL showMaskLayer;
 
-@property (nonatomic, weak) id<lf_gridViewDelegate> delegate;
+@property (nonatomic, weak) id<LFGridViewDelegate> delegate;
 
 @end
 
-@protocol lf_gridViewDelegate <NSObject>
+@protocol LFGridViewDelegate <NSObject>
 
 - (void)lf_gridViewDidBeginResizing:(LFGridView *)gridView;
 - (void)lf_gridViewDidResizing:(LFGridView *)gridView;

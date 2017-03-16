@@ -8,7 +8,34 @@
 
 #import "LFScrollView.h"
 
+@protocol LFClippingViewDelegate;
+
 @interface LFClippingView : LFScrollView
 
 @property (nonatomic, strong) UIImage *image;
+
+@property (nonatomic, weak) id<LFClippingViewDelegate> clippingDelegate;
+
+/** 可编辑范围 */
+@property (nonatomic, assign) CGRect editRect;
+/** 剪切范围 */
+@property (nonatomic, assign) CGRect cropRect;
+
+/** 缩放 */
+- (void)zoomOutToRect:(CGRect)toRect;
+/** 还原 */
+- (void)reset;
+
+@end
+
+@protocol LFClippingViewDelegate <NSObject>
+
+/** 同步缩放视图（调用zoomOutToRect才会触发） */
+- (void (^)(CGRect))lf_clippingViewWillBeginZooming:(LFClippingView *)clippingView;
+- (void)lf_clippingViewDidEndZooming:(LFClippingView *)clippingView;
+
+/** 移动视图 */
+- (void)lf_clippingViewWillBeginDragging:(LFClippingView *)clippingView;
+- (void)lf_clippingViewDidEndDecelerating:(LFClippingView *)clippingView;
+
 @end

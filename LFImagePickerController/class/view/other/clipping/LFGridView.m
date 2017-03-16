@@ -124,7 +124,7 @@ const CGFloat kControlWidth = 25.f;
 - (void)lf_resizeConrolDidResizing:(LFResizeControl *)resizeConrol
 {
     CGRect gridRect = [self cropRectMakeWithResizeControlView:resizeConrol];
-    [self setGridRect:gridRect withMaskLayer:NO];
+    [self setGridRect:gridRect maskLayer:NO];
     
     if ([self.delegate respondsToSelector:@selector(lf_gridViewDidResizing:)]) {
         [self.delegate lf_gridViewDidResizing:self];
@@ -141,26 +141,24 @@ const CGFloat kControlWidth = 25.f;
 #pragma mark - private
 - (void)setGridRect:(CGRect)gridRect
 {
-    [self setGridRect:gridRect withMaskLayer:YES];
+    [self setGridRect:gridRect maskLayer:YES];
 }
-- (void)setGridRect:(CGRect)gridRect withMaskLayer:(BOOL)isMaskLayer
+- (void)setGridRect:(CGRect)gridRect maskLayer:(BOOL)isMaskLayer
 {
-    if (!CGRectEqualToRect(_gridRect, gridRect)) {
-        _gridRect = gridRect;
-        self.gridLayer.gridRect = gridRect;
-        if (isMaskLayer) {
-            self.gridMaskLayer.maskRect = gridRect;
-        }
-        [self setNeedsLayout];
-    }
+    [self setGridRect:gridRect maskLayer:isMaskLayer animated:NO];
 }
-
 - (void)setGridRect:(CGRect)gridRect animated:(BOOL)animated
+{
+    [self setGridRect:gridRect maskLayer:NO animated:animated];
+}
+- (void)setGridRect:(CGRect)gridRect maskLayer:(BOOL)isMaskLayer animated:(BOOL)animated
 {
     if (!CGRectEqualToRect(_gridRect, gridRect)) {
         _gridRect = gridRect;
         [self.gridLayer setGridRect:gridRect animated:animated];
-//        self.gridMaskLayer.maskRect = gridRect;
+        if (isMaskLayer) {
+            self.gridMaskLayer.maskRect = gridRect;
+        }
         [self setNeedsLayout];
     }
 }

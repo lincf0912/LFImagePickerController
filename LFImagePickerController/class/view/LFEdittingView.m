@@ -15,7 +15,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-@interface LFEdittingView () <UIScrollViewDelegate, lf_zoomViewDelegate, lf_gridViewDelegate>
+@interface LFEdittingView () <UIScrollViewDelegate, LFClippingViewDelegate, LFGridViewDelegate>
 
 @property (nonatomic, weak) LFClippingView *clippingView;
 @property (nonatomic, weak) LFGridView *gridView;
@@ -48,7 +48,7 @@
     self.minimumZoomScale = 1.0;
     
     LFClippingView *clippingView = [[LFClippingView alloc] initWithFrame:self.bounds];
-    
+    clippingView.clippingDelegate = self;
     [self addSubview:clippingView];
     self.clippingView = clippingView;
     
@@ -60,7 +60,7 @@
     self.gridView = gridView;
     
     self.clippingMinSize = CGSizeMake(80, 80);
-    self.clippingMaxRect = self.bounds;
+    self.clippingMaxRect = CGRectInset(self.frame , 20, 50);
 }
 
 - (void)setImage:(UIImage *)image
@@ -75,7 +75,7 @@
 {
     _clippingRect = clippingRect;
     self.gridView.gridRect = clippingRect;
-    self.clippingView.frame = clippingRect;
+    self.clippingView.cropRect = clippingRect;
 }
 
 - (void)setClippingMinSize:(CGSize)clippingMinSize
@@ -91,6 +91,7 @@
     if (CGRectEqualToRect(CGRectZero, _clippingMaxRect) || (CGRectGetWidth(clippingMaxRect) > _clippingMinSize.width && CGRectGetHeight(clippingMaxRect) > _clippingMinSize.height)) {
         _clippingMaxRect = clippingMaxRect;
         self.gridView.controlMaxRect = clippingMaxRect;
+        self.clippingView.editRect = clippingMaxRect;
     }
 }
 
@@ -100,8 +101,11 @@
 }
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated
 {
+    [self setZoomScale:1.f];
     _isClipping = isClipping;
     if (isClipping) {
+        /** 显示多余部分 */
+        self.clippingView.clipsToBounds = NO;
         /** 动画切换 */
         if (animated) {
             [UIView animateWithDuration:0.25f animations:^{
@@ -124,12 +128,16 @@
                 [UIView animateWithDuration:0.25f animations:^{
                     CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(_image.size, self.frame);
                     self.clippingRect = cropRect;
+                } completion:^(BOOL finished) {
+                    /** 剪裁多余部分 */
+                    self.clippingView.clipsToBounds = YES;
                 }];
             }];
         } else {
             self.gridView.alpha = 0.f;
             CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(_image.size, self.frame);
             self.clippingRect = cropRect;
+            self.clippingView.clipsToBounds = YES;
         }
     }
 }
@@ -137,12 +145,20 @@
 /** 还原 */
 - (void)reset
 {
-    self.clippingRect = _clippingRect;
+    if (_isClipping) {
+        self.gridView.showMaskLayer = NO;
+        [UIView animateWithDuration:0.25f animations:^{
+            [self.clippingView setZoomScale:1.f];
+            [self.gridView setGridRect:self.clippingRect animated:YES];
+            [self.clippingView setCropRect:self.clippingRect];
+        } completion:^(BOOL finished) {
+            self.gridView.showMaskLayer = YES;
+        }];
+    }
 }
 
-#pragma mark - lf_zoomViewDelegate
-
-- (void (^)(CGRect))lf_zoomViewWillBeginZooming:(LFZoomView *)zoomView
+#pragma mark - LFClippingViewDelegate
+- (void (^)(CGRect))lf_clippingViewWillBeginZooming:(LFClippingView *)clippingView
 {
     __weak typeof(self) weakSelf = self;
     void (^block)(CGRect) = ^(CGRect rect){
@@ -150,23 +166,23 @@
     };
     return block;
 }
-
-- (void)lf_zoomViewDidEndZooming:(LFZoomView *)zoomView
+- (void)lf_clippingViewDidEndZooming:(LFClippingView *)clippingView
 {
     self.gridView.showMaskLayer = YES;
 }
 
-- (void)lf_zoomViewWillBeginDragging:(LFZoomView *)zoomView
+- (void)lf_clippingViewWillBeginDragging:(LFClippingView *)clippingView
 {
+    /** 移动开始，隐藏 */
     self.gridView.showMaskLayer = NO;
 }
-- (void)lf_zoomViewDidEndDecelerating:(LFZoomView *)zoomView
+- (void)lf_clippingViewDidEndDecelerating:(LFClippingView *)clippingView
 {
+    /** 移动结束，显示 */
     self.gridView.showMaskLayer = YES;
 }
 
-#pragma mark - lf_gridViewDelegate
-
+#pragma mark - LFGridViewDelegate
 - (void)lf_gridViewDidBeginResizing:(LFGridView *)gridView
 {
     gridView.showMaskLayer = NO;
@@ -177,8 +193,8 @@
 }
 - (void)lf_gridViewDidEndResizing:(LFGridView *)gridView
 {
-//    [self.zoomView zoomOutToRect:gridView.gridRect];
-    /** 让zoomView的动画回调后才显示showMaskLayer */
+    [self.clippingView zoomOutToRect:gridView.gridRect];
+    /** 让clippingView的动画回调后才显示showMaskLayer */
     //    self.gridView.showMaskLayer = YES;
 }
 
@@ -211,6 +227,8 @@
     UIView *view = [super hitTest:point withEvent:event];
     if (!self.isClipping && [view isKindOfClass:[LFClippingView class]]) { /** 非编辑状态，改变触发响应最顶层的scrollView */
         return self;
+    } else if (self.isClipping && view == self) {
+        return self.clippingView;
     }
     return view;
 }

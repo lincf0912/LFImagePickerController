@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "LFScrollView.h"
+#import "LFEdittingProtocol.h"
 
-@interface LFEdittingView : LFScrollView
+@interface LFEdittingView : LFScrollView <LFEdittingProtocol>
 
 @property (nonatomic, strong) UIImage *image;
 

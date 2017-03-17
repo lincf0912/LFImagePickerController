@@ -95,11 +95,6 @@
 #pragma mark - 生成编辑图片
 - (BOOL)mergedContainerLayer
 {
-    /** 重置控件 */
-    [_drawView reset];
-    [_stickerView reset];
-    [_splashView reset];
-    
     /** 必须存在背景 */
     if (_container) {
         if (!self.isWork) { /** 无效编辑 */
@@ -120,40 +115,6 @@
 {
     _delegate = delegate;
     /** 设置代理回调 */
-    __weak typeof(self) weakSelf = self;
-    
-    /** 绘画 */
-    _drawView.drawBegan = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan:)]) {
-            [weakSelf.delegate lf_photoEditDrawBegan:weakSelf];
-        }
-    };
-    
-    _drawView.drawEnded = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawEnded:)]) {
-            [weakSelf.delegate lf_photoEditDrawEnded:weakSelf];
-        }
-    };
-    
-    /** 贴图 */
-    _stickerView.tapEnded = ^(UIView *view, LFStickerViewType type){
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditsticker:didSelectView:)]) {
-            [weakSelf.delegate lf_photoEditsticker:weakSelf didSelectView:view];
-        }
-    };
-    
-    /** 模糊 */
-    _splashView.splashBegan = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan:)]) {
-            [weakSelf.delegate lf_photoEditSplashBegan:weakSelf];
-        }
-    };
-    
-    _splashView.splashEnded = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashEnded:)]) {
-            [weakSelf.delegate lf_photoEditSplashEnded:weakSelf];
-        }
-    };
 
 }
 
@@ -196,11 +157,11 @@
     _splashEnable = splashEnable;
     _splashView.userInteractionEnabled = splashEnable;
     if (splashEnable && _splashView.image == nil) {
-        if ([self.delegate respondsToSelector:@selector(lf_photoEditSplashImage:)]) {
-            UIImage *image = [self.delegate lf_photoEditSplashImage:self];
-            /** 创建马赛克模糊 */
-            [self.splashView setImage:image mosaicLevel:10];
-        }
+//        if ([self.delegate respondsToSelector:@selector(lf_photoEditSplashImage:)]) {
+//            UIImage *image = [self.delegate lf_photoEditSplashImage:self];
+//            /** 创建马赛克模糊 */
+//            [self.splashView setImage:image mosaicLevel:10];
+//        }
     }
 }
 /** 是否可撤销 */
@@ -234,16 +195,16 @@
 {
     _clippingEnable = clippingEnable;
 #warning 增加切换动画
-    if (clippingEnable) {
-        if ([self.delegate respondsToSelector:@selector(lf_photoEditClippingImage:)]) {
-            UIImage *image = [self.delegate lf_photoEditClippingImage:self];
-            /** 设置剪切图片 */
-//            self.clippingView.image = image;
-        }
-        [_container addSubview:self.clippingView];
-    } else {
-        [self.clippingView removeFromSuperview];
-    }
+//    if (clippingEnable) {
+//        if ([self.delegate respondsToSelector:@selector(lf_photoEditClippingImage:)]) {
+//            UIImage *image = [self.delegate lf_photoEditClippingImage:self];
+//            /** 设置剪切图片 */
+////            self.clippingView.image = image;
+//        }
+//        [_container addSubview:self.clippingView];
+//    } else {
+//        [self.clippingView removeFromSuperview];
+//    }
 }
 
 /** 剪裁还原 */

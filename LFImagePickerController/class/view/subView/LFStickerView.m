@@ -16,13 +16,9 @@
 
 @implementation LFStickerView
 
-- (void)reset
++ (void)LFStickerViewUnAcive
 {
     [LFMovingView setActiveEmoticonView:nil];
-    [self.subviews enumerateObjectsUsingBlock:^(LFMovingView * _Nonnull view, NSUInteger idx, BOOL * _Nonnull stop) {
-        view.tapEnded = nil;
-    }];
-    self.tapEnded = nil;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -47,19 +43,19 @@
     return (view == self ? nil : view);
 }
 
-- (void)setTapEnded:(void (^)(UIView *, LFStickerViewType))tapEnded
+- (void)setTapEnded:(void (^)(UIView *, LFStickerViewType, BOOL))tapEnded
 {
     _tapEnded = tapEnded;
     __weak typeof(self) weakSelf = self;
     for (LFMovingView *subView in self.subviews) {
         if ([subView isKindOfClass:[LFMovingView class]]) {
             if (self.tapEnded) {
-                [subView setTapEnded:^(UIView *view) {
+                [subView setTapEnded:^(UIView *view, BOOL isActive) {
                     LFStickerViewType type = LFStickerViewType_image;
                     if ([view isKindOfClass:[UILabel class]]) {
                         type = LFStickerViewType_text;
                     }
-                    weakSelf.tapEnded(view, type);
+                    weakSelf.tapEnded(view, type, isActive);
                 }];
             } else {
                 [subView setTapEnded:nil];
@@ -80,12 +76,12 @@
     
     if (self.tapEnded) {
         __weak typeof(self) weakSelf = self;
-        [movingView setTapEnded:^(UIView *view) {
+        [movingView setTapEnded:^(UIView *view, BOOL isActive) {
             LFStickerViewType type = LFStickerViewType_image;
             if ([view isKindOfClass:[UILabel class]]) {
                 type = LFStickerViewType_text;
             }
-            weakSelf.tapEnded(view, type);
+            weakSelf.tapEnded(view, type, isActive);
         }];
     }
     
@@ -99,7 +95,7 @@
     imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
     LFMovingView *movingView = [self createBaseMovingView:imageView];
     movingView.maxScale = 2.f;
-    CGFloat ratio = MIN( (0.2 * self.width) / movingView.width, (0.2 * self.height) / movingView.height);
+    CGFloat ratio = MIN( (0.2 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
     [movingView setScale:ratio];
 }
 
@@ -134,23 +130,6 @@
     LFMovingView *movingView = [self createBaseMovingView:label];
     CGFloat ratio = MIN( (0.8 * self.width) / movingView.width, (0.8 * self.height) / movingView.height);
     [movingView setScale:ratio];
-}
-
-- (id)copyWithZone:(NSZone *)zone{
-    LFStickerView *stickerView = [[[self class] allocWithZone:zone] init];
-    stickerView.frame = self.frame;
-    for (LFMovingView *movingView in self.subviews) {
-        if ([movingView.view isKindOfClass:[UIImageView class]]) { /** 图片贴图 */
-            [stickerView createImage:((UIImageView *)movingView.view).image];
-        } else if ([movingView.view isKindOfClass:[UILabel class]]) { /** 文字贴图 */
-            [stickerView createText:((UILabel *)movingView.view).text];
-        }
-        LFMovingView *newMovingView = stickerView.subviews.lastObject;
-        newMovingView.frame = movingView.frame;
-        [newMovingView setScale:movingView.scale rotation:movingView.rotation];
-    }
-    
-    return stickerView;
 }
 
 @end

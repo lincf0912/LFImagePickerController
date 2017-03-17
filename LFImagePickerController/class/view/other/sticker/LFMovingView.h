@@ -30,6 +30,6 @@
 @property (nonatomic, readonly) CGFloat rotation;
 
 
-@property (nonatomic, copy) void(^tapEnded)(UIView *view);
+@property (nonatomic, copy) void(^tapEnded)(UIView *view, BOOL isActive);
 
 @end

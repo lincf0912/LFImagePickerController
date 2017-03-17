@@ -100,9 +100,9 @@
         button.frame = edit_drawMenu.bounds;
         [edit_drawMenu addSubview:button];
         
-        UIButton *edit_splashMenu_revoke = [self revokeButtonWithType:0];
-        [edit_drawMenu addSubview:edit_splashMenu_revoke];
-        self.edit_splashMenu_revoke = edit_splashMenu_revoke;
+        UIButton *edit_drawMenu_revoke = [self revokeButtonWithType:0];
+        [edit_drawMenu addSubview:edit_drawMenu_revoke];
+        self.edit_drawMenu_revoke = edit_drawMenu_revoke;
         
         self.edit_drawMenu = edit_drawMenu;
         
@@ -172,6 +172,7 @@
     switch (button.tag) {
         case 0:
         {
+            [self showMenuView:_edit_drawMenu];
             if (button.isSelected == NO) {
                 if ([self.delegate respondsToSelector:@selector(lf_editToolbar:canRevokeAtIndex:)]) {
                     BOOL canRevoke = [self.delegate lf_editToolbar:self canRevokeAtIndex:button.tag];
@@ -179,11 +180,11 @@
                 }
             }
             [self changedButton:button];
-            [self showMenuView:_edit_drawMenu];
         }
             break;
         case 3:
         {
+            [self showMenuView:_edit_splashMenu];
             if (button.isSelected == NO) {
                 if ([self.delegate respondsToSelector:@selector(lf_editToolbar:canRevokeAtIndex:)]) {
                     BOOL canRevoke = [self.delegate lf_editToolbar:self canRevokeAtIndex:button.tag];
@@ -191,7 +192,6 @@
                 }
             }
             [self changedButton:button];
-            [self showMenuView:_edit_splashMenu];
         }
             break;
         default:
@@ -222,8 +222,8 @@
         _edit_splashMenu_action_button = button;
         if ([self.delegate respondsToSelector:@selector(lf_editToolbar:subDidSelectAtIndex:)]) {
             NSString *tag = [NSString stringWithFormat:@"%ld", (long)button.tag];
-            NSInteger row = [[tag substringToIndex:1] integerValue];
-            NSInteger section = [[tag substringFromIndex:1] integerValue];
+            NSInteger row = [[tag substringFromIndex:1] integerValue];
+            NSInteger section = [[tag substringToIndex:1] integerValue];
             [self.delegate lf_editToolbar:self subDidSelectAtIndex:[NSIndexPath indexPathForRow:row inSection:section]];
         }
     }
@@ -268,6 +268,12 @@
         _selectButton = nil;
     }
     return _selectButton;
+}
+
+/** 当前激活主菜单 */
+- (NSUInteger)mainSelectAtIndex
+{
+    return _selectButton ? _selectButton.tag : -1;
 }
 
 /** 允许撤销 */

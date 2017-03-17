@@ -8,10 +8,10 @@
 
 #import "LFEdittingView.h"
 #import "LFGridView.h"
-#import "LFZoomView.h"
 #import "LFClippingView.h"
 
 #import "UIView+LFFrame.h"
+#import "LFCancelBlock.h"
 
 #import <AVFoundation/AVFoundation.h>
 
@@ -22,9 +22,14 @@
 
 /** 剪裁尺寸, CGRectInset(self.bounds, 30, 50) */
 @property (nonatomic, assign) CGRect clippingRect;
+
+@property (nonatomic, copy) lf_dispatch_cancelable_block_t maskViewBlock;
+
 @end
 
 @implementation LFEdittingView
+
+@synthesize image = _image;
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -68,7 +73,7 @@
     _image = image;
     self.clippingView.image = image;
     CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
-    self.clippingRect = cropRect;
+    self.gridView.gridRect = cropRect;
 }
 
 - (void)setClippingRect:(CGRect)clippingRect
@@ -104,40 +109,43 @@
     [self setZoomScale:1.f];
     _isClipping = isClipping;
     if (isClipping) {
-        /** 显示多余部分 */
-        self.clippingView.clipsToBounds = NO;
         /** 动画切换 */
         if (animated) {
             [UIView animateWithDuration:0.25f animations:^{
                 CGRect rect = CGRectInset(self.frame , 20, 50);
-                self.clippingRect = AVMakeRectWithAspectRatioInsideRect(_image.size, rect);
+                self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, rect);
+            } completion:^(BOOL finished) {
+                /** 显示多余部分 */
+                self.clippingView.clipsToBounds = NO;
             }];
             [UIView animateWithDuration:0.25f delay:0.1f options:UIViewAnimationOptionCurveEaseIn animations:^{
                 self.gridView.alpha = 1.f;
             } completion:nil];
         } else {
             CGRect rect = CGRectInset(self.frame , 20, 50);
-            self.clippingRect = AVMakeRectWithAspectRatioInsideRect(_image.size, rect);
+            self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, rect);
             self.gridView.alpha = 1.f;
+            /** 显示多余部分 */
+            self.clippingView.clipsToBounds = NO;
         }
     } else {
         if (animated) {
+            /** 剪裁多余部分 */
+            self.clippingView.clipsToBounds = YES;
             [UIView animateWithDuration:0.1f animations:^{
                 self.gridView.alpha = 0.f;
             } completion:^(BOOL finished) {
                 [UIView animateWithDuration:0.25f animations:^{
-                    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(_image.size, self.frame);
+                    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, self.frame);
                     self.clippingRect = cropRect;
-                } completion:^(BOOL finished) {
-                    /** 剪裁多余部分 */
-                    self.clippingView.clipsToBounds = YES;
                 }];
             }];
         } else {
-            self.gridView.alpha = 0.f;
-            CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(_image.size, self.frame);
-            self.clippingRect = cropRect;
+            /** 剪裁多余部分 */
             self.clippingView.clipsToBounds = YES;
+            self.gridView.alpha = 0.f;
+            CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, self.frame);
+            self.clippingRect = cropRect;
         }
     }
 }
@@ -168,18 +176,25 @@
 }
 - (void)lf_clippingViewDidEndZooming:(LFClippingView *)clippingView
 {
-    self.gridView.showMaskLayer = YES;
+    __weak typeof(self) weakSelf = self;
+    self.maskViewBlock = lf_dispatch_block_t(0.25f, ^{
+        weakSelf.gridView.showMaskLayer = YES;
+    });
 }
 
 - (void)lf_clippingViewWillBeginDragging:(LFClippingView *)clippingView
 {
     /** 移动开始，隐藏 */
     self.gridView.showMaskLayer = NO;
+    lf_dispatch_cancel(self.maskViewBlock);
 }
 - (void)lf_clippingViewDidEndDecelerating:(LFClippingView *)clippingView
 {
     /** 移动结束，显示 */
-    self.gridView.showMaskLayer = YES;
+    __weak typeof(self) weakSelf = self;
+    self.maskViewBlock = lf_dispatch_block_t(0.25f, ^{
+        weakSelf.gridView.showMaskLayer = YES;
+    });
 }
 
 #pragma mark - LFGridViewDelegate
@@ -238,6 +253,94 @@
     CGFloat offsetX = (self.width > self.contentSize.width) ? ((self.width - self.contentSize.width) * 0.5) : 0.0;
     CGFloat offsetY = (self.height > self.contentSize.height) ? ((self.height - self.contentSize.height) * 0.5) : 0.0;
     self.clippingView.center = CGPointMake(self.contentSize.width * 0.5 + offsetX, self.contentSize.height * 0.5 + offsetY);
+}
+
+#pragma mark - LFEdittingProtocol
+
+- (void)setEditDelegate:(id<LFPhotoEditDelegate>)editDelegate
+{
+    self.clippingView.editDelegate = editDelegate;
+}
+- (id<LFPhotoEditDelegate>)editDelegate
+{
+    return self.clippingView.editDelegate;
+}
+
+/** 禁用其他功能 */
+- (void)photoEditEnable:(BOOL)enable
+{
+    [self.clippingView photoEditEnable:enable];
+}
+
+#pragma mark - 绘画功能
+/** 启用绘画功能 */
+- (void)setDrawEnable:(BOOL)drawEnable
+{
+    self.clippingView.drawEnable = drawEnable;
+}
+- (BOOL)drawEnable
+{
+    return self.clippingView.drawEnable;
+}
+
+- (BOOL)drawCanUndo
+{
+    return [self.clippingView drawCanUndo];
+}
+- (void)drawUndo
+{
+    [self.clippingView drawUndo];
+}
+
+#pragma mark - 贴图功能
+/** 取消激活贴图 */
+- (void)stickerDeactivated
+{
+    [self.clippingView stickerDeactivated];
+}
+
+/** 创建贴图 */
+- (void)createStickerImage:(UIImage *)image
+{
+    [self.clippingView createStickerImage:image];
+}
+
+#pragma mark - 文字功能
+/** 创建文字 */
+- (void)createStickerText:(NSString *)text
+{
+    [self.clippingView createStickerText:text];
+}
+
+#pragma mark - 模糊功能
+/** 启用模糊功能 */
+- (void)setSplashEnable:(BOOL)splashEnable
+{
+    self.clippingView.splashEnable = splashEnable;
+}
+- (BOOL)splashEnable
+{
+    return self.clippingView.splashEnable;
+}
+/** 是否可撤销 */
+- (BOOL)splashCanUndo
+{
+    return [self.clippingView splashCanUndo];
+}
+/** 撤销模糊 */
+- (void)splashUndo
+{
+    [self.clippingView splashUndo];
+}
+
+- (void)setSplashState:(BOOL)splashState
+{
+    self.clippingView.splashState = splashState;
+}
+
+- (BOOL)splashState
+{
+    return self.clippingView.splashState;
 }
 
 @end

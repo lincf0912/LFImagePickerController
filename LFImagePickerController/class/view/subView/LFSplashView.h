@@ -14,10 +14,7 @@ typedef NS_ENUM(NSUInteger, LFSplashStateType) {
     LFSplashStateType_Blurry,
 };
 
-@interface LFSplashView : UIView <NSCopying>
-
-/** 重置 */
-- (void)reset;
+@interface LFSplashView : UIView
 
 /** 设置图片 */
 - (void)setImage:(UIImage *)image mosaicLevel:(NSUInteger)level;

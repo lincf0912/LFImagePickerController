@@ -14,6 +14,9 @@
 
 @property (nonatomic, weak) id<LFEditToolbarDelegate> delegate;
 
+/** 当前激活主菜单 return -1 没有激活 */
+- (NSUInteger)mainSelectAtIndex;
+
 /** 允许撤销 */
 - (void)setRevokeAtIndex:(NSUInteger)index;
 

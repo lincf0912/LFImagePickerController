@@ -35,15 +35,6 @@
 
 @implementation LFDrawView
 
-/** 重置 */
-- (void)reset
-{
-    _lineWidth = 3.f;
-    _lineColor = [UIColor redColor];
-    self.drawBegan = nil;
-    self.drawEnded = nil;
-}
-
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -53,6 +44,14 @@
     return self;
 }
 
+//- (void)setFrame:(CGRect)frame
+//{
+//    [super setFrame:frame];
+//    [[self.layer sublayers] enumerateObjectsUsingBlock:^(CALayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        obj.frame = self.bounds;
+//    }];
+//}
+
 - (void)customInit
 {
     _lineWidth = 3.f;
@@ -60,7 +59,10 @@
     _slayerArray = [@[] mutableCopy];
     _lineArray = [@[] mutableCopy];
     self.backgroundColor = [UIColor clearColor];
+    self.layer.anchorPoint = CGPointMake(0, 0);
+    self.layer.position = CGPointMake(0, 0);
 }
+
 
 #pragma mark - 创建图层
 - (CAShapeLayer *)createShapeLayer:(LFDrawBezierPath *)path
@@ -165,22 +167,4 @@
     [self.slayerArray removeLastObject];
     [self.lineArray removeLastObject];
 }
-
-#pragma mark - NSCopying
-- (id)copyWithZone:(NSZone *)zone{
-    LFDrawView *drawView = [[[self class] allocWithZone:zone] init];
-    drawView.frame = self.frame;
-    drawView.lineColor = self.lineColor;
-    drawView.lineWidth = self.lineWidth;
-    drawView.lineArray = [self.lineArray mutableCopy];
-    /** 复制图层 */
-    for (LFDrawBezierPath *path in drawView.lineArray) {
-        CAShapeLayer *layer = [drawView createShapeLayer:path];
-        [drawView.layer addSublayer:layer];
-        [drawView.slayerArray addObject:layer];
-    }
-    
-    return drawView;
-}
-
 @end

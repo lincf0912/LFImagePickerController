@@ -39,6 +39,7 @@
 
 - (void)setMaskRect:(CGRect)maskRect
 {
+    [self removeAnimationForKey:@"lf_maskLayer_opacityAnimate"];
     CGMutablePathRef mPath = CGPathCreateMutable();
     CGPathAddRect(mPath, NULL, self.bounds);
     CGPathAddRect(mPath, NULL, maskRect);

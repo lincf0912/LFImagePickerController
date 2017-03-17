@@ -7,13 +7,16 @@
 //
 
 #import "LFClippingView.h"
+#import "LFZoomingView.h"
 #import "UIView+LFFrame.h"
 #import <AVFoundation/AVFoundation.h>
 
 @interface LFClippingView () <UIScrollViewDelegate>
 
-@property (nonatomic, weak) UIView *zoomingView;
-@property (nonatomic, weak) UIImageView *imageView;
+@property (nonatomic, weak) LFZoomingView *zoomingView;
+
+/** 设置图片时，计算的位置 */
+@property (nonatomic, assign) CGRect imageFrame;
 
 @end
 
@@ -40,17 +43,9 @@
     self.alwaysBounceHorizontal = YES;
     self.alwaysBounceVertical = YES;
     
-    UIView *zoomingView = [[UIView alloc] initWithFrame:self.bounds];
-    zoomingView.backgroundColor = [UIColor clearColor];
-    zoomingView.contentMode = UIViewContentModeScaleAspectFit;
+    LFZoomingView *zoomingView = [[LFZoomingView alloc] initWithFrame:self.bounds];
     [self addSubview:zoomingView];
     self.zoomingView = zoomingView;
-    
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:self.zoomingView.bounds];
-    imageView.backgroundColor = [UIColor clearColor];
-    imageView.contentMode = UIViewContentModeScaleAspectFit;
-    [self.zoomingView addSubview:imageView];
-    self.imageView = imageView;
     
     /** 默认编辑范围 */
     self.editRect = self.bounds;
@@ -59,28 +54,28 @@
 - (void)setImage:(UIImage *)image
 {
     _image = image;
-    [self.imageView setImage:image];
     [self setZoomScale:1.f];
+    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
+    self.frame = cropRect;
+    self.imageFrame = cropRect;
+    [self.zoomingView setImage:image];
 }
 
 - (void)setCropRect:(CGRect)cropRect
 {
+    _cropRect = cropRect;
     /** 当前UI位置未改变时，获取contentOffset与contentSize */
     /** 计算未改变前当前视图在contentSize的位置比例 */
     CGFloat scaleX = MAX(self.contentOffset.x/(self.contentSize.width-self.width), 0);
     CGFloat scaleY = MAX(self.contentOffset.y/(self.contentSize.height-self.height), 0);
     /** 获取contentOffset必须在设置contentSize之前，否则重置frame 或 contentSize后contentOffset会发送变化 */
     
-    _cropRect = cropRect;
     CGRect oldFrame = self.frame;
     self.frame = cropRect;
     
     /** 视图位移 */
     CGSize size = CGSizeMake(CGRectGetWidth(oldFrame)-CGRectGetWidth(self.frame), CGRectGetHeight(oldFrame)-CGRectGetHeight(self.frame));
-    self.zoomingView.width -= size.width*self.zoomScale;
-    self.zoomingView.height -= size.height*self.zoomScale;
-    self.imageView.width -= size.width;
-    self.imageView.height -= size.height;
+    [self.zoomingView scaleSize:size zoomScale:self.zoomScale];
     
 //    CGPoint offset = CGPointMake(CGRectGetMinX(oldFrame)-CGRectGetMinX(self.frame), CGRectGetMinY(oldFrame)-CGRectGetMinY(self.frame));
     /** 重设contentSize */
@@ -301,6 +296,96 @@
         return self;
     }
     return view;
+}
+
+
+#pragma mark - LFEdittingProtocol
+
+- (void)setEditDelegate:(id<LFPhotoEditDelegate>)editDelegate
+{
+    self.zoomingView.editDelegate = editDelegate;
+}
+
+- (id<LFPhotoEditDelegate>)editDelegate
+{
+    return self.zoomingView.editDelegate;
+}
+
+/** 禁用其他功能 */
+- (void)photoEditEnable:(BOOL)enable
+{
+    [self.zoomingView photoEditEnable:enable];
+}
+
+#pragma mark - 绘画功能
+/** 启用绘画功能 */
+- (void)setDrawEnable:(BOOL)drawEnable
+{
+    self.zoomingView.drawEnable = drawEnable;
+}
+- (BOOL)drawEnable
+{
+    return self.zoomingView.drawEnable;
+}
+
+- (BOOL)drawCanUndo
+{
+    return [self.zoomingView drawCanUndo];
+}
+- (void)drawUndo
+{
+    [self.zoomingView drawUndo];
+}
+
+#pragma mark - 贴图功能
+/** 取消激活贴图 */
+- (void)stickerDeactivated
+{
+    [self.zoomingView stickerDeactivated];
+}
+
+/** 创建贴图 */
+- (void)createStickerImage:(UIImage *)image
+{
+    [self.zoomingView createStickerImage:image];
+}
+
+#pragma mark - 文字功能
+/** 创建文字 */
+- (void)createStickerText:(NSString *)text
+{
+    [self.zoomingView createStickerText:text];
+}
+
+#pragma mark - 模糊功能
+/** 启用模糊功能 */
+- (void)setSplashEnable:(BOOL)splashEnable
+{
+    self.zoomingView.splashEnable = splashEnable;
+}
+- (BOOL)splashEnable
+{
+    return self.zoomingView.splashEnable;
+}
+/** 是否可撤销 */
+- (BOOL)splashCanUndo
+{
+    return [self.zoomingView splashCanUndo];
+}
+/** 撤销模糊 */
+- (void)splashUndo
+{
+    [self.zoomingView splashUndo];
+}
+
+- (void)setSplashState:(BOOL)splashState
+{
+    self.zoomingView.splashState = splashState;
+}
+
+- (BOOL)splashState
+{
+    return self.zoomingView.splashState;
 }
 
 @end

@@ -21,7 +21,8 @@
 #define kSplashMenu_Button_Tag2 96
 
 
-@interface LFPhotoEdittingController () <LFEditToolbarDelegate>
+
+@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFPhotoEditDelegate>
 {
     /** 编辑模式 */
     LFEdittingView *_edittingView;
@@ -41,6 +42,8 @@
 
 /** 旧编辑对象 */
 @property (nonatomic, strong) LFPhotoEdit *oldPhotoEdit;
+
+@property (nonatomic, weak) UIView *selectStickerView;
 @end
 
 @implementation LFPhotoEdittingController
@@ -91,6 +94,7 @@
 - (void)configScrollView
 {
     _edittingView = [[LFEdittingView alloc] initWithFrame:self.view.bounds];
+    _edittingView.editDelegate = self;
     if (_editImage) {
         [self setEditImage:_editImage];
     }
@@ -179,23 +183,40 @@
 /** 一级菜单点击事件 */
 - (void)lf_editToolbar:(LFEditToolbar *)editToolbar mainDidSelectAtIndex:(NSUInteger)index
 {
+    /** 取消贴图激活 */
+    [_edittingView stickerDeactivated];
+    
     switch (index) {
         case 0:
         {
-            
+            /** 关闭涂抹 */
+            _edittingView.splashEnable = NO;
+            /** 打开绘画 */
+            _edittingView.drawEnable = !_edittingView.drawEnable;
         }
             break;
         case 1:
+        {
+            [_edittingView createStickerImage:bundleStickerImageNamed(@"001.png")];
+        }
             break;
         case 2:
+        {
+            [_edittingView createStickerText:@"挖泥机"];
+        }
             break;
         case 3:
         {
-            
+            /** 关闭绘画 */
+            _edittingView.drawEnable = NO;
+            /** 打开涂抹 */
+            _edittingView.splashEnable = !_edittingView.splashEnable;
         }
             break;
         case 4:
         {
+            /** 关闭所有编辑 */
+            [_edittingView photoEditEnable:NO];
             [_edittingView setIsClipping:YES animated:YES];
             /** 切换菜单 */
             [self.view addSubview:self.edit_clipping_toolBar];
@@ -213,17 +234,74 @@
 /** 二级菜单点击事件-撤销 */
 - (void)lf_editToolbar:(LFEditToolbar *)editToolbar subDidRevokeAtIndex:(NSUInteger)index
 {
-    
+    switch (index) {
+        case 0:
+        {
+            [_edittingView drawUndo];
+        }
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+        {
+            [_edittingView splashUndo];
+        }
+            break;
+        case 4:
+            break;
+        default:
+            break;
+    }
 }
 /** 二级菜单点击事件-按钮 */
 - (void)lf_editToolbar:(LFEditToolbar *)editToolbar subDidSelectAtIndex:(NSIndexPath *)indexPath
 {
-    
+    switch (indexPath.section) {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+        {
+            _edittingView.splashState = indexPath.row == 1;
+        }
+            break;
+        case 4:
+            break;
+        default:
+            break;
+    }
 }
 /** 撤销允许权限获取 */
 - (BOOL)lf_editToolbar:(LFEditToolbar *)editToolbar canRevokeAtIndex:(NSUInteger)index
 {
-    return YES;
+    BOOL canUndo = NO;
+    switch (index) {
+        case 0:
+        {
+            canUndo = [_edittingView drawCanUndo];
+        }
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+        {
+            canUndo = [_edittingView splashCanUndo];
+        }
+            break;
+        case 4:
+            break;
+        default:
+            break;
+    }
+    
+    return canUndo;
 }
 
 
@@ -268,6 +346,9 @@
 
 - (void)clippingCancel:(UIButton *)button
 {
+    /** 开启编辑 */
+    [_edittingView photoEditEnable:YES];
+    
     singleTapRecognizer.enabled = YES;
     [_edittingView setIsClipping:NO animated:YES];
     [UIView animateWithDuration:.25f animations:^{
@@ -291,58 +372,51 @@
 
 #pragma mark - LFPhotoEditDrawDelegate
 /** 开始绘画 */
-- (void)lf_photoEditDrawBegan:(LFPhotoEdit *)editer
+- (void)lf_photoEditDrawBegan
 {
     _isHideNaviBar = YES;
     [self changedBarState];
 }
 /** 结束绘画 */
-- (void)lf_photoEditDrawEnded:(LFPhotoEdit *)editer
+- (void)lf_photoEditDrawEnded
 {
     /** 撤销生效 */
-    if (_photoEdit.drawCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_draw];
+    if (_edittingView.drawCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_draw];
     
     _isHideNaviBar = NO;
     [self changedBarState];
 }
 
 #pragma mark - LFPhotoEditStickerDelegate
-- (void)lf_photoEditsticker:(LFPhotoEdit *)editer didSelectView:(UIView *)view
+- (void)lf_photoEditstickerDidSelectView:(UIView *)view isActive:(BOOL)isActive
 {
     _isHideNaviBar = NO;
     [self changedBarState];
+    if (isActive) { /** 选中的情况下点击 */
+        if ([view isKindOfClass:[UILabel class]]) {
+            /** 文字情况可更改 */
+        }
+    }
 }
 
 #pragma mark - LFPhotoEditSplashDelegate
 /** 开始模糊 */
-- (void)lf_photoEditSplashBegan:(LFPhotoEdit *)editer
+- (void)lf_photoEditSplashBegan
 {
     _isHideNaviBar = YES;
     [self changedBarState];
 }
 /** 结束模糊 */
-- (void)lf_photoEditSplashEnded:(LFPhotoEdit *)editer
+- (void)lf_photoEditSplashEnded
 {
     /** 撤销生效 */
-    if (_photoEdit.splashCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_splash];
+    if (_edittingView.splashCanUndo) [_edit_toolBar setRevokeAtIndex:LFPhotoEdittingType_splash];
     
     _isHideNaviBar = NO;
     [self changedBarState];
 }
-/** 创建马赛克图片 */
-- (UIImage *)lf_photoEditSplashImage:(LFPhotoEdit *)editer
-{
-    /** 压缩图片 */
-    return [self.editImage fastestCompressImageWithSize:200];
-}
 
-#pragma mark - LFPhotoEditClippingDelegate
-/** 提供需要剪切的图片 */
-- (UIImage *)lf_photoEditClippingImage:(LFPhotoEdit *)editer
-{
-    return self.editImage;
-}
-
+#pragma mark - private
 - (void)changedBarState
 {
     [UIView animateWithDuration:.25f animations:^{

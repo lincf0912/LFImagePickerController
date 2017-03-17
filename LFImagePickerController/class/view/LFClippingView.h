@@ -7,10 +7,11 @@
 //
 
 #import "LFScrollView.h"
+#import "LFEdittingProtocol.h"
 
 @protocol LFClippingViewDelegate;
 
-@interface LFClippingView : LFScrollView
+@interface LFClippingView : LFScrollView <LFEdittingProtocol>
 
 @property (nonatomic, strong) UIImage *image;
 
@@ -34,7 +35,7 @@
 - (void (^)(CGRect))lf_clippingViewWillBeginZooming:(LFClippingView *)clippingView;
 - (void)lf_clippingViewDidEndZooming:(LFClippingView *)clippingView;
 
-/** 移动视图 */
+/** 移动视图(包含缩放) */
 - (void)lf_clippingViewWillBeginDragging:(LFClippingView *)clippingView;
 - (void)lf_clippingViewDidEndDecelerating:(LFClippingView *)clippingView;
 

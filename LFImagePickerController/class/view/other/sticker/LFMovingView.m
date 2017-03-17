@@ -26,6 +26,8 @@
 
 @property (nonatomic, weak) UIView *customView;
 
+@property (nonatomic, assign) BOOL isActive;
+
 @end
 
 @implementation LFMovingView
@@ -134,6 +136,7 @@
 
 - (void)setActive:(BOOL)active
 {
+    _isActive = active;
     _deleteButton.hidden = !active;
     _circleView.hidden = !active;
     _contentView.layer.borderWidth = (active) ? 1/_scale : 0;
@@ -212,7 +215,7 @@
 
 - (void)viewDidTap:(UITapGestureRecognizer*)sender
 {
-    if (self.tapEnded) self.tapEnded(self.customView);
+    if (self.tapEnded) self.tapEnded(self.customView, _isActive);
     [[self class] setActiveEmoticonView:self];
 }
 

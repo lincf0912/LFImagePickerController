@@ -99,23 +99,6 @@
     [self.splashView setImage:image mosaicLevel:10];
 }
 
-- (void)scaleSize:(CGSize)size zoomScale:(CGFloat)zoomScale
-{
-    self.width -= size.width*zoomScale;
-    self.height -= size.height*zoomScale;
-    
-    /** 子控件更新 */
-    [[self subviews] enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        /** 计算缩放比例 */
-        CGFloat scaleX = (obj.width-size.width)/obj.width;
-        CGFloat scaleY = (obj.height-size.height)/obj.height;
-        obj.transform = CGAffineTransformScale(obj.transform, scaleX, scaleY);
-        obj.origin = CGPointZero;
-//        obj.width -= size.width;
-//        obj.height -= size.height;
-    }];
-}
-
 #pragma mark - LFEdittingProtocol
 
 - (void)setEditDelegate:(id<LFPhotoEditDelegate>)editDelegate

@@ -13,7 +13,5 @@
 
 @property (nonatomic, strong) UIImage *image;
 
-/** 缩放当前UI大小 */
-- (void)scaleSize:(CGSize)size zoomScale:(CGFloat)zoomScale;
 @end
 

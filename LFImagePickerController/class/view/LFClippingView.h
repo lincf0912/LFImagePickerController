@@ -17,6 +17,11 @@
 
 @property (nonatomic, weak) id<LFClippingViewDelegate> clippingDelegate;
 
+/** 是否重置中 */
+@property (nonatomic, readonly) BOOL isReseting;
+/** 是否可还原 */
+@property (nonatomic, readonly) BOOL canReset;
+
 /** 可编辑范围 */
 @property (nonatomic, assign) CGRect editRect;
 /** 剪切范围 */

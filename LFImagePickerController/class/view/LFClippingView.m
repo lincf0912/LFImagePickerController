@@ -64,46 +64,78 @@
 - (void)setCropRect:(CGRect)cropRect
 {
     _cropRect = cropRect;
+    
+//    CGFloat scale = self.zoomScale;
+    
     /** 当前UI位置未改变时，获取contentOffset与contentSize */
     /** 计算未改变前当前视图在contentSize的位置比例 */
-    CGFloat scaleX = MAX(self.contentOffset.x/(self.contentSize.width-self.width), 0);
-    CGFloat scaleY = MAX(self.contentOffset.y/(self.contentSize.height-self.height), 0);
+    CGPoint contentOffset = self.contentOffset;
+    CGFloat scaleX = MAX(contentOffset.x/(self.contentSize.width-self.width), 0);
+    CGFloat scaleY = MAX(contentOffset.y/(self.contentSize.height-self.height), 0);
     /** 获取contentOffset必须在设置contentSize之前，否则重置frame 或 contentSize后contentOffset会发送变化 */
     
+//    [self setZoomScale:1.f];
     CGRect oldFrame = self.frame;
     self.frame = cropRect;
     
+    CGFloat scale = self.zoomScale;
     /** 视图位移 */
-    CGSize size = CGSizeMake(CGRectGetWidth(oldFrame)-CGRectGetWidth(self.frame), CGRectGetHeight(oldFrame)-CGRectGetHeight(self.frame));
-    [self.zoomingView scaleSize:size zoomScale:self.zoomScale];
+    CGFloat scaleZX = CGRectGetWidth(cropRect)/(CGRectGetWidth(oldFrame)/scale);
+    CGFloat scaleZY = CGRectGetHeight(cropRect)/(CGRectGetHeight(oldFrame)/scale);
     
-//    CGPoint offset = CGPointMake(CGRectGetMinX(oldFrame)-CGRectGetMinX(self.frame), CGRectGetMinY(oldFrame)-CGRectGetMinY(self.frame));
+    if (scaleZX < 1 && scaleZY < 1) {
+        CGFloat minimumZoomScale = self.minimumZoomScale;
+        self.minimumZoomScale = MAX(scaleZX, scaleZY);
+        scale = self.zoomScale - (minimumZoomScale - self.minimumZoomScale);
+    } else {
+        self.maximumZoomScale = MIN(MIN(scaleZX, scaleZY), 5);
+        scale = MIN(scaleZX, scaleZY);
+    }
+    [self setZoomScale:scale];
+    
     /** 重设contentSize */
     self.contentSize = self.zoomingView.size;
-    /** 获取改变contentSize后的contentOffset */
-    CGPoint contentOffset = self.contentOffset;
     /** 获取当前contentOffset的最大限度，根据之前的位置比例计算实际偏移坐标 */
-    contentOffset.x = scaleX > 0 ? (self.contentSize.width-self.width) * scaleX : contentOffset.x;
-    contentOffset.y = scaleY > 0 ? (self.contentSize.height-self.height) * scaleY : contentOffset.y;
+    contentOffset.x = isnan(scaleX) ? contentOffset.x : (scaleX > 0 ? (self.contentSize.width-self.width) * scaleX : contentOffset.x);
+    contentOffset.y = isnan(scaleY) ? contentOffset.y : (scaleY > 0 ? (self.contentSize.height-self.height) * scaleY : contentOffset.y);
     self.contentOffset = CGPointMake(MIN(MAX(contentOffset.x, 0),self.zoomingView.width-self.width), MIN(MAX(contentOffset.y, 0),self.zoomingView.height-self.height));
-}
-
-- (void)doOffset:(CGRect)oldFrame view:(UIView *)view
-{
-    CGPoint offset = CGPointMake(CGRectGetMinX(oldFrame)-CGRectGetMinX(self.frame), CGRectGetMinY(oldFrame)-CGRectGetMinY(self.frame));
-    CGSize size = CGSizeMake(CGRectGetWidth(oldFrame)-CGRectGetWidth(self.frame), CGRectGetHeight(oldFrame)-CGRectGetHeight(self.frame));
-    CGRect newFrame = view.frame;
-    newFrame.origin.x -= offset.x;
-    newFrame.origin.y -= offset.y;
-    newFrame.size.width -= size.width;
-    newFrame.size.height -= size.height;
-    view.frame = newFrame;
 }
 
 - (void)reset
 {
-    [self setZoomScale:1.f];
-    self.cropRect = self.cropRect;
+    if (!_isReseting) {        
+        _isReseting = YES;
+        [UIView animateWithDuration:0.25
+                              delay:0.0
+                            options:UIViewAnimationOptionBeginFromCurrentState
+                         animations:^{
+                             [self setZoomScale:self.minimumZoomScale];
+                             self.frame = (CGRect){CGPointZero, self.zoomingView.size};
+                             self.center = self.superview.center;
+                             /** 重设contentSize */
+                             self.contentSize = self.zoomingView.size;
+                             /** 重置contentOffset */
+                             self.contentOffset = CGPointZero;
+                             if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewWillBeginZooming:)]) {
+                                 void (^block)() = [self.clippingDelegate lf_clippingViewWillBeginZooming:self];
+                                 if (block) block(self.frame);
+                             }
+                         } completion:^(BOOL finished) {
+                             if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewDidEndZooming:)]) {
+                                 [self.clippingDelegate lf_clippingViewDidEndZooming:self];
+                             }
+                             _isReseting = NO;
+                         }];
+    }
+}
+
+- (BOOL)canReset
+{
+    CGRect trueFrame = CGRectMake((CGRectGetWidth(self.superview.frame)-CGRectGetWidth(self.zoomingView.frame))/2
+                                  , (CGRectGetHeight(self.superview.frame)-CGRectGetHeight(self.zoomingView.frame))/2
+                                  , CGRectGetWidth(self.zoomingView.frame)
+                                  , CGRectGetHeight(self.zoomingView.frame));
+    return !(self.zoomScale == self.minimumZoomScale && CGRectEqualToRect(trueFrame, self.frame));
 }
 
 - (CGRect)cappedCropRectInImageRectWithCropRect:(CGRect)cropRect
@@ -160,8 +192,8 @@
     /** 计算缩放比例 */
     CGFloat zoomScale = MIN(self.zoomScale * scale, self.maximumZoomScale);
     /** 特殊图片计算 比例100:1 或 1:100 的情况 */
-    scaledWidth = MIN(scaledWidth, CGRectGetWidth(self.zoomingView.frame) * zoomScale);
-    scaledHeight = MIN(scaledHeight, CGRectGetHeight(self.zoomingView.frame) * zoomScale);
+    scaledWidth = MIN(scaledWidth, CGRectGetWidth(self.zoomingView.frame) * (zoomScale / self.minimumZoomScale));
+    scaledHeight = MIN(scaledHeight, CGRectGetHeight(self.zoomingView.frame) * (zoomScale / self.minimumZoomScale));
     
     /** 计算实际显示坐标 */
     CGRect cropRect = CGRectMake((CGRectGetWidth(self.superview.bounds) - scaledWidth) / 2,

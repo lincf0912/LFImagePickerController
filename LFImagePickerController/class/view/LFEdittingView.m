@@ -113,7 +113,7 @@
         if (animated) {
             [UIView animateWithDuration:0.25f animations:^{
                 CGRect rect = CGRectInset(self.frame , 20, 50);
-                self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, rect);
+                self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.size, rect);
             } completion:^(BOOL finished) {
                 /** 显示多余部分 */
                 self.clippingView.clipsToBounds = NO;
@@ -123,7 +123,7 @@
             } completion:nil];
         } else {
             CGRect rect = CGRectInset(self.frame , 20, 50);
-            self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, rect);
+            self.clippingRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.size, rect);
             self.gridView.alpha = 1.f;
             /** 显示多余部分 */
             self.clippingView.clipsToBounds = NO;
@@ -136,7 +136,7 @@
                 self.gridView.alpha = 0.f;
             } completion:^(BOOL finished) {
                 [UIView animateWithDuration:0.25f animations:^{
-                    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, self.frame);
+                    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.size, self.frame);
                     self.clippingRect = cropRect;
                 }];
             }];
@@ -144,7 +144,7 @@
             /** 剪裁多余部分 */
             self.clippingView.clipsToBounds = YES;
             self.gridView.alpha = 0.f;
-            CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.image.size, self.frame);
+            CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.size, self.frame);
             self.clippingRect = cropRect;
         }
     }
@@ -154,14 +154,7 @@
 - (void)reset
 {
     if (_isClipping) {
-        self.gridView.showMaskLayer = NO;
-        [UIView animateWithDuration:0.25f animations:^{
-            [self.clippingView setZoomScale:1.f];
-            [self.gridView setGridRect:self.clippingRect animated:YES];
-            [self.clippingView setCropRect:self.clippingRect];
-        } completion:^(BOOL finished) {
-            self.gridView.showMaskLayer = YES;
-        }];
+        [self.clippingView reset];
     }
 }
 
@@ -170,7 +163,11 @@
 {
     __weak typeof(self) weakSelf = self;
     void (^block)(CGRect) = ^(CGRect rect){
-        [weakSelf.gridView setGridRect:rect animated:YES];
+        if (clippingView.isReseting) { /** 重置需要将遮罩显示也重置 */
+            [weakSelf.gridView setGridRect:rect maskLayer:YES animated:YES];
+        } else {
+            [weakSelf.gridView setGridRect:rect animated:YES];
+        }
     };
     return block;
 }

@@ -6,9 +6,9 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "LFBaseViewController.h"
 @class LFAlbum;
-@interface LFAlbumPickerController : UIViewController
+@interface LFAlbumPickerController : LFBaseViewController
 
 /** 首次替换对象 */
 @property (nonatomic, setter=setReplaceModel:) LFAlbum *replaceModel;

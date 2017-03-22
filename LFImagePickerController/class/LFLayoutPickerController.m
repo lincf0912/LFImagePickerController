@@ -8,10 +8,10 @@
 
 #import "LFLayoutPickerController.h"
 #import "LFImagePickerHeader.h"
-
+#import "LFBaseViewController.h"
 #import "UIView+LFFrame.h"
 
-@interface LFLayoutPickerController ()
+@interface LFLayoutPickerController () <UINavigationControllerDelegate>
 {
     UIButton *_progressHUD;
     UIView *_HUDContainer;
@@ -45,6 +45,7 @@
 
 - (void)customInit
 {
+    self.delegate = self;
     [self configDefaultSetting];
 }
 
@@ -227,6 +228,18 @@
     if (_progressHUD) {
         [_HUDIndicatorView stopAnimating];
         [_progressHUD removeFromSuperview];
+    }
+}
+
+#pragma mark - UINavigationController Delegate Methods
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
+{
+    if([viewController isKindOfClass:[LFBaseViewController class]])
+    {
+        /** 处理推送VC传参 */
+        LFBaseViewController *targetVC = (LFBaseViewController *)viewController;        
+        [self setNavigationBarHidden:targetVC.isHiddenNavBar animated:animated];
+        if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = targetVC.isHiddenStatusBar;
     }
 }
 

@@ -8,23 +8,30 @@
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSUInteger, LFStickerViewType) {
-    LFStickerViewType_image,
-    LFStickerViewType_text,
-};
-
 @interface LFStickerView : UIView
 
 /** 取消当前激活的贴图 */
-+ (void)LFStickerViewUnAcive;
++ (void)LFStickerViewDeactivated;
+
+/** 激活选中的贴图 */
+- (void)activeSelectStickerView;
+/** 删除选中贴图 */
+- (void)removeSelectStickerView;
+
+/** 获取选中贴图的内容 */
+- (UIImage *)getSelectStickerImage;
+- (NSString *)getSelectStickerText;
+
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerImage:(UIImage *)image;
+- (void)changeSelectStickerText:(NSString *)text;
 
 /** 创建图片 */
 - (void)createImage:(UIImage *)image;
-
 /** 创建文字 */
 - (void)createText:(NSString *)text;
 
 /** 点击回调视图（UILabel/UIImageView） */
-@property (nonatomic, copy) void(^tapEnded)(UIView *view, LFStickerViewType type, BOOL isActive);
+@property (nonatomic, copy) void(^tapEnded)(BOOL isActive);
 
 @end

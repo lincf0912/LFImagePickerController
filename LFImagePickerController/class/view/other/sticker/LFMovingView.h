@@ -7,6 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+typedef NS_ENUM(NSUInteger, LFMovingViewType) {
+    LFMovingViewType_unknown,
+    LFMovingViewType_imageView,
+    LFMovingViewType_label,
+};
 
 @interface LFMovingView : UIView
 
@@ -15,6 +20,9 @@
 
 /** 初始化 */
 - (instancetype)initWithView:(UIView *)view;
+
+/** 更新坐标 */
+- (void)updateFrameWithViewSize:(CGSize)viewSize;
 
 /** 缩放率 0.2~3.0 */
 - (void)setScale:(CGFloat)scale;
@@ -26,10 +34,11 @@
 @property (nonatomic, assign) CGFloat maxScale;
 
 @property (nonatomic, readonly) UIView *view;
+@property (nonatomic, readonly) LFMovingViewType type;
 @property (nonatomic, readonly) CGFloat scale;
 @property (nonatomic, readonly) CGFloat rotation;
 
 
-@property (nonatomic, copy) void(^tapEnded)(UIView *view, BOOL isActive);
+@property (nonatomic, copy) void(^tapEnded)(LFMovingView *movingView, UIView *view, BOOL isActive);
 
 @end

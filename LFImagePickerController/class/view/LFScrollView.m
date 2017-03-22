@@ -30,24 +30,13 @@
     return self;
 }
 
-- (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view {
-    //    if ([[LFPhotoEdit touchClass] containsObject:[view class]]) {
-    //        if (event.allTouches.count == 1) { /** 1个手指 */
-    //            return YES;
-    //        } else if (event.allTouches.count == 2) { /** 2个手指 */
-    //            return NO;
-    //        }
-    //    }
+- (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view
+{
     return [super touchesShouldBegin:touches withEvent:event inContentView:view];
 }
 
 - (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
-    //    if ([[LFPhotoEdit touchClass] containsObject:[view class]]) {
-    //        return NO;
-    //    } else if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
-    //        return NO;
-    //    }
     return [super touchesShouldCancelInContentView:view];
 }
 

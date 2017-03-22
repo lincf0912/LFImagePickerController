@@ -24,6 +24,8 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
+#define kBottomToolBarHeight 50.f
+
 @interface LFCollectionView : UICollectionView
 
 @end
@@ -106,7 +108,6 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self scrollCollectionViewToBottom];
     // Determine the size of the thumbnails to request from the PHCachingImageManager
 }
 
@@ -140,6 +141,7 @@
         [self checkSelectedModels];
         [self configCollectionView];
         [self configBottomToolBar];
+        [self scrollCollectionViewToBottom];
     }
     
 }
@@ -194,6 +196,8 @@
         collectionViewHeight = self.view.height - navigationHeight;
     }
     
+    collectionViewHeight -= kBottomToolBarHeight;
+    
     _collectionView = [[LFCollectionView alloc] initWithFrame:CGRectMake(0, top, self.view.width, collectionViewHeight) collectionViewLayout:layout];
     _collectionView.backgroundColor = [UIColor whiteColor];
     _collectionView.dataSource = self;
@@ -214,16 +218,16 @@
 - (void)configBottomToolBar {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    CGFloat yOffset = 0;
+    CGFloat yOffset = 0, height = kBottomToolBarHeight;;
     if (self.navigationController.navigationBar.isTranslucent) {
-        yOffset = self.view.height - 50;
+        yOffset = self.view.height - height;
     } else {
         CGFloat navigationHeight = 44;
         if (iOS7Later) navigationHeight += 20;
-        yOffset = self.view.height - 50 - navigationHeight;
+        yOffset = self.view.height - height - navigationHeight;
     }
     
-    UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, 50)];
+    UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
     CGFloat rgb = 253 / 255.0;
     bottomToolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1.0];
     
@@ -658,7 +662,7 @@
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEdittingViewController:(LFPhotoEdittingController *)photoEdittingVC {
     
     /** 关联代理 */
-    photoEdittingVC.delegate = photoPreviewVc;
+    photoEdittingVC.delegate = (id)photoPreviewVc;
     
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{

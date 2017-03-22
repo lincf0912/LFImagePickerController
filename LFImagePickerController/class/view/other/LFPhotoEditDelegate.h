@@ -21,7 +21,7 @@
 @protocol LFPhotoEditStickerDelegate <NSObject>
 @optional
 /** 点击贴图 isActive=YES 选中的情况下点击 */
-- (void)lf_photoEditstickerDidSelectView:(UIView *)view isActive:(BOOL)isActive;
+- (void)lf_photoEditstickerDidSelectViewIsActive:(BOOL)isActive;
 @end
 
 /** +++++++++++++++++++++模糊代理+++++++++++++++++++++ */

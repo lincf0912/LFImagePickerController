@@ -13,9 +13,10 @@
 #define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
 #define iOS9_1Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.1f)
 
-#define bundleImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"LFImagePickerController.bundle/%@", name]]
+#define bundleImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kBundlePath, name]]
 #define bundleStickerImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kStickersPath, name]]
 
+extern NSString *const kBundlePath;
 /** 贴图资源路径 */
 extern NSString *const kStickersPath;
 

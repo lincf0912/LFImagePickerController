@@ -16,22 +16,27 @@
 
 #import "LFEditToolbar.h"
 #import "LFEdittingView.h"
+#import "LFStickerBar.h"
+#import "LFTextBarController.h"
 
 #define kSplashMenu_Button_Tag1 95
 #define kSplashMenu_Button_Tag2 96
 
 
 
-@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFPhotoEditDelegate>
+@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFStickerBarDelegate, LFTextBarControllerDelegate, LFPhotoEditDelegate>
 {
     /** 编辑模式 */
     LFEdittingView *_edittingView;
     
     UIView *_edit_naviBar;
+    /** 底部栏菜单 */
     LFEditToolbar *_edit_toolBar;
-    
     /** 剪切菜单 */
     UIView *_edit_clipping_toolBar;
+    
+    /** 贴图菜单 */
+    LFStickerBar *_edit_sticker_toolBar;
     
     /** 单击手势 */
     UITapGestureRecognizer *singleTapRecognizer;
@@ -43,10 +48,19 @@
 /** 旧编辑对象 */
 @property (nonatomic, strong) LFPhotoEdit *oldPhotoEdit;
 
-@property (nonatomic, weak) UIView *selectStickerView;
 @end
 
 @implementation LFPhotoEdittingController
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.isHiddenNavBar = YES;
+        self.isHiddenStatusBar = YES;
+    }
+    return self;
+}
 
 - (void)setEditImage:(UIImage *)editImage
 {
@@ -63,22 +77,6 @@
     [self configBottomToolBar];
 
 //    [self configPhotoEditManager];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self.navigationController setNavigationBarHidden:YES];
-    if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = YES;
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    [self.navigationController setNavigationBarHidden:NO];
-    if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = NO;
-}
-
-- (BOOL)prefersStatusBarHidden {
-    return YES;
 }
 
 - (void)dealloc{
@@ -113,16 +111,19 @@
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
+    CGFloat margin = 10, topbarHeight = 64;
+    CGFloat size = topbarHeight - margin*2;
+    
+    _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, topbarHeight)];
     _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
     
-    UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+    UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(margin, margin, size, size)];
     [_edit_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     _edit_cancelButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_edit_cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
-    UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 44, 44)];
+    UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - (size + margin), margin, size, size)];
     [_edit_finishButton setTitle:@"完成" forState:UIControlStateNormal];
     _edit_finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_edit_finishButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
@@ -197,12 +198,13 @@
             break;
         case 1:
         {
-            [_edittingView createStickerImage:bundleStickerImageNamed(@"001.png")];
+            [self singlePressed];
+            [self changeStickerMenu:YES];
         }
             break;
         case 2:
         {
-            [_edittingView createStickerText:@"挖泥机"];
+            [self showTextBarController:nil];
         }
             break;
         case 3:
@@ -215,16 +217,8 @@
             break;
         case 4:
         {
-            /** 关闭所有编辑 */
-            [_edittingView photoEditEnable:NO];
             [_edittingView setIsClipping:YES animated:YES];
-            /** 切换菜单 */
-            [self.view addSubview:self.edit_clipping_toolBar];
-            [UIView animateWithDuration:0.25f animations:^{
-                self.edit_clipping_toolBar.alpha = 1.f;
-            }];
-            singleTapRecognizer.enabled = NO;
-            [self singlePressed];
+            [self changeClipMenu:YES];
         }
             break;
         default:
@@ -346,18 +340,8 @@
 
 - (void)clippingCancel:(UIButton *)button
 {
-    /** 开启编辑 */
-    [_edittingView photoEditEnable:YES];
-    
-    singleTapRecognizer.enabled = YES;
-    [_edittingView setIsClipping:NO animated:YES];
-    [UIView animateWithDuration:.25f animations:^{
-        self.edit_clipping_toolBar.alpha = 0.f;
-    } completion:^(BOOL finished) {
-        [self.edit_clipping_toolBar removeFromSuperview];
-    }];
-
-    [self singlePressed];
+    [_edittingView cancelClipping:YES];
+    [self changeClipMenu:NO];
 }
 
 - (void)clippingReset:(UIButton *)button
@@ -367,7 +351,56 @@
 
 - (void)clippingOk:(UIButton *)button
 {
-    [self clippingCancel:button];
+    [_edittingView setIsClipping:NO animated:YES];
+    [self changeClipMenu:NO];
+}
+
+#pragma mark - 贴图菜单（懒加载）
+- (LFStickerBar *)edit_sticker_toolBar
+{
+    if (_edit_sticker_toolBar == nil) {
+        CGFloat w=self.view.width, h=175.f;
+        _edit_sticker_toolBar = [[LFStickerBar alloc] initWithFrame:CGRectMake(0, self.view.height, w, h)];
+        _edit_sticker_toolBar.delegate = self;
+    }
+    return _edit_sticker_toolBar;
+}
+
+#pragma mark - LFStickerBarDelegate
+- (void)lf_stickerBar:(LFStickerBar *)lf_stickerBar didSelectImage:(UIImage *)image
+{
+    if (image) {
+        [_edittingView createStickerImage:image];
+    }
+    [self singlePressed];
+}
+
+#pragma mark - LFTextBarControllerDelegate
+/** 完成回调 */
+- (void)lf_textBarController:(LFTextBarController *)textBar didFinishText:(NSString *)text
+{
+    [self lf_textBarControllerDidCancel:textBar];
+    if (text.length) {
+        /** 判断是否更改文字 */
+        if (textBar.showText.length) {
+            [_edittingView changeSelectStickerText:text];
+        } else {
+            [_edittingView createStickerText:text];
+        }
+    } else {
+        if (textBar.showText.length) { /** 文本被清除，删除贴图 */
+            [_edittingView removeSelectStickerView];
+        }
+    }
+}
+/** 取消回调 */
+- (void)lf_textBarControllerDidCancel:(LFTextBarController *)textBar
+{
+    /** 显示顶部栏 */
+    _isHideNaviBar = NO;
+    [self changedBarState];
+    [_edittingView activeSelectStickerView];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - LFPhotoEditDrawDelegate
@@ -388,13 +421,14 @@
 }
 
 #pragma mark - LFPhotoEditStickerDelegate
-- (void)lf_photoEditstickerDidSelectView:(UIView *)view isActive:(BOOL)isActive
+- (void)lf_photoEditstickerDidSelectViewIsActive:(BOOL)isActive
 {
     _isHideNaviBar = NO;
     [self changedBarState];
     if (isActive) { /** 选中的情况下点击 */
-        if ([view isKindOfClass:[UILabel class]]) {
-            /** 文字情况可更改 */
+        NSString *text = [_edittingView getSelectStickerText];
+        if (text.length) {
+            [self showTextBarController:[_edittingView getSelectStickerText]];
         }
     }
 }
@@ -419,10 +453,82 @@
 #pragma mark - private
 - (void)changedBarState
 {
+    /** 隐藏贴图菜单 */
+    [self changeStickerMenu:NO];
+    
     [UIView animateWithDuration:.25f animations:^{
         CGFloat alpha = _isHideNaviBar ? 0.f : 1.f;
         _edit_naviBar.alpha = alpha;
         _edit_toolBar.alpha = alpha;
     }];
 }
+
+- (void)changeClipMenu:(BOOL)isChanged
+{
+    if (isChanged) {
+        /** 关闭所有编辑 */
+        [_edittingView photoEditEnable:NO];
+        /** 切换菜单 */
+        [self.view addSubview:self.edit_clipping_toolBar];
+        [UIView animateWithDuration:0.25f animations:^{
+            self.edit_clipping_toolBar.alpha = 1.f;
+        }];
+        singleTapRecognizer.enabled = NO;
+        [self singlePressed];
+    } else {
+        if (_edit_clipping_toolBar.superview == nil) return;
+
+        /** 开启编辑 */
+        [_edittingView photoEditEnable:YES];
+        
+        singleTapRecognizer.enabled = YES;
+        [UIView animateWithDuration:.25f animations:^{
+            self.edit_clipping_toolBar.alpha = 0.f;
+        } completion:^(BOOL finished) {
+            [self.edit_clipping_toolBar removeFromSuperview];
+        }];
+        
+        [self singlePressed];
+    }
+}
+
+- (void)changeStickerMenu:(BOOL)isChanged
+{
+    if (isChanged) {
+        [self.view addSubview:self.edit_sticker_toolBar];
+        CGRect frame = self.edit_sticker_toolBar.frame;
+        frame.origin.y = self.view.height-frame.size.height;
+        [UIView animateWithDuration:.25f animations:^{
+            self.edit_sticker_toolBar.frame = frame;
+        }];
+    } else {
+        if (_edit_sticker_toolBar.superview == nil) return;
+        
+        CGRect frame = self.edit_sticker_toolBar.frame;
+        frame.origin.y = self.view.height;
+        [UIView animateWithDuration:.25f animations:^{
+            self.edit_sticker_toolBar.frame = frame;
+        } completion:^(BOOL finished) {
+            [_edit_sticker_toolBar removeFromSuperview];
+            _edit_sticker_toolBar = nil;
+        }];
+    }
+}
+
+- (void)showTextBarController:(NSString *)text
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    
+    LFTextBarController *textBar = [[LFTextBarController alloc] init];
+    textBar.showText = text;
+    textBar.oKButtonTitleColorNormal = imagePickerVc.oKButtonTitleColorNormal;
+    textBar.delegate = self;
+
+    [self presentViewController:textBar animated:YES completion:^{
+        /** 隐藏顶部栏 */
+        _isHideNaviBar = YES;
+        [self changedBarState];
+    }];
+}
+
 @end

@@ -121,9 +121,9 @@
     };
     
     /** 贴图 */
-    _stickerView.tapEnded = ^(UIView *view, LFStickerViewType type, BOOL isActive){
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditstickerDidSelectView:isActive:)]) {
-            [weakSelf.delegate lf_photoEditstickerDidSelectView:view isActive:isActive];
+    _stickerView.tapEnded = ^(BOOL isActive){
+        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditstickerDidSelectViewIsActive:)]) {
+            [weakSelf.delegate lf_photoEditstickerDidSelectViewIsActive:isActive];
         }
     };
     
@@ -191,7 +191,27 @@
 /** 取消激活贴图 */
 - (void)stickerDeactivated
 {
-    [LFStickerView LFStickerViewUnAcive];
+    [LFStickerView LFStickerViewDeactivated];
+}
+/** 激活选中的贴图 */
+- (void)activeSelectStickerView
+{
+    [_stickerView activeSelectStickerView];
+}
+/** 删除选中贴图 */
+- (void)removeSelectStickerView
+{
+    [_stickerView removeSelectStickerView];
+}
+/** 获取选中贴图的内容 */
+- (NSString *)getSelectStickerText
+{
+    return [_stickerView getSelectStickerText];
+}
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerText:(NSString *)text
+{
+    [_stickerView changeSelectStickerText:text];
 }
 
 /** 创建贴图 */

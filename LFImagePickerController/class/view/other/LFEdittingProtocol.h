@@ -30,6 +30,14 @@
 /** =====================贴图功能===================== */
 /** 取消激活贴图 */
 - (void)stickerDeactivated;
+/** 激活选中的贴图 */
+- (void)activeSelectStickerView;
+/** 删除选中贴图 */
+- (void)removeSelectStickerView;
+/** 获取选中贴图的内容 */
+- (NSString *)getSelectStickerText;
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerText:(NSString *)text;
 
 /** 创建贴图 */
 - (void)createStickerImage:(UIImage *)image;

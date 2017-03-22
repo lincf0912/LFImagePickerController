@@ -8,6 +8,7 @@
 
 #import "LFImagePickerHeader.h"
 
+NSString *const kBundlePath = @"LFImagePickerController.bundle";
 /** 贴图资源路径 */
 NSString *const kStickersPath = @"LFImagePickerController.bundle/stickers";
 

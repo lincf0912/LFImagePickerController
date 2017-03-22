@@ -6,9 +6,9 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "LFBaseViewController.h"
 @class LFAsset;
-@interface LFVideoPlayerController : UIViewController
+@interface LFVideoPlayerController : LFBaseViewController
 
 @property (nonatomic, strong) LFAsset *model;
 @end

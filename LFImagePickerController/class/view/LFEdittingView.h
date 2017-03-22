@@ -22,6 +22,8 @@
 @property (nonatomic, assign) BOOL isClipping;
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated;
 
+/** 取消剪裁 */
+- (void)cancelClipping:(BOOL)animated;
 /** 还原 isClipping=YES 的情况有效 */
 - (void)reset;
 

@@ -108,8 +108,40 @@
         
         [self initGestures];
         [self setActive:NO];
+        
+        if ([view isKindOfClass:[UIImageView class]]) {
+            _type = LFMovingViewType_imageView;
+        } else if ([view isKindOfClass:[UILabel class]]) {
+            _type = LFMovingViewType_label;
+        }
     }
     return self;
+}
+
+/** 更新坐标 */
+- (void)updateFrameWithViewSize:(CGSize)viewSize
+{
+    /** 记录自身中心点 */
+    CGPoint center = self.center;
+    /** 更新自身大小 */
+    CGRect frame = self.frame;
+    frame.size = CGSizeMake(viewSize.width+margin, viewSize.height+margin);
+    self.frame = frame;
+    self.center = center;
+    
+    /** 还原缩放率 */
+    _contentView.transform = CGAffineTransformIdentity;
+    
+    /** 更新主体大小 */
+    CGRect contentFrame = _contentView.frame;
+    contentFrame.size = viewSize;
+    _contentView.frame = contentFrame;
+    _contentView.center = center;
+    
+    /** 更新显示视图大小 */
+    _customView.frame = _contentView.bounds;
+    
+    [self setScale:_scale rotation:_arg];
 }
 
 - (void)initGestures
@@ -187,6 +219,7 @@
 
 - (void)pushedDeleteBtn:(id)sender
 {
+    /* 删除后寻找下一个活动视图
     LFMovingView *nextTarget = nil;
     
     const NSInteger index = [self.superview.subviews indexOfObject:self];
@@ -210,12 +243,13 @@
     }
     
     [[self class] setActiveEmoticonView:nextTarget];
+     */
     [self removeFromSuperview];
 }
 
 - (void)viewDidTap:(UITapGestureRecognizer*)sender
 {
-    if (self.tapEnded) self.tapEnded(self.customView, _isActive);
+    if (self.tapEnded) self.tapEnded(self, self.customView, _isActive);
     [[self class] setActiveEmoticonView:self];
 }
 

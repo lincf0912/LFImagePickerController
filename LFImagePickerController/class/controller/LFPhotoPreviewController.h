@@ -6,11 +6,10 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import "LFPhotoEdittingController.h"
+#import "LFBaseViewController.h"
 
 @class LFAsset;
-@interface LFPhotoPreviewController : UIViewController <LFPhotoEdittingControllerDelegate>
+@interface LFPhotoPreviewController : LFBaseViewController
 
 /// Return the new selected photos / 返回最新的选中图片数组
 @property (nonatomic, copy) void (^backButtonClickBlock)();

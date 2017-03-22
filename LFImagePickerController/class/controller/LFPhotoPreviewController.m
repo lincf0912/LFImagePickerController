@@ -8,6 +8,7 @@
 
 #import "LFPhotoPreviewController.h"
 #import "LFImagePickerController.h"
+#import "LFPhotoEdittingController.h"
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
@@ -16,7 +17,7 @@
 #import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
 
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate, LFPhotoEdittingControllerDelegate>
 {
     UICollectionView *_collectionView;
     
@@ -45,9 +46,19 @@
 
 @implementation LFPhotoPreviewController
 
-- (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
+- (instancetype)init
 {
     self = [super init];
+    if (self) {
+        self.isHiddenNavBar = YES;
+        self.isHiddenStatusBar = YES;
+    }
+    return self;
+}
+
+- (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
+{
+    self = [self init];
     if (self) {
         if (models) {
             _models = [NSMutableArray arrayWithArray:models];
@@ -74,7 +85,7 @@
 }
 - (instancetype)initWithPhotos:(NSArray <UIImage *>*)photos index:(NSInteger)index
 {
-    self = [super init];
+    self = [self init];
     if (self) {
         if (photos) {
             _models = [@[] mutableCopy];
@@ -100,20 +111,12 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.navigationController setNavigationBarHidden:YES];
-    if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = YES;
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [self.navigationController setNavigationBarHidden:NO];
-    if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = NO;
-}
-
-- (BOOL)prefersStatusBarHidden {
-    return YES;
 }
 
 - (void)configCustomNaviBar {

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6F0480001E77792E004F20B4 /* LFEditToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F047FFF1E77792E004F20B4 /* LFEditToolbar.m */; };
 		6F0480181E7A6018004F20B4 /* LFZoomingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F0480171E7A6018004F20B4 /* LFZoomingView.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
@@ -35,6 +34,10 @@
 		6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */; };
 		6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */; };
 		6F1201F31E51AE2E00EA2198 /* LFVideoPlayerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */; };
+		6F16C58C1E80F42300B251A0 /* LFEditToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C58B1E80F42300B251A0 /* LFEditToolbar.m */; };
+		6F16C5911E80F4D300B251A0 /* LFStickerBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5901E80F4D300B251A0 /* LFStickerBar.m */; };
+		6F16C5941E8205C000B251A0 /* LFTextBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5931E8205C000B251A0 /* LFTextBarController.m */; };
+		6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */; };
 		6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */; };
 		6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */; };
 		6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE453971E762C5200AE9EAF /* LFScrollView.m */; };
@@ -56,8 +59,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6F047FFE1E77792E004F20B4 /* LFEditToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFEditToolbar.h; sourceTree = "<group>"; };
-		6F047FFF1E77792E004F20B4 /* LFEditToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFEditToolbar.m; sourceTree = "<group>"; };
 		6F0480011E7785CD004F20B4 /* LFImagePickerType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFImagePickerType.h; sourceTree = "<group>"; };
 		6F0480161E7A6018004F20B4 /* LFZoomingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFZoomingView.h; sourceTree = "<group>"; };
 		6F0480171E7A6018004F20B4 /* LFZoomingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFZoomingView.m; sourceTree = "<group>"; };
@@ -110,10 +111,18 @@
 		6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewController.m; sourceTree = "<group>"; };
 		6F1201F11E51AE2E00EA2198 /* LFVideoPlayerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFVideoPlayerController.h; sourceTree = "<group>"; };
 		6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFVideoPlayerController.m; sourceTree = "<group>"; };
+		6F16C58A1E80F42300B251A0 /* LFEditToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFEditToolbar.h; sourceTree = "<group>"; };
+		6F16C58B1E80F42300B251A0 /* LFEditToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFEditToolbar.m; sourceTree = "<group>"; };
+		6F16C58D1E80F43900B251A0 /* LFEdittingProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFEdittingProtocol.h; sourceTree = "<group>"; };
+		6F16C58E1E80F43900B251A0 /* LFPhotoEditDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEditDelegate.h; sourceTree = "<group>"; };
+		6F16C58F1E80F4D300B251A0 /* LFStickerBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFStickerBar.h; sourceTree = "<group>"; };
+		6F16C5901E80F4D300B251A0 /* LFStickerBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFStickerBar.m; sourceTree = "<group>"; };
+		6F16C5921E8205C000B251A0 /* LFTextBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFTextBarController.h; sourceTree = "<group>"; };
+		6F16C5931E8205C000B251A0 /* LFTextBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFTextBarController.m; sourceTree = "<group>"; };
+		6F16C5951E8224EF00B251A0 /* LFBaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFBaseViewController.h; sourceTree = "<group>"; };
+		6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFBaseViewController.m; sourceTree = "<group>"; };
 		6F2EEAF11E52F4A500765689 /* LFPhotoPreviewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewCell.h; sourceTree = "<group>"; };
 		6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewCell.m; sourceTree = "<group>"; };
-		6FA8E2A51E7BAD230033B83F /* LFEdittingProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFEdittingProtocol.h; sourceTree = "<group>"; };
-		6FA8E2AF1E7BB6040033B83F /* LFPhotoEditDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEditDelegate.h; sourceTree = "<group>"; };
 		6FA8E2B71E7BC5060033B83F /* LFPhotoEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEdit.h; sourceTree = "<group>"; };
 		6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoEdit.m; sourceTree = "<group>"; };
 		6FA8E2BB1E7BDCA00033B83F /* LFCancelBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFCancelBlock.h; sourceTree = "<group>"; };
@@ -287,6 +296,8 @@
 		6F1201BC1E5183E000EA2198 /* controller */ = {
 			isa = PBXGroup;
 			children = (
+				6F16C5951E8224EF00B251A0 /* LFBaseViewController.h */,
+				6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */,
 				6F1201C31E518EBE00EA2198 /* LFAlbumPickerController.h */,
 				6F1201C41E518EBE00EA2198 /* LFAlbumPickerController.m */,
 				6F1201BD1E5183E000EA2198 /* LFPhotoPickerController.h */,
@@ -338,6 +349,19 @@
 			path = VideoUtils;
 			sourceTree = "<group>";
 		};
+		6F16C5891E80F42300B251A0 /* toolBar */ = {
+			isa = PBXGroup;
+			children = (
+				6F16C58A1E80F42300B251A0 /* LFEditToolbar.h */,
+				6F16C58B1E80F42300B251A0 /* LFEditToolbar.m */,
+				6F16C58F1E80F4D300B251A0 /* LFStickerBar.h */,
+				6F16C5901E80F4D300B251A0 /* LFStickerBar.m */,
+				6F16C5921E8205C000B251A0 /* LFTextBarController.h */,
+				6F16C5931E8205C000B251A0 /* LFTextBarController.m */,
+			);
+			path = toolBar;
+			sourceTree = "<group>";
+		};
 		6FA8E2BA1E7BDC730033B83F /* CancelBlock */ = {
 			isa = PBXGroup;
 			children = (
@@ -357,12 +381,9 @@
 				6FE4539D1E7631BF00AE9EAF /* LFClippingView.m */,
 				6F0480161E7A6018004F20B4 /* LFZoomingView.h */,
 				6F0480171E7A6018004F20B4 /* LFZoomingView.m */,
-				6FA8E2A51E7BAD230033B83F /* LFEdittingProtocol.h */,
-				6FA8E2AF1E7BB6040033B83F /* LFPhotoEditDelegate.h */,
 				6FFD834E1E7235D5005F3FFC /* subView */,
 				6FF286201E6013F50008FB5B /* other */,
-				6F047FFE1E77792E004F20B4 /* LFEditToolbar.h */,
-				6F047FFF1E77792E004F20B4 /* LFEditToolbar.m */,
+				6F16C5891E80F42300B251A0 /* toolBar */,
 			);
 			path = view;
 			sourceTree = "<group>";
@@ -370,6 +391,8 @@
 		6FF286201E6013F50008FB5B /* other */ = {
 			isa = PBXGroup;
 			children = (
+				6F16C58D1E80F43900B251A0 /* LFEdittingProtocol.h */,
+				6F16C58E1E80F43900B251A0 /* LFPhotoEditDelegate.h */,
 				6FFD830F1E713B5B005F3FFC /* clipping */,
 				6FFD831A1E713B5B005F3FFC /* splash */,
 				6FFD831D1E713B5B005F3FFC /* sticker */,
@@ -498,11 +521,12 @@
 			files = (
 				6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */,
 				6FFD83861E723A3F005F3FFC /* LFEdittingView.m in Sources */,
+				6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */,
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6FF286121E5EB9AD0008FB5B /* UIView+LFCommon.m in Sources */,
+				6F16C58C1E80F42300B251A0 /* LFEditToolbar.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
-				6F0480001E77792E004F20B4 /* LFEditToolbar.m in Sources */,
 				6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */,
 				6FFD835A1E7235D5005F3FFC /* LFStickerView.m in Sources */,
 				6FFD83201E713B5B005F3FFC /* LFGridLayer.m in Sources */,
@@ -524,6 +548,8 @@
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,
 				6F1201A01E513FB100EA2198 /* LFAssetManager.m in Sources */,
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
+				6F16C5941E8205C000B251A0 /* LFTextBarController.m in Sources */,
+				6F16C5911E80F4D300B251A0 /* LFStickerBar.m in Sources */,
 				6FF286051E5D6D4F0008FB5B /* LFPhotoEdittingController.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,
 				6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */,

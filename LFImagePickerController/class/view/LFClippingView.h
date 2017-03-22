@@ -31,6 +31,8 @@
 - (void)zoomOutToRect:(CGRect)toRect;
 /** 还原 */
 - (void)reset;
+/** 取消 */
+- (void)cancel;
 
 @end
 

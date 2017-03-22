@@ -15,9 +15,13 @@
 
 @property (nonatomic, weak) LFZoomingView *zoomingView;
 
-/** 设置图片时，计算的位置 */
-@property (nonatomic, assign) CGRect imageFrame;
-
+/** 记录剪裁前的数据 */
+@property (nonatomic, assign) CGRect old_frame;
+@property (nonatomic, assign) CGFloat old_zoomScale;
+@property (nonatomic, assign) CGSize old_contentSize;
+@property (nonatomic, assign) CGPoint old_contentOffset;
+@property (nonatomic, assign) CGFloat old_minimumZoomScale;
+@property (nonatomic, assign) CGFloat old_maximumZoomScale;
 @end
 
 @implementation LFClippingView
@@ -57,12 +61,19 @@
     [self setZoomScale:1.f];
     CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
     self.frame = cropRect;
-    self.imageFrame = cropRect;
     [self.zoomingView setImage:image];
 }
 
 - (void)setCropRect:(CGRect)cropRect
 {
+    /** 记录当前数据 */
+    self.old_frame = self.frame;
+    self.old_zoomScale = self.zoomScale;
+    self.old_contentSize = self.contentSize;
+    self.old_contentOffset = self.contentOffset;
+    self.old_minimumZoomScale = self.minimumZoomScale;
+    self.old_maximumZoomScale = self.maximumZoomScale;
+    
     _cropRect = cropRect;
     
 //    CGFloat scale = self.zoomScale;
@@ -88,7 +99,7 @@
         self.minimumZoomScale = MAX(scaleZX, scaleZY);
         scale = self.zoomScale - (minimumZoomScale - self.minimumZoomScale);
     } else {
-        self.maximumZoomScale = MIN(MIN(scaleZX, scaleZY), 5);
+        self.maximumZoomScale = (MIN(scaleZX, scaleZY) > 5 ? MIN(scaleZX, scaleZY) : 5);
         scale = MIN(scaleZX, scaleZY);
     }
     [self setZoomScale:scale];
@@ -99,6 +110,19 @@
     contentOffset.x = isnan(scaleX) ? contentOffset.x : (scaleX > 0 ? (self.contentSize.width-self.width) * scaleX : contentOffset.x);
     contentOffset.y = isnan(scaleY) ? contentOffset.y : (scaleY > 0 ? (self.contentSize.height-self.height) * scaleY : contentOffset.y);
     self.contentOffset = CGPointMake(MIN(MAX(contentOffset.x, 0),self.zoomingView.width-self.width), MIN(MAX(contentOffset.y, 0),self.zoomingView.height-self.height));
+}
+
+/** 取消 */
+- (void)cancel
+{
+    if (!CGRectEqualToRect(self.old_frame, CGRectZero)) {        
+        self.frame = self.old_frame;
+        self.minimumZoomScale = self.old_minimumZoomScale;
+        self.maximumZoomScale = self.old_maximumZoomScale;
+        self.zoomScale = self.old_zoomScale;
+        self.contentSize = self.old_contentSize;
+        self.contentOffset = self.old_contentOffset;
+    }
 }
 
 - (void)reset
@@ -374,6 +398,25 @@
 - (void)stickerDeactivated
 {
     [self.zoomingView stickerDeactivated];
+}
+- (void)activeSelectStickerView
+{
+    [self.zoomingView activeSelectStickerView];
+}
+/** 删除选中贴图 */
+- (void)removeSelectStickerView
+{
+    [self.zoomingView removeSelectStickerView];
+}
+/** 获取选中贴图的内容 */
+- (NSString *)getSelectStickerText
+{
+    return [self.zoomingView getSelectStickerText];
+}
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerText:(NSString *)text
+{
+    [self.zoomingView changeSelectStickerText:text];
 }
 
 /** 创建贴图 */

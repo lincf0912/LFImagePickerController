@@ -150,6 +150,25 @@
     }
 }
 
+/** 取消剪裁 */
+- (void)cancelClipping:(BOOL)animated
+{
+    /** 剪裁多余部分 */
+    self.clippingView.clipsToBounds = YES;
+    if (animated) {
+        [UIView animateWithDuration:0.1f animations:^{
+            self.gridView.alpha = 0.f;
+        } completion:^(BOOL finished) {
+            [UIView animateWithDuration:0.25f animations:^{
+                [self.clippingView cancel];
+                self.gridView.gridRect = self.clippingView.frame;
+            }];
+        }];
+    } else {
+        [self.clippingView cancel];
+    }
+}
+
 /** 还原 */
 - (void)reset
 {
@@ -294,6 +313,25 @@
 - (void)stickerDeactivated
 {
     [self.clippingView stickerDeactivated];
+}
+- (void)activeSelectStickerView
+{
+    [self.clippingView activeSelectStickerView];
+}
+/** 删除选中贴图 */
+- (void)removeSelectStickerView
+{
+    [self.clippingView removeSelectStickerView];
+}
+/** 获取选中贴图的内容 */
+- (NSString *)getSelectStickerText
+{
+    return [self.clippingView getSelectStickerText];
+}
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerText:(NSString *)text
+{
+    [self.clippingView changeSelectStickerText:text];
 }
 
 /** 创建贴图 */

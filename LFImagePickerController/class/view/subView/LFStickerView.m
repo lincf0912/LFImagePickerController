@@ -142,7 +142,8 @@
 - (LFMovingView *)createBaseMovingView:(UIView *)view
 {
     LFMovingView *movingView = [[LFMovingView alloc] initWithView:view];
-    movingView.center = CGPointMake(self.width/2, self.height/2);
+    /** 屏幕中心 */
+    movingView.center = [self convertPoint:[UIApplication sharedApplication].keyWindow.center fromView:(UIView *)[UIApplication sharedApplication].keyWindow];
     
     [LFMovingView setActiveEmoticonView:movingView];
     

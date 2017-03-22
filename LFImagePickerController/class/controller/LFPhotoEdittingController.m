@@ -80,7 +80,7 @@
 }
 
 - (void)dealloc{
-    [self.photoEdit clearContainer];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -169,7 +169,7 @@
     [imagePickerVc showProgressHUD];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.photoEdit mergedContainerLayer];
+        /** 处理编辑图片 */
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.delegate respondsToSelector:@selector(lf_PhotoEdittingController:didFinishPhotoEdit:)]) {
                 [self.delegate lf_PhotoEdittingController:self didFinishPhotoEdit:self.photoEdit];

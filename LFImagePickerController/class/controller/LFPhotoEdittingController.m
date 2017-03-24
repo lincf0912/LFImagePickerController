@@ -162,10 +162,10 @@
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc showProgressHUD];
+    /** 取消贴图激活 */
+    [_edittingView stickerDeactivated];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        /** 取消贴图激活 */
-        [_edittingView stickerDeactivated];
         /** 处理编辑图片 */
         UIImage *image = [_edittingView captureImage];
         NSDictionary *data = [_edittingView photoEditData];

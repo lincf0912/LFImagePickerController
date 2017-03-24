@@ -105,16 +105,6 @@
  */
 - (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion;
 
-/**
- *  @author djr
- *
- *  保存图片到自定义相册
- *  @param title 自定义相册名称（不能为空）
- *  @param saveImage 图片
- *  @param complete 回调
- */
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)saveImage complete:(void(^)(id asset, NSError *error))complete;
-
 
 /// Get full Image 获取原图
 /// 该方法会先返回缩略图，再返回原图，如果info[PHImageResultIsDegradedKey] 为 YES，则表明当前返回的是缩略图，否则是原图。

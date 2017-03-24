@@ -18,14 +18,14 @@
 #import "LFEditToolbar.h"
 #import "LFEdittingView.h"
 #import "LFStickerBar.h"
-#import "LFTextBarController.h"
+#import "LFTextBar.h"
 
 #define kSplashMenu_Button_Tag1 95
 #define kSplashMenu_Button_Tag2 96
 
 
 
-@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFStickerBarDelegate, LFTextBarControllerDelegate, LFPhotoEditDelegate>
+@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFStickerBarDelegate, LFTextBarDelegate, LFPhotoEditDelegate, LFEdittingViewDelegate>
 {
     /** 编辑模式 */
     LFEdittingView *_edittingView;
@@ -45,6 +45,9 @@
 
 /** 隐藏控件 */
 @property (nonatomic, assign) BOOL isHideNaviBar;
+
+/** 剪切菜单——还原按钮 */
+@property (nonatomic, weak) UIButton *edit_clipping_toolBar_reset;
 
 @end
 
@@ -89,6 +92,7 @@
 {
     _edittingView = [[LFEdittingView alloc] initWithFrame:self.view.bounds];
     _edittingView.editDelegate = self;
+    _edittingView.clippingDelegate = self;
     if (_editImage) {
         [self setEditImage:_editImage];
     }
@@ -213,6 +217,7 @@
         {
             [_edittingView setIsClipping:YES animated:YES];
             [self changeClipMenu:YES];
+            self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
         }
             break;
         default:
@@ -308,8 +313,9 @@
         /** 左 */
         UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
         leftButton.frame = (CGRect){{10,0}, size};
-        [leftButton setTitle:@"cancel" forState:UIControlStateNormal];
-        [leftButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn.png") forState:UIControlStateNormal];
+        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateHighlighted];
+        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateSelected];
         [leftButton addTarget:self action:@selector(clippingCancel:) forControlEvents:UIControlEventTouchUpInside];
         [_edit_clipping_toolBar addSubview:leftButton];
         
@@ -318,14 +324,17 @@
         centerButton.frame = (CGRect){{(CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width)/2,0}, size};
         [centerButton setTitle:@"还原" forState:UIControlStateNormal];
         [centerButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        [centerButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
         [centerButton addTarget:self action:@selector(clippingReset:) forControlEvents:UIControlEventTouchUpInside];
         [_edit_clipping_toolBar addSubview:centerButton];
+        self.edit_clipping_toolBar_reset = centerButton;
         
         /** 右 */
         UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
         rightButton.frame = (CGRect){{CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width-10,0}, size};
-        [rightButton setTitle:@"ok" forState:UIControlStateNormal];
-        [rightButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn.png") forState:UIControlStateNormal];
+        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateHighlighted];
+        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateSelected];
         [rightButton addTarget:self action:@selector(clippingOk:) forControlEvents:UIControlEventTouchUpInside];
         [_edit_clipping_toolBar addSubview:rightButton];
     }
@@ -341,6 +350,7 @@
 - (void)clippingReset:(UIButton *)button
 {
     [_edittingView reset];
+    self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
 }
 
 - (void)clippingOk:(UIButton *)button
@@ -369,11 +379,10 @@
     [self singlePressed];
 }
 
-#pragma mark - LFTextBarControllerDelegate
+#pragma mark - LFTextBarDelegate
 /** 完成回调 */
-- (void)lf_textBarController:(LFTextBarController *)textBar didFinishText:(NSString *)text
+- (void)lf_textBarController:(LFTextBar *)textBar didFinishText:(NSString *)text
 {
-    [self lf_textBarControllerDidCancel:textBar];
     if (text.length) {
         /** 判断是否更改文字 */
         if (textBar.showText.length) {
@@ -386,17 +395,25 @@
             [_edittingView removeSelectStickerView];
         }
     }
+    [self lf_textBarControllerDidCancel:textBar];
 }
 /** 取消回调 */
-- (void)lf_textBarControllerDidCancel:(LFTextBarController *)textBar
+- (void)lf_textBarControllerDidCancel:(LFTextBar *)textBar
 {
     /** 显示顶部栏 */
     _isHideNaviBar = NO;
     [self changedBarState];
     [_edittingView activeSelectStickerView];
-    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        [textBar resignFirstResponder];
+        textBar.y = self.view.height;
+    } completion:^(BOOL finished) {
+        [textBar removeFromSuperview];
+    }];
 }
 
+#pragma mark - LFPhotoEditDelegate
 #pragma mark - LFPhotoEditDrawDelegate
 /** 开始绘画 */
 - (void)lf_photoEditDrawBegan
@@ -442,6 +459,18 @@
     
     _isHideNaviBar = NO;
     [self changedBarState];
+}
+
+#pragma mark - LFEdittingViewDelegate
+/** 剪裁发生变化后 */
+- (void)lf_edittingViewDidEndZooming:(LFEdittingView *)edittingView
+{
+    self.edit_clipping_toolBar_reset.enabled = edittingView.canReset;
+}
+/** 剪裁目标移动后 */
+- (void)lf_edittingViewEndDecelerating:(LFEdittingView *)edittingView
+{
+    self.edit_clipping_toolBar_reset.enabled = edittingView.canReset;
 }
 
 #pragma mark - private
@@ -513,12 +542,17 @@
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    LFTextBarController *textBar = [[LFTextBarController alloc] init];
+    LFTextBar *textBar = [[LFTextBar alloc] initWithFrame:CGRectMake(0, self.view.height, self.view.width, self.view.height)];
     textBar.showText = text;
     textBar.oKButtonTitleColorNormal = imagePickerVc.oKButtonTitleColorNormal;
     textBar.delegate = self;
 
-    [self presentViewController:textBar animated:YES completion:^{
+    [self.view addSubview:textBar];
+    
+    [UIView animateWithDuration:0.25f animations:^{
+        [textBar becomeFirstResponder];
+        textBar.y = 0;
+    } completion:^(BOOL finished) {
         /** 隐藏顶部栏 */
         _isHideNaviBar = YES;
         [self changedBarState];

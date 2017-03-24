@@ -36,7 +36,7 @@
 		6F1201F31E51AE2E00EA2198 /* LFVideoPlayerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */; };
 		6F16C58C1E80F42300B251A0 /* LFEditToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C58B1E80F42300B251A0 /* LFEditToolbar.m */; };
 		6F16C5911E80F4D300B251A0 /* LFStickerBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5901E80F4D300B251A0 /* LFStickerBar.m */; };
-		6F16C5941E8205C000B251A0 /* LFTextBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5931E8205C000B251A0 /* LFTextBarController.m */; };
+		6F16C5941E8205C000B251A0 /* LFTextBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5931E8205C000B251A0 /* LFTextBar.m */; };
 		6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */; };
 		6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */; };
 		6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */; };
@@ -117,8 +117,8 @@
 		6F16C58E1E80F43900B251A0 /* LFPhotoEditDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEditDelegate.h; sourceTree = "<group>"; };
 		6F16C58F1E80F4D300B251A0 /* LFStickerBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFStickerBar.h; sourceTree = "<group>"; };
 		6F16C5901E80F4D300B251A0 /* LFStickerBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFStickerBar.m; sourceTree = "<group>"; };
-		6F16C5921E8205C000B251A0 /* LFTextBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFTextBarController.h; sourceTree = "<group>"; };
-		6F16C5931E8205C000B251A0 /* LFTextBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFTextBarController.m; sourceTree = "<group>"; };
+		6F16C5921E8205C000B251A0 /* LFTextBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFTextBar.h; sourceTree = "<group>"; };
+		6F16C5931E8205C000B251A0 /* LFTextBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFTextBar.m; sourceTree = "<group>"; };
 		6F16C5951E8224EF00B251A0 /* LFBaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFBaseViewController.h; sourceTree = "<group>"; };
 		6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFBaseViewController.m; sourceTree = "<group>"; };
 		6F2EEAF11E52F4A500765689 /* LFPhotoPreviewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewCell.h; sourceTree = "<group>"; };
@@ -356,8 +356,8 @@
 				6F16C58B1E80F42300B251A0 /* LFEditToolbar.m */,
 				6F16C58F1E80F4D300B251A0 /* LFStickerBar.h */,
 				6F16C5901E80F4D300B251A0 /* LFStickerBar.m */,
-				6F16C5921E8205C000B251A0 /* LFTextBarController.h */,
-				6F16C5931E8205C000B251A0 /* LFTextBarController.m */,
+				6F16C5921E8205C000B251A0 /* LFTextBar.h */,
+				6F16C5931E8205C000B251A0 /* LFTextBar.m */,
 			);
 			path = toolBar;
 			sourceTree = "<group>";
@@ -548,7 +548,7 @@
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,
 				6F1201A01E513FB100EA2198 /* LFAssetManager.m in Sources */,
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
-				6F16C5941E8205C000B251A0 /* LFTextBarController.m in Sources */,
+				6F16C5941E8205C000B251A0 /* LFTextBar.m in Sources */,
 				6F16C5911E80F4D300B251A0 /* LFStickerBar.m in Sources */,
 				6FF286051E5D6D4F0008FB5B /* LFPhotoEdittingController.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,

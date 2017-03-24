@@ -48,7 +48,16 @@
 
 - (void)customInit
 {
-    self.backgroundColor = [UIColor colorWithWhite:1.f alpha:1.f];
+    if (iOS8Later) {
+        // 定义毛玻璃效果
+        self.backgroundColor = [UIColor clearColor];
+        UIBlurEffect * blur = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+        UIVisualEffectView * effe = [[UIVisualEffectView alloc]initWithEffect:blur];
+        effe.frame = self.bounds;
+        [self addSubview:effe];
+    } else {
+        self.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
+    }
     self.userInteractionEnabled = YES;
     /** 添加按钮获取点击 */
     UIButton *bgButton = [UIButton buttonWithType:UIButtonTypeCustom];

@@ -181,6 +181,14 @@
     }
 }
 
+- (BOOL)canReset
+{
+    if (_isClipping) {
+        return self.clippingView.canReset;
+    }
+    return NO;
+}
+
 #pragma mark - LFClippingViewDelegate
 - (void (^)(CGRect))lf_clippingViewWillBeginZooming:(LFClippingView *)clippingView
 {
@@ -200,6 +208,10 @@
     self.maskViewBlock = lf_dispatch_block_t(0.25f, ^{
         weakSelf.gridView.showMaskLayer = YES;
     });
+    
+    if ([self.clippingDelegate respondsToSelector:@selector(lf_edittingViewDidEndZooming:)]) {
+        [self.clippingDelegate lf_edittingViewDidEndZooming:self];
+    }
 }
 
 - (void)lf_clippingViewWillBeginDragging:(LFClippingView *)clippingView
@@ -215,6 +227,9 @@
     self.maskViewBlock = lf_dispatch_block_t(0.25f, ^{
         weakSelf.gridView.showMaskLayer = YES;
     });
+    if ([self.clippingDelegate respondsToSelector:@selector(lf_edittingViewEndDecelerating:)]) {
+        [self.clippingDelegate lf_edittingViewEndDecelerating:self];
+    }
 }
 
 #pragma mark - LFGridViewDelegate

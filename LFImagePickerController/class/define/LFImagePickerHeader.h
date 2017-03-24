@@ -14,9 +14,12 @@
 #define iOS9_1Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.1f)
 
 #define bundleImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kBundlePath, name]]
+#define bundleEditImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kEditPath, name]]
 #define bundleStickerImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kStickersPath, name]]
 
 extern NSString *const kBundlePath;
+/** 编辑资源路径 */
+extern NSString *const kEditPath;
 /** 贴图资源路径 */
 extern NSString *const kStickersPath;
 

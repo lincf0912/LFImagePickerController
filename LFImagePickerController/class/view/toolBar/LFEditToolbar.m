@@ -8,6 +8,10 @@
 
 #import "LFEditToolbar.h"
 #import "UIView+LFFrame.h"
+#import "LFImagePickerHeader.h"
+
+#define mainButtonImageNormals @[@"EditImagePenToolBtn.png", @"EditImageEmotionToolBtn.png", @"EditImageTextToolBtn.png", @"EditImageMosaicToolBtn.png", @"EditImageCropToolBtn.png"]
+#define mainButtonImageHighlighted @[@"EditImagePenToolBtn_HL.png", @"EditImageEmotionToolBtn_HL.png", @"EditImageTextToolBtn_HL.png", @"EditImageMosaicToolBtn_HL.png", @"EditImageCropToolBtn_HL.png"]
 
 @interface LFEditToolbar ()
 
@@ -37,6 +41,7 @@
     self = [super initWithFrame:(CGRect){{0, [UIScreen mainScreen].bounds.size.height-99}, {[UIScreen mainScreen].bounds.size.width, 99}}];
     if (self) {
         [self customInit];
+        
     }
     return self;
 }
@@ -56,17 +61,14 @@
     NSInteger buttonCount = 5;
     
     CGFloat width = CGRectGetWidth(self.frame)/buttonCount;
-    
     for (NSInteger i=0; i<buttonCount; i++) {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.tag = i;
         button.frame = CGRectMake(width*i, 0, width, 44);
         button.titleLabel.font = [UIFont systemFontOfSize:14];
-        //            [button setImage:<#(nullable UIImage *)#> forState:UIControlStateNormal];
-        [button setTitle:[NSString stringWithFormat:@"%zd", i] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [button setTitleColor:[UIColor redColor] forState:UIControlStateHighlighted];
-        [button setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+        [button setImage:bundleEditImageNamed(mainButtonImageNormals[i]) forState:UIControlStateNormal];
+        [button setImage:bundleEditImageNamed(mainButtonImageHighlighted[i]) forState:UIControlStateHighlighted];
+        [button setImage:bundleEditImageNamed(mainButtonImageHighlighted[i]) forState:UIControlStateSelected];
         [button addTarget:self action:@selector(edit_toolBar_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
         [edit_menu addSubview:button];
     }
@@ -104,6 +106,11 @@
         [edit_drawMenu addSubview:edit_drawMenu_revoke];
         self.edit_drawMenu_revoke = edit_drawMenu_revoke;
         
+        /** 分隔线 */
+        UIView *separateView = [self separateView];
+        separateView.frame = CGRectMake(CGRectGetMinX(edit_drawMenu_revoke.frame)-10*2, (CGRectGetHeight(edit_drawMenu.frame)-25)/2, 1, 25);
+        [edit_drawMenu addSubview:separateView];
+        
         self.edit_drawMenu = edit_drawMenu;
         
         [self insertSubview:edit_drawMenu belowSubview:_edit_menu];
@@ -125,6 +132,11 @@
         [edit_splashMenu addSubview:edit_splashMenu_revoke];
         self.edit_splashMenu_revoke = edit_splashMenu_revoke;
         
+        /** 分隔线 */
+        UIView *separateView = [self separateView];
+        separateView.frame = CGRectMake(CGRectGetMinX(edit_splashMenu_revoke.frame)-10*2, (CGRectGetHeight(edit_splashMenu.frame)-25)/2, 1, 25);
+        [edit_splashMenu addSubview:separateView];
+        
         /** 剩余长度 */
         CGFloat width = CGRectGetMinX(edit_splashMenu_revoke.frame);
         /** 按钮个数 */
@@ -135,7 +147,9 @@
         UIButton *action1 = [UIButton buttonWithType:UIButtonTypeCustom];
         action1.frame = CGRectMake(averageWidth*1-44/2, (CGRectGetHeight(edit_splashMenu.frame)-30)/2, 44, 30);
         [action1 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-        action1.backgroundColor = [UIColor redColor];
+        [action1 setImage:bundleEditImageNamed(@"EditImageTraditionalMosaicBtn.png") forState:UIControlStateNormal];
+        [action1 setImage:bundleEditImageNamed(@"EditImageTraditionalMosaicBtn_HL.png") forState:UIControlStateHighlighted];
+        [action1 setImage:bundleEditImageNamed(@"EditImageTraditionalMosaicBtn_HL.png") forState:UIControlStateSelected];
         action1.tag = 30;
         [edit_splashMenu addSubview:action1];
         _edit_splashMenu_action_button = action1;
@@ -143,7 +157,9 @@
         UIButton *action2 = [UIButton buttonWithType:UIButtonTypeCustom];
         action2.frame = CGRectMake(averageWidth*2-44/2, (CGRectGetHeight(edit_splashMenu.frame)-30)/2, 44, 30);
         [action2 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-        action2.backgroundColor = [UIColor redColor];
+        [action2 setImage:bundleEditImageNamed(@"EditImageBrushMosaicBtn.png") forState:UIControlStateNormal];
+        [action2 setImage:bundleEditImageNamed(@"EditImageBrushMosaicBtn_HL.png") forState:UIControlStateHighlighted];
+        [action2 setImage:bundleEditImageNamed(@"EditImageBrushMosaicBtn_HL.png") forState:UIControlStateSelected];
         action2.tag = 31;
         [edit_splashMenu addSubview:action2];
         
@@ -159,11 +175,19 @@
 {
     UIButton *revoke = [UIButton buttonWithType:UIButtonTypeCustom];
     revoke.frame = CGRectMake(_edit_menu.width-44-5, 0, 44, 55);
-    [revoke setTitle:@"撤销" forState:UIControlStateNormal];
-    revoke.titleLabel.font = [UIFont systemFontOfSize:14.f];
+    [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn.png") forState:UIControlStateNormal];
+    [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn_HL.png") forState:UIControlStateHighlighted];
+    [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn_HL.png") forState:UIControlStateSelected];
     revoke.tag = type;
     [revoke addTarget:self action:@selector(revoke_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
     return revoke;
+}
+
+- (UIImageView *)separateView
+{
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:bundleEditImageNamed(@"AlbumCommentLine.png")];
+//    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    return imageView;
 }
 
 #pragma mark - 一级菜单事件(action)

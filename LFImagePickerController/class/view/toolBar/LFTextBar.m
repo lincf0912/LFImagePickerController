@@ -1,12 +1,12 @@
 //
-//  LFTextBarController.m
+//  LFTextBar.m
 //  LFImagePickerController
 //
 //  Created by LamTsanFeng on 2017/3/22.
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import "LFTextBarController.h"
+#import "LFTextBar.h"
 #import "UIView+LFFrame.h"
 #import "LFLayoutPickerController.h"
 #import "LFImagePickerHeader.h"
@@ -16,43 +16,44 @@
 /** 来限制最大输入只能100个字符 */
 #define MAX_LIMIT_NUMS 100
 
-@interface LFTextBarController () <UITextViewDelegate>
+@interface LFTextBar () <UITextViewDelegate>
 
 @property (nonatomic, weak) UITextView *lf_textView;
 
 @end
 
-@implementation LFTextBarController
+@implementation LFTextBar
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        self.isHiddenNavBar = YES;
-        self.isHiddenStatusBar = YES;
-        self.oKButtonTitleColorNormal = [UIColor colorWithWhite:0.8f alpha:1.f];
-        if (iOS8Later) {
-            self.modalPresentationStyle = UIModalPresentationCustom;
-        } else {
-            self.modalPresentationStyle = UIModalPresentationCurrentContext;
-        }
+        [self customInit];
     }
     return self;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self customInit];
+    }
+    return self;
+}
+
+- (void)customInit
+{
+    _oKButtonTitleColorNormal = [UIColor colorWithWhite:0.8f alpha:1.f];
     if (iOS8Later) {
         // 定义毛玻璃效果
-        self.view.backgroundColor = [UIColor clearColor];
+        self.backgroundColor = [UIColor clearColor];
         UIBlurEffect * blur = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
         UIVisualEffectView * effe = [[UIVisualEffectView alloc]initWithEffect:blur];
-        effe.frame = self.view.bounds;
-        [self.view addSubview:effe];
+        effe.frame = self.bounds;
+        [self addSubview:effe];
     } else {
-        self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.8];
+        self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.8];
     }
     
     [self addKeyBoardNotify];
@@ -61,16 +62,14 @@
     [self configTextView];
 }
 
-- (void)viewWillAppear:(BOOL)animated
+- (BOOL)becomeFirstResponder
 {
-    [super viewWillAppear:animated];
-    [self.lf_textView becomeFirstResponder];
+    return [self.lf_textView becomeFirstResponder];
 }
 
-- (void)viewWillDisappear:(BOOL)animated
+- (BOOL)resignFirstResponder
 {
-    [super viewWillDisappear:animated];
-    [self.lf_textView resignFirstResponder];
+    return [self.lf_textView resignFirstResponder];
 }
 
 - (void)dealloc
@@ -90,7 +89,7 @@
     /** 顶部栏 */
     CGFloat margin = 10;
     CGFloat size = kTopbarHeight - margin*2;
-    UIView *topbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, kTopbarHeight)];
+    UIView *topbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.width, kTopbarHeight)];
     topbar.backgroundColor = [UIColor clearColor];
     
     UIButton *cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(margin, margin, size, size)];
@@ -99,7 +98,7 @@
     [cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     [cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
-    UIButton *finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - (size+margin), margin, size, size)];
+    UIButton *finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.width - (size+margin), margin, size, size)];
     [finishButton setTitle:@"完成" forState:UIControlStateNormal];
     finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [finishButton setTitleColor:self.oKButtonTitleColorNormal forState:UIControlStateNormal];
@@ -108,12 +107,12 @@
     [topbar addSubview:cancelButton];
     [topbar addSubview:finishButton];
     
-    [self.view addSubview:topbar];
+    [self addSubview:topbar];
 }
 
 - (void)configTextView
 {
-    UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, kTopbarHeight, self.view.width, self.view.height-kTopbarHeight)];
+    UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, kTopbarHeight, self.width, self.height-kTopbarHeight)];
     textView.delegate = self;
     textView.backgroundColor = [UIColor clearColor];
     [textView setTextColor:[UIColor whiteColor]];
@@ -122,13 +121,8 @@
     if (self.showText.length) {
         [textView setText:self.showText];
     }
-    [self.view addSubview:textView];
+    [self addSubview:textView];
     self.lf_textView = textView;
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark - 顶部栏(action)

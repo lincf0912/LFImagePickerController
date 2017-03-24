@@ -145,7 +145,7 @@
     if (_editMaskImageView == nil) {
         UIImageView *editMaskImageView = [[UIImageView alloc] init];
         editMaskImageView.frame = CGRectMake(5, self.height - 27, 22, 22);
-        editMaskImageView.backgroundColor = [UIColor redColor];
+        [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
         [self.contentView addSubview:editMaskImageView];
         _editMaskImageView = editMaskImageView;
     }

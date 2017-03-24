@@ -23,6 +23,8 @@ NSString *const kLFClippingViewData_minimumZoomScale = @"LFClippingViewData_mini
 NSString *const kLFClippingViewData_maximumZoomScale = @"LFClippingViewData_maximumZoomScale";
 NSString *const kLFClippingViewData_clipsToBounds = @"LFClippingViewData_clipsToBounds";
 
+NSString *const kLFClippingViewData_reset_minimumZoomScale = @"LFClippingViewData_reset_minimumZoomScale";
+
 NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingView";
 
 @interface LFClippingView () <UIScrollViewDelegate>
@@ -33,6 +35,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 @property (nonatomic, assign) CGRect normalRect;
 /** 处理完毕的基础坐标（因为可能会被父类在缩放时改变当前frame的问题，导致记录坐标不正确） */
 @property (nonatomic, assign) CGRect saveRect;
+/** 首次缩放后需要记录最小缩放值，否则在多次重复编辑后由于大小发生改变，导致最小缩放值不准确，还原不回实际大小 */
+@property (nonatomic, assign) CGFloat reset_minimumZoomScale;
 
 /** 记录剪裁前的数据 */
 @property (nonatomic, assign) CGRect old_frame;
@@ -97,8 +101,6 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     
     _cropRect = cropRect;
     
-//    CGFloat scale = self.zoomScale;
-    
     /** 当前UI位置未改变时，获取contentOffset与contentSize */
     /** 计算未改变前当前视图在contentSize的位置比例 */
     CGPoint contentOffset = self.contentOffset;
@@ -106,7 +108,6 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     CGFloat scaleY = MAX(contentOffset.y/(self.contentSize.height-self.height), 0);
     /** 获取contentOffset必须在设置contentSize之前，否则重置frame 或 contentSize后contentOffset会发送变化 */
     
-//    [self setZoomScale:1.f];
     CGRect oldFrame = self.frame;
     self.frame = cropRect;
     self.saveRect = self.frame;
@@ -128,6 +129,11 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
         }
     }
     [self setZoomScale:scale];
+    
+    /** 记录首次最小缩放值 */
+    if (self.reset_minimumZoomScale == 0) {
+        self.reset_minimumZoomScale = self.minimumZoomScale;
+    }
     
     /** 重设contentSize */
     self.contentSize = self.zoomingView.size;
@@ -159,6 +165,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                               delay:0.0
                             options:UIViewAnimationOptionBeginFromCurrentState
                          animations:^{
+                             self.minimumZoomScale = self.reset_minimumZoomScale;
                              [self setZoomScale:self.minimumZoomScale];
                              self.frame = (CGRect){CGPointZero, self.zoomingView.size};
                              self.saveRect = self.frame;
@@ -445,7 +452,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                                  , kLFClippingViewData_contentOffset:[NSValue valueWithCGPoint:self.contentOffset]
                                  , kLFClippingViewData_minimumZoomScale:@(self.minimumZoomScale)
                                  , kLFClippingViewData_maximumZoomScale:@(self.maximumZoomScale)
-                                 , kLFClippingViewData_clipsToBounds:@(self.clipsToBounds)};
+                                 , kLFClippingViewData_clipsToBounds:@(self.clipsToBounds)
+                                 , kLFClippingViewData_reset_minimumZoomScale:@(self.reset_minimumZoomScale)};
         [data setObject:myData forKey:kLFClippingViewData];
     }
     
@@ -469,6 +477,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
         self.contentSize = [myData[kLFClippingViewData_contentSize] CGSizeValue];
         self.contentOffset = [myData[kLFClippingViewData_contentOffset] CGPointValue];
         self.clipsToBounds = [myData[kLFClippingViewData_clipsToBounds] boolValue];
+        self.reset_minimumZoomScale = [myData[kLFClippingViewData_reset_minimumZoomScale] floatValue];
     }
     
     self.zoomingView.photoEditData = photoEditData[kLFClippingViewData_zoomingView];

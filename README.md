@@ -4,7 +4,7 @@
 * 兼容非系统相册的调用方式(未测试)
 * 详细使用见LFImagePickerController.h 的初始化方法
 
-![image](https://github.com/lincf0912/LFImagePickerController/raw/master/screenshots/screenshot.gif)
+![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot.gif)
 
 ## Installation 安装
 

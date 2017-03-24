@@ -16,6 +16,10 @@
 #import "LFSplashView.h"
 #import "LFStickerView.h"
 
+NSString *const kLFZoomingViewData_draw = @"LFZoomingViewData_draw";
+NSString *const kLFZoomingViewData_sticker = @"LFZoomingViewData_sticker";
+NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
+
 @interface LFZoomingView ()
 
 @property (nonatomic, weak) UIImageView *imageView;
@@ -165,6 +169,31 @@
             _stickerView.userInteractionEnabled = NO;
         }
     }
+}
+
+#pragma mark - 数据
+- (NSDictionary *)photoEditData
+{
+    NSDictionary *drawData = _drawView.data;
+    NSDictionary *stickerData = _stickerView.data;
+    NSDictionary *splashData = _splashView.data;
+    
+    NSMutableDictionary *data = [@{} mutableCopy];
+    if (drawData) [data setObject:drawData forKey:kLFZoomingViewData_draw];
+    if (stickerData) [data setObject:stickerData forKey:kLFZoomingViewData_sticker];
+    if (splashData) [data setObject:splashData forKey:kLFZoomingViewData_splash];
+    
+    if (data.count) {
+        return data;
+    }
+    return nil;
+}
+
+- (void)setPhotoEditData:(NSDictionary *)photoEditData
+{
+    _drawView.data = photoEditData[kLFZoomingViewData_draw];
+    _stickerView.data = photoEditData[kLFZoomingViewData_sticker];
+    _splashView.data = photoEditData[kLFZoomingViewData_splash];
 }
 
 #pragma mark - 绘画功能

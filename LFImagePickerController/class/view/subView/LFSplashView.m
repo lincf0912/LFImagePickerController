@@ -10,6 +10,9 @@
 #import "LFMaskLayer.h"
 #import "UIImage+LFCommon.h"
 
+NSString *const kLFSplashViewData_mosaic = @"LFSplashViewData_mosaic";
+NSString *const kLFSplashViewData_blur = @"LFSplashViewData_blur";
+
 @interface LFSplashView ()
 {
     BOOL _isWork;
@@ -23,8 +26,6 @@
 @property (nonatomic, strong) CALayer *imageLayer_blurry;
 @property (nonatomic, strong) LFMaskLayer *blurLayer;
 
-//设置手指的涂抹路径
-@property (nonatomic, strong) NSMutableArray *lineArray;
 /** 线粗 */
 @property (nonatomic, assign) CGFloat lineWidth;
 
@@ -43,8 +44,6 @@
 
 - (void)customInit
 {
-    _lineArray = [@[] mutableCopy];
-    
     _lineWidth = 20.f;
     _state = LFSplashStateType_Mosaic;
     
@@ -104,7 +103,6 @@
         [path setLineJoinStyle:kCGLineJoinRound];
         path.lineWidth = _lineWidth;
         [path moveToPoint:point];
-        [self.lineArray addObject:@1];
         
         LFBlurBezierPath *mosaicPath = [path copy];
         mosaicPath.isClear = (self.state != LFSplashStateType_Mosaic);
@@ -163,15 +161,37 @@
 /** 是否可撤销 */
 - (BOOL)canUndo
 {
-    return self.lineArray.count;
+    return self.mosaicLayer.lineArray.count && self.blurLayer.lineArray.count;
 }
 
 //撤销
 - (void)undo
 {
-    [self.lineArray removeLastObject];
     [self.mosaicLayer.lineArray removeLastObject];
     [self.blurLayer.lineArray removeLastObject];
+    [self drawLine];
+}
+
+#pragma mark  - 数据
+- (NSDictionary *)data
+{
+    if (self.mosaicLayer.lineArray.count && self.blurLayer.lineArray.count) {
+        return @{kLFSplashViewData_mosaic:[self.mosaicLayer.lineArray copy]
+                 , kLFSplashViewData_blur:[self.blurLayer.lineArray copy]};
+    }
+    return nil;
+}
+
+- (void)setData:(NSDictionary *)data
+{
+    NSArray *mosaicLineArray = data[kLFSplashViewData_mosaic];
+    NSArray *blurLineArray = data[kLFSplashViewData_blur];
+    if (mosaicLineArray) {
+        [self.mosaicLayer.lineArray addObjectsFromArray:mosaicLineArray];
+    }
+    if (blurLineArray) {
+        [self.blurLayer.lineArray addObjectsFromArray:blurLineArray];
+    }
     [self drawLine];
 }
 

@@ -17,6 +17,11 @@
 /** 禁用其他功能 */
 - (void)photoEditEnable:(BOOL)enable;
 
+/** =====================数据===================== */
+
+/** 数据 */
+@property (nonatomic, strong) NSDictionary *photoEditData;
+
 /** =====================绘画功能===================== */
 
 /** 启用绘画功能 */

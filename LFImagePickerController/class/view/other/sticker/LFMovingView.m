@@ -201,8 +201,10 @@
     
     self.transform = CGAffineTransformMakeRotation(_arg);
     
-    _contentView.layer.borderWidth = 1/_scale;
-    _contentView.layer.cornerRadius = 3/_scale;
+    if (_isActive) {        
+        _contentView.layer.borderWidth = 1/_scale;
+        _contentView.layer.cornerRadius = 3/_scale;
+    }
 }
 
 - (CGFloat)scale

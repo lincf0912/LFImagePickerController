@@ -42,8 +42,7 @@ static LFPhotoEditManager *manager;
     __weak typeof(self) weakSelf = self;
     [self requestForAsset:asset.asset complete:^(NSString *name) {
         if (name.length) {
-            /** 优化->过滤无效的编辑对象 */
-            if (obj && obj.isWork) {
+            if (obj) {
                 [weakSelf.photoEditDict setObject:obj forKey:name];
             } else {
                 [weakSelf.photoEditDict removeObjectForKey:name];

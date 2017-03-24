@@ -15,6 +15,8 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#define kMaxZoomScale 2.5f
+
 @interface LFEdittingView () <UIScrollViewDelegate, LFClippingViewDelegate, LFGridViewDelegate>
 
 @property (nonatomic, weak) LFClippingView *clippingView;
@@ -42,14 +44,14 @@
 
 - (void)customInit
 {
-    self.backgroundColor = [UIColor redColor];
+    self.backgroundColor = [UIColor blackColor];
     self.delegate = self;
     self.scrollsToTop = NO;
     self.showsHorizontalScrollIndicator = NO;
     self.showsVerticalScrollIndicator = NO;
     /** 缩放 */
     self.bouncesZoom = YES;
-    self.maximumZoomScale = 2.5;
+    self.maximumZoomScale = kMaxZoomScale;
     self.minimumZoomScale = 1.0;
     
     LFClippingView *clippingView = [[LFClippingView alloc] initWithFrame:self.bounds];
@@ -81,6 +83,7 @@
     _clippingRect = clippingRect;
     self.gridView.gridRect = clippingRect;
     self.clippingView.cropRect = clippingRect;
+    self.maximumZoomScale = MIN(MAX(self.minimumZoomScale + kMaxZoomScale - kMaxZoomScale * (self.clippingView.zoomScale/self.clippingView.maximumZoomScale), self.minimumZoomScale), kMaxZoomScale);
 }
 
 - (void)setClippingMinSize:(CGSize)clippingMinSize
@@ -106,8 +109,8 @@
 }
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated
 {
-    [self setZoomScale:1.f];
     _isClipping = isClipping;
+    [self setZoomScale:1.f];
     if (isClipping) {
         /** 动画切换 */
         if (animated) {
@@ -129,6 +132,7 @@
             self.clippingView.clipsToBounds = NO;
         }
     } else {
+        /** 重置最大缩放 */
         if (animated) {
             /** 剪裁多余部分 */
             self.clippingView.clipsToBounds = YES;
@@ -217,6 +221,7 @@
 - (void)lf_gridViewDidBeginResizing:(LFGridView *)gridView
 {
     gridView.showMaskLayer = NO;
+    lf_dispatch_cancel(self.maskViewBlock);
 }
 - (void)lf_gridViewDidResizing:(LFGridView *)gridView
 {
@@ -243,13 +248,19 @@
 
 - (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view {
     
-    
+    if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
+        if (event.allTouches.count == 2) { /** 2个手指 */
+            return NO;
+        }
+    }
     return [super touchesShouldBegin:touches withEvent:event inContentView:view];
 }
 
 - (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
-    
+    if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
+        return NO;
+    }
     return [super touchesShouldCancelInContentView:view];
 }
 
@@ -286,6 +297,17 @@
 - (void)photoEditEnable:(BOOL)enable
 {
     [self.clippingView photoEditEnable:enable];
+}
+
+#pragma mark - 数据
+- (NSDictionary *)photoEditData
+{
+    return self.clippingView.photoEditData;
+}
+
+- (void)setPhotoEditData:(NSDictionary *)photoEditData
+{
+    self.clippingView.photoEditData = photoEditData;
 }
 
 #pragma mark - 绘画功能

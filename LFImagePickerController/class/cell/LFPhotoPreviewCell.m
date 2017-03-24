@@ -122,6 +122,7 @@
 - (void)setPreviewImage:(UIImage *)previewImage
 {
     self.imageView.image = previewImage;
+    [self resizeSubviews];
 }
 
 - (void)setModel:(LFAsset *)model
@@ -130,40 +131,33 @@
     /** 优先显示编辑图片 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit.editPreviewImage) {
-        self.imageView.image = photoEdit.editPreviewImage;
-        [self resizeSubviews];
+        self.previewImage = photoEdit.editPreviewImage;
     } else if (model.asset == nil) { /** 显示自定义图片 */
-        self.imageView.image = model.previewImage;
-        [self resizeSubviews];
+        self.previewImage = model.previewImage;
     } else {
-        if (model.previewImage) {
-            self.imageView.image = model.previewImage;
-            [self resizeSubviews];
-        } else {
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-                if (!isDegraded) { /** 缓存清晰图片 */
-                    model.previewImage = photo;
-                }
-                if ([model isEqual:self.model]) {
-                    self.imageView.image = photo;
-                    [self resizeSubviews];
-                    _progressView.hidden = YES;
-                    if (self.imageProgressUpdateBlock) {
-                        self.imageProgressUpdateBlock(1);
-                    }
-                }
-            } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-                if ([model isEqual:self.model]) {
-                    _progressView.hidden = NO;
-                    [self bringSubviewToFront:_progressView];
-                    progress = progress > 0.02 ? progress : 0.02;;
-                    _progressView.progress = progress;
-                    if (self.imageProgressUpdateBlock) {
-                        self.imageProgressUpdateBlock(progress);
-                    }
-                }
-            } networkAccessAllowed:YES];
+        /** 如果已被设置图片，忽略这次图片获取 */
+        if (self.previewImage) {
+            return;
         }
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if ([model isEqual:self.model]) {
+                self.previewImage = photo;
+                _progressView.hidden = YES;
+                if (self.imageProgressUpdateBlock) {
+                    self.imageProgressUpdateBlock(1);
+                }
+            }
+        } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+            if ([model isEqual:self.model]) {
+                _progressView.hidden = NO;
+                [self bringSubviewToFront:_progressView];
+                progress = progress > 0.02 ? progress : 0.02;;
+                _progressView.progress = progress;
+                if (self.imageProgressUpdateBlock) {
+                    self.imageProgressUpdateBlock(progress);
+                }
+            }
+        } networkAccessAllowed:YES];
     }
 }
 
@@ -177,23 +171,32 @@
     _imageContainerView.width = self.scrollView.width;
     
     UIImage *image = _imageView.image;
-    if (image.size.height / image.size.width > self.height / self.scrollView.width) {
-        _imageContainerView.height = floor(image.size.height / (image.size.width / self.scrollView.width));
-    } else {
-        CGFloat height = image.size.height / image.size.width * self.scrollView.width;
-        if (height < 1 || isnan(height)) height = self.height;
-        height = floor(height);
-        _imageContainerView.height = height;
-        _imageContainerView.centerY = self.height / 2;
+    if (image) {
+        if (image.size.height / image.size.width > self.height / self.scrollView.width) {
+            _imageContainerView.height = floor(image.size.height / (image.size.width / self.scrollView.width));
+        } else {
+            CGFloat height = image.size.height / image.size.width * self.scrollView.width;
+            if (height < 1 || isnan(height)) height = self.height;
+            height = floor(height);
+            _imageContainerView.height = height;
+            _imageContainerView.centerY = self.height / 2;
+        }
+        if (_imageContainerView.height > self.height && _imageContainerView.height - self.height <= 1) {
+            _imageContainerView.height = self.height;
+        }
+        CGFloat contentSizeH = MAX(_imageContainerView.height, self.height);
+        _scrollView.contentSize = CGSizeMake(self.scrollView.width, contentSizeH);
+        [_scrollView scrollRectToVisible:self.bounds animated:NO];
+        _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
+        _imageView.frame = _imageContainerView.bounds;
     }
-    if (_imageContainerView.height > self.height && _imageContainerView.height - self.height <= 1) {
-        _imageContainerView.height = self.height;
-    }
-    CGFloat contentSizeH = MAX(_imageContainerView.height, self.height);
-    _scrollView.contentSize = CGSizeMake(self.scrollView.width, contentSizeH);
-    [_scrollView scrollRectToVisible:self.bounds animated:NO];
-    _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
-    _imageView.frame = _imageContainerView.bounds;
+}
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.model = nil;
+    self.imageView.image = nil;
 }
 
 #pragma mark - UITapGestureRecognizer Event

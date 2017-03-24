@@ -16,6 +16,9 @@
 @property (nonatomic, copy) void(^drawBegan)();
 @property (nonatomic, copy) void(^drawEnded)();
 
+/** 数据 */
+@property (nonatomic, strong) NSDictionary *data;
+
 /** 是否可撤销 */
 - (BOOL)canUndo;
 //撤销

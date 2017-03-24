@@ -346,18 +346,15 @@
     LFAsset *model = models.firstObject;
     /** 获取缓存编辑对象 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    photoEdittingVC.photoEdit = photoEdit;
-    /** 读取缓存 */
-    if (model.previewImage) {
+    if (photoEdit) {
+        photoEdittingVC.photoEdit = photoEdit;
+    } else if (model.previewImage) { /** 读取自定义图片 */
         photoEdittingVC.editImage = model.previewImage;
     } else {
         /** 获取对应的图片 */
         [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             /** 缓存清晰图 */
-            if (!isDegraded) {
-                photoEdittingVC.editImage = photo;
-                model.previewImage = photo;
-            }
+            photoEdittingVC.editImage = photo;
         }];
     }
     [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:photoEdittingVC];
@@ -422,7 +419,7 @@
     for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
         LFAsset *model = imagePickerVc.selectedModels[i];
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-        if (photoEdit.isWork) {
+        if (photoEdit) {
             [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                 photosComplete(thumbnail, source, info, i, model.asset);
             }];

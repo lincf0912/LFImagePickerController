@@ -12,7 +12,7 @@
 #import "LFResizeControl.h"
 
 /** 可控范围 */
-const CGFloat kControlWidth = 25.f;
+const CGFloat kControlWidth = 30.f;
 
 @interface LFGridView () <lf_resizeConrolDelegate>
 

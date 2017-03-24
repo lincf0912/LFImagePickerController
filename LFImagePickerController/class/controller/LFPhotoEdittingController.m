@@ -10,6 +10,7 @@
 #import "LFImagePickerHeader.h"
 #import "LFImagePickerController.h"
 #import "UIView+LFFrame.h"
+#import "UIView+LFCommon.h"
 #import "UIImage+LFCommon.h"
 #import "UIImage+LF_ImageCompress.h"
 #import "LFImagePickerType.h"
@@ -45,9 +46,6 @@
 /** 隐藏控件 */
 @property (nonatomic, assign) BOOL isHideNaviBar;
 
-/** 旧编辑对象 */
-@property (nonatomic, strong) LFPhotoEdit *oldPhotoEdit;
-
 @end
 
 @implementation LFPhotoEdittingController
@@ -75,8 +73,6 @@
     [self configScrollView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
-
-//    [self configPhotoEditManager];
 }
 
 - (void)dealloc{
@@ -95,6 +91,10 @@
     _edittingView.editDelegate = self;
     if (_editImage) {
         [self setEditImage:_editImage];
+    }
+    if (_photoEdit) {
+        [self setEditImage:_photoEdit.editImage];
+        _edittingView.photoEditData = _photoEdit.editData;
     }
     
     /** 单击的 Recognizer */
@@ -141,15 +141,6 @@
     [self.view addSubview:_edit_toolBar];
 }
 
-- (void)configPhotoEditManager
-{
-    if (_photoEdit == nil) {
-        self.photoEdit = [[LFPhotoEdit alloc] init];
-    } else {
-        self.photoEdit = _photoEdit;
-    }
-}
-
 #pragma mark - 顶部栏(action)
 - (void)singlePressed
 {
@@ -159,7 +150,7 @@
 - (void)cancelButtonClick
 {
     if ([self.delegate respondsToSelector:@selector(lf_PhotoEdittingController:didCancelPhotoEdit:)]) {
-        [self.delegate lf_PhotoEdittingController:self didCancelPhotoEdit:self.oldPhotoEdit];
+        [self.delegate lf_PhotoEdittingController:self didCancelPhotoEdit:self.photoEdit];
     }
 }
 
@@ -170,9 +161,12 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         /** 处理编辑图片 */
+        UIImage *image = [_edittingView captureImage];
+        NSDictionary *data = [_edittingView photoEditData];
+        LFPhotoEdit *photoEdit = (data ? [[LFPhotoEdit alloc] initWithEditImage:self.editImage previewImage:image data:data] : nil);
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.delegate respondsToSelector:@selector(lf_PhotoEdittingController:didFinishPhotoEdit:)]) {
-                [self.delegate lf_PhotoEdittingController:self didFinishPhotoEdit:self.photoEdit];
+                [self.delegate lf_PhotoEdittingController:self didFinishPhotoEdit:photoEdit];
             }
             [imagePickerVc hideProgressHUD];
         });

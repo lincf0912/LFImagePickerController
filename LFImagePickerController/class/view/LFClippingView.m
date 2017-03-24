@@ -11,9 +11,28 @@
 #import "UIView+LFFrame.h"
 #import <AVFoundation/AVFoundation.h>
 
+#define kRound(x) (round(x*100000)/100000)
+
+NSString *const kLFClippingViewData = @"LFClippingViewData";
+
+NSString *const kLFClippingViewData_frame = @"LFClippingViewData_frame";
+NSString *const kLFClippingViewData_zoomScale = @"LFClippingViewData_zoomScale";
+NSString *const kLFClippingViewData_contentSize = @"LFClippingViewData_contentSize";
+NSString *const kLFClippingViewData_contentOffset = @"LFClippingViewData_contentOffset";
+NSString *const kLFClippingViewData_minimumZoomScale = @"LFClippingViewData_minimumZoomScale";
+NSString *const kLFClippingViewData_maximumZoomScale = @"LFClippingViewData_maximumZoomScale";
+NSString *const kLFClippingViewData_clipsToBounds = @"LFClippingViewData_clipsToBounds";
+
+NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingView";
+
 @interface LFClippingView () <UIScrollViewDelegate>
 
 @property (nonatomic, weak) LFZoomingView *zoomingView;
+
+/** 开始的基础坐标 */
+@property (nonatomic, assign) CGRect normalRect;
+/** 处理完毕的基础坐标（因为可能会被父类在缩放时改变当前frame的问题，导致记录坐标不正确） */
+@property (nonatomic, assign) CGRect saveRect;
 
 /** 记录剪裁前的数据 */
 @property (nonatomic, assign) CGRect old_frame;
@@ -37,7 +56,7 @@
 
 - (void)customInit
 {
-    self.backgroundColor = [UIColor blueColor];
+    self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds = NO;
     self.delegate = self;
     self.minimumZoomScale = 1.0f;
@@ -60,7 +79,9 @@
     _image = image;
     [self setZoomScale:1.f];
     CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
+    self.normalRect = cropRect;
     self.frame = cropRect;
+    self.saveRect = self.frame;
     [self.zoomingView setImage:image];
 }
 
@@ -88,19 +109,23 @@
 //    [self setZoomScale:1.f];
     CGRect oldFrame = self.frame;
     self.frame = cropRect;
+    self.saveRect = self.frame;
     
     CGFloat scale = self.zoomScale;
     /** 视图位移 */
     CGFloat scaleZX = CGRectGetWidth(cropRect)/(CGRectGetWidth(oldFrame)/scale);
     CGFloat scaleZY = CGRectGetHeight(cropRect)/(CGRectGetHeight(oldFrame)/scale);
     
-    if (scaleZX < 1 && scaleZY < 1) {
+    if (scaleZX < self.minimumZoomScale && scaleZY < self.minimumZoomScale) {
         CGFloat minimumZoomScale = self.minimumZoomScale;
         self.minimumZoomScale = MAX(scaleZX, scaleZY);
         scale = self.zoomScale - (minimumZoomScale - self.minimumZoomScale);
     } else {
         self.maximumZoomScale = (MIN(scaleZX, scaleZY) > 5 ? MIN(scaleZX, scaleZY) : 5);
-        scale = MIN(scaleZX, scaleZY);
+        scale = kRound(MIN(scaleZX, scaleZY));
+        if (scale == 1) {
+            self.minimumZoomScale = 1.f;
+        }
     }
     [self setZoomScale:scale];
     
@@ -117,6 +142,7 @@
 {
     if (!CGRectEqualToRect(self.old_frame, CGRectZero)) {        
         self.frame = self.old_frame;
+        self.saveRect = self.frame;
         self.minimumZoomScale = self.old_minimumZoomScale;
         self.maximumZoomScale = self.old_maximumZoomScale;
         self.zoomScale = self.old_zoomScale;
@@ -135,6 +161,7 @@
                          animations:^{
                              [self setZoomScale:self.minimumZoomScale];
                              self.frame = (CGRect){CGPointZero, self.zoomingView.size};
+                             self.saveRect = self.frame;
                              self.center = self.superview.center;
                              /** 重设contentSize */
                              self.contentSize = self.zoomingView.size;
@@ -194,7 +221,7 @@
     CGFloat scale = MIN(CGRectGetWidth(self.editRect) / width, CGRectGetHeight(self.editRect) / height);
     
     /** 指定位置=当前显示位置 或者 当前缩放已达到最大，并且仍然发送缩放的情况； 免去以下计算，以当前显示大小为准 */
-    if (CGRectEqualToRect(self.frame, rect) || (self.zoomScale == self.maximumZoomScale && roundf(scale*10)/10 > 1.f)) {
+    if (CGRectEqualToRect(self.frame, rect) || (self.zoomScale == self.maximumZoomScale && kRound(scale) > 1.f)) {
         [UIView animateWithDuration:0.25
                               delay:0.0
                             options:UIViewAnimationOptionBeginFromCurrentState
@@ -231,10 +258,7 @@
     
     /** 计算偏移值 */
     __block CGPoint contentOffset = self.contentOffset;
-    if (ceil(cropRect.origin.x) != ceil(self.frame.origin.x)
-        ||ceil(cropRect.origin.y) != ceil(self.frame.origin.y)
-        ||ceil(cropRect.size.width) != ceil(self.frame.size.width)
-        ||ceil(cropRect.size.height) != ceil(self.frame.size.height)) { /** 实际位置与当前位置一致不做位移处理 */
+    if (![self verifyRect:cropRect]) { /** 实际位置与当前位置一致不做位移处理 */
         contentOffset.x = zoomRect.origin.x * zoomScale;
         contentOffset.y = zoomRect.origin.y * zoomScale;
     }
@@ -244,6 +268,7 @@
                         options:UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
                          self.frame = cropRect;
+                         self.saveRect = self.frame;
                          [self setZoomScale:zoomScale];
                          /** 超出最大限度Y值，调整到临界值 */
                          if (self.contentSize.height-contentOffset.y < CGRectGetHeight(cropRect)) {
@@ -314,6 +339,7 @@
                             options:UIViewAnimationOptionBeginFromCurrentState
                          animations:^{
                              self.frame = rect;
+                             self.saveRect = self.frame;
                              self.center = self.superview.center;
                              if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewWillBeginZooming:)]) {
                                  void (^block)() = [self.clippingDelegate lf_clippingViewWillBeginZooming:self];
@@ -331,17 +357,46 @@
     }
 }
 
+#pragma mark - 验证当前大小是否被修改
+- (BOOL)verifyRect:(CGRect)r_rect
+{
+    /** 计算缩放率 */
+    CGRect rect = CGRectApplyAffineTransform(r_rect, self.transform);
+    /** 模糊匹配 */
+    BOOL isEqual = CGRectEqualToRect(rect, self.frame);
+    
+    if (isEqual == NO) {
+        /** 精准验证 */
+        BOOL x = kRound(CGRectGetMinX(rect)) == kRound(CGRectGetMinX(self.frame));
+        BOOL y = kRound(CGRectGetMinY(rect)) == kRound(CGRectGetMinY(self.frame));
+        BOOL w = kRound(CGRectGetWidth(rect)) == kRound(CGRectGetWidth(self.frame));
+        BOOL h = kRound(CGRectGetHeight(rect)) == kRound(CGRectGetHeight(self.frame));
+        isEqual = x && y && w && h;
+    }
+    return isEqual;
+}
+
 #pragma mark - 重写父类方法
 
 - (BOOL)touchesShouldBegin:(NSSet *)touches withEvent:(UIEvent *)event inContentView:(UIView *)view
 {    
-    
+//    if ([[self.zoomingView subviews] containsObject:view]) {
+//        if (event.allTouches.count == 1) { /** 1个手指 */
+//            return YES;
+//        } else if (event.allTouches.count == 2) { /** 2个手指 */
+//            return NO;
+//        }
+//    }
     return [super touchesShouldBegin:touches withEvent:event inContentView:view];
 }
 
 - (BOOL)touchesShouldCancelInContentView:(UIView *)view
 {
-   
+//    if ([[self.zoomingView subviews] containsObject:view]) {
+//        return NO;
+//    } else if (![[self subviews] containsObject:view]) { /** 非自身子视图 */
+//        return NO;
+//    }
     return [super touchesShouldCancelInContentView:view];
 }
 
@@ -371,6 +426,52 @@
 - (void)photoEditEnable:(BOOL)enable
 {
     [self.zoomingView photoEditEnable:enable];
+}
+
+#pragma mark - 数据
+- (NSDictionary *)photoEditData
+{
+    NSMutableDictionary *data = [@{} mutableCopy];
+    /** 计算缩放率 */
+    CGRect rect = CGRectApplyAffineTransform(self.normalRect, self.transform);
+    
+    if (kRound(self.zoomScale) != 1 || /** 被缩放了 */
+        !(kRound(CGRectGetWidth(rect)) == kRound(CGRectGetWidth(self.frame))
+          && kRound(CGRectGetHeight(rect)) == kRound(CGRectGetHeight(self.frame)))) { /** 被剪裁了 */
+//        CGRect trueFrame = CGRectApplyAffineTransform(self.frame, CGAffineTransformInvert(self.transform));
+        NSDictionary *myData = @{kLFClippingViewData_frame:[NSValue valueWithCGRect:self.saveRect]
+                                 , kLFClippingViewData_zoomScale:@(self.zoomScale)
+                                 , kLFClippingViewData_contentSize:[NSValue valueWithCGSize:self.contentSize]
+                                 , kLFClippingViewData_contentOffset:[NSValue valueWithCGPoint:self.contentOffset]
+                                 , kLFClippingViewData_minimumZoomScale:@(self.minimumZoomScale)
+                                 , kLFClippingViewData_maximumZoomScale:@(self.maximumZoomScale)
+                                 , kLFClippingViewData_clipsToBounds:@(self.clipsToBounds)};
+        [data setObject:myData forKey:kLFClippingViewData];
+    }
+    
+    NSDictionary *zoomingViewData = self.zoomingView.photoEditData;
+    if (zoomingViewData) [data setObject:zoomingViewData forKey:kLFClippingViewData_zoomingView];
+    
+    if (data.count) {
+        return data;
+    }
+    return nil;
+}
+
+- (void)setPhotoEditData:(NSDictionary *)photoEditData
+{
+    NSDictionary *myData = photoEditData[kLFClippingViewData];
+    if (myData) {
+        self.frame = [myData[kLFClippingViewData_frame] CGRectValue];
+        self.minimumZoomScale = [myData[kLFClippingViewData_minimumZoomScale] floatValue];
+        self.maximumZoomScale = [myData[kLFClippingViewData_maximumZoomScale] floatValue];
+        self.zoomScale = [myData[kLFClippingViewData_zoomScale] floatValue];
+        self.contentSize = [myData[kLFClippingViewData_contentSize] CGSizeValue];
+        self.contentOffset = [myData[kLFClippingViewData_contentOffset] CGPointValue];
+        self.clipsToBounds = [myData[kLFClippingViewData_clipsToBounds] boolValue];
+    }
+    
+    self.zoomingView.photoEditData = photoEditData[kLFClippingViewData_zoomingView];
 }
 
 #pragma mark - 绘画功能

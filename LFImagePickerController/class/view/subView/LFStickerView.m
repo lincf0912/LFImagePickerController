@@ -10,6 +10,15 @@
 #import "LFMovingView.h"
 #import "UIView+LFFrame.h"
 
+NSString *const kLFStickerViewData_movingView = @"LFStickerViewData_movingView";
+
+NSString *const kLFStickerViewData_movingView_type = @"LFStickerViewData_movingView_type";
+NSString *const kLFStickerViewData_movingView_content = @"LFStickerViewData_movingView_content";
+
+NSString *const kLFStickerViewData_movingView_center = @"LFStickerViewData_movingView_center";
+NSString *const kLFStickerViewData_movingView_scale = @"LFStickerViewData_movingView_scale";
+NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_movingView_rotation";
+
 #pragma mark - 带内边距的label
 @interface LFStickerLabel : UILabel
 
@@ -139,13 +148,15 @@
 }
 
 /** 创建可移动视图 */
-- (LFMovingView *)createBaseMovingView:(UIView *)view
+- (LFMovingView *)createBaseMovingView:(UIView *)view active:(BOOL)active
 {
     LFMovingView *movingView = [[LFMovingView alloc] initWithView:view];
     /** 屏幕中心 */
     movingView.center = [self convertPoint:[UIApplication sharedApplication].keyWindow.center fromView:(UIView *)[UIApplication sharedApplication].keyWindow];
     
-    [LFMovingView setActiveEmoticonView:movingView];
+    if (active) {
+        [LFMovingView setActiveEmoticonView:movingView];
+    }
     
     [self addSubview:movingView];
     
@@ -163,16 +174,30 @@
 /** 创建图片 */
 - (void)createImage:(UIImage *)image
 {
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
-    LFMovingView *movingView = [self createBaseMovingView:imageView];
-    movingView.maxScale = 2.f;
+    LFMovingView *movingView = [self doCreateImage:image active:YES];
     CGFloat ratio = MIN( (0.2 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
     [movingView setScale:ratio];
 }
 
+- (LFMovingView *)doCreateImage:(UIImage *)image active:(BOOL)active
+{
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:image];
+    imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
+    LFMovingView *movingView = [self createBaseMovingView:imageView active:active];
+    movingView.maxScale = 2.f;
+    
+    return movingView;
+}
+
 /** 创建文字 */
 - (void)createText:(NSString *)text
+{
+    LFMovingView *movingView = [self doCreateText:text active:YES];
+    //    CGFloat ratio = MIN( (0.5 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
+    [movingView setScale:0.6f];
+}
+
+- (LFMovingView *)doCreateText:(NSString *)text active:(BOOL)active
 {
     CGFloat fontSize = 50.f;
     UIFont *font = [UIFont systemFontOfSize:fontSize];
@@ -186,9 +211,9 @@
     label.numberOfLines = 0.f;
     label.text = text;
     label.font = font;
-//    label.adjustsFontSizeToFitWidth = YES;
+    //    label.adjustsFontSizeToFitWidth = YES;
     label.minimumScaleFactor = 1/fontSize;
-//    label.textAlignment = NSTextAlignmentLeft;
+    //    label.textAlignment = NSTextAlignmentLeft;
     label.textColor = color;
     //阴影透明度
     label.layer.shadowOpacity = 1.0;
@@ -199,9 +224,9 @@
     //映影偏移
     label.layer.shadowOffset = CGSizeMake(1, 1);
     
-    LFMovingView *movingView = [self createBaseMovingView:label];
-//    CGFloat ratio = MIN( (0.5 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
-    [movingView setScale:0.6f];
+    LFMovingView *movingView = [self createBaseMovingView:label active:active];
+    
+    return movingView;
 }
 
 - (CGSize)calcTextSize:(NSString *)text font:(UIFont *)font color:(UIColor *)color
@@ -215,6 +240,54 @@
     textSize.height += margin;
     
     return textSize;
+}
+
+#pragma mark  - 数据
+- (NSDictionary *)data
+{
+    NSMutableArray *movingDatas = [@[] mutableCopy];
+    for (LFMovingView *view in self.subviews) {
+        if ([view isKindOfClass:[LFMovingView class]]) {
+            
+            id content = (view.type == LFMovingViewType_label ? ((UILabel *)view.view).text : (view.type == LFMovingViewType_imageView) ? ((UIImageView *)view.view).image : @"");
+            
+            [movingDatas addObject:@{kLFStickerViewData_movingView_type:@(view.type)
+                                     , kLFStickerViewData_movingView_content:content
+                                     , kLFStickerViewData_movingView_scale:@(view.scale)
+                                     , kLFStickerViewData_movingView_rotation:@(view.rotation)
+                                     , kLFStickerViewData_movingView_center:[NSValue valueWithCGPoint:view.center]}];
+        }
+    }
+    if (movingDatas.count) {
+        return @{kLFStickerViewData_movingView:[movingDatas copy]};
+    }
+    return nil;
+}
+
+- (void)setData:(NSDictionary *)data
+{
+    NSArray *movingDatas = data[kLFStickerViewData_movingView];
+    if (movingDatas.count) {
+        for (NSDictionary *movingData in movingDatas) {
+            
+            LFMovingViewType type = [movingData[kLFStickerViewData_movingView_type] integerValue];
+            id content = movingData[kLFStickerViewData_movingView_content];
+            CGFloat scale = [movingData[kLFStickerViewData_movingView_scale] floatValue];
+            CGFloat rotation = [movingData[kLFStickerViewData_movingView_rotation] floatValue];
+            CGPoint center = [movingData[kLFStickerViewData_movingView_center] CGPointValue];
+            
+            LFMovingView *view = nil;
+            if (type == LFMovingViewType_imageView) {
+                view = [self doCreateImage:content active:NO];
+            } else if (type == LFMovingViewType_label) {
+                view = [self doCreateText:content active:NO];
+            } else {
+                continue;
+            }
+            [view setScale:scale rotation:rotation];
+            view.center = center;
+        }
+    }
 }
 
 @end

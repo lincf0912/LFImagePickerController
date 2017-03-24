@@ -12,11 +12,13 @@
 
 /** 编辑封面 */
 @property (nonatomic, readonly) UIImage *editPosterImage;
-/** 编辑图片 */
+/** 编辑预览图片 */
 @property (nonatomic, readonly) UIImage *editPreviewImage;
-/** 是否有效->有编辑过 */
-@property (nonatomic, readonly) BOOL isWork;
-/** 是否有改变编辑 */
-@property (nonatomic, readonly) BOOL isChanged;
+/** 编辑图片 */
+@property (nonatomic, readonly) UIImage *editImage;
+/** 编辑数据 */
+@property (nonatomic, readonly) NSDictionary *editData;
 
+/** 初始化 */
+- (instancetype)initWithEditImage:(UIImage *)image previewImage:(UIImage *)previewImage data:(NSDictionary *)data;
 @end

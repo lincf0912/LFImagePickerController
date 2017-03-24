@@ -8,6 +8,8 @@
 
 #import "LFDrawView.h"
 
+NSString *const kLFDrawViewData = @"LFDrawViewData";
+
 @interface LFDrawBezierPath : UIBezierPath
 
 @property (nonatomic, strong) UIColor *color;
@@ -59,8 +61,8 @@
     _slayerArray = [@[] mutableCopy];
     _lineArray = [@[] mutableCopy];
     self.backgroundColor = [UIColor clearColor];
-    self.layer.anchorPoint = CGPointMake(0, 0);
-    self.layer.position = CGPointMake(0, 0);
+//    self.layer.anchorPoint = CGPointMake(0, 0);
+//    self.layer.position = CGPointMake(0, 0);
 }
 
 
@@ -167,4 +169,27 @@
     [self.slayerArray removeLastObject];
     [self.lineArray removeLastObject];
 }
+
+#pragma mark  - 数据
+- (NSDictionary *)data
+{
+    if (self.lineArray.count) {
+        return @{kLFDrawViewData:[self.lineArray copy]};
+    }
+    return nil;
+}
+
+- (void)setData:(NSDictionary *)data
+{
+    NSArray *lineArray = data[kLFDrawViewData];
+    if (lineArray.count) {
+        for (LFDrawBezierPath *path in lineArray) {
+            CAShapeLayer *slayer = [self createShapeLayer:path];
+            [self.layer addSublayer:slayer];
+            [self.slayerArray addObject:slayer];
+        }
+        [self.lineArray addObjectsFromArray:lineArray];
+    }
+}
+
 @end

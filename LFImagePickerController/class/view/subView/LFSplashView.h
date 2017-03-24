@@ -23,6 +23,8 @@ typedef NS_ENUM(NSUInteger, LFSplashStateType) {
 @property (nonatomic, readonly) UIImage *image;
 @property (nonatomic, readonly) NSUInteger level;
 
+/** 数据 */
+@property (nonatomic, strong) NSDictionary *data;
 
 @property (nonatomic, copy) void(^splashBegan)();
 @property (nonatomic, copy) void(^splashEnded)();

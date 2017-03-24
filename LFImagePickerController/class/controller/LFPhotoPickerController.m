@@ -21,6 +21,7 @@
 #import "LFAsset.h"
 #import "LFAssetCell.h"
 #import "LFAssetManager+Authorization.h"
+#import "LFAssetManager+SaveAlbum.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
@@ -421,6 +422,8 @@
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
         if (photoEdit) {
             [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                /** 编辑图片保存到相册 */
+                [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
                 photosComplete(thumbnail, source, info, i, model.asset);
             }];
         } else {

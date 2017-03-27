@@ -406,13 +406,14 @@
     _isHideNaviBar = NO;
     [self changedBarState];
     [_edittingView activeSelectStickerView];
+    [textBar resignFirstResponder];
     
-    [UIView animateWithDuration:0.25f animations:^{
-        [textBar resignFirstResponder];
+    [UIView animateWithDuration:0.25f delay:0.3f options:UIViewAnimationOptionCurveLinear animations:^{
         textBar.y = self.view.height;
     } completion:^(BOOL finished) {
         [textBar removeFromSuperview];
     }];
+    
 }
 
 #pragma mark - LFPhotoEditDelegate
@@ -552,9 +553,9 @@
     [self.view addSubview:textBar];
     
     [UIView animateWithDuration:0.25f animations:^{
-        [textBar becomeFirstResponder];
         textBar.y = 0;
     } completion:^(BOOL finished) {
+        [textBar becomeFirstResponder];
         /** 隐藏顶部栏 */
         _isHideNaviBar = YES;
         [self changedBarState];

@@ -117,7 +117,7 @@
     textView.backgroundColor = [UIColor clearColor];
     [textView setTextColor:[UIColor whiteColor]];
     [textView setFont:[UIFont systemFontOfSize:25.f]];
-//    textView
+    textView.returnKeyType = UIReturnKeyDone;
     if (self.showText.length) {
         [textView setText:self.showText];
     }
@@ -158,6 +158,13 @@
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range
  replacementText:(NSString *)text
 {
+    
+    if ([text isEqualToString:@"\n"])
+    {
+        [self finishButtonClick];
+        return NO;
+    }
+    
     UITextRange *selectedRange = [textView markedTextRange];
     //获取高亮部分
     UITextPosition *pos = [textView positionFromPosition:selectedRange.start offset:0];

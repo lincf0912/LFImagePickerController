@@ -7,8 +7,8 @@ s.license      = "MIT"
 s.author       = { "lincf0912" => "dayflyking@163.com" }
 s.platform     = :ios
 s.ios.deployment_target = "7.0"
-s.source       = { :git => "https://github.com/lincf0912/LFImagePickerController.git", :tag => "1.0" }
+s.source       = { :git => "https://github.com/lincf0912/LFImagePickerController.git", :tag => s.version.to_s }
 s.requires_arc = true
-s.resources    = "LFImagePickerController/class/*.{png,xib,nib,bundle}"
-s.source_files = "LFImagePickerController/class/*.{h,m}"
+s.resources    = "LFImagePickerController/class/*.bundle"
+s.source_files = "LFImagePickerController/class/*.{h,m}","LFImagePickerController/class/**/*.{h,m}"
 end

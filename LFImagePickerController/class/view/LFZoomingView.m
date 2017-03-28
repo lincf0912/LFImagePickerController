@@ -215,6 +215,11 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
 {
     [_drawView undo];
 }
+/** 设置绘画颜色 */
+- (void)setDrawColor:(UIColor *)color
+{
+    _drawView.lineColor = color;
+}
 
 #pragma mark - 贴图功能
 /** 取消激活贴图 */

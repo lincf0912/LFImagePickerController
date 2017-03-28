@@ -502,6 +502,11 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 {
     [self.zoomingView drawUndo];
 }
+/** 设置绘画颜色 */
+- (void)setDrawColor:(UIColor *)color
+{
+    [self.zoomingView setDrawColor:color];
+}
 
 #pragma mark - 贴图功能
 /** 取消激活贴图 */

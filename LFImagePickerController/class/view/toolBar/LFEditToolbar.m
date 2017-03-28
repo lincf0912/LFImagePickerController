@@ -9,11 +9,12 @@
 #import "LFEditToolbar.h"
 #import "UIView+LFFrame.h"
 #import "LFImagePickerHeader.h"
+#import "LFColorSlider.h"
 
 #define mainButtonImageNormals @[@"EditImagePenToolBtn.png", @"EditImageEmotionToolBtn.png", @"EditImageTextToolBtn.png", @"EditImageMosaicToolBtn.png", @"EditImageCropToolBtn.png"]
 #define mainButtonImageHighlighted @[@"EditImagePenToolBtn_HL.png", @"EditImageEmotionToolBtn_HL.png", @"EditImageTextToolBtn_HL.png", @"EditImageMosaicToolBtn_HL.png", @"EditImageCropToolBtn_HL.png"]
 
-@interface LFEditToolbar ()
+@interface LFEditToolbar () <LFColorSliderDelegate>
 
 /** 一级菜单 */
 @property (nonatomic, weak) UIView *edit_menu;
@@ -110,6 +111,13 @@
         UIView *separateView = [self separateView];
         separateView.frame = CGRectMake(CGRectGetMinX(edit_drawMenu_revoke.frame)-10*2, (CGRectGetHeight(edit_drawMenu.frame)-25)/2, 1, 25);
         [edit_drawMenu addSubview:separateView];
+        
+        /** 拾色器 */
+        CGFloat sliderHeight = 34.f;
+        LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(10, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*10, sliderHeight)];
+        _colorSlider.value = 0.3723; /** 红色 */
+        _colorSlider.delegate = self;
+        [edit_drawMenu addSubview:_colorSlider];
         
         self.edit_drawMenu = edit_drawMenu;
         
@@ -319,5 +327,12 @@
     }
 }
 
+#pragma mark - LFColorSliderDelegate
+- (void)lf_colorSliderDidChangeColor:(UIColor *)color
+{
+    if ([self.delegate respondsToSelector:@selector(lf_editToolbar:drawColorDidChange:)]) {
+        [self.delegate lf_editToolbar:self drawColorDidChange:color];
+    }
+}
 
 @end

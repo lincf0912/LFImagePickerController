@@ -38,4 +38,6 @@
 - (void)lf_editToolbar:(LFEditToolbar *)editToolbar subDidSelectAtIndex:(NSIndexPath *)indexPath;
 /** 撤销允许权限获取 */
 - (BOOL)lf_editToolbar:(LFEditToolbar *)editToolbar canRevokeAtIndex:(NSUInteger)index;
+/** 二级菜单滑动事件-绘画 */
+- (void)lf_editToolbar:(LFEditToolbar *)editToolbar drawColorDidChange:(UIColor *)color;
 @end

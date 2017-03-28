@@ -15,8 +15,8 @@
 #import "UIImage+LF_ImageCompress.h"
 #import "LFImagePickerType.h"
 
-#import "LFEditToolbar.h"
 #import "LFEdittingView.h"
+#import "LFEditToolbar.h"
 #import "LFStickerBar.h"
 #import "LFTextBar.h"
 
@@ -298,7 +298,11 @@
     
     return canUndo;
 }
-
+/** 二级菜单滑动事件-绘画 */
+- (void)lf_editToolbar:(LFEditToolbar *)editToolbar drawColorDidChange:(UIColor *)color
+{
+    [_edittingView setDrawColor:color];
+}
 
 #pragma mark - 剪切底部栏（懒加载）
 - (UIView *)edit_clipping_toolBar

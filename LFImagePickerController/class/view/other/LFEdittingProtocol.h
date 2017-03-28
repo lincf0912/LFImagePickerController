@@ -30,7 +30,8 @@
 @property (nonatomic, readonly) BOOL drawCanUndo;
 /** 撤销绘画 */
 - (void)drawUndo;
-
+/** 设置绘画颜色 */
+- (void)setDrawColor:(UIColor *)color;
 
 /** =====================贴图功能===================== */
 /** 取消激活贴图 */

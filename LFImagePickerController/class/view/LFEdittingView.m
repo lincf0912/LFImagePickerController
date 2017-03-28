@@ -344,6 +344,11 @@
 {
     [self.clippingView drawUndo];
 }
+/** 设置绘画颜色 */
+- (void)setDrawColor:(UIColor *)color
+{
+    [self.clippingView setDrawColor:color];
+}
 
 #pragma mark - 贴图功能
 /** 取消激活贴图 */

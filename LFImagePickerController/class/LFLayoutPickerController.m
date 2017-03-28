@@ -215,7 +215,7 @@
     _HUDLabel.text = text ? text : self.processHintStr;
     
     [_HUDIndicatorView startAnimating];
-    [[UIApplication sharedApplication].keyWindow addSubview:_progressHUD];
+    [self.view addSubview:_progressHUD];
 }
 
 - (void)showProgressHUD {

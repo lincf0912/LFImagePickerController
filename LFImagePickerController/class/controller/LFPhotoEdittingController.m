@@ -93,9 +93,7 @@
     _edittingView = [[LFEdittingView alloc] initWithFrame:self.view.bounds];
     _edittingView.editDelegate = self;
     _edittingView.clippingDelegate = self;
-    if (_editImage) {
-        [self setEditImage:_editImage];
-    }
+    _edittingView.image = _editImage;
     if (_photoEdit) {
         [self setEditImage:_photoEdit.editImage];
         _edittingView.photoEditData = _photoEdit.editData;

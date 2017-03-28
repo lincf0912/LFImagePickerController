@@ -31,6 +31,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 
 @property (nonatomic, weak) LFZoomingView *zoomingView;
 
+/** 原始坐标 */
+@property (nonatomic, assign) CGRect originalRect;
 /** 开始的基础坐标 */
 @property (nonatomic, assign) CGRect normalRect;
 /** 处理完毕的基础坐标（因为可能会被父类在缩放时改变当前frame的问题，导致记录坐标不正确） */
@@ -53,6 +55,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 {
     self = [super initWithFrame:frame];
     if (self) {
+        _originalRect = frame;
         [self customInit];
     }
     return self;
@@ -82,10 +85,12 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 {
     _image = image;
     [self setZoomScale:1.f];
-    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
-    self.normalRect = cropRect;
-    self.frame = cropRect;
-    self.saveRect = self.frame;
+    if (image) {        
+        CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.originalRect);
+        self.normalRect = cropRect;
+        self.frame = cropRect;
+        self.saveRect = self.frame;
+    }
     [self.zoomingView setImage:image];
 }
 

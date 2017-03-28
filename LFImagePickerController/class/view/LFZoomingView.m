@@ -22,6 +22,9 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
 
 @interface LFZoomingView ()
 
+/** 原始坐标 */
+@property (nonatomic, assign) CGRect originalRect;
+
 @property (nonatomic, weak) UIImageView *imageView;
 
 /** 绘画 */
@@ -48,6 +51,7 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
 {
     self = [super initWithFrame:frame];
     if (self) {
+        _originalRect = frame;
         [self customInit];
     }
     return self;
@@ -90,13 +94,15 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
 - (void)setImage:(UIImage *)image
 {
     _image = image;
-    CGRect imageViewRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
-    self.size = imageViewRect.size;
-    
-    /** 子控件更新 */
-    [[self subviews] enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.frame = self.bounds;
-    }];
+    if (image) {        
+        CGRect imageViewRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.originalRect);
+        self.size = imageViewRect.size;
+        
+        /** 子控件更新 */
+        [[self subviews] enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            obj.frame = self.bounds;
+        }];
+    }
     
     [self.imageView setImage:image];
     /** 创建马赛克模糊 */

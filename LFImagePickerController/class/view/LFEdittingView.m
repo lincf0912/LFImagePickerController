@@ -74,8 +74,10 @@
 {
     _image = image;
     self.clippingView.image = image;
-    CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
-    self.gridView.gridRect = cropRect;
+    if (image) {        
+        CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.frame);
+        self.gridView.gridRect = cropRect;
+    }
 }
 
 - (void)setClippingRect:(CGRect)clippingRect

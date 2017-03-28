@@ -428,12 +428,16 @@
     LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
     
     if (photoEdit) { /** 编辑存在 */
-        cell.previewImage = photoEdit.editPreviewImage;
-    } else if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
-        /** 还原编辑图片 */
-        cell.previewImage = photoEdittingVC.editImage;
-    } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
-        self.tempEditImage = photoEdittingVC.editImage;
+        if (_collectionView) {
+            cell.previewImage = photoEdit.editPreviewImage;
+        }
+    } else { /** 编辑不存在 */
+        if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
+            /** 还原编辑图片 */
+            cell.previewImage = photoEdittingVC.editImage;
+        } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
+            self.tempEditImage = photoEdittingVC.editImage;
+        }
     }
     
     [self.navigationController popViewControllerAnimated:NO];

@@ -354,7 +354,6 @@
     } else {
         /** 获取对应的图片 */
         [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            /** 缓存清晰图 */
             photoEdittingVC.editImage = photo;
         }];
     }

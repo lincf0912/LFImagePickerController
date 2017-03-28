@@ -7,6 +7,7 @@
 //
 
 #import "LFBaseViewController.h"
+#import "LFImagePickerController.h"
 
 @interface LFBaseViewController ()
 
@@ -22,6 +23,12 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)dealloc
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [imagePickerVc hideProgressHUD];
 }
 
 /*

@@ -77,7 +77,7 @@
     self.navigationItem.title = _model.name;
     [imagePickerVc showProgressHUD];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_globalQueue_async_safe(^{
         if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
             [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
                 self.model = model;
@@ -86,7 +86,7 @@
         
         if (self.model.models.count) { /** 使用缓存数据 */
             _models = [NSMutableArray arrayWithArray:_model.models];
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_main_async_safe(^{
                 [self initSubviews];
             });
         } else {
@@ -99,7 +99,7 @@
                 /** 缓存数据 */
                 _model.models = models;
                 _models = [NSMutableArray arrayWithArray:models];
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_main_async_safe(^{
                     [self initSubviews];
                 });
             }];
@@ -397,47 +397,52 @@
     
     __weak typeof(self) weakSelf = self;
     
-    void (^photosComplete)(UIImage *, UIImage *, NSDictionary *, NSInteger, id) = ^(UIImage *thumbnail, UIImage *source, NSDictionary *info, NSInteger index, id asset) {
-        if (thumbnail) [thumbnailImages replaceObjectAtIndex:index withObject:thumbnail];
-        if (source) [originalImages replaceObjectAtIndex:index withObject:source];
-        if (info) [infoArr replaceObjectAtIndex:index withObject:info];
-        if (asset) [assets replaceObjectAtIndex:index withObject:asset];
+    dispatch_globalQueue_async_safe(^{
+        void (^photosComplete)(UIImage *, UIImage *, NSDictionary *, NSInteger, id) = ^(UIImage *thumbnail, UIImage *source, NSDictionary *info, NSInteger index, id asset) {
+            if (thumbnail) [thumbnailImages replaceObjectAtIndex:index withObject:thumbnail];
+            if (source) [originalImages replaceObjectAtIndex:index withObject:source];
+            if (info) [infoArr replaceObjectAtIndex:index withObject:info];
+            if (asset) [assets replaceObjectAtIndex:index withObject:asset];
+            
+            if ([assets containsObject:@1]) return;
+            
+            dispatch_main_async_safe(^{
+                if (weakSelf == nil) return ;
+                [imagePickerVc hideProgressHUD];
+                if (imagePickerVc.autoDismiss) {
+                    [imagePickerVc dismissViewControllerAnimated:YES completion:^{
+                        [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
+                    }];
+                } else {
+                    [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
+                }
+            });
+        };
         
-        if ([assets containsObject:@1]) return;
         
-        
-        [imagePickerVc hideProgressHUD];
-        if (imagePickerVc.autoDismiss) {
-            [imagePickerVc dismissViewControllerAnimated:YES completion:^{
-                [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
-            }];
-        } else {
-            [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
-        }
-    };
-    
-    
-    for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
-        LFAsset *model = imagePickerVc.selectedModels[i];
-        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-        if (photoEdit) {
-            [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                /** 编辑图片保存到相册 */
-                [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
-                photosComplete(thumbnail, source, info, i, model.asset);
-            }];
-        } else {
-            if (imagePickerVc.isSelectOriginalPhoto) {
-                [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+        for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
+            LFAsset *model = imagePickerVc.selectedModels[i];
+            LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+            if (photoEdit) {
+                [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    /** 编辑图片保存到相册 */
+                    [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
                     photosComplete(thumbnail, source, info, i, model.asset);
                 }];
             } else {
-                [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                    photosComplete(thumbnail, source, info, i, model.asset);
-                }];
+                if (imagePickerVc.isSelectOriginalPhoto) {
+                    [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                        photosComplete(thumbnail, source, info, i, model.asset);
+                    }];
+                } else {
+                    [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                        photosComplete(thumbnail, source, info, i, model.asset);
+                    }];
+                }
             }
         }
-    }
+    });
+    
 }
 
 - (void)callDelegateMethodWithAssets:(NSArray *)assets thumbnailImages:(NSArray *)thumbnailImages originalImages:(NSArray *)originalImages infoArr:(NSArray *)infoArr {

@@ -51,18 +51,32 @@
 - (void)singleTapPressed:(UITapGestureRecognizer *)tap
 {
     /** 最终目的：让slider无法点击穿透 */
+    
 //    CGRect t = [self trackRectForBounds: [self bounds]];
 //    float v = [self minimumValue] + ([tap locationInView: self].x - t.origin.x - 4.0) * (([self maximumValue]-[self minimumValue]) / (t.size.width - 8.0));
 //    [self setValue: v];
 //    self.thumbTintColor = self.color;
 }
 
-#pragma mark - 重写父类
-- (CGRect)thumbRectForBounds:(CGRect)bounds trackRect:(CGRect)rect value:(float)value
-{
-    rect.origin.x = rect.origin.x - 10 ;
-    rect.size.width = rect.size.width + 20;
-    return CGRectInset ([super thumbRectForBounds:bounds trackRect:rect value:value], 10 , 0);
+#pragma mark - 重写父类 (进度条两边有空隙的问题)
+//- (CGRect)thumbRectForBounds:(CGRect)bounds trackRect:(CGRect)rect value:(float)value
+//{
+//    rect.origin.x = rect.origin.x - 10 ;
+//    rect.size.width = rect.size.width + 20;
+//    return CGRectInset ([super thumbRectForBounds:bounds trackRect:rect value:value], 10 , 0);
+//}
+
+-(CGRect)trackRectForBounds:(CGRect)bounds {
+    
+    bounds.origin.x=-15;
+    
+    bounds.origin.y=bounds.size.height/3;
+    
+    bounds.size.height=bounds.size.height/5;
+    
+    bounds.size.width=bounds.size.width+30;
+    
+    return bounds;
 }
 
 

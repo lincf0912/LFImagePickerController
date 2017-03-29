@@ -115,7 +115,7 @@
         /** 拾色器 */
         CGFloat sliderHeight = 34.f;
         LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(10, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*10, sliderHeight)];
-        _colorSlider.value = 0.3723; /** 红色 */
+        _colorSlider.value = 0.3612; /** 红色 */
         _colorSlider.delegate = self;
         [edit_drawMenu addSubview:_colorSlider];
         

@@ -7,6 +7,7 @@
 //
 
 #import "LFMovingView.h"
+#import "LFImagePickerHeader.h"
 
 #define margin 22
 
@@ -92,13 +93,13 @@
         _deleteButton.center = _contentView.frame.origin;
         _deleteButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_deleteButton addTarget:self action:@selector(pushedDeleteBtn:) forControlEvents:UIControlEventTouchUpInside];
-        _deleteButton.backgroundColor = [UIColor redColor];
+        [_deleteButton setImage:bundleEditImageNamed(@"ZoomingViewDelete.png") forState:UIControlStateNormal];
         [self addSubview:_deleteButton];
         
         _circleView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, margin, margin)];
         _circleView.center = CGPointMake(CGRectGetMaxX(_contentView.frame), CGRectGetMaxY(_contentView.frame));
         _circleView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
-        _circleView.backgroundColor = [UIColor redColor];
+        [_circleView setImage:bundleEditImageNamed(@"ZoomingViewCircle.png")];
         [self addSubview:_circleView];
         
         _scale = 1;

@@ -84,6 +84,12 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
 
+- (void)setShowText:(NSString *)showText
+{
+    _showText = showText;
+    [self.lf_textView setText:showText];
+}
+
 - (void)configCustomNaviBar
 {
     /** 顶部栏 */
@@ -118,9 +124,6 @@
     [textView setTextColor:[UIColor whiteColor]];
     [textView setFont:[UIFont systemFontOfSize:25.f]];
     textView.returnKeyType = UIReturnKeyDone;
-    if (self.showText.length) {
-        [textView setText:self.showText];
-    }
     [self addSubview:textView];
     self.lf_textView = textView;
 }

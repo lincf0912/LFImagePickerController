@@ -74,11 +74,18 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     self.alwaysBounceVertical = YES;
     
     LFZoomingView *zoomingView = [[LFZoomingView alloc] initWithFrame:self.bounds];
+    __weak typeof(self) weakSelf = self;
+    zoomingView.moveCenter = ^BOOL(CGPoint center) {
+        /** 判断缩放后是否超出边界线 */
+        CGPoint newCenter = [weakSelf.zoomingView convertPoint:center toView:weakSelf];
+        CGRect rect = (CGRect){weakSelf.contentOffset, weakSelf.frame.size};
+        return !CGRectContainsPoint(rect, newCenter);
+    };
     [self addSubview:zoomingView];
     self.zoomingView = zoomingView;
     
     /** 默认编辑范围 */
-    self.editRect = self.bounds;
+    _editRect = self.bounds;
 }
 
 - (void)setImage:(UIImage *)image
@@ -87,11 +94,14 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     [self setZoomScale:1.f];
     if (image) {        
         CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(image.size, self.originalRect);
-        self.normalRect = cropRect;
         self.frame = cropRect;
-        self.saveRect = self.frame;
+    } else {
+        self.frame = _originalRect;
     }
+    self.normalRect = self.frame;
+    self.saveRect = self.frame;
     [self.zoomingView setImage:image];
+    
 }
 
 - (void)setCropRect:(CGRect)cropRect
@@ -420,7 +430,6 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     }
     return view;
 }
-
 
 #pragma mark - LFEdittingProtocol
 

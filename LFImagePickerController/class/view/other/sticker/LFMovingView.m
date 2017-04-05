@@ -269,11 +269,17 @@
     self.center = CGPointMake(_initialPoint.x + p.x, _initialPoint.y + p.y);
     
     if (sender.state == UIGestureRecognizerStateEnded) {
-        if (!CGRectContainsPoint(self.superview.frame, self.center)) {
+        BOOL isMoveCenter = NO;
+        if (self.moveCenter) {
+            isMoveCenter = self.moveCenter(self.center);
+        } else {
+            isMoveCenter = !CGRectContainsPoint(self.superview.frame, self.center);
+        }
+        if (isMoveCenter) {
             /** 超出边界线 重置会中间 */
             [UIView animateWithDuration:0.25f animations:^{
-                self.center = self.superview.center;
-            }];
+                self.center = [self.superview convertPoint:[UIApplication sharedApplication].keyWindow.center fromView:(UIView *)[UIApplication sharedApplication].keyWindow];
+            }];            
         }
         [self autoDeactivated];
     }

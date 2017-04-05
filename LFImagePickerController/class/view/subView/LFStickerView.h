@@ -34,7 +34,8 @@
 /** 数据 */
 @property (nonatomic, strong) NSDictionary *data;
 
-/** 点击回调视图（UILabel/UIImageView） */
+/** 点击回调视图 */
 @property (nonatomic, copy) void(^tapEnded)(BOOL isActive);
+@property (nonatomic, copy) BOOL(^moveCenter)(CGPoint center);
 
 @end

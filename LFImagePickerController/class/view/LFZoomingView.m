@@ -109,6 +109,16 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
     [self.splashView setImage:image mosaicLevel:10];
 }
 
+- (void)setMoveCenter:(BOOL (^)(CGPoint))moveCenter
+{
+    _moveCenter = moveCenter;
+    if (moveCenter) {
+        _stickerView.moveCenter = moveCenter;
+    } else {
+        _stickerView.moveCenter = nil;
+    }
+}
+
 #pragma mark - LFEdittingProtocol
 
 - (void)setEditDelegate:(id<LFPhotoEditDelegate>)editDelegate
@@ -117,38 +127,46 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
     /** 设置代理回调 */
     __weak typeof(self) weakSelf = self;
     
-    /** 绘画 */
-    _drawView.drawBegan = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan)]) {
-            [weakSelf.delegate lf_photoEditDrawBegan];
-        }
-    };
-    
-    _drawView.drawEnded = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawEnded)]) {
-            [weakSelf.delegate lf_photoEditDrawEnded];
-        }
-    };
-    
-    /** 贴图 */
-    _stickerView.tapEnded = ^(BOOL isActive){
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditstickerDidSelectViewIsActive:)]) {
-            [weakSelf.delegate lf_photoEditstickerDidSelectViewIsActive:isActive];
-        }
-    };
-    
-    /** 模糊 */
-    _splashView.splashBegan = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan)]) {
-            [weakSelf.delegate lf_photoEditSplashBegan];
-        }
-    };
-    
-    _splashView.splashEnded = ^{
-        if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashEnded)]) {
-            [weakSelf.delegate lf_photoEditSplashEnded];
-        }
-    };
+    if (_delegate) {
+        /** 绘画 */
+        _drawView.drawBegan = ^{
+            if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawBegan)]) {
+                [weakSelf.delegate lf_photoEditDrawBegan];
+            }
+        };
+        
+        _drawView.drawEnded = ^{
+            if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditDrawEnded)]) {
+                [weakSelf.delegate lf_photoEditDrawEnded];
+            }
+        };
+        
+        /** 贴图 */
+        _stickerView.tapEnded = ^(BOOL isActive){
+            if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditStickerDidSelectViewIsActive:)]) {
+                [weakSelf.delegate lf_photoEditStickerDidSelectViewIsActive:isActive];
+            }
+        };
+        
+        /** 模糊 */
+        _splashView.splashBegan = ^{
+            if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashBegan)]) {
+                [weakSelf.delegate lf_photoEditSplashBegan];
+            }
+        };
+        
+        _splashView.splashEnded = ^{
+            if ([weakSelf.delegate respondsToSelector:@selector(lf_photoEditSplashEnded)]) {
+                [weakSelf.delegate lf_photoEditSplashEnded];
+            }
+        };
+    } else {
+        _drawView.drawBegan = nil;
+        _drawView.drawEnded = nil;
+        _stickerView.tapEnded = nil;
+        _splashView.splashBegan = nil;
+        _splashView.splashEnded = nil;
+    }
     
 }
 

@@ -437,7 +437,8 @@
 }
 
 #pragma mark - LFPhotoEditStickerDelegate
-- (void)lf_photoEditstickerDidSelectViewIsActive:(BOOL)isActive
+/** 点击贴图 isActive=YES 选中的情况下点击 */
+- (void)lf_photoEditStickerDidSelectViewIsActive:(BOOL)isActive
 {
     _isHideNaviBar = NO;
     [self changedBarState];

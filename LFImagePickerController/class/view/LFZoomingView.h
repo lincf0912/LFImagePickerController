@@ -13,5 +13,7 @@
 
 @property (nonatomic, strong) UIImage *image;
 
+/** 贴图是否需要移到屏幕中心 */
+@property (nonatomic, copy) BOOL(^moveCenter)(CGPoint center);
 @end
 

@@ -101,6 +101,23 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     }
 }
 
+- (void)setMoveCenter:(BOOL (^)(CGPoint))moveCenter
+{
+    _moveCenter = moveCenter;
+    for (LFMovingView *subView in self.subviews) {
+        if ([subView isKindOfClass:[LFMovingView class]]) {
+            if (moveCenter) {
+                __weak typeof(self) weakSelf = self;
+                [subView setMoveCenter:^BOOL (CGPoint center) {
+                    return weakSelf.moveCenter(center);
+                }];
+            } else {
+                [subView setMoveCenter:nil];
+            }
+        }
+    }
+}
+
 /** 激活选中的贴图 */
 - (void)activeSelectStickerView
 {
@@ -167,6 +184,12 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
             weakSelf.tapEnded(isActive);
         }];
     }
+    if (self.moveCenter) {
+        __weak typeof(self) weakSelf = self;
+        [movingView setMoveCenter:^BOOL (CGPoint center) {
+            return weakSelf.moveCenter(center);
+        }];
+    }
     
     return movingView;
 }
@@ -211,7 +234,7 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     label.numberOfLines = 0.f;
     label.text = text;
     label.font = font;
-    //    label.adjustsFontSizeToFitWidth = YES;
+    label.adjustsFontSizeToFitWidth = YES;
     label.minimumScaleFactor = 1/fontSize;
     //    label.textAlignment = NSTextAlignmentLeft;
     label.textColor = color;
@@ -225,6 +248,7 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     label.layer.shadowOffset = CGSizeMake(1, 1);
     
     LFMovingView *movingView = [self createBaseMovingView:label active:active];
+    movingView.maxScale = 1.5f;
     
     return movingView;
 }

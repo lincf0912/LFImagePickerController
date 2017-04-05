@@ -20,6 +20,9 @@
 /** 允许撤销 */
 - (void)setRevokeAtIndex:(NSUInteger)index;
 
+/** 设置绘画拾色器默认颜色 */
+- (void)setDrawSliderColorValue:(CGFloat)value;
+
 @end
 
 @protocol LFEditToolbarDelegate <NSObject>

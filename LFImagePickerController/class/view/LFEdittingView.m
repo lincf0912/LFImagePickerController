@@ -368,12 +368,12 @@
     [self.clippingView removeSelectStickerView];
 }
 /** 获取选中贴图的内容 */
-- (NSString *)getSelectStickerText
+- (LFText *)getSelectStickerText
 {
     return [self.clippingView getSelectStickerText];
 }
 /** 更改选中贴图内容 */
-- (void)changeSelectStickerText:(NSString *)text
+- (void)changeSelectStickerText:(LFText *)text
 {
     [self.clippingView changeSelectStickerText:text];
 }
@@ -386,7 +386,7 @@
 
 #pragma mark - 文字功能
 /** 创建文字 */
-- (void)createStickerText:(NSString *)text
+- (void)createStickerText:(LFText *)text
 {
     [self.clippingView createStickerText:text];
 }

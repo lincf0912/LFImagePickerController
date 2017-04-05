@@ -262,12 +262,12 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
     [_stickerView removeSelectStickerView];
 }
 /** 获取选中贴图的内容 */
-- (NSString *)getSelectStickerText
+- (LFText *)getSelectStickerText
 {
     return [_stickerView getSelectStickerText];
 }
 /** 更改选中贴图内容 */
-- (void)changeSelectStickerText:(NSString *)text
+- (void)changeSelectStickerText:(LFText *)text
 {
     [_stickerView changeSelectStickerText:text];
 }
@@ -280,9 +280,9 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
 
 #pragma mark - 文字功能
 /** 创建文字 */
-- (void)createStickerText:(NSString *)text
+- (void)createStickerText:(LFText *)text
 {
-    if (text.length) {
+    if (text) {
         [_stickerView createText:text];
     }
 }

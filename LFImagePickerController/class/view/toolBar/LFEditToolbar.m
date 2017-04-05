@@ -33,6 +33,9 @@
 /** 当前点击按钮 */
 @property (nonatomic, weak) UIButton *selectButton;
 
+/** 绘画拾色器 */
+@property (nonatomic, weak) LFColorSlider *draw_colorSlider;
+
 @end
 
 @implementation LFEditToolbar
@@ -115,9 +118,9 @@
         /** 拾色器 */
         CGFloat sliderHeight = 34.f;
         LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(10, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*10, sliderHeight)];
-        _colorSlider.value = 0.3612; /** 红色 */
         _colorSlider.delegate = self;
         [edit_drawMenu addSubview:_colorSlider];
+        self.draw_colorSlider = _colorSlider;
         
         self.edit_drawMenu = edit_drawMenu;
         
@@ -325,6 +328,12 @@
         default:
             break;
     }
+}
+
+/** 设置绘画拾色器默认颜色 */
+- (void)setDrawSliderColorValue:(CGFloat)value
+{
+    self.draw_colorSlider.value = value;
 }
 
 #pragma mark - LFColorSliderDelegate

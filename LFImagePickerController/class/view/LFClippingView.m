@@ -538,12 +538,12 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     [self.zoomingView removeSelectStickerView];
 }
 /** 获取选中贴图的内容 */
-- (NSString *)getSelectStickerText
+- (LFText *)getSelectStickerText
 {
     return [self.zoomingView getSelectStickerText];
 }
 /** 更改选中贴图内容 */
-- (void)changeSelectStickerText:(NSString *)text
+- (void)changeSelectStickerText:(LFText *)text
 {
     [self.zoomingView changeSelectStickerText:text];
 }
@@ -556,7 +556,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 
 #pragma mark - 文字功能
 /** 创建文字 */
-- (void)createStickerText:(NSString *)text
+- (void)createStickerText:(LFText *)text
 {
     [self.zoomingView createStickerText:text];
 }

@@ -9,6 +9,7 @@
 #import "LFStickerView.h"
 #import "LFMovingView.h"
 #import "UIView+LFFrame.h"
+#import "LFText.h"
 
 NSString *const kLFStickerViewData_movingView = @"LFStickerViewData_movingView";
 
@@ -23,6 +24,8 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
 @interface LFStickerLabel : UILabel
 
 @property (nonatomic, assign) UIEdgeInsets textInsets; // 控制字体与控件边界的间隙
+@property (nonatomic, strong) LFText *lf_text;
+
 
 @end
 
@@ -40,6 +43,13 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
         _textInsets = UIEdgeInsetsZero;
     }
     return self;
+}
+
+- (void)setLf_text:(LFText *)lf_text
+{
+    _lf_text = lf_text;
+    self.text = lf_text.text;
+    self.textColor = lf_text.textColor;
 }
 
 - (void)drawTextInRect:(CGRect)rect {
@@ -137,10 +147,10 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     }
     return nil;
 }
-- (NSString *)getSelectStickerText
+- (LFText *)getSelectStickerText
 {
     if (self.selectMovingView.type == LFMovingViewType_label) {
-        return ((UILabel *)self.selectMovingView.view).text;
+        return ((LFStickerLabel *)self.selectMovingView.view).lf_text;
     }
     return nil;
 }
@@ -154,12 +164,12 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
         [self.selectMovingView updateFrameWithViewSize:image.size];
     }
 }
-- (void)changeSelectStickerText:(NSString *)text
+- (void)changeSelectStickerText:(LFText *)text
 {
     if (self.selectMovingView.type == LFMovingViewType_label) {
-        UILabel *label = (UILabel *)self.selectMovingView.view;
-        label.text = text;
-        CGSize textSize = [self calcTextSize:text font:label.font color:label.textColor];
+        LFStickerLabel *label = (LFStickerLabel *)self.selectMovingView.view;
+        label.lf_text = text;
+        CGSize textSize = [self calcTextSize:label.text font:label.font color:label.textColor];
         [self.selectMovingView updateFrameWithViewSize:textSize];
     }
 }
@@ -213,31 +223,29 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
 }
 
 /** 创建文字 */
-- (void)createText:(NSString *)text
+- (void)createText:(LFText *)text
 {
     LFMovingView *movingView = [self doCreateText:text active:YES];
     //    CGFloat ratio = MIN( (0.5 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
     [movingView setScale:0.6f];
 }
 
-- (LFMovingView *)doCreateText:(NSString *)text active:(BOOL)active
+- (LFMovingView *)doCreateText:(LFText *)text active:(BOOL)active
 {
     CGFloat fontSize = 50.f;
     UIFont *font = [UIFont systemFontOfSize:fontSize];
-    UIColor *color = [UIColor whiteColor];
-    CGSize textSize = [self calcTextSize:text font:font color:color];
+    CGSize textSize = [self calcTextSize:text.text font:font color:text.textColor];
     
     CGFloat margin = 10;
     LFStickerLabel *label = [[LFStickerLabel alloc] initWithFrame:(CGRect){CGPointZero, textSize}];
     /** 设置内边距 */
     label.textInsets = UIEdgeInsetsMake(0, margin, 0, 0);
     label.numberOfLines = 0.f;
-    label.text = text;
+    label.lf_text = text;
     label.font = font;
     label.adjustsFontSizeToFitWidth = YES;
     label.minimumScaleFactor = 1/fontSize;
     //    label.textAlignment = NSTextAlignmentLeft;
-    label.textColor = color;
     //阴影透明度
     label.layer.shadowOpacity = 1.0;
     //阴影宽度
@@ -272,14 +280,24 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     NSMutableArray *movingDatas = [@[] mutableCopy];
     for (LFMovingView *view in self.subviews) {
         if ([view isKindOfClass:[LFMovingView class]]) {
-            
-            id content = (view.type == LFMovingViewType_label ? ((UILabel *)view.view).text : (view.type == LFMovingViewType_imageView) ? ((UIImageView *)view.view).image : @"");
-            
-            [movingDatas addObject:@{kLFStickerViewData_movingView_type:@(view.type)
-                                     , kLFStickerViewData_movingView_content:content
-                                     , kLFStickerViewData_movingView_scale:@(view.scale)
-                                     , kLFStickerViewData_movingView_rotation:@(view.rotation)
-                                     , kLFStickerViewData_movingView_center:[NSValue valueWithCGPoint:view.center]}];
+
+            if (view.type == LFMovingViewType_label) {
+                LFStickerLabel *label = (LFStickerLabel *)view.view;
+                [movingDatas addObject:@{kLFStickerViewData_movingView_type:@(view.type)
+                                         , kLFStickerViewData_movingView_content:label.lf_text
+                                         , kLFStickerViewData_movingView_scale:@(view.scale)
+                                         , kLFStickerViewData_movingView_rotation:@(view.rotation)
+                                         , kLFStickerViewData_movingView_center:[NSValue valueWithCGPoint:view.center]
+                                         }];
+            } else if (view.type == LFMovingViewType_imageView) {
+                UIImageView *imageView = (UIImageView *)view.view;
+                [movingDatas addObject:@{kLFStickerViewData_movingView_type:@(view.type)
+                                         , kLFStickerViewData_movingView_content:imageView.image
+                                         , kLFStickerViewData_movingView_scale:@(view.scale)
+                                         , kLFStickerViewData_movingView_rotation:@(view.rotation)
+                                         , kLFStickerViewData_movingView_center:[NSValue valueWithCGPoint:view.center]
+                                         }];
+            }
         }
     }
     if (movingDatas.count) {

@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LFPhotoEditDelegate.h"
 
+@class LFText;
 @protocol LFEdittingProtocol <NSObject>
 
 /** 代理 */
@@ -40,18 +41,18 @@
 - (void)activeSelectStickerView;
 /** 删除选中贴图 */
 - (void)removeSelectStickerView;
-/** 获取选中贴图的内容 */
-- (NSString *)getSelectStickerText;
-/** 更改选中贴图内容 */
-- (void)changeSelectStickerText:(NSString *)text;
 
 /** 创建贴图 */
 - (void)createStickerImage:(UIImage *)image;
 
 /** =====================文字功能===================== */
 
+/** 获取选中贴图的内容 */
+- (LFText *)getSelectStickerText;
+/** 更改选中贴图内容 */
+- (void)changeSelectStickerText:(LFText *)text;
 /** 创建文字 */
-- (void)createStickerText:(NSString *)text;
+- (void)createStickerText:(LFText *)text;
 
 /** =====================模糊功能===================== */
 

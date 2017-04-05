@@ -10,15 +10,20 @@
 #import "UIView+LFFrame.h"
 #import "LFLayoutPickerController.h"
 #import "LFImagePickerHeader.h"
+#import "LFText.h"
+#import "LFColorSlider.h"
 
 #define kTopbarHeight 64.f
 
 /** 来限制最大输入只能100个字符 */
 #define MAX_LIMIT_NUMS 100
 
-@interface LFTextBar () <UITextViewDelegate>
+@interface LFTextBar () <UITextViewDelegate, LFColorSliderDelegate>
 
 @property (nonatomic, weak) UITextView *lf_textView;
+
+@property (nonatomic, weak) LFColorSlider *lf_colorSlider;
+@property (nonatomic, weak) UIView *lf_keyboardBar;
 
 @end
 
@@ -60,6 +65,7 @@
     
     [self configCustomNaviBar];
     [self configTextView];
+    [self configKeyBoardBar];
 }
 
 - (BOOL)becomeFirstResponder
@@ -84,10 +90,14 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
 
-- (void)setShowText:(NSString *)showText
+- (void)setShowText:(LFText *)showText
 {
     _showText = showText;
-    [self.lf_textView setText:showText];
+    [self.lf_textView setText:showText.text];
+    if (showText) {
+        [self.lf_textView setTextColor:showText.textColor];
+        self.lf_colorSlider.value = showText.colorValue;
+    }
 }
 
 - (void)configCustomNaviBar
@@ -128,6 +138,34 @@
     self.lf_textView = textView;
 }
 
+- (void)configKeyBoardBar
+{
+    UIView *keyboardBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.height-44, self.width, 44)];
+    keyboardBar.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
+    
+    /** 拾色器 */
+    CGFloat sliderHeight = 34.f, margin = 30.f;
+    LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, CGRectGetWidth(keyboardBar.frame)-2*margin, sliderHeight)];
+    _colorSlider.value = 0.3116; /** 白色 */
+    _colorSlider.delegate = self;
+    [keyboardBar addSubview:_colorSlider];
+    self.lf_colorSlider = _colorSlider;
+    
+    [self addSubview:keyboardBar];
+    self.lf_keyboardBar = keyboardBar;
+}
+
+/** 设置文字拾起器默认颜色 */
+- (void)setValue:(CGFloat)value
+{
+    self.lf_colorSlider.value = value;
+    self.lf_textView.textColor = self.lf_colorSlider.color;
+}
+
+- (CGFloat)value
+{
+    return self.lf_colorSlider.value;
+}
 #pragma mark - 顶部栏(action)
 - (void)cancelButtonClick
 {
@@ -139,7 +177,14 @@
 - (void)finishButtonClick
 {
     if ([self.delegate respondsToSelector:@selector(lf_textBarController:didFinishText:)]) {
-        [self.delegate lf_textBarController:self didFinishText:self.lf_textView.text];
+        LFText *text = nil;
+        if (self.lf_textView.text.length) {            
+            text = [LFText new];
+            text.text = self.lf_textView.text;
+            text.textColor = self.lf_textView.textColor;
+            text.colorValue = self.lf_colorSlider.value;
+        }
+        [self.delegate lf_textBarController:self didFinishText:text];
     }
 }
 
@@ -147,13 +192,23 @@
 - (void)keyboardWillShow:(NSNotification *)notification
 {
     CGRect keyboardRect = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    self.lf_textView.height -= CGRectGetHeight(keyboardRect);
+    double duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    
+    [UIView animateWithDuration:duration animations:^{
+        self.lf_keyboardBar.y = self.height-CGRectGetHeight(keyboardRect)-CGRectGetHeight(self.lf_keyboardBar.frame);
+        self.lf_textView.height = self.height-self.lf_keyboardBar.y;
+    }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
     CGRect keyboardRect = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    self.lf_textView.height += CGRectGetHeight(keyboardRect);
+    double duration = [[notification.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    
+    [UIView animateWithDuration:duration animations:^{
+        self.lf_keyboardBar.y = self.height-CGRectGetHeight(keyboardRect)-CGRectGetHeight(self.lf_keyboardBar.frame);
+        self.lf_textView.height = self.height-self.lf_keyboardBar.y;
+    }];
 }
 
 
@@ -269,4 +324,9 @@
 //    self.lbNums.text = [NSString stringWithFormat:@"%ld/%d",MAX(0,MAX_LIMIT_NUMS - existTextNum),MAX_LIMIT_NUMS];
 }
 
+#pragma mark - LFColorSliderDelegate
+- (void)lf_colorSliderDidChangeColor:(UIColor *)color
+{
+    self.lf_textView.textColor = color;
+}
 @end

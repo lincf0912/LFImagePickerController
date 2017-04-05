@@ -140,6 +140,9 @@
 {
     _edit_toolBar = [[LFEditToolbar alloc] init];
     _edit_toolBar.delegate = self;
+    [_edit_toolBar setDrawSliderColorValue:0.3612]; /** 红色 */
+    /** 绘画颜色一致 */
+    [_edittingView setDrawColor:[UIColor redColor]];
     [self.view addSubview:_edit_toolBar];
 }
 
@@ -385,17 +388,17 @@
 
 #pragma mark - LFTextBarDelegate
 /** 完成回调 */
-- (void)lf_textBarController:(LFTextBar *)textBar didFinishText:(NSString *)text
+- (void)lf_textBarController:(LFTextBar *)textBar didFinishText:(LFText *)text
 {
-    if (text.length) {
+    if (text) {
         /** 判断是否更改文字 */
-        if (textBar.showText.length) {
+        if (textBar.showText) {
             [_edittingView changeSelectStickerText:text];
         } else {
             [_edittingView createStickerText:text];
         }
     } else {
-        if (textBar.showText.length) { /** 文本被清除，删除贴图 */
+        if (textBar.showText) { /** 文本被清除，删除贴图 */
             [_edittingView removeSelectStickerView];
         }
     }
@@ -410,7 +413,7 @@
     [_edittingView activeSelectStickerView];
     [textBar resignFirstResponder];
     
-    [UIView animateWithDuration:0.25f delay:0.3f options:UIViewAnimationOptionCurveLinear animations:^{
+    [UIView animateWithDuration:0.25f delay:0.f options:UIViewAnimationOptionCurveLinear animations:^{
         textBar.y = self.view.height;
     } completion:^(BOOL finished) {
         [textBar removeFromSuperview];
@@ -443,9 +446,9 @@
     _isHideNaviBar = NO;
     [self changedBarState];
     if (isActive) { /** 选中的情况下点击 */
-        NSString *text = [_edittingView getSelectStickerText];
-        if (text.length) {
-            [self showTextBarController:[_edittingView getSelectStickerText]];
+        LFText *text = [_edittingView getSelectStickerText];
+        if (text) {
+            [self showTextBarController:text];
         }
     }
 }
@@ -544,7 +547,7 @@
     }
 }
 
-- (void)showTextBarController:(NSString *)text
+- (void)showTextBarController:(LFText *)text
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
@@ -555,10 +558,10 @@
 
     [self.view addSubview:textBar];
     
+    [textBar becomeFirstResponder];
     [UIView animateWithDuration:0.25f animations:^{
         textBar.y = 0;
     } completion:^(BOOL finished) {
-        [textBar becomeFirstResponder];
         /** 隐藏顶部栏 */
         _isHideNaviBar = YES;
         [self changedBarState];

@@ -10,6 +10,7 @@
 #import "LFMovingView.h"
 #import "UIView+LFFrame.h"
 #import "LFText.h"
+#import "LFStickerLabel.h"
 
 NSString *const kLFStickerViewData_movingView = @"LFStickerViewData_movingView";
 
@@ -20,43 +21,6 @@ NSString *const kLFStickerViewData_movingView_center = @"LFStickerViewData_movin
 NSString *const kLFStickerViewData_movingView_scale = @"LFStickerViewData_movingView_scale";
 NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_movingView_rotation";
 
-#pragma mark - 带内边距的label
-@interface LFStickerLabel : UILabel
-
-@property (nonatomic, assign) UIEdgeInsets textInsets; // 控制字体与控件边界的间隙
-@property (nonatomic, strong) LFText *lf_text;
-
-
-@end
-
-@implementation LFStickerLabel
-
-- (instancetype)init {
-    if (self = [super init]) {
-        _textInsets = UIEdgeInsetsZero;
-    }
-    return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    if (self = [super initWithFrame:frame]) {
-        _textInsets = UIEdgeInsetsZero;
-    }
-    return self;
-}
-
-- (void)setLf_text:(LFText *)lf_text
-{
-    _lf_text = lf_text;
-    self.text = lf_text.text;
-    self.textColor = lf_text.textColor;
-}
-
-- (void)drawTextInRect:(CGRect)rect {
-    [super drawTextInRect:UIEdgeInsetsInsetRect(rect, _textInsets)];
-}
-
-@end
 
 @interface LFStickerView ()
 
@@ -169,15 +133,22 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     if (self.selectMovingView.type == LFMovingViewType_label) {
         LFStickerLabel *label = (LFStickerLabel *)self.selectMovingView.view;
         label.lf_text = text;
-        CGSize textSize = [self calcTextSize:label.text font:label.font color:label.textColor];
-        [self.selectMovingView updateFrameWithViewSize:textSize];
+        [label drawText];
+        [self.selectMovingView updateFrameWithViewSize:label.size];
     }
 }
 
 /** 创建可移动视图 */
 - (LFMovingView *)createBaseMovingView:(UIView *)view active:(BOOL)active
 {
-    LFMovingView *movingView = [[LFMovingView alloc] initWithView:view];
+    LFMovingViewType type = LFMovingViewType_unknown;
+    if ([view isMemberOfClass:[UIImageView class]]) {
+        type = LFMovingViewType_imageView;
+    } else if ([view isMemberOfClass:[LFStickerLabel class]]) {
+        type = LFMovingViewType_label;
+    }
+    
+    LFMovingView *movingView = [[LFMovingView alloc] initWithView:view type:type];
     /** 屏幕中心 */
     movingView.center = [self convertPoint:[UIApplication sharedApplication].keyWindow.center fromView:(UIView *)[UIApplication sharedApplication].keyWindow];
     
@@ -235,20 +206,12 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
 
 - (LFMovingView *)doCreateText:(LFText *)text active:(BOOL)active
 {
-    CGFloat fontSize = 50.f;
-    UIFont *font = [UIFont systemFontOfSize:fontSize];
-    CGSize textSize = [self calcTextSize:text.text font:font color:text.textColor];
-    
-    CGFloat margin = 10;
-    LFStickerLabel *label = [[LFStickerLabel alloc] initWithFrame:(CGRect){CGPointZero, textSize}];
+    CGFloat margin = 5.f;
+    LFStickerLabel *label = [[LFStickerLabel alloc] initWithFrame:CGRectZero];
     /** 设置内边距 */
-    label.textInsets = UIEdgeInsetsMake(0, margin, 0, 0);
-    label.numberOfLines = 0.f;
+    label.textInsets = UIEdgeInsetsMake(margin, margin, margin, margin);
     label.lf_text = text;
-    label.font = font;
-    label.adjustsFontSizeToFitWidth = YES;
-    label.minimumScaleFactor = 1/fontSize;
-    //    label.textAlignment = NSTextAlignmentLeft;
+    [label drawText];
     //阴影透明度
     label.layer.shadowOpacity = 1.0;
     //阴影宽度
@@ -262,19 +225,6 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     movingView.maxScale = 1.5f;
     
     return movingView;
-}
-
-- (CGSize)calcTextSize:(NSString *)text font:(UIFont *)font color:(UIColor *)color
-{
-    NSDictionary *attribDict = @{NSFontAttributeName:font,
-                                 NSForegroundColorAttributeName:color};
-    CGSize textSize = [text boundingRectWithSize:CGSizeMake(CGRectGetWidth(self.frame), CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading | NSStringDrawingUsesLineFragmentOrigin attributes:attribDict context:nil].size;
-    
-    CGFloat margin = 10;
-    textSize.width += margin*2;
-    textSize.height += margin;
-    
-    return textSize;
 }
 
 #pragma mark  - 数据

@@ -19,7 +19,7 @@ typedef NS_ENUM(NSUInteger, LFMovingViewType) {
 + (void)setActiveEmoticonView:(LFMovingView *)view;
 
 /** 初始化 */
-- (instancetype)initWithView:(UIView *)view;
+- (instancetype)initWithView:(UIView *)view type:(LFMovingViewType)type;
 
 /** 更新坐标 */
 - (void)updateFrameWithViewSize:(CGSize)viewSize;

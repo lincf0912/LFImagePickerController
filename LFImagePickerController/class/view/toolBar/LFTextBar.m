@@ -183,6 +183,9 @@
             text.text = self.lf_textView.text;
             text.textColor = self.lf_textView.textColor;
             text.colorValue = self.lf_colorSlider.value;
+            CGFloat fontSize = 50.f;
+            UIFont *font = [UIFont systemFontOfSize:fontSize];
+            text.font = font;
         }
         [self.delegate lf_textBarController:self didFinishText:text];
     }

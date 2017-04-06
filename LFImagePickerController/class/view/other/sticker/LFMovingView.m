@@ -75,10 +75,11 @@
     return self.customView;
 }
 
-- (instancetype)initWithView:(UIView *)view
+- (instancetype)initWithView:(UIView *)view type:(LFMovingViewType)type
 {
     self = [super initWithFrame:CGRectMake(0, 0, view.frame.size.width+margin, view.frame.size.height+margin)];
     if(self){
+        _type = type;
         _customView = view;
         _contentView = [[UIView alloc] initWithFrame:view.bounds];
         _contentView.layer.borderColor = [[UIColor colorWithWhite:1.f alpha:0.8] CGColor];
@@ -109,12 +110,6 @@
         
         [self initGestures];
         [self setActive:NO];
-        
-        if ([view isKindOfClass:[UIImageView class]]) {
-            _type = LFMovingViewType_imageView;
-        } else if ([view isKindOfClass:[UILabel class]]) {
-            _type = LFMovingViewType_label;
-        }
     }
     return self;
 }

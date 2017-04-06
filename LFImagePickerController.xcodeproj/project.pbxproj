@@ -41,6 +41,8 @@
 		6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */; };
 		6F3DC4761E8A59BC00BF623E /* LFColorSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F3DC4751E8A59BC00BF623E /* LFColorSlider.m */; };
 		6F552A791E94F67700AC362C /* LFText.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F552A781E94F67700AC362C /* LFText.m */; };
+		6F552A7C1E95DFFE00AC362C /* NSString+LFCoreText.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */; };
+		6F552A7F1E95E1B600AC362C /* LFStickerLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F552A7E1E95E1B600AC362C /* LFStickerLabel.m */; };
 		6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */; };
 		6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */; };
 		6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE453971E762C5200AE9EAF /* LFScrollView.m */; };
@@ -130,6 +132,10 @@
 		6F3DC4751E8A59BC00BF623E /* LFColorSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFColorSlider.m; sourceTree = "<group>"; };
 		6F552A771E94F67700AC362C /* LFText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFText.h; sourceTree = "<group>"; };
 		6F552A781E94F67700AC362C /* LFText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFText.m; sourceTree = "<group>"; };
+		6F552A7A1E95DFFE00AC362C /* NSString+LFCoreText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+LFCoreText.h"; sourceTree = "<group>"; };
+		6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+LFCoreText.m"; sourceTree = "<group>"; };
+		6F552A7D1E95E1B600AC362C /* LFStickerLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFStickerLabel.h; sourceTree = "<group>"; };
+		6F552A7E1E95E1B600AC362C /* LFStickerLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFStickerLabel.m; sourceTree = "<group>"; };
 		6F74DC961E85147A00170A95 /* LFAssetManager+SaveAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+SaveAlbum.h"; sourceTree = "<group>"; };
 		6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+SaveAlbum.m"; sourceTree = "<group>"; };
 		6FA8E2B71E7BC5060033B83F /* LFPhotoEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEdit.h; sourceTree = "<group>"; };
@@ -326,6 +332,8 @@
 		6F1201D61E519E8300EA2198 /* Category */ = {
 			isa = PBXGroup;
 			children = (
+				6F552A7A1E95DFFE00AC362C /* NSString+LFCoreText.h */,
+				6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */,
 				6F1201D71E519E8300EA2198 /* UIAlertView+LF_Block.h */,
 				6F1201D81E519E8300EA2198 /* UIAlertView+LF_Block.m */,
 				6F1201D91E519E8300EA2198 /* UIImage+LF_ImageCompress.h */,
@@ -452,6 +460,8 @@
 			children = (
 				6FFD831E1E713B5B005F3FFC /* LFMovingView.h */,
 				6FFD831F1E713B5B005F3FFC /* LFMovingView.m */,
+				6F552A7D1E95E1B600AC362C /* LFStickerLabel.h */,
+				6F552A7E1E95E1B600AC362C /* LFStickerLabel.m */,
 			);
 			path = sticker;
 			sourceTree = "<group>";
@@ -550,6 +560,7 @@
 				6FF286121E5EB9AD0008FB5B /* UIView+LFCommon.m in Sources */,
 				6F16C58C1E80F42300B251A0 /* LFEditToolbar.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
+				6F552A7C1E95DFFE00AC362C /* NSString+LFCoreText.m in Sources */,
 				6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */,
 				6FFD835A1E7235D5005F3FFC /* LFStickerView.m in Sources */,
 				6FFD83201E713B5B005F3FFC /* LFGridLayer.m in Sources */,
@@ -565,6 +576,7 @@
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
 				6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */,
+				6F552A7F1E95E1B600AC362C /* LFStickerLabel.m in Sources */,
 				6F0480181E7A6018004F20B4 /* LFZoomingView.m in Sources */,
 				6FFD83211E713B5B005F3FFC /* LFGridMaskLayer.m in Sources */,
 				6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */,

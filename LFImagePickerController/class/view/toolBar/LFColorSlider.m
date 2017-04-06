@@ -55,7 +55,7 @@
 //    CGRect t = [self trackRectForBounds: [self bounds]];
 //    float v = [self minimumValue] + ([tap locationInView: self].x - t.origin.x) * (([self maximumValue]-[self minimumValue]) / (t.size.width));
     [self setValue:([tap locationInView: self].x/self.bounds.size.width)];
-    self.thumbTintColor = self.color;
+    [self colorSliderDidChange:self];
 }
 
 #pragma mark - 重写父类 (进度条两边有空隙的问题)

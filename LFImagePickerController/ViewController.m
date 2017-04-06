@@ -9,6 +9,8 @@
 #import "ViewController.h"
 #import "LFImagePickerController.h"
 
+#import "LFAssetManager.h"
+
 @interface ViewController () <LFImagePickerControllerDelegate>
 {
     UITapGestureRecognizer *singleTapRecognizer;
@@ -20,26 +22,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    
-    /** 单击的 Recognizer */
-    singleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singlePressed:)];
-    /** 点击的次数 */
-    singleTapRecognizer.numberOfTapsRequired = 1; // 单击
-    /** 给view添加一个手势监测 */
-    singleTapRecognizer.enabled = NO;
-    [self.view addGestureRecognizer:singleTapRecognizer];
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    singleTapRecognizer.enabled = YES;
-}
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-    singleTapRecognizer.enabled = NO;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -47,16 +29,39 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)singlePressed:(UITapGestureRecognizer *)sender
-{
-    NSLog(@"启动图片选择器");
+
+- (IBAction)buttonAction1:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
+    
     imagePicker.allowTakePicture = NO;
-//    imagePicker.sortAscendingByCreateDate = NO;
+    //    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
-//    imagePicker.allowEditting = NO;
+    //    imagePicker.allowEditting = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 
+- (IBAction)buttonAction2:(id)sender {
+    [[LFAssetManager manager] getCameraRollAlbum:NO allowPickingImage:YES fetchLimit:2 ascending:YES completion:^(LFAlbum *model) {
+        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES fetchLimit:2 ascending:NO completion:^(NSArray<LFAsset *> *models) {
+            NSMutableArray *array = [@[] mutableCopy];
+            for (LFAsset *asset in models) {
+                [array addObject:asset.asset];
+            }
+            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:0 excludeVideo:YES];
+            imagePicker.pickerDelegate = self;
+            [self presentViewController:imagePicker animated:YES completion:nil];
+        }];
+    }];
+}
+
+- (IBAction)buttonAction3:(id)sender {
+    NSArray *array = @[[UIImage imageNamed:@"1.jpeg"], [UIImage imageNamed:@"2.jpeg"]];
+    LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedPhotos:array index:0 complete:^(NSArray *photos) {
+        
+    }];
+    /** 全选 */
+//    imagePicker.selectedAssets = array;
+    [self presentViewController:imagePicker animated:YES completion:nil];
+}
 
 @end

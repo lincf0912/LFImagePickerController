@@ -61,6 +61,7 @@ NSString *const kLFDrawViewData = @"LFDrawViewData";
     _slayerArray = [@[] mutableCopy];
     _lineArray = [@[] mutableCopy];
     self.backgroundColor = [UIColor clearColor];
+    self.clipsToBounds = YES;
 //    self.layer.anchorPoint = CGPointMake(0, 0);
 //    self.layer.position = CGPointMake(0, 0);
 }

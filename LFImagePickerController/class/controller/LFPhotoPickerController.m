@@ -68,43 +68,46 @@
     // Do any additional setup after loading the view.
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    _shouldScrollToBottom = YES;
-    self.view.backgroundColor = [UIColor whiteColor];
-    
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
-
-    /** 优先赋值 */
-    self.navigationItem.title = _model.name;
-    [imagePickerVc showProgressHUD];
-    
-    dispatch_globalQueue_async_safe(^{
-        if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
-            [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-                self.model = model;
-            }];
-        }
+    if (!imagePickerVc.isPreview) { /** 非预览模式 */
         
-        if (self.model.models.count) { /** 使用缓存数据 */
-            _models = [NSMutableArray arrayWithArray:_model.models];
-            dispatch_main_async_safe(^{
-                [self initSubviews];
-            });
-        } else {
-            /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
-            BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-            if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-                ascending = !imagePickerVc.sortAscendingByCreateDate;
+        _shouldScrollToBottom = YES;
+        self.view.backgroundColor = [UIColor whiteColor];
+        
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+        
+        /** 优先赋值 */
+        self.navigationItem.title = _model.name;
+        [imagePickerVc showProgressHUD];
+        
+        dispatch_globalQueue_async_safe(^{
+            if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
+                [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
+                    self.model = model;
+                }];
             }
-            [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-                /** 缓存数据 */
-                _model.models = models;
-                _models = [NSMutableArray arrayWithArray:models];
+            
+            if (self.model.models.count) { /** 使用缓存数据 */
+                _models = [NSMutableArray arrayWithArray:_model.models];
                 dispatch_main_async_safe(^{
                     [self initSubviews];
                 });
-            }];
-        }
-    });
+            } else {
+                /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+                BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+                if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+                    ascending = !imagePickerVc.sortAscendingByCreateDate;
+                }
+                [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                    /** 缓存数据 */
+                    _model.models = models;
+                    _models = [NSMutableArray arrayWithArray:models];
+                    dispatch_main_async_safe(^{
+                        [self initSubviews];
+                    });
+                }];
+            }
+        });
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -267,7 +270,7 @@
     }
     
     
-    if (imagePickerVc.allowPickingOriginalPhoto) {
+    if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _originalPhotoButton.frame = CGRectMake(buttonX, 0, fullImageWidth + 56, 50);
@@ -397,16 +400,53 @@
     __weak typeof(self) weakSelf = self;
     
     dispatch_globalQueue_async_safe(^{
-        void (^photosComplete)(UIImage *, UIImage *, NSDictionary *, NSInteger, id) = ^(UIImage *thumbnail, UIImage *source, NSDictionary *info, NSInteger index, id asset) {
-            if (thumbnail) [thumbnailImages replaceObjectAtIndex:index withObject:thumbnail];
-            if (source) [originalImages replaceObjectAtIndex:index withObject:source];
-            if (info) [infoArr replaceObjectAtIndex:index withObject:info];
-            if (asset) [assets replaceObjectAtIndex:index withObject:asset];
+        
+        if (imagePickerVc.selectedModels.count) {
+            void (^photosComplete)(UIImage *, UIImage *, NSDictionary *, NSInteger, id) = ^(UIImage *thumbnail, UIImage *source, NSDictionary *info, NSInteger index, id asset) {
+                if (thumbnail) [thumbnailImages replaceObjectAtIndex:index withObject:thumbnail];
+                if (source) [originalImages replaceObjectAtIndex:index withObject:source];
+                if (info) [infoArr replaceObjectAtIndex:index withObject:info];
+                if (asset) [assets replaceObjectAtIndex:index withObject:asset];
+                
+                if ([assets containsObject:@1]) return;
+                
+                dispatch_main_async_safe(^{
+                    if (weakSelf == nil) return ;
+                    [imagePickerVc hideProgressHUD];
+                    if (imagePickerVc.autoDismiss) {
+                        [imagePickerVc dismissViewControllerAnimated:YES completion:^{
+                            [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
+                        }];
+                    } else {
+                        [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
+                    }
+                });
+            };
             
-            if ([assets containsObject:@1]) return;
             
+            for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
+                LFAsset *model = imagePickerVc.selectedModels[i];
+                LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                if (photoEdit) {
+                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                        /** 编辑图片保存到相册 */
+                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
+                        photosComplete(thumbnail, source, info, i, model.asset);
+                    }];
+                } else {
+                    if (imagePickerVc.isSelectOriginalPhoto) {
+                        [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                            photosComplete(thumbnail, source, info, i, model.asset);
+                        }];
+                    } else {
+                        [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                            photosComplete(thumbnail, source, info, i, model.asset);
+                        }];
+                    }
+                }
+            }
+        } else {
             dispatch_main_async_safe(^{
-                if (weakSelf == nil) return ;
                 [imagePickerVc hideProgressHUD];
                 if (imagePickerVc.autoDismiss) {
                     [imagePickerVc dismissViewControllerAnimated:YES completion:^{
@@ -416,29 +456,6 @@
                     [weakSelf callDelegateMethodWithAssets:assets thumbnailImages:thumbnailImages originalImages:originalImages infoArr:infoArr];
                 }
             });
-        };
-        
-        
-        for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
-            LFAsset *model = imagePickerVc.selectedModels[i];
-            LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-            if (photoEdit) {
-                [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                    /** 编辑图片保存到相册 */
-                    [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
-                    photosComplete(thumbnail, source, info, i, model.asset);
-                }];
-            } else {
-                if (imagePickerVc.isSelectOriginalPhoto) {
-                    [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                        photosComplete(thumbnail, source, info, i, model.asset);
-                    }];
-                } else {
-                    [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                        photosComplete(thumbnail, source, info, i, model.asset);
-                    }];
-                }
-            }
         }
     });
     
@@ -711,15 +728,19 @@
 }
 
 - (void)checkSelectedModels {
-    for (LFAsset *model in _models) {
-        model.isSelected = NO;
-        NSMutableArray *selectedAssets = [NSMutableArray array];
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        for (LFAsset *model in imagePickerVc.selectedModels) {
+    NSMutableArray *selectedAssets = [NSMutableArray array];
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    for (LFAsset *model in imagePickerVc.selectedModels) {
+        if (model.asset) {
             [selectedAssets addObject:model.asset];
         }
-        if ([[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset]) {
-            model.isSelected = YES;
+    }
+    if (selectedAssets.count) {        
+        for (LFAsset *model in _models) {
+            model.isSelected = NO;
+            if ([[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset]) {
+                model.isSelected = YES;
+            }
         }
     }
 }

@@ -16,9 +16,13 @@
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate;
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate;
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc;
-/// This init method just for previewing photos / 用这个初始化方法以预览图片
-- (instancetype)initWithSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo complete:(void (^)(NSArray *assets))complete;
-- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray *photos))complete;
+/// This init method just for previewing photos,pickerDelegate = self; / 用这个初始化方法以预览图片,pickerDelegate = self;
+- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo;
+/// This init method just for previewing photos, complete block call back  (invalid delegate)/ 用这个初始化方法以预览图片 complete => 完成后返回全新数组 （代理无效）
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete;
+
+/** 预览模式 */
+@property (nonatomic, readonly) BOOL isPreview;
 
 /** 每行的数量 */
 @property (nonatomic, readonly) NSInteger columnNumber;
@@ -65,7 +69,7 @@
 /// The photos user have selected
 /// 用户选中过的图片数组
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
-@property (nonatomic, setter=setSelectedAssets:) NSMutableArray /**<PHAsset/ALAsset *>*/*selectedAssets;
+@property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage *>*/*selectedAssets;
 /** 是否选择原图 */
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 

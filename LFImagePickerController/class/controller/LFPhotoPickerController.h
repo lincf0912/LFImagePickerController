@@ -7,7 +7,7 @@
 //
 
 #import "LFBaseViewController.h"
-@class LFAlbum;
+@class LFAlbum,LFPhotoPreviewController;
 
 @interface LFPhotoPickerController : LFBaseViewController
 
@@ -15,4 +15,5 @@
 /** 拍照回调 */
 @property (nonatomic, copy) void (^takePhotoHandle)();
 
+- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc;
 @end

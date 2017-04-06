@@ -40,26 +40,40 @@ static LFPhotoEditManager *manager;
 - (void)setPhotoEdit:(LFPhotoEdit *)obj forAsset:(LFAsset *)asset
 {
     __weak typeof(self) weakSelf = self;
-    [self requestForAsset:asset.asset complete:^(NSString *name) {
-        if (name.length) {
-            if (obj) {
-                [weakSelf.photoEditDict setObject:obj forKey:name];
-            } else {
-                [weakSelf.photoEditDict removeObjectForKey:name];
+    if (asset.asset) {
+        [self requestForAsset:asset.asset complete:^(NSString *name) {
+            if (name.length) {
+                if (obj) {
+                    [weakSelf.photoEditDict setObject:obj forKey:name];
+                } else {
+                    [weakSelf.photoEditDict removeObjectForKey:name];
+                }
             }
+        }];
+    } else if (asset.previewImage) {
+        NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
+        if (obj) {
+            [weakSelf.photoEditDict setObject:obj forKey:name];
+        } else {
+            [weakSelf.photoEditDict removeObjectForKey:name];
         }
-    }];
+    }
 }
 
 - (LFPhotoEdit *)photoEditForAsset:(LFAsset *)asset
 {
     __weak typeof(self) weakSelf = self;
     __block LFPhotoEdit *photoEdit = nil;
-    [self requestForAsset:asset.asset complete:^(NSString *name) {
-        if (name.length) {
-            photoEdit = [weakSelf.photoEditDict objectForKey:name];
-        }
-    }];
+    if (asset.asset) {
+        [self requestForAsset:asset.asset complete:^(NSString *name) {
+            if (name.length) {
+                photoEdit = [weakSelf.photoEditDict objectForKey:name];
+            }
+        }];
+    } else if (asset.previewImage) {
+        NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
+        photoEdit = [weakSelf.photoEditDict objectForKey:name];
+    }
     return photoEdit;
 }
 

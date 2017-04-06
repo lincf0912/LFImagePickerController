@@ -37,8 +37,6 @@
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;                  ///< All photo models / 所有图片模型数组
 @property (nonatomic, assign) NSInteger currentIndex;           ///< Index of the photo user click / 用户点击的图片的索引
 
-@property (nonatomic, assign) BOOL isPreviewPhoto;
-
 @property (nonatomic, assign) BOOL isHideNaviBar;
 
 @property (nonatomic, assign) double progress;
@@ -99,14 +97,14 @@
                 [_models addObject:model];
             }
         }
-        _isPreviewPhoto = YES;
     }
     return self;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
+    [self checkSelectedModels];
     [self configCollectionView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
@@ -122,24 +120,52 @@
     [super viewWillDisappear:animated];
 }
 
+- (void)checkSelectedModels {
+    NSMutableArray *selectedAssets = [NSMutableArray array];
+    NSMutableArray *selectedImages = [NSMutableArray array];
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    for (LFAsset *model in imagePickerVc.selectedModels) {
+        if (model.asset) {
+            [selectedAssets addObject:model.asset];
+        } else if (model.previewImage) {
+            [selectedImages addObject:@([model.previewImage hash])];
+        }
+    }
+    if (selectedAssets.count) {
+        for (LFAsset *model in _models) {
+            model.isSelected = NO;
+            if ([[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset]) {
+                model.isSelected = YES;
+            }
+        }
+    } else if (selectedImages.count) {
+        for (LFAsset *model in _models) {
+            if (model.previewImage) {
+                model.isSelected = [selectedImages containsObject:@([model.previewImage hash])];
+            }
+        }
+    }
+}
+
 - (void)configCustomNaviBar {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
     _naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
     
-    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
-    [_backButton setImage:bundleImageNamed(@"navi_back.png") forState:UIControlStateNormal];
-    [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    
-    if (!_isPreviewPhoto) { /** 非图片预览模式 */
-        _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
-        [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
-        [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
-        [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
-        [_naviBar addSubview:_selectButton];
+    /** 判断是否预览模式 */
+    if (!imagePickerVc.isPreview) {
+        _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+        [_backButton setImage:bundleImageNamed(@"navi_back.png") forState:UIControlStateNormal];
+        [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }
+    
+    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
+    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
+    [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
+    [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
+    [_naviBar addSubview:_selectButton];
     
     [_naviBar addSubview:_backButton];
     [self.view addSubview:_naviBar];
@@ -162,7 +188,7 @@
         [_editButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     }
     
-    if (imagePickerVc.allowPickingOriginalPhoto) {
+    if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
@@ -257,18 +283,18 @@
         }
     } else {
         NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
-        for (LFAsset *model_item in selectedModels) {
-            if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
-                // 1.6.7版本更新:防止有多个一样的model,一次性被移除了
-                NSArray *selectedModelsTmp = [NSArray arrayWithArray:imagePickerVc.selectedModels];
-                for (NSInteger i = 0; i < selectedModelsTmp.count; i++) {
-                    LFAsset *model = selectedModelsTmp[i];
-                    if ([model isEqual:model_item]) {
-                        [imagePickerVc.selectedModels removeObjectAtIndex:i];
-                        break;
-                    }
+        for (NSInteger i = 0; i < selectedModels.count; i++) {
+            LFAsset *model_item = selectedModels[i];
+            if (model_item.asset) {
+                if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
+                    [imagePickerVc.selectedModels removeObjectAtIndex:i];
+                    break;
                 }
-                break;
+            } else { /** UIImage模式 */
+                if ([model_item isEqual:model]) {
+                    [imagePickerVc.selectedModels removeObjectAtIndex:i];
+                    break;
+                }
             }
         }
     }

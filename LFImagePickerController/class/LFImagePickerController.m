@@ -17,6 +17,7 @@
 #import "LFAlbumPickerController.h"
 #import "LFPhotoPickerController.h"
 #import "LFPhotoPreviewController.h"
+#import "LFPhotoEdit.h"
 
 @interface LFImagePickerController ()
 {
@@ -36,29 +37,31 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
-        _tipLabel = [[UILabel alloc] init];
-        _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
-        _tipLabel.textAlignment = NSTextAlignmentCenter;
-        _tipLabel.numberOfLines = 0;
-        _tipLabel.font = [UIFont systemFontOfSize:16];
-        _tipLabel.textColor = [UIColor blackColor];
-        NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
-        if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-        NSString *tipText = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-照片\"选项中，\r允许%@访问你的手机相册",appName];
-        _tipLabel.text = tipText;
-        [self.view addSubview:_tipLabel];
-        
-        _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-        [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
-        _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
-        _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
-        [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
-        [self.view addSubview:_settingBtn];
-        
-        _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
-    } else {
-        [self pushPhotoPickerVc];
+    if (!_isPreview) { /** 非预览模式 */
+        if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
+            _tipLabel = [[UILabel alloc] init];
+            _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
+            _tipLabel.textAlignment = NSTextAlignmentCenter;
+            _tipLabel.numberOfLines = 0;
+            _tipLabel.font = [UIFont systemFontOfSize:16];
+            _tipLabel.textColor = [UIColor blackColor];
+            NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
+            if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
+            NSString *tipText = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-照片\"选项中，\r允许%@访问你的手机相册",appName];
+            _tipLabel.text = tipText;
+            [self.view addSubview:_tipLabel];
+            
+            _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
+            _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
+            _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+            [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
+            [self.view addSubview:_settingBtn];
+            
+            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
+        } else {
+            [self pushPhotoPickerVc];
+        }
     }
 }
 
@@ -81,64 +84,65 @@
     _pushPhotoPickerVc = pushPhotoPickerVc;
     self = [super init];
     if (self) {
-        self.maxImagesCount = maxImagesCount > 0 ? maxImagesCount : 9; // Default is 9 / 默认最大可选9张图片
-        self.pickerDelegate = delegate;
-        self.selectedModels = [NSMutableArray array];
-        
         // Allow user picking original photo and video, you also can set No after this method
         // 默认准许用户选择原图和视频, 你也可以在这个方法后置为NO
         [self defaultConfig];
+        if (maxImagesCount > 0) self.maxImagesCount = maxImagesCount; // Default is 9 / 默认最大可选9张图片
+        self.pickerDelegate = delegate;
+        
         self.columnNumber = columnNumber;
     }
     return self;
 }
 
 /// This init method just for previewing photos / 用这个初始化方法以预览图片
-- (instancetype)initWithSelectedAssets:(NSMutableArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo complete:(void (^)(NSArray *assets))complete
+- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
 {
-    NSMutableArray *models = [@[] mutableCopy];
-    for (id asset in selectedAssets) {
-        LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
-        LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
-        [models addObject:model];
-    }
-    LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index excludeVideo:excludeVideo];
-    self = [super initWithRootViewController:previewVc];
+    self = [super init];
     if (self) {
+        _isPreview = YES;
         [self defaultConfig];
-        __weak typeof(self) weakSelf = self;
-        [previewVc setDoneButtonClickBlock:^{
-            
-            NSMutableArray *assets = [@[] mutableCopy];
-            for (LFAsset *model in weakSelf.selectedModels) {
-                if (model.asset) {
-                    [assets addObject:model.asset];
-                }
-            }
-            if (weakSelf.autoDismiss) {
-                [weakSelf dismissViewControllerAnimated:YES completion:^{
-                    if (complete) complete(assets);
-                }];
-            } else {
-                if (complete) complete(assets);
-            }
-        }];
+        if (iOS7Later) {
+            // 禁能系统的手势
+            self.interactivePopGestureRecognizer.enabled = NO;
+        }
+        NSMutableArray *models = [@[] mutableCopy];
+        for (id asset in selectedAssets) {
+            LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
+            LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
+            [models addObject:model];
+        }
+        LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
+        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index excludeVideo:excludeVideo];
+        
+        [self setViewControllers:@[photoPickerVc] animated:NO];
+        [photoPickerVc pushPhotoPrevireViewController:previewVc];
     }
     return self;
 }
 
-- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray *photos))complete
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete
 {
-    LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:selectedPhotos index:index];
-    self = [super initWithRootViewController:previewVc];
+    self = [super init];
     if (self) {
+        _isPreview = YES;
         [self defaultConfig];
+        if (iOS7Later) {
+            // 禁能系统的手势
+            self.interactivePopGestureRecognizer.enabled = NO;
+        }
         __weak typeof(self) weakSelf = self;
+        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:selectedPhotos index:index];
+        [self setViewControllers:@[previewVc] animated:YES];
+        
         [previewVc setDoneButtonClickBlock:^{
-            
             NSMutableArray *photos = [@[] mutableCopy];
             for (LFAsset *model in weakSelf.selectedModels) {
-                if (model.previewImage) {
+                
+                LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                if (photoEdit.editPreviewImage) {
+                    [photos addObject:photoEdit.editPreviewImage];
+                } else if (model.previewImage) {
                     [photos addObject:model.previewImage];
                 }
             }
@@ -157,6 +161,8 @@
 
 - (void)defaultConfig
 {
+    self.selectedModels = [NSMutableArray array];
+    self.maxImagesCount = 9;
     self.allowPickingOriginalPhoto = YES;
     self.allowPickingVideo = YES;
     self.allowPickingImage = YES;
@@ -178,8 +184,8 @@
 }
 
 - (void)pushPhotoPickerVc {
-    _didPushPhotoPickerVc = NO;
     if (!_didPushPhotoPickerVc) {
+        _didPushPhotoPickerVc = NO;
         LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
         if (self.allowPickingImage) {
             albumPickerVc.navigationItem.title = @"相册";
@@ -207,14 +213,22 @@
     }
 }
 
-- (void)setSelectedAssets:(NSMutableArray *)selectedAssets {
+- (void)setSelectedAssets:(NSArray *)selectedAssets {
     
     _selectedModels = [NSMutableArray array];
     for (id asset in selectedAssets) {
-        LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
-        LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
+        LFAsset *model = nil;
+        if ([asset isKindOfClass:[PHAsset class]] || [asset isKindOfClass:[ALAsset class]]) {
+            LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
+            model = [[LFAsset alloc] initWithAsset:asset type:type];
+        } else if ([asset isKindOfClass:[UIImage class]]) {
+            model = [[LFAsset alloc] initWithAsset:nil type:LFAssetMediaTypePhoto];
+            model.previewImage = asset;
+        }
         model.isSelected = YES;
-        [_selectedModels addObject:model];
+        if (model) {
+            [_selectedModels addObject:model];
+        }
     }
 }
 

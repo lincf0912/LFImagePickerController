@@ -116,8 +116,8 @@
         [edit_drawMenu addSubview:separateView];
         
         /** 拾色器 */
-        CGFloat sliderHeight = 34.f;
-        LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(10, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*10, sliderHeight)];
+        CGFloat sliderHeight = 34.f, margin = 30.f;
+        LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*margin, sliderHeight)];
         _colorSlider.delegate = self;
         [edit_drawMenu addSubview:_colorSlider];
         self.draw_colorSlider = _colorSlider;

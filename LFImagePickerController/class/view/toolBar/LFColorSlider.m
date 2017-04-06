@@ -53,17 +53,18 @@
     /** 最终目的：让slider无法点击穿透 */
     
 //    CGRect t = [self trackRectForBounds: [self bounds]];
-//    float v = [self minimumValue] + ([tap locationInView: self].x - t.origin.x - 4.0) * (([self maximumValue]-[self minimumValue]) / (t.size.width - 8.0));
-//    [self setValue: v];
-//    self.thumbTintColor = self.color;
+//    float v = [self minimumValue] + ([tap locationInView: self].x - t.origin.x) * (([self maximumValue]-[self minimumValue]) / (t.size.width));
+    [self setValue:([tap locationInView: self].x/self.bounds.size.width)];
+    self.thumbTintColor = self.color;
 }
 
 #pragma mark - 重写父类 (进度条两边有空隙的问题)
 //- (CGRect)thumbRectForBounds:(CGRect)bounds trackRect:(CGRect)rect value:(float)value
 //{
-//    rect.origin.x = rect.origin.x - 10 ;
-//    rect.size.width = rect.size.width + 20;
-//    return CGRectInset ([super thumbRectForBounds:bounds trackRect:rect value:value], 10 , 0);
+//    CGRect thumbRect = [super thumbRectForBounds:bounds trackRect:rect value:value];
+//    thumbRect.origin.x += (thumbRect.size.width-40)/2;
+//    thumbRect.size.width = 40;
+//    return thumbRect;
 //}
 
 -(CGRect)trackRectForBounds:(CGRect)bounds {

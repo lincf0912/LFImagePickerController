@@ -75,11 +75,11 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     
     LFZoomingView *zoomingView = [[LFZoomingView alloc] initWithFrame:self.bounds];
     __weak typeof(self) weakSelf = self;
-    zoomingView.moveCenter = ^BOOL(CGPoint center) {
+    zoomingView.moveCenter = ^BOOL(CGRect rect) {
         /** 判断缩放后是否超出边界线 */
-        CGPoint newCenter = [weakSelf.zoomingView convertPoint:center toView:weakSelf];
-        CGRect rect = (CGRect){weakSelf.contentOffset, weakSelf.frame.size};
-        return !CGRectContainsPoint(rect, newCenter);
+        CGRect newRect = [weakSelf.zoomingView convertRect:rect toView:weakSelf];
+        CGRect screenRect = (CGRect){weakSelf.contentOffset, weakSelf.frame.size};
+        return !CGRectIntersectsRect(screenRect, newRect);
     };
     [self addSubview:zoomingView];
     self.zoomingView = zoomingView;

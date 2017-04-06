@@ -109,7 +109,7 @@ NSString *const kLFZoomingViewData_splash = @"LFZoomingViewData_splash";
     [self.splashView setImage:image mosaicLevel:10];
 }
 
-- (void)setMoveCenter:(BOOL (^)(CGPoint))moveCenter
+- (void)setMoveCenter:(BOOL (^)(CGRect))moveCenter
 {
     _moveCenter = moveCenter;
     if (moveCenter) {

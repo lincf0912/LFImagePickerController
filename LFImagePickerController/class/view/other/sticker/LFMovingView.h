@@ -40,6 +40,6 @@ typedef NS_ENUM(NSUInteger, LFMovingViewType) {
 
 
 @property (nonatomic, copy) void(^tapEnded)(LFMovingView *movingView, UIView *view, BOOL isActive);
-@property (nonatomic, copy) BOOL(^moveCenter)(CGPoint center);
+@property (nonatomic, copy) BOOL(^moveCenter)(CGRect rect);
 
 @end

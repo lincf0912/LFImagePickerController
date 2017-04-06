@@ -75,15 +75,15 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     }
 }
 
-- (void)setMoveCenter:(BOOL (^)(CGPoint))moveCenter
+- (void)setMoveCenter:(BOOL (^)(CGRect))moveCenter
 {
     _moveCenter = moveCenter;
     for (LFMovingView *subView in self.subviews) {
         if ([subView isKindOfClass:[LFMovingView class]]) {
             if (moveCenter) {
                 __weak typeof(self) weakSelf = self;
-                [subView setMoveCenter:^BOOL (CGPoint center) {
-                    return weakSelf.moveCenter(center);
+                [subView setMoveCenter:^BOOL (CGRect rect) {
+                    return weakSelf.moveCenter(rect);
                 }];
             } else {
                 [subView setMoveCenter:nil];
@@ -168,8 +168,8 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     }
     if (self.moveCenter) {
         __weak typeof(self) weakSelf = self;
-        [movingView setMoveCenter:^BOOL (CGPoint center) {
-            return weakSelf.moveCenter(center);
+        [movingView setMoveCenter:^BOOL (CGRect rect) {
+            return weakSelf.moveCenter(rect);
         }];
     }
     

@@ -37,6 +37,6 @@
 
 /** 点击回调视图 */
 @property (nonatomic, copy) void(^tapEnded)(BOOL isActive);
-@property (nonatomic, copy) BOOL(^moveCenter)(CGPoint center);
+@property (nonatomic, copy) BOOL(^moveCenter)(CGRect rect);
 
 @end

@@ -265,10 +265,11 @@
     
     if (sender.state == UIGestureRecognizerStateEnded) {
         BOOL isMoveCenter = NO;
+        CGRect rect = CGRectInset(self.frame, 30, 30);
         if (self.moveCenter) {
-            isMoveCenter = self.moveCenter(self.center);
+            isMoveCenter = self.moveCenter(rect);
         } else {
-            isMoveCenter = !CGRectContainsPoint(self.superview.frame, self.center);
+            isMoveCenter = !CGRectIntersectsRect(self.superview.frame, rect);
         }
         if (isMoveCenter) {
             /** 超出边界线 重置会中间 */

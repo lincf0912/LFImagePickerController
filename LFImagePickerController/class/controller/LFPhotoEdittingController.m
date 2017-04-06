@@ -410,7 +410,10 @@
     /** 显示顶部栏 */
     _isHideNaviBar = NO;
     [self changedBarState];
-    [_edittingView activeSelectStickerView];
+    /** 更改文字情况才重新激活贴图 */
+    if (textBar.showText) {
+        [_edittingView activeSelectStickerView];
+    }
     [textBar resignFirstResponder];
     
     [UIView animateWithDuration:0.25f delay:0.f options:UIViewAnimationOptionCurveLinear animations:^{
@@ -418,7 +421,6 @@
     } completion:^(BOOL finished) {
         [textBar removeFromSuperview];
     }];
-    
 }
 
 #pragma mark - LFPhotoEditDelegate

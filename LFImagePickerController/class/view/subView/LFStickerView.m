@@ -181,11 +181,12 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     /** 屏幕中心 */
     movingView.center = [self convertPoint:[UIApplication sharedApplication].keyWindow.center fromView:(UIView *)[UIApplication sharedApplication].keyWindow];
     
+    [self addSubview:movingView];
+    
     if (active) {
         [LFMovingView setActiveEmoticonView:movingView];
     }
     
-    [self addSubview:movingView];
     
     if (self.tapEnded) {
         __weak typeof(self) weakSelf = self;
@@ -210,6 +211,7 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     LFMovingView *movingView = [self doCreateImage:image active:YES];
     CGFloat ratio = MIN( (0.2 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
     [movingView setScale:ratio];
+    self.selectMovingView = movingView;
 }
 
 - (LFMovingView *)doCreateImage:(UIImage *)image active:(BOOL)active
@@ -228,6 +230,7 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
     LFMovingView *movingView = [self doCreateText:text active:YES];
     //    CGFloat ratio = MIN( (0.5 * self.width) / movingView.width, (0.5 * self.height) / movingView.height);
     [movingView setScale:0.6f];
+    self.selectMovingView = movingView;
 }
 
 - (LFMovingView *)doCreateText:(LFText *)text active:(BOOL)active

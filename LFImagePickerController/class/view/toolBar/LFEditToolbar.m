@@ -302,7 +302,7 @@
     } else {
         _selectButton = nil;
     }
-    return _selectButton;
+    return (_selectButton != nil);
 }
 
 /** 当前激活主菜单 */

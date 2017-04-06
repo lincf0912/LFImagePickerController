@@ -743,8 +743,8 @@ static LFAssetManager *manager;
         dispatch_globalQueue_async_safe(^{
             CGImageRef originalImageRef = [assetRep fullResolutionImage];
             UIImage *originalImage = [UIImage imageWithCGImage:originalImageRef scale:1.0 orientation:UIImageOrientationUp];
-            Byte *imageBuffer = (Byte *)malloc(assetRep.size);
-            NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:assetRep.size error:nil];
+            Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
+            NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
             NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
             dispatch_main_async_safe(^{
                 if (completion) completion(imageData,originalImage,nil,NO);

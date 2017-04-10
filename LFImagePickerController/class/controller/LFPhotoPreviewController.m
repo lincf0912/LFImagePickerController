@@ -153,13 +153,17 @@
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
     _naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
     
+    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
     /** 判断是否预览模式 */
-    if (!imagePickerVc.isPreview) {
-        _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+    if (imagePickerVc.isPreview) {
+        /** 取消 */
+        [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
+        _backButton.titleLabel.font = [UIFont systemFontOfSize:15];
+    } else {
         [_backButton setImage:bundleImageNamed(@"navi_back.png") forState:UIControlStateNormal];
-        [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     }
+    [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
@@ -188,7 +192,7 @@
         [_editButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     }
     
-    if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
+    if (imagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
@@ -307,7 +311,9 @@
 }
 
 - (void)backButtonClick {
-    if (self.navigationController.childViewControllers.count < 2) {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    /** 判断是否预览模式 */
+    if (imagePickerVc.isPreview) {
         [self.navigationController dismissViewControllerAnimated:YES completion:nil];
     } else {
         [self.navigationController popViewControllerAnimated:YES];

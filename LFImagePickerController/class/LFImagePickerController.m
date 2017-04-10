@@ -100,12 +100,9 @@
 {
     self = [super init];
     if (self) {
-        _isPreview = YES;
         [self defaultConfig];
-        if (iOS7Later) {
-            // 禁能系统的手势
-            self.interactivePopGestureRecognizer.enabled = NO;
-        }
+        _isPreview = YES;
+
         NSMutableArray *models = [@[] mutableCopy];
         for (id asset in selectedAssets) {
             LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
@@ -125,12 +122,11 @@
 {
     self = [super init];
     if (self) {
-        _isPreview = YES;
         [self defaultConfig];
-        if (iOS7Later) {
-            // 禁能系统的手势
-            self.interactivePopGestureRecognizer.enabled = NO;
-        }
+        _isPreview = YES;
+        /** 关闭原图选项 */
+        _allowPickingOriginalPhoto = NO;
+
         __weak typeof(self) weakSelf = self;
         LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:selectedPhotos index:index];
         [self setViewControllers:@[previewVc] animated:YES];

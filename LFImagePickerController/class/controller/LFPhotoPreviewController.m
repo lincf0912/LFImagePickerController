@@ -348,19 +348,21 @@
 
 - (void)editButtonClick {
     LFPhotoEdittingController *photoEdittingVC = [[LFPhotoEdittingController alloc] init];
-    /** 获取缓存编辑对象 */
-    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
-    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    if (photoEdit) {
-        photoEdittingVC.photoEdit = photoEdit;
-    } else {
-        /** 当前页面只显示一张图片 */
-        LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
-        /** 当前显示的图片 */
-        photoEdittingVC.editImage = cell.previewImage;
+    if (self.models.count > self.currentIndex) {        
+        /** 获取缓存编辑对象 */
+        LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+        if (photoEdit) {
+            photoEdittingVC.photoEdit = photoEdit;
+        } else {
+            /** 当前页面只显示一张图片 */
+            LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+            /** 当前显示的图片 */
+            photoEdittingVC.editImage = cell.previewImage;
+        }
+        photoEdittingVC.delegate = self;
+        [self.navigationController pushViewController:photoEdittingVC animated:NO];
     }
-    photoEdittingVC.delegate = self;
-    [self.navigationController pushViewController:photoEdittingVC animated:NO];
 }
 
 - (void)originalPhotoButtonClick {
@@ -440,39 +442,43 @@
 #pragma mark - LFPhotoEdittingControllerDelegate
 - (void)lf_PhotoEdittingController:(LFPhotoEdittingController *)photoEdittingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
 {
-    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
-    /** 缓存对象 */
-    [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
-    
-    if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
-        self.tempEditImage = photoEdittingVC.editImage;
+    if (self.models.count > self.currentIndex) {
+        LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+        /** 缓存对象 */
+        [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
+        
+        if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
+            self.tempEditImage = photoEdittingVC.editImage;
+        }
+        
+        [self.navigationController popViewControllerAnimated:NO];
     }
-    
-    [self.navigationController popViewControllerAnimated:NO];
 }
 - (void)lf_PhotoEdittingController:(LFPhotoEdittingController *)photoEdittingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
 {
-    LFAsset *model = [self.models objectAtIndex:self.currentIndex];
-    /** 缓存对象 */
-    [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
-    
-    /** 当前页面只显示一张图片 */
-    LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
-    
-    if (photoEdit) { /** 编辑存在 */
-        if (_collectionView) {
-            cell.previewImage = photoEdit.editPreviewImage;
+    if (self.models.count > self.currentIndex) {
+        LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+        /** 缓存对象 */
+        [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
+        
+        /** 当前页面只显示一张图片 */
+        LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+        
+        if (photoEdit) { /** 编辑存在 */
+            if (_collectionView) {
+                cell.previewImage = photoEdit.editPreviewImage;
+            }
+        } else { /** 编辑不存在 */
+            if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
+                /** 还原编辑图片 */
+                cell.previewImage = photoEdittingVC.editImage;
+            } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
+                self.tempEditImage = photoEdittingVC.editImage;
+            }
         }
-    } else { /** 编辑不存在 */
-        if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
-            /** 还原编辑图片 */
-            cell.previewImage = photoEdittingVC.editImage;
-        } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
-            self.tempEditImage = photoEdittingVC.editImage;
-        }
+        
+        [self.navigationController popViewControllerAnimated:NO];
     }
-    
-    [self.navigationController popViewControllerAnimated:NO];
 }
 
 #pragma mark - Private Method

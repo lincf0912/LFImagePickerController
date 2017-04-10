@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 s.name         = 'LFImagePickerController'
-s.version      = '1.0.7'
+s.version      = '1.0.8'
 s.summary      = 'A clone of UIImagePickerController, support picking multiple photos、 video and edit photo'
 s.homepage     = 'https://github.com/lincf0912/LFImagePickerController'
 s.license      = 'MIT'

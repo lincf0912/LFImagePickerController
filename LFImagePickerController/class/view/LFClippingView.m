@@ -100,6 +100,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     }
     self.normalRect = self.frame;
     self.saveRect = self.frame;
+    self.contentSize = self.size;
     [self.zoomingView setImage:image];
     
 }

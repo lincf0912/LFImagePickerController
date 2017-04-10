@@ -160,6 +160,7 @@
 /** 取消剪裁 */
 - (void)cancelClipping:(BOOL)animated
 {
+    _isClipping = NO;
     /** 剪裁多余部分 */
     self.clippingView.clipsToBounds = YES;
     if (animated) {

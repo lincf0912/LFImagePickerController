@@ -12,32 +12,29 @@
 
 - (UIImage *)captureImage
 {
+    return [self captureImageAtFrame:CGRectZero];
+}
+
+- (UIImage *)captureImageAtFrame:(CGRect)rect
+{
     UIImage* image = nil;
     
-    CGFloat zoomScale = 1.f;
-    if ([self isKindOfClass:[UIScrollView class]]) {
-        zoomScale = ((UIScrollView *)self).zoomScale;
-        [(UIScrollView *)self setZoomScale:1.f];
-    }
     //1.开启上下文
     UIGraphicsBeginImageContextWithOptions(self.frame.size, NO, 0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
     //2.绘制图层
-    [self.layer renderInContext: UIGraphicsGetCurrentContext()];
+    [self.layer renderInContext: context];
     //3.从上下文中获取新图片
     image = UIGraphicsGetImageFromCurrentImageContext();
     //4.关闭图形上下文
     UIGraphicsEndImageContext();
     
-    if ([self isKindOfClass:[UIScrollView class]]) {
-        [(UIScrollView *)self setZoomScale:zoomScale];
+    if (!CGRectEqualToRect(CGRectZero, rect)) {
+        UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
+        [image drawAtPoint:CGPointMake(-rect.origin.x, -rect.origin.y)];
+        image = UIGraphicsGetImageFromCurrentImageContext();
     }
     
-    if (image != nil)
-    {
-        return image;
-    }
-    
-    return nil;
+    return image;
 }
-
 @end

@@ -12,6 +12,7 @@
 
 #import "UIView+LFFrame.h"
 #import "LFCancelBlock.h"
+#import "UIView+LFCommon.h"
 
 #import <AVFoundation/AVFoundation.h>
 
@@ -189,6 +190,16 @@
         return self.clippingView.canReset;
     }
     return NO;
+}
+
+/** 创建编辑图片 */
+- (UIImage *)createEditImage
+{
+    CGFloat zoomScale = self.zoomScale;
+    [self setZoomScale:1.f];
+    UIImage *image = [self captureImageAtFrame:self.clippingView.frame];
+    [self setZoomScale:zoomScale];
+    return image;
 }
 
 #pragma mark - LFClippingViewDelegate

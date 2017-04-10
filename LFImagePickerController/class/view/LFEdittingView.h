@@ -32,6 +32,10 @@
 /** 还原 isClipping=YES 的情况有效 */
 - (void)reset;
 - (BOOL)canReset;
+
+/** 创建编辑图片 */
+- (UIImage *)createEditImage;
+
 @end
 
 

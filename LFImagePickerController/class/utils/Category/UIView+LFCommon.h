@@ -11,4 +11,6 @@
 @interface UIView (LFCommon)
 /** 截取图层为图片 */
 - (UIImage *)captureImage;
+/** 截图图层部分为图片 */
+- (UIImage *)captureImageAtFrame:(CGRect)rect;
 @end

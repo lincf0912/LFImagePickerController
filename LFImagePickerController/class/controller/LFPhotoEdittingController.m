@@ -10,9 +10,6 @@
 #import "LFImagePickerHeader.h"
 #import "LFImagePickerController.h"
 #import "UIView+LFFrame.h"
-#import "UIView+LFCommon.h"
-#import "UIImage+LFCommon.h"
-#import "UIImage+LF_ImageCompress.h"
 #import "LFImagePickerType.h"
 
 #import "LFEdittingView.h"
@@ -168,9 +165,12 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         /** 处理编辑图片 */
-        UIImage *image = [_edittingView captureImage];
+        LFPhotoEdit *photoEdit = nil;
         NSDictionary *data = [_edittingView photoEditData];
-        LFPhotoEdit *photoEdit = (data ? [[LFPhotoEdit alloc] initWithEditImage:self.editImage previewImage:image data:data] : nil);
+        if (data) {
+            UIImage *image = [_edittingView createEditImage];
+            photoEdit = [[LFPhotoEdit alloc] initWithEditImage:self.editImage previewImage:image data:data];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.delegate respondsToSelector:@selector(lf_PhotoEdittingController:didFinishPhotoEdit:)]) {
                 [self.delegate lf_PhotoEdittingController:self didFinishPhotoEdit:photoEdit];

@@ -27,8 +27,10 @@
 /** 剪切范围 */
 @property (nonatomic, assign) CGRect cropRect;
 
-/** 缩放 */
+/** 缩小到指定坐标 */
 - (void)zoomOutToRect:(CGRect)toRect;
+/** 放大到指定坐标(必须大于当前坐标) */
+- (void)zoomInToRect:(CGRect)toRect;
 /** 还原 */
 - (void)reset;
 /** 取消 */

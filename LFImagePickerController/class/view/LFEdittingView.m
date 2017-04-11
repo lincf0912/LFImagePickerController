@@ -254,10 +254,12 @@
 }
 - (void)lf_gridViewDidResizing:(LFGridView *)gridView
 {
-//    [self.zoomView zoomInToRect:gridView.gridRect];
+    /** 放大 */
+    [self.clippingView zoomInToRect:gridView.gridRect];
 }
 - (void)lf_gridViewDidEndResizing:(LFGridView *)gridView
 {
+    /** 缩小 */
     [self.clippingView zoomOutToRect:gridView.gridRect];
     /** 让clippingView的动画回调后才显示showMaskLayer */
     //    self.gridView.showMaskLayer = YES;

@@ -8,6 +8,20 @@
 
 #import "LFLayoutPickerController.h"
 
+/**
+ *  NSString;
+ */
+extern NSString *const kImageInfoFileName;     // 图片名称
+/**
+ *  NSValue; CGSize size;[value getValue:&size];
+ */
+extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
+/**
+ *  NSNumber;
+ */
+extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
+
+
 @class LFAsset;
 @protocol LFImagePickerControllerDelegate;
 @interface LFImagePickerController : LFLayoutPickerController

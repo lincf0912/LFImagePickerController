@@ -32,7 +32,6 @@
 
 - (IBAction)buttonAction1:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
-    
     imagePicker.allowTakePicture = NO;
     //    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
@@ -62,6 +61,35 @@
     /** 全选 */
 //    imagePicker.selectedAssets = array;
     [self presentViewController:imagePicker animated:YES completion:nil];
+}
+
+- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingThumbnailImages:(NSArray<UIImage *> *)thumbnailImages originalImages:(NSArray<UIImage *> *)originalImages infos:(NSArray<NSDictionary *> *)infos
+{
+    NSString *documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES) objectAtIndex:0];
+    NSString *thumbnailFilePath = [documentPath stringByAppendingPathComponent:@"thumbnail"];
+    NSString *originalFilePath = [documentPath stringByAppendingPathComponent:@"original"];
+    
+    NSFileManager *fileManager = [NSFileManager new];
+    if (![fileManager fileExistsAtPath:thumbnailFilePath])
+    {
+        [fileManager createDirectoryAtPath:thumbnailFilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    if (![fileManager fileExistsAtPath:originalFilePath])
+    {
+        [fileManager createDirectoryAtPath:originalFilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    for (NSInteger i = 0; i < originalImages.count; i++) {
+        UIImage *thumbnailImage = thumbnailImages[i];
+        UIImage *image = originalImages[i];
+        NSDictionary *info = infos[i];
+        NSString *name = [NSString stringWithFormat:@"%@.jpeg", info[kImageInfoFileName]];
+        
+        /** 缩略图保存到路径 */
+        [UIImageJPEGRepresentation(thumbnailImage, 0.01f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
+        /** 原图保存到路径 */
+        [UIImageJPEGRepresentation(image, 0.75f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
+    }
 }
 
 @end

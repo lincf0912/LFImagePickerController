@@ -317,28 +317,42 @@
         _edit_clipping_toolBar.alpha = 0.f;
         
         CGSize size = CGSizeMake(44, _edit_clipping_toolBar.frame.size.height);
+        CGFloat margin = 10.f;
         /** 左 */
         UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        leftButton.frame = (CGRect){{10,0}, size};
+        leftButton.frame = (CGRect){{margin,0}, size};
         [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn.png") forState:UIControlStateNormal];
         [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateHighlighted];
         [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateSelected];
         [leftButton addTarget:self action:@selector(clippingCancel:) forControlEvents:UIControlEventTouchUpInside];
         [_edit_clipping_toolBar addSubview:leftButton];
         
-        /** 中 */
-        UIButton *centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        centerButton.frame = (CGRect){{(CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width)/2,0}, size};
-        [centerButton setTitle:@"还原" forState:UIControlStateNormal];
-        [centerButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
-        [centerButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        [centerButton addTarget:self action:@selector(clippingReset:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_clipping_toolBar addSubview:centerButton];
-        self.edit_clipping_toolBar_reset = centerButton;
+        /** 除去左右按钮的剩余宽度 */
+        CGFloat surplusWidth = CGRectGetWidth(_edit_clipping_toolBar.frame)-(2*(size.width+2*margin));
+        CGFloat resetButtonX = (surplusWidth/2-size.width)/2+CGRectGetMaxX(leftButton.frame)+margin;
+        CGFloat rotateButtonX = (surplusWidth/2-size.width)/2+surplusWidth/2+CGRectGetMaxX(leftButton.frame)+margin;
+        /** 还原 */
+        UIButton *resetButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        resetButton.frame = (CGRect){{resetButtonX,0}, size};
+        [resetButton setTitle:@"还原" forState:UIControlStateNormal];
+        [resetButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        [resetButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        [resetButton addTarget:self action:@selector(clippingReset:) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_clipping_toolBar addSubview:resetButton];
+        self.edit_clipping_toolBar_reset = resetButton;
+        
+        /** 新增旋转 */
+        UIButton *rotateButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        rotateButton.frame = (CGRect){{rotateButtonX,0}, size};
+        [rotateButton setTitle:@"旋转" forState:UIControlStateNormal];
+        [rotateButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
+        [rotateButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+        [rotateButton addTarget:self action:@selector(clippingRotate:) forControlEvents:UIControlEventTouchUpInside];
+        [_edit_clipping_toolBar addSubview:rotateButton];
         
         /** 右 */
         UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        rightButton.frame = (CGRect){{CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width-10,0}, size};
+        rightButton.frame = (CGRect){{CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width-margin,0}, size};
         [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn.png") forState:UIControlStateNormal];
         [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateHighlighted];
         [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateSelected];
@@ -357,6 +371,12 @@
 - (void)clippingReset:(UIButton *)button
 {
     [_edittingView reset];
+    self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
+}
+
+- (void)clippingRotate:(UIButton *)button
+{
+    [_edittingView rotate];
     self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
 }
 

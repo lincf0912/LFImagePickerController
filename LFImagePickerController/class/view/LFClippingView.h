@@ -19,6 +19,8 @@
 
 /** 是否重置中 */
 @property (nonatomic, readonly) BOOL isReseting;
+/** 是否旋转中 */
+@property (nonatomic, readonly) BOOL isRotating;
 /** 是否可还原 */
 @property (nonatomic, readonly) BOOL canReset;
 
@@ -31,6 +33,8 @@
 - (void)zoomOutToRect:(CGRect)toRect;
 /** 放大到指定坐标(必须大于当前坐标) */
 - (void)zoomInToRect:(CGRect)toRect;
+/** 旋转 */
+- (void)rotateClockwise:(BOOL)clockwise;
 /** 还原 */
 - (void)reset;
 /** 取消 */

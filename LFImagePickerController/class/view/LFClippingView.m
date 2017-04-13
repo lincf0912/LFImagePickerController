@@ -13,6 +13,8 @@
 
 #define kRound(x) (round(x*100000)/100000)
 
+#define kRoundFrame(rect) CGRectMake(kRound(rect.origin.x), kRound(rect.origin.y), kRound(rect.size.width), kRound(rect.size.height))
+
 NSString *const kLFClippingViewData = @"LFClippingViewData";
 
 NSString *const kLFClippingViewData_frame = @"LFClippingViewData_frame";
@@ -22,8 +24,10 @@ NSString *const kLFClippingViewData_contentOffset = @"LFClippingViewData_content
 NSString *const kLFClippingViewData_minimumZoomScale = @"LFClippingViewData_minimumZoomScale";
 NSString *const kLFClippingViewData_maximumZoomScale = @"LFClippingViewData_maximumZoomScale";
 NSString *const kLFClippingViewData_clipsToBounds = @"LFClippingViewData_clipsToBounds";
+NSString *const kLFClippingViewData_transform = @"LFClippingViewData_transform";
+NSString *const kLFClippingViewData_angle = @"LFClippingViewData_angle";
 
-NSString *const kLFClippingViewData_reset_minimumZoomScale = @"LFClippingViewData_reset_minimumZoomScale";
+NSString *const kLFClippingViewData_first_minimumZoomScale = @"LFClippingViewData_first_minimumZoomScale";
 
 NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingView";
 
@@ -38,7 +42,9 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 /** 处理完毕的基础坐标（因为可能会被父类在缩放时改变当前frame的问题，导致记录坐标不正确） */
 @property (nonatomic, assign) CGRect saveRect;
 /** 首次缩放后需要记录最小缩放值，否则在多次重复编辑后由于大小发生改变，导致最小缩放值不准确，还原不回实际大小 */
-@property (nonatomic, assign) CGFloat reset_minimumZoomScale;
+@property (nonatomic, assign) CGFloat first_minimumZoomScale;
+/** 旋转系数 */
+@property (nonatomic, assign) NSInteger angle;
 
 /** 记录剪裁前的数据 */
 @property (nonatomic, assign) CGRect old_frame;
@@ -47,6 +53,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 @property (nonatomic, assign) CGPoint old_contentOffset;
 @property (nonatomic, assign) CGFloat old_minimumZoomScale;
 @property (nonatomic, assign) CGFloat old_maximumZoomScale;
+@property (nonatomic, assign) CGAffineTransform old_transform;
+
 @end
 
 @implementation LFClippingView
@@ -76,7 +84,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     LFZoomingView *zoomingView = [[LFZoomingView alloc] initWithFrame:self.bounds];
     __weak typeof(self) weakSelf = self;
     zoomingView.moveCenter = ^BOOL(CGRect rect) {
-        /** 判断缩放后是否超出边界线 */
+        /** 判断缩放后贴图是否超出边界线 */
         CGRect newRect = [weakSelf.zoomingView convertRect:rect toView:weakSelf];
         CGRect screenRect = (CGRect){weakSelf.contentOffset, weakSelf.frame.size};
         return !CGRectIntersectsRect(screenRect, newRect);
@@ -109,6 +117,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 {
     /** 记录当前数据 */
     self.old_frame = self.frame;
+    self.old_transform = self.transform;
     self.old_zoomScale = self.zoomScale;
     self.old_contentSize = self.contentSize;
     self.old_contentOffset = self.contentOffset;
@@ -143,8 +152,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     [self setZoomScale:zoomScale];
     
     /** 记录首次最小缩放值 */
-    if (self.reset_minimumZoomScale == 0) {
-        self.reset_minimumZoomScale = self.minimumZoomScale;
+    if (self.first_minimumZoomScale == 0) {
+        self.first_minimumZoomScale = self.minimumZoomScale;
     }
     
     /** 重设contentSize */
@@ -161,6 +170,7 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     if (!CGRectEqualToRect(self.old_frame, CGRectZero)) {        
         self.frame = self.old_frame;
         self.saveRect = self.frame;
+        self.transform = self.old_transform;
         self.minimumZoomScale = self.old_minimumZoomScale;
         self.maximumZoomScale = self.old_maximumZoomScale;
         self.zoomScale = self.old_zoomScale;
@@ -177,7 +187,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                               delay:0.0
                             options:UIViewAnimationOptionBeginFromCurrentState
                          animations:^{
-                             self.minimumZoomScale = self.reset_minimumZoomScale;
+                             self.transform = CGAffineTransformIdentity;
+                             self.minimumZoomScale = self.first_minimumZoomScale;
                              [self setZoomScale:self.minimumZoomScale];
                              self.frame = (CGRect){CGPointZero, self.zoomingView.size};
                              self.center = self.superview.center;
@@ -205,25 +216,26 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                                   , (CGRectGetHeight(self.superview.frame)-CGRectGetHeight(self.zoomingView.frame))/2
                                   , CGRectGetWidth(self.zoomingView.frame)
                                   , CGRectGetHeight(self.zoomingView.frame));
-    return !(self.zoomScale == self.minimumZoomScale && CGRectEqualToRect(trueFrame, self.frame));
+    
+    return !(CGAffineTransformIsIdentity(self.transform)
+             && kRound(self.zoomScale) == kRound(self.minimumZoomScale)
+             && [self verifyRect:trueFrame]);
 }
 
 - (CGRect)cappedCropRectInImageRectWithCropRect:(CGRect)cropRect
 {
-    CGRect rect = [self.superview convertRect:cropRect toView:self];
-    if (CGRectGetMinX(rect) < CGRectGetMinX(self.zoomingView.frame)) {
-        cropRect.origin.x = CGRectGetMinX([self convertRect:self.zoomingView.frame toView:self.superview]);
-        cropRect.size.width = CGRectGetMaxX(rect);
+    CGRect rect = [self convertRect:self.zoomingView.frame toView:self.superview];
+    if (CGRectGetMinX(cropRect) < CGRectGetMinX(rect)) {
+        cropRect.origin.x = CGRectGetMinX(rect);
     }
-    if (CGRectGetMinY(rect) < CGRectGetMinY(self.zoomingView.frame)) {
-        cropRect.origin.y = CGRectGetMinY([self convertRect:self.zoomingView.frame toView:self.superview]);
-        cropRect.size.height = CGRectGetMaxY(rect);
+    if (CGRectGetMinY(cropRect) < CGRectGetMinY(rect)) {
+        cropRect.origin.y = CGRectGetMinY(rect);
     }
-    if (CGRectGetMaxX(rect) > CGRectGetMaxX(self.zoomingView.frame)) {
-        cropRect.size.width = CGRectGetMaxX([self convertRect:self.zoomingView.frame toView:self.superview]) - CGRectGetMinX(cropRect);
+    if (CGRectGetMaxX(cropRect) > CGRectGetMaxX(rect)) {
+        cropRect.size.width = CGRectGetMaxX(rect) - CGRectGetMinX(cropRect);
     }
-    if (CGRectGetMaxY(rect) > CGRectGetMaxY(self.zoomingView.frame)) {
-        cropRect.size.height = CGRectGetMaxY([self convertRect:self.zoomingView.frame toView:self.superview]) - CGRectGetMinY(cropRect);
+    if (CGRectGetMaxY(cropRect) > CGRectGetMaxY(rect)) {
+        cropRect.size.height = CGRectGetMaxY(rect) - CGRectGetMinY(cropRect);
     }
     
     return cropRect;
@@ -238,14 +250,13 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     CGFloat height = CGRectGetHeight(rect);
     
     /** 新增了放大功能：这里需要重新计算最小缩放系数 */
-    CGFloat minimumZoomScale = MAX(width / CGRectGetWidth(self.normalRect), height / CGRectGetHeight(self.normalRect));
-    self.minimumZoomScale = MAX(minimumZoomScale, self.reset_minimumZoomScale);
-    self.zoomScale = self.zoomScale;
+    [self resetMinimumZoomScale];
+    [self setZoomScale:self.zoomScale];
     
     CGFloat scale = MIN(CGRectGetWidth(self.editRect) / width, CGRectGetHeight(self.editRect) / height);
     
     /** 指定位置=当前显示位置 或者 当前缩放已达到最大，并且仍然发生缩放的情况； 免去以下计算，以当前显示大小为准 */
-    if (CGRectEqualToRect(self.frame, rect) || (self.zoomScale == self.maximumZoomScale && kRound(scale) > 1.f)) {
+    if (CGRectEqualToRect(self.frame, rect) || (kRound(self.zoomScale) == kRound(self.maximumZoomScale) && kRound(scale) > 1.f)) {
         
         [UIView animateWithDuration:0.25
                               delay:0.0
@@ -272,8 +283,9 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     /** 计算缩放比例 */
     CGFloat zoomScale = MIN(self.zoomScale * scale, self.maximumZoomScale);
     /** 特殊图片计算 比例100:1 或 1:100 的情况 */
-    scaledWidth = MIN(scaledWidth, CGRectGetWidth(self.zoomingView.frame) * (zoomScale / self.minimumZoomScale));
-    scaledHeight = MIN(scaledHeight, CGRectGetHeight(self.zoomingView.frame) * (zoomScale / self.minimumZoomScale));
+    CGRect zoomViewRect = CGRectApplyAffineTransform(self.zoomingView.frame, self.transform);
+    scaledWidth = MIN(scaledWidth, CGRectGetWidth(zoomViewRect) * (zoomScale / self.minimumZoomScale));
+    scaledHeight = MIN(scaledHeight, CGRectGetHeight(zoomViewRect) * (zoomScale / self.minimumZoomScale));
     
     /** 计算实际显示坐标 */
     CGRect cropRect = CGRectMake((CGRectGetWidth(self.superview.bounds) - scaledWidth) / 2,
@@ -281,16 +293,16 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                                  scaledWidth,
                                  scaledHeight);
     
-    /** 获取相对坐标 */
-    CGRect zoomRect = [self.superview convertRect:rect toView:self.zoomingView];
-    
-    
     /** 计算偏移值 */
     __block CGPoint contentOffset = self.contentOffset;
     if (![self verifyRect:cropRect]) { /** 实际位置与当前位置一致不做位移处理 */
-        contentOffset.x = zoomRect.origin.x * zoomScale;
-        contentOffset.y = zoomRect.origin.y * zoomScale;
+        /** 获取相对坐标 */
+        CGRect zoomRect = [self.superview convertRect:rect toView:self];
+        contentOffset.x = zoomRect.origin.x * zoomScale / self.zoomScale;
+        contentOffset.y = zoomRect.origin.y * zoomScale / self.zoomScale;
     }
+    
+    
     
     [UIView animateWithDuration:0.25
                           delay:0.0
@@ -299,6 +311,9 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                          self.frame = cropRect;
                          self.saveRect = self.frame;
                          [self setZoomScale:zoomScale];
+                         /** 重新调整contentSize */
+                         CGRect zoomViewRect = [self convertRect:self.zoomingView.frame toView:self.superview];
+                         self.contentSize = CGSizeMake(zoomViewRect.size.width * self.zoomScale, zoomViewRect.size.height * self.zoomScale);
                          /** 超出最大限度Y值，调整到临界值 */
                          if (self.contentSize.height-contentOffset.y < CGRectGetHeight(cropRect)) {
                              contentOffset.y = self.contentSize.height-CGRectGetHeight(cropRect);
@@ -310,9 +325,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                          [self setContentOffset:contentOffset];
                          
                          /** 设置完实际大小后再次计算最小缩放系数 */
-                         CGFloat minimumZoomScale = MAX(CGRectGetWidth(cropRect) / CGRectGetWidth(self.normalRect), CGRectGetHeight(cropRect) / CGRectGetHeight(self.normalRect));
-                         self.minimumZoomScale = MAX(minimumZoomScale, self.reset_minimumZoomScale);
-                         self.zoomScale = self.zoomScale;
+                         [self resetMinimumZoomScale];
+                         [self setZoomScale:self.zoomScale];
                          
                          if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewWillBeginZooming:)]) {
                              void (^block)() = [self.clippingDelegate lf_clippingViewWillBeginZooming:self];
@@ -328,13 +342,48 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 #pragma mark 放大到指定坐标(必须大于当前坐标)
 - (void)zoomInToRect:(CGRect)toRect
 {
-    CGFloat width = CGRectGetWidth(toRect);
-    CGFloat height = CGRectGetHeight(toRect);
-    if (width > CGRectGetWidth(self.zoomingView.frame) || height > CGRectGetHeight(self.zoomingView.frame)) {
-        CGFloat scale = MAX(width / CGRectGetWidth(self.normalRect), height / CGRectGetHeight(self.normalRect));
+    CGRect zoomingRect = [self convertRect:self.zoomingView.frame toView:self.superview];
+    /** 判断坐标是否超出当前坐标范围 */
+    toRect = kRoundFrame(toRect);
+    zoomingRect = kRoundFrame(zoomingRect);
+    if (!CGRectContainsRect(zoomingRect, toRect)) {
+        
         self.frame = toRect;
-        self.minimumZoomScale = scale;
-        self.zoomScale = self.minimumZoomScale;
+        [self resetMinimumZoomScale];
+        [self setZoomScale:self.zoomScale];
+    }
+    
+}
+
+#pragma mark 旋转
+- (void)rotateClockwise:(BOOL)clockwise
+{
+    if (!_isRotating) {
+        _isRotating = YES;
+        
+        NSInteger newAngle = self.angle;
+        newAngle = clockwise ? newAngle + 90 : newAngle - 90;
+        if (newAngle <= -360 || newAngle >= 360)
+            newAngle = 0;
+        
+        _angle = newAngle;
+
+        [UIView animateWithDuration:0.45f delay:0.0f usingSpringWithDamping:1.0f initialSpringVelocity:0.8f options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            
+            [self transformRotate:self.angle];
+            
+            if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewWillBeginZooming:)]) {
+                void (^block)() = [self.clippingDelegate lf_clippingViewWillBeginZooming:self];
+                if (block) block(self.frame);
+            }
+            
+        } completion:^(BOOL complete) {
+            _isRotating = NO;
+            if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewDidEndZooming:)]) {
+                [self.clippingDelegate lf_clippingViewDidEndZooming:self];
+            }
+        }];
+        
     }
 }
 
@@ -377,10 +426,11 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 - (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(nullable UIView *)view atScale:(CGFloat)scale
 {
     /** 手动缩放后 计算是否最小值小于当前选择框范围内 */
-    if (CGRectGetWidth(self.zoomingView.frame) < CGRectGetWidth(self.frame) || CGRectGetHeight(self.zoomingView.frame) < CGRectGetHeight(self.frame)) {
+    CGRect zoomingRect = CGRectApplyAffineTransform(self.zoomingView.frame, self.transform);
+    if (CGRectGetWidth(zoomingRect) < CGRectGetWidth(self.frame) || CGRectGetHeight(zoomingRect) < CGRectGetHeight(self.frame)) {
         CGRect rect = self.frame;
-        rect.size.width = MIN(CGRectGetWidth(self.zoomingView.frame), CGRectGetWidth(self.frame));
-        rect.size.height = MIN(CGRectGetHeight(self.zoomingView.frame), CGRectGetHeight(self.frame));
+        rect.size.width = MIN(CGRectGetWidth(zoomingRect), CGRectGetWidth(self.frame));
+        rect.size.height = MIN(CGRectGetHeight(zoomingRect), CGRectGetHeight(self.frame));
         [UIView animateWithDuration:0.25
                               delay:0.0
                             options:UIViewAnimationOptionBeginFromCurrentState
@@ -388,6 +438,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                              self.frame = rect;
                              self.saveRect = self.frame;
                              self.center = self.superview.center;
+                             [self resetMinimumZoomScale];
+                             [self setZoomScale:self.zoomScale];
                              if ([self.clippingDelegate respondsToSelector:@selector(lf_clippingViewWillBeginZooming:)]) {
                                  void (^block)() = [self.clippingDelegate lf_clippingViewWillBeginZooming:self];
                                  if (block) block(self.frame);
@@ -421,6 +473,60 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
         isEqual = x && y && w && h;
     }
     return isEqual;
+}
+
+#pragma mark - 旋转视图
+- (void)transformRotate:(NSInteger)angle
+{
+    //Convert the new angle to radians
+    CGFloat angleInRadians = 0.0f;
+    switch (angle) {
+        case 90:    angleInRadians = M_PI_2;            break;
+        case -90:   angleInRadians = -M_PI_2;           break;
+        case 180:   angleInRadians = M_PI;              break;
+        case -180:  angleInRadians = -M_PI;             break;
+        case 270:   angleInRadians = (M_PI + M_PI_2);   break;
+        case -270:  angleInRadians = -(M_PI + M_PI_2);  break;
+        default:                                        break;
+    }
+    
+    /** 重置变形 */
+    self.transform = CGAffineTransformIdentity;
+    CGRect oldRect = self.frame;
+    CGFloat width = CGRectGetWidth(oldRect);
+    CGFloat height = CGRectGetHeight(oldRect);
+    if (angle%180 != 0) { /** 旋转基数时需要互换宽高 */
+        CGFloat tempWidth = width;
+        width = height;
+        height = tempWidth;
+    }
+    /** 改变变形之前获取偏移量，变形后再计算偏移量比例移动 */
+    CGPoint contentOffset = self.contentOffset;
+    /** 调整变形 */
+    CGAffineTransform transform = CGAffineTransformRotate(CGAffineTransformIdentity, angleInRadians);
+    self.transform = transform;
+    
+    /** 计算变形后的坐标拉伸到编辑范围 */
+    self.frame = AVMakeRectWithAspectRatioInsideRect(CGSizeMake(width, height), self.editRect);
+    /** 重置最小缩放比例 */
+    [self resetMinimumZoomScale];
+    /** 计算缩放比例 */
+    CGFloat scale = MIN(CGRectGetWidth(self.frame) / width, CGRectGetHeight(self.frame) / height);
+    /** 转移缩放目标 */
+    self.zoomScale *= scale;
+    /** 修正旋转后到偏移量 */
+    contentOffset.x *= scale;
+    contentOffset.y *= scale;
+    self.contentOffset = contentOffset;
+}
+
+#pragma mark - 重置最小缩放比例
+- (void)resetMinimumZoomScale
+{
+    /** 重置最小缩放比例 */
+    CGRect rotateNormalRect = CGRectApplyAffineTransform(self.normalRect, self.transform);
+    CGFloat minimumZoomScale = MAX(CGRectGetWidth(self.frame) / CGRectGetWidth(rotateNormalRect), CGRectGetHeight(self.frame) / CGRectGetHeight(rotateNormalRect));
+    self.minimumZoomScale = MAX(minimumZoomScale, self.first_minimumZoomScale);
 }
 
 #pragma mark - 重写父类方法
@@ -478,12 +584,8 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
 - (NSDictionary *)photoEditData
 {
     NSMutableDictionary *data = [@{} mutableCopy];
-    /** 计算缩放率 */
-    CGRect rect = CGRectApplyAffineTransform(self.normalRect, self.transform);
     
-    if (kRound(self.zoomScale) != 1 || /** 被缩放了 */
-        !(kRound(CGRectGetWidth(rect)) == kRound(CGRectGetWidth(self.frame))
-          && kRound(CGRectGetHeight(rect)) == kRound(CGRectGetHeight(self.frame)))) { /** 被剪裁了 */
+    if ([self canReset]) { /** 可还原证明已编辑过 */
 //        CGRect trueFrame = CGRectApplyAffineTransform(self.frame, CGAffineTransformInvert(self.transform));
         NSDictionary *myData = @{kLFClippingViewData_frame:[NSValue valueWithCGRect:self.saveRect]
                                  , kLFClippingViewData_zoomScale:@(self.zoomScale)
@@ -492,7 +594,9 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
                                  , kLFClippingViewData_minimumZoomScale:@(self.minimumZoomScale)
                                  , kLFClippingViewData_maximumZoomScale:@(self.maximumZoomScale)
                                  , kLFClippingViewData_clipsToBounds:@(self.clipsToBounds)
-                                 , kLFClippingViewData_reset_minimumZoomScale:@(self.reset_minimumZoomScale)};
+                                 , kLFClippingViewData_first_minimumZoomScale:@(self.first_minimumZoomScale)
+                                 , kLFClippingViewData_transform:[NSValue valueWithCGAffineTransform:self.transform]
+                                 , kLFClippingViewData_angle:@(self.angle)};
         [data setObject:myData forKey:kLFClippingViewData];
     }
     
@@ -510,13 +614,15 @@ NSString *const kLFClippingViewData_zoomingView = @"LFClippingViewData_zoomingVi
     NSDictionary *myData = photoEditData[kLFClippingViewData];
     if (myData) {
         self.frame = [myData[kLFClippingViewData_frame] CGRectValue];
+        self.transform = [myData[kLFClippingViewData_transform] CGAffineTransformValue];
         self.minimumZoomScale = [myData[kLFClippingViewData_minimumZoomScale] floatValue];
         self.maximumZoomScale = [myData[kLFClippingViewData_maximumZoomScale] floatValue];
         self.zoomScale = [myData[kLFClippingViewData_zoomScale] floatValue];
         self.contentSize = [myData[kLFClippingViewData_contentSize] CGSizeValue];
         self.contentOffset = [myData[kLFClippingViewData_contentOffset] CGPointValue];
         self.clipsToBounds = [myData[kLFClippingViewData_clipsToBounds] boolValue];
-        self.reset_minimumZoomScale = [myData[kLFClippingViewData_reset_minimumZoomScale] floatValue];
+        self.first_minimumZoomScale = [myData[kLFClippingViewData_first_minimumZoomScale] floatValue];
+        self.angle = [myData[kLFClippingViewData_angle] integerValue];
     }
     
     self.zoomingView.photoEditData = photoEditData[kLFClippingViewData_zoomingView];

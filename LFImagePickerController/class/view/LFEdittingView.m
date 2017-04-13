@@ -86,7 +86,14 @@
     _clippingRect = clippingRect;
     self.gridView.gridRect = clippingRect;
     self.clippingView.cropRect = clippingRect;
-    self.maximumZoomScale = MIN(MAX(self.minimumZoomScale + kMaxZoomScale - kMaxZoomScale * (self.clippingView.zoomScale/self.clippingView.maximumZoomScale), self.minimumZoomScale), kMaxZoomScale);
+    
+    if (_isClipping) {
+        /** 关闭缩放 */
+        self.maximumZoomScale = self.minimumZoomScale;
+        [self setZoomScale:self.zoomScale];
+    } else {
+        self.maximumZoomScale = MIN(MAX(self.minimumZoomScale + kMaxZoomScale - kMaxZoomScale * (self.clippingView.zoomScale/self.clippingView.maximumZoomScale), self.minimumZoomScale), kMaxZoomScale);
+    }
 }
 
 - (void)setClippingMinSize:(CGSize)clippingMinSize
@@ -113,7 +120,6 @@
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated
 {
     _isClipping = isClipping;
-    [self setZoomScale:1.f];
     if (isClipping) {
         /** 动画切换 */
         if (animated) {
@@ -168,13 +174,19 @@
             self.gridView.alpha = 0.f;
         } completion:^(BOOL finished) {
             [UIView animateWithDuration:0.25f animations:^{
-                [self.clippingView cancel];
-                self.gridView.gridRect = self.clippingView.frame;
+                [self cancel];
             }];
         }];
     } else {
-        [self.clippingView cancel];
+        [self cancel];
     }
+}
+
+- (void)cancel
+{
+    [self.clippingView cancel];
+    self.gridView.gridRect = self.clippingView.frame;
+    self.maximumZoomScale = MIN(MAX(self.minimumZoomScale + kMaxZoomScale - kMaxZoomScale * (self.clippingView.zoomScale/self.clippingView.maximumZoomScale), self.minimumZoomScale), kMaxZoomScale);
 }
 
 /** 还原 */
@@ -193,6 +205,14 @@
     return NO;
 }
 
+/** 旋转 isClipping=YES 的情况有效 */
+- (void)rotate
+{
+    if (_isClipping) {
+        [self.clippingView rotateClockwise:YES];
+    }
+}
+
 /** 创建编辑图片 */
 - (UIImage *)createEditImage
 {
@@ -208,7 +228,7 @@
 {
     __weak typeof(self) weakSelf = self;
     void (^block)(CGRect) = ^(CGRect rect){
-        if (clippingView.isReseting) { /** 重置需要将遮罩显示也重置 */
+        if (clippingView.isReseting || clippingView.isRotating) { /** 重置/旋转 需要将遮罩显示也重置 */
             [weakSelf.gridView setGridRect:rect maskLayer:YES animated:YES];
         } else {
             [weakSelf.gridView setGridRect:rect animated:YES];
@@ -339,6 +359,7 @@
 - (void)setPhotoEditData:(NSDictionary *)photoEditData
 {
     self.clippingView.photoEditData = photoEditData;
+    self.maximumZoomScale = MIN(MAX(self.minimumZoomScale + kMaxZoomScale - kMaxZoomScale * (self.clippingView.zoomScale/self.clippingView.maximumZoomScale), self.minimumZoomScale), kMaxZoomScale);
 }
 
 #pragma mark - 绘画功能

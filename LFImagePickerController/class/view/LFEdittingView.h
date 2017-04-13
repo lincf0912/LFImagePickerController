@@ -24,6 +24,7 @@
 /** 最大尺寸 CGRectInset(self.frame , 20, 50) */
 @property (nonatomic, assign) CGRect clippingMaxRect;
 
+/** 开关编辑模式 */
 @property (nonatomic, assign) BOOL isClipping;
 - (void)setIsClipping:(BOOL)isClipping animated:(BOOL)animated;
 
@@ -32,6 +33,8 @@
 /** 还原 isClipping=YES 的情况有效 */
 - (void)reset;
 - (BOOL)canReset;
+/** 旋转 isClipping=YES 的情况有效 */
+- (void)rotate;
 
 /** 创建编辑图片 */
 - (UIImage *)createEditImage;

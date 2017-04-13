@@ -16,13 +16,14 @@
 #import "LFEditToolbar.h"
 #import "LFStickerBar.h"
 #import "LFTextBar.h"
+#import "LFClipToolbar.h"
 
 #define kSplashMenu_Button_Tag1 95
 #define kSplashMenu_Button_Tag2 96
 
 
 
-@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFStickerBarDelegate, LFTextBarDelegate, LFPhotoEditDelegate, LFEdittingViewDelegate>
+@interface LFPhotoEdittingController () <LFEditToolbarDelegate, LFStickerBarDelegate, LFClipToolbarDelegate, LFTextBarDelegate, LFPhotoEditDelegate, LFEdittingViewDelegate>
 {
     /** 编辑模式 */
     LFEdittingView *_edittingView;
@@ -31,7 +32,7 @@
     /** 底部栏菜单 */
     LFEditToolbar *_edit_toolBar;
     /** 剪切菜单 */
-    UIView *_edit_clipping_toolBar;
+    LFClipToolbar *_edit_clipping_toolBar;
     
     /** 贴图菜单 */
     LFStickerBar *_edit_sticker_toolBar;
@@ -42,9 +43,6 @@
 
 /** 隐藏控件 */
 @property (nonatomic, assign) BOOL isHideNaviBar;
-
-/** 剪切菜单——还原按钮 */
-@property (nonatomic, weak) UIButton *edit_clipping_toolBar_reset;
 
 @end
 
@@ -220,7 +218,7 @@
         {
             [_edittingView setIsClipping:YES animated:YES];
             [self changeClipMenu:YES];
-            self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
+            _edit_clipping_toolBar.enableReset = _edittingView.canReset;
         }
             break;
         default:
@@ -309,81 +307,36 @@
 - (UIView *)edit_clipping_toolBar
 {
     if (_edit_clipping_toolBar == nil) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        
-        _edit_clipping_toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
-        CGFloat rgb = 34 / 255.0;
-        _edit_clipping_toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
-        _edit_clipping_toolBar.alpha = 0.f;
-        
-        CGSize size = CGSizeMake(44, _edit_clipping_toolBar.frame.size.height);
-        CGFloat margin = 10.f;
-        /** 左 */
-        UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        leftButton.frame = (CGRect){{margin,0}, size};
-        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn.png") forState:UIControlStateNormal];
-        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateHighlighted];
-        [leftButton setImage:bundleEditImageNamed(@"EditImageCancelBtn_HL.png") forState:UIControlStateSelected];
-        [leftButton addTarget:self action:@selector(clippingCancel:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_clipping_toolBar addSubview:leftButton];
-        
-        /** 除去左右按钮的剩余宽度 */
-        CGFloat surplusWidth = CGRectGetWidth(_edit_clipping_toolBar.frame)-(2*(size.width+2*margin));
-        CGFloat resetButtonX = (surplusWidth/2-size.width)/2+CGRectGetMaxX(leftButton.frame)+margin;
-        CGFloat rotateButtonX = (surplusWidth/2-size.width)/2+surplusWidth/2+CGRectGetMaxX(leftButton.frame)+margin;
-        /** 还原 */
-        UIButton *resetButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        resetButton.frame = (CGRect){{resetButtonX,0}, size};
-        [resetButton setTitle:@"还原" forState:UIControlStateNormal];
-        [resetButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
-        [resetButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        [resetButton addTarget:self action:@selector(clippingReset:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_clipping_toolBar addSubview:resetButton];
-        self.edit_clipping_toolBar_reset = resetButton;
-        
-        /** 新增旋转 */
-        UIButton *rotateButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        rotateButton.frame = (CGRect){{rotateButtonX,0}, size};
-        [rotateButton setTitle:@"旋转" forState:UIControlStateNormal];
-        [rotateButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
-        [rotateButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
-        [rotateButton addTarget:self action:@selector(clippingRotate:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_clipping_toolBar addSubview:rotateButton];
-        
-        /** 右 */
-        UIButton *rightButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        rightButton.frame = (CGRect){{CGRectGetWidth(_edit_clipping_toolBar.frame)-size.width-margin,0}, size};
-        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn.png") forState:UIControlStateNormal];
-        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateHighlighted];
-        [rightButton setImage:bundleEditImageNamed(@"EditImageConfirmBtn_HL.png") forState:UIControlStateSelected];
-        [rightButton addTarget:self action:@selector(clippingOk:) forControlEvents:UIControlEventTouchUpInside];
-        [_edit_clipping_toolBar addSubview:rightButton];
+        _edit_clipping_toolBar = [[LFClipToolbar alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
+        _edit_clipping_toolBar.delegate = self;
     }
     return _edit_clipping_toolBar;
 }
 
-- (void)clippingCancel:(UIButton *)button
+#pragma mark - LFClipToolbarDelegate
+/** 取消 */
+- (void)lf_clipToolbarDidCancel:(LFClipToolbar *)clipToolbar
 {
     [_edittingView cancelClipping:YES];
     [self changeClipMenu:NO];
 }
-
-- (void)clippingReset:(UIButton *)button
-{
-    [_edittingView reset];
-    self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
-}
-
-- (void)clippingRotate:(UIButton *)button
-{
-    [_edittingView rotate];
-    self.edit_clipping_toolBar_reset.enabled = _edittingView.canReset;
-}
-
-- (void)clippingOk:(UIButton *)button
+/** 完成 */
+- (void)lf_clipToolbarDidFinish:(LFClipToolbar *)clipToolbar
 {
     [_edittingView setIsClipping:NO animated:YES];
     [self changeClipMenu:NO];
+}
+/** 重置 */
+- (void)lf_clipToolbarDidReset:(LFClipToolbar *)clipToolbar
+{
+    [_edittingView reset];
+    _edit_clipping_toolBar.enableReset = _edittingView.canReset;
+}
+/** 旋转 */
+- (void)lf_clipToolbarDidRotate:(LFClipToolbar *)clipToolbar
+{
+    [_edittingView rotate];
+    _edit_clipping_toolBar.enableReset = _edittingView.canReset;
 }
 
 #pragma mark - 贴图菜单（懒加载）
@@ -496,12 +449,12 @@
 /** 剪裁发生变化后 */
 - (void)lf_edittingViewDidEndZooming:(LFEdittingView *)edittingView
 {
-    self.edit_clipping_toolBar_reset.enabled = edittingView.canReset;
+    _edit_clipping_toolBar.enableReset = edittingView.canReset;
 }
 /** 剪裁目标移动后 */
 - (void)lf_edittingViewEndDecelerating:(LFEdittingView *)edittingView
 {
-    self.edit_clipping_toolBar_reset.enabled = edittingView.canReset;
+    _edit_clipping_toolBar.enableReset = edittingView.canReset;
 }
 
 #pragma mark - private

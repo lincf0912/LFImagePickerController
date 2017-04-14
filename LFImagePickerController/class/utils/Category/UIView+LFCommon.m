@@ -33,6 +33,7 @@
         UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
         [image drawAtPoint:CGPointMake(-rect.origin.x, -rect.origin.y)];
         image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
     }
     
     return image;

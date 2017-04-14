@@ -39,8 +39,8 @@
 {
     self.oKButtonTitleColorNormal = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:1.0];
     
-    self.rotateCCWImage = [self createRotateCCWImageWithHighlighted:NO];
-    self.rotateCCWImage_HL = [self createRotateCCWImageWithHighlighted:YES];
+    self.rotateCCWImage = [self createRotateCWImageWithHighlighted:NO];
+    self.rotateCCWImage_HL = [self createRotateCWImageWithHighlighted:YES];
     self.resetImage = [self createResetImageWithHighlighted:NO];
     self.resetImage_HL = [self createResetImageWithHighlighted:YES];
     
@@ -50,6 +50,7 @@
     
     CGSize size = CGSizeMake(44, self.frame.size.height);
     CGFloat margin = 10.f;
+    
     /** 左 */
     UIButton *leftButton = [UIButton buttonWithType:UIButtonTypeCustom];
     leftButton.frame = (CGRect){{margin,0}, size};
@@ -59,10 +60,10 @@
     [leftButton addTarget:self action:@selector(clippingCancel:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:leftButton];
     
-    /** 除去左右按钮的剩余宽度 */
-    CGFloat surplusWidth = CGRectGetWidth(self.frame)-(2*(size.width+2*margin));
-    CGFloat resetButtonX = (surplusWidth/2-size.width)/2+CGRectGetMaxX(leftButton.frame)+margin;
-    CGFloat rotateButtonX = (surplusWidth/2-size.width)/2+surplusWidth/2+CGRectGetMaxX(leftButton.frame)+margin;
+    /** 减去右按钮的剩余宽度 */
+    CGFloat surplusWidth = CGRectGetWidth(self.frame)-(size.width+margin)-margin;
+    CGFloat resetButtonX = surplusWidth/3+margin;
+    CGFloat rotateButtonX = surplusWidth/3*2+margin;
     /** 还原 */
     UIButton *resetButton = [UIButton buttonWithType:UIButtonTypeCustom];
     resetButton.frame = (CGRect){{resetButtonX,0}, size};
@@ -163,6 +164,19 @@
     UIGraphicsEndImageContext();
     
     return rotateImage;
+}
+
+- (UIImage *)createRotateCWImageWithHighlighted:(BOOL)highlighted
+{
+    UIImage *rotateCCWImage = [self createRotateCCWImageWithHighlighted:highlighted];
+    UIGraphicsBeginImageContextWithOptions(rotateCCWImage.size, NO, rotateCCWImage.scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextTranslateCTM(context, rotateCCWImage.size.width, rotateCCWImage.size.height);
+    CGContextRotateCTM(context, M_PI);
+    CGContextDrawImage(context,CGRectMake(0,0,rotateCCWImage.size.width,rotateCCWImage.size.height),rotateCCWImage.CGImage);
+    UIImage *rotateCWImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return rotateCWImage;
 }
 
 - (UIImage *)createResetImageWithHighlighted:(BOOL)highlighted

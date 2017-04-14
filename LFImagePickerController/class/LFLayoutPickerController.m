@@ -182,7 +182,7 @@
     }
 }
 
-- (void)showProgressHUDText:(NSString *)text
+- (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop
 {
     [self hideProgressHUD];
     
@@ -215,7 +215,13 @@
     _HUDLabel.text = text ? text : self.processHintStr;
     
     [_HUDIndicatorView startAnimating];
-    [self.view addSubview:_progressHUD];
+    UIView *view = isTop ? [[UIApplication sharedApplication] keyWindow] : self.view;
+    [view addSubview:_progressHUD];
+}
+
+- (void)showProgressHUDText:(NSString *)text
+{
+    [self showProgressHUDText:text isTop:NO];
 }
 
 - (void)showProgressHUD {

@@ -25,6 +25,8 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
+#import <MobileCoreServices/UTCoreTypes.h>
+
 #define kBottomToolBarHeight 50.f
 
 @interface LFCollectionView : UICollectionView
@@ -73,8 +75,10 @@
         _shouldScrollToBottom = YES;
         self.view.backgroundColor = [UIColor whiteColor];
         
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
-        
+#pragma clang diagnostic pop
         /** 优先赋值 */
         self.navigationItem.title = _model.name;
         [imagePickerVc showProgressHUD];
@@ -594,12 +598,41 @@
     }
 }
 
-#pragma mark - UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (iOS8Later) {
-        // [self updateCachedAssets];
+#pragma mark - 拍照图片后执行代理
+#pragma mark UIImagePickerControllerDelegate methods
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [imagePickerVc showProgressHUDText:nil isTop:YES];
+    
+    NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+    if (picker.sourceType==UIImagePickerControllerSourceTypeCamera && [mediaType isEqualToString:@"public.image"]){
+        UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
+        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:chosenImage complete:^(id asset, NSError *error) {
+            if (asset && !error) {
+                [[LFAssetManager manager] getOriginPhotoWithAsset:asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    [imagePickerVc hideProgressHUD];
+                    [picker.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                        [self callDelegateMethodWithAssets:@[asset] thumbnailImages:@[thumbnail] originalImages:@[source] infoArr:@[info]];
+                    }];
+                }];
+            }else if (error) {
+                [imagePickerVc hideProgressHUD];
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"拍照错误" message:error.localizedDescription cancelButtonTitle:@"确定" otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+                    [picker dismissViewControllerAnimated:YES completion:nil];
+                }];
+                [alertView show];
+            }
+        }];
+    } else {
+        [imagePickerVc hideProgressHUD];
+        [picker dismissViewControllerAnimated:YES completion:nil];
     }
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private Method
@@ -632,7 +665,23 @@
         [alert show];
     } else { // 调用相机
         if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
-            if (self.takePhotoHandle) self.takePhotoHandle();
+            LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+            if ([imagePickerVc.pickerDelegate respondsToSelector:@selector(lf_imagePickerControllerTakePhoto:)]) {
+                [imagePickerVc.pickerDelegate lf_imagePickerControllerTakePhoto:imagePickerVc];
+            } else if (imagePickerVc.imagePickerControllerTakePhoto) {
+                imagePickerVc.imagePickerControllerTakePhoto();
+            } else {
+                /** 调用内置相机模块 */
+                UIImagePickerControllerSourceType srcType = UIImagePickerControllerSourceTypeCamera;
+                UIImagePickerController *mediaPickerController = [[UIImagePickerController alloc] init];
+                mediaPickerController.sourceType = srcType;
+                mediaPickerController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+                mediaPickerController.delegate = self;
+                mediaPickerController.mediaTypes = [[NSArray alloc] initWithObjects: (NSString *) kUTTypeImage, nil];
+                
+                /** warning：Snapshotting a view that has not been rendered results in an empty snapshot. Ensure your view has been rendered at least once before snapshotting or snapshot after screen updates. */
+                [self presentViewController:mediaPickerController animated:YES completion:NULL];
+            }
         } else {
             NSLog(@"模拟器中无法打开照相机,请在真机中使用");
         }
@@ -743,10 +792,6 @@
             }
         }
     }
-}
-
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-    [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)didReceiveMemoryWarning {

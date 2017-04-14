@@ -64,8 +64,8 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /// 默认为YES，如果设置为NO,用户将不能选择发送图片
 @property(nonatomic, assign) BOOL allowPickingImage;
 
-/// Default is YES, if set NO, user can't take picture.
-/// 默认为YES，如果设置为NO,拍照按钮将隐藏,用户将不能选择照片
+/// Default is YES, if set NO, take picture will be hidden.
+/// 默认为YES，如果设置为NO,拍照按钮将隐藏
 @property(nonatomic, assign) BOOL allowTakePicture;
 
 /// Default is YES, if set NO, user can't preview photo.
@@ -88,9 +88,10 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 
 /// Public Method
-- (void)cancelButtonClick;
+//- (void)cancelButtonClick;
 
 /** block回调，具体使用见LFImagePickerControllerDelegate代理描述 */
+@property (nonatomic, copy) void (^imagePickerControllerTakePhoto)();
 @property (nonatomic, copy) void (^imagePickerControllerDidCancelHandle)();
 /** 图片 */
 @property (nonatomic, copy) void (^didFinishPickingPhotosHandle)(NSArray *assets);
@@ -111,6 +112,21 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 @protocol LFImagePickerControllerDelegate <NSObject> /** 每个代理方法都有对应的block回调 */
 @optional
 
+
+/**
+ 当allowTakePicture=YES，点击拍照会执行
+ 方案1：如果不实现这个代理方法，执行内置拍照模块，拍照完成后会自动保存到相册，执行图片回调相关代理。
+ 方案2：实现这个代理方法，则由开发者自己处理拍照模块，完毕后手动dismiss或其他操作。
+
+ @param picker 选择器
+ */
+- (void)lf_imagePickerControllerTakePhoto:(LFImagePickerController *)picker;
+
+/**
+ 当选择器点击取消的时候，会执行回调
+
+ @param picker 选择器
+ */
 - (void)lf_imagePickerControllerDidCancel:(LFImagePickerController *)picker;
 //如果系统版本大于iOS8，asset是PHAsset类的对象，否则是ALAsset类的对象
 

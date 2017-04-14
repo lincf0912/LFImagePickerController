@@ -12,8 +12,6 @@
 @interface LFPhotoPickerController : LFBaseViewController
 
 @property (nonatomic, strong) LFAlbum *model;
-/** 拍照回调 */
-@property (nonatomic, copy) void (^takePhotoHandle)();
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc;
 @end

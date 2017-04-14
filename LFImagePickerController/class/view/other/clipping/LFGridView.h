@@ -19,7 +19,7 @@
 /** 最大尺寸 CGRectInset(self.bounds, 50, 50) */
 @property (nonatomic, assign) CGRect controlMaxRect;
 
-/** 显示遮罩层 */
+/** 显示遮罩层（触发拖动条件必须设置为YES） */
 @property (nonatomic, assign) BOOL showMaskLayer;
 
 @property (nonatomic, weak) id<LFGridViewDelegate> delegate;

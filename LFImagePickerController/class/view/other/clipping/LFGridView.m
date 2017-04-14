@@ -108,6 +108,8 @@ const CGFloat kControlWidth = 30.f;
             self.gridMaskLayer.maskRect = self.gridMaskLayer.bounds;
         }
     }
+    /** 简单粗暴的禁用拖动事件 */
+    self.userInteractionEnabled = showMaskLayer;
 }
 
 #pragma mark - lf_resizeConrolDelegate

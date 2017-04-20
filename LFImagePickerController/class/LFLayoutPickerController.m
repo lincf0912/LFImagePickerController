@@ -192,7 +192,7 @@
         _progressHUD.frame = [UIScreen mainScreen].bounds;
         
         _HUDContainer = [[UIView alloc] init];
-        _HUDContainer.frame = CGRectMake((self.view.width - 120) / 2, (self.view.height - 90) / 2, 120, 90);
+        _HUDContainer.frame = CGRectMake(([[UIScreen mainScreen] bounds].size.width - 120) / 2, ([[UIScreen mainScreen] bounds].size.height - 90) / 2, 120, 90);
         _HUDContainer.layer.cornerRadius = 8;
         _HUDContainer.clipsToBounds = YES;
         _HUDContainer.backgroundColor = [UIColor darkGrayColor];
@@ -247,6 +247,17 @@
         [self setNavigationBarHidden:targetVC.isHiddenNavBar animated:animated];
         if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = targetVC.isHiddenStatusBar;
     }
+}
+
+
+/** 禁止横屏 */
+- (BOOL)shouldAutorotate
+{
+    return NO;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
 }
 
 @end

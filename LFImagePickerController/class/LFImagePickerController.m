@@ -262,10 +262,6 @@
     [super setViewControllers:viewControllers animated:animated];
 }
 
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskPortrait;
-}
-
 #pragma mark - Public
 
 - (void)cancelButtonClick {

@@ -148,6 +148,19 @@ NSString *const kLFDrawViewData = @"LFDrawViewData";
     }
 }
 
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    if ([event allTouches].count == 1){
+        if (_isWork) {
+            if (self.drawEnded) self.drawEnded();
+        } else {
+            [self undo];
+        }
+    } else {
+        [super touchesCancelled:touches withEvent:event];
+    }
+}
+
 //- (void)drawRect:(CGRect)rect{
 //    //遍历数组，绘制曲线
 //    for (LFDrawBezierPath *path in self.lineArray) {

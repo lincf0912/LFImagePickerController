@@ -152,6 +152,19 @@ NSString *const kLFSplashViewData_blur = @"LFSplashViewData_blur";
     }
 }
 
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    if ([event allTouches].count == 1){
+        if (_isWork) {
+            if (self.splashEnded) self.splashEnded();
+        } else {
+            [self undo];
+        }
+    } else {
+        [super touchesEnded:touches withEvent:event];
+    }
+}
+
 - (void)drawLine
 {
     [self.mosaicLayer setNeedsDisplay];

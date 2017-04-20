@@ -135,9 +135,10 @@
 {
     _edit_toolBar = [[LFEditToolbar alloc] init];
     _edit_toolBar.delegate = self;
-    [_edit_toolBar setDrawSliderColorValue:0.3612]; /** 红色 */
+    UIColor *defaultColor = kSliderColors[1];
+    [_edit_toolBar setDrawSliderColor:defaultColor]; /** 红色 */
     /** 绘画颜色一致 */
-    [_edittingView setDrawColor:[UIColor redColor]];
+    [_edittingView setDrawColor:defaultColor];
     [self.view addSubview:_edit_toolBar];
 }
 

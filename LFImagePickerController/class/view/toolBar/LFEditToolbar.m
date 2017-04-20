@@ -9,12 +9,12 @@
 #import "LFEditToolbar.h"
 #import "UIView+LFFrame.h"
 #import "LFImagePickerHeader.h"
-#import "LFColorSlider.h"
+#import "JRPickColorView.h"
 
 #define mainButtonImageNormals @[@"EditImagePenToolBtn.png", @"EditImageEmotionToolBtn.png", @"EditImageTextToolBtn.png", @"EditImageMosaicToolBtn.png", @"EditImageCropToolBtn.png"]
 #define mainButtonImageHighlighted @[@"EditImagePenToolBtn_HL.png", @"EditImageEmotionToolBtn_HL.png", @"EditImageTextToolBtn_HL.png", @"EditImageMosaicToolBtn_HL.png", @"EditImageCropToolBtn_HL.png"]
 
-@interface LFEditToolbar () <LFColorSliderDelegate>
+@interface LFEditToolbar () <JRPickColorViewDelegate>
 
 /** 一级菜单 */
 @property (nonatomic, weak) UIView *edit_menu;
@@ -22,6 +22,8 @@
 /** 二级菜单 */
 @property (nonatomic, weak) UIView *edit_drawMenu;
 @property (nonatomic, weak) UIButton *edit_drawMenu_revoke;
+/** 绘画颜色显示 */
+@property (nonatomic, weak) UIView *edit_drawMenu_color;
 @property (nonatomic, weak) UIView *edit_splashMenu;
 @property (nonatomic, weak) UIButton *edit_splashMenu_revoke;
 
@@ -34,7 +36,7 @@
 @property (nonatomic, weak) UIButton *selectButton;
 
 /** 绘画拾色器 */
-@property (nonatomic, weak) LFColorSlider *draw_colorSlider;
+@property (nonatomic, weak) JRPickColorView *draw_colorSlider;
 
 @end
 
@@ -61,7 +63,7 @@
 {
     UIView *edit_menu = [[UIView alloc] initWithFrame:CGRectMake(0, self.height - 44, self.width, 44)];
     CGFloat rgb = 34 / 255.0;
-    edit_menu.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
+    edit_menu.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.85];
     NSInteger buttonCount = 5;
     
     CGFloat width = CGRectGetWidth(self.frame)/buttonCount;
@@ -112,15 +114,29 @@
         
         /** 分隔线 */
         UIView *separateView = [self separateView];
-        separateView.frame = CGRectMake(CGRectGetMinX(edit_drawMenu_revoke.frame)-10*2, (CGRectGetHeight(edit_drawMenu.frame)-25)/2, 1, 25);
+        separateView.frame = CGRectMake(CGRectGetMinX(edit_drawMenu_revoke.frame)-2-5, (CGRectGetHeight(edit_drawMenu.frame)-25)/2, 2, 25);
         [edit_drawMenu addSubview:separateView];
         
+        /** 颜色显示 */
+        CGFloat margin = 25.f, colorViewHeight = 20.f;
+        UIView *colorView = [[UIView alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(edit_drawMenu.frame)-colorViewHeight)/2, colorViewHeight, colorViewHeight)];
+        UIBezierPath *cornerRadiusPath = [UIBezierPath bezierPathWithRoundedRect:colorView.bounds cornerRadius:colorViewHeight/2];
+        CAShapeLayer *radiusLayer = [CAShapeLayer new];
+        radiusLayer.path = cornerRadiusPath.CGPath;
+        colorView.layer.mask = radiusLayer;
+        colorView.userInteractionEnabled = NO;
+        [edit_drawMenu addSubview:colorView];
+        self.edit_drawMenu_color = colorView;
+        
         /** 拾色器 */
-        CGFloat sliderHeight = 34.f, margin = 30.f;
-        LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-2*margin, sliderHeight)];
+        CGFloat sliderHeight = 34.f;
+        JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(colorView.frame)+margin, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-CGRectGetMaxX(colorView.frame)-2*margin, sliderHeight) colors:kSliderColors];
         _colorSlider.delegate = self;
         [edit_drawMenu addSubview:_colorSlider];
         self.draw_colorSlider = _colorSlider;
+        
+        /** 颜色显示 */
+        self.edit_drawMenu_color.backgroundColor = _colorSlider.color;
         
         self.edit_drawMenu = edit_drawMenu;
         
@@ -145,7 +161,7 @@
         
         /** 分隔线 */
         UIView *separateView = [self separateView];
-        separateView.frame = CGRectMake(CGRectGetMinX(edit_splashMenu_revoke.frame)-10*2, (CGRectGetHeight(edit_splashMenu.frame)-25)/2, 1, 25);
+        separateView.frame = CGRectMake(CGRectGetMinX(edit_splashMenu_revoke.frame)-2-5, (CGRectGetHeight(edit_splashMenu.frame)-25)/2, 2, 25);
         [edit_splashMenu addSubview:separateView];
         
         /** 剩余长度 */
@@ -331,14 +347,16 @@
 }
 
 /** 设置绘画拾色器默认颜色 */
-- (void)setDrawSliderColorValue:(CGFloat)value
+- (void)setDrawSliderColor:(UIColor *)color
 {
-    self.draw_colorSlider.value = value;
+    self.draw_colorSlider.color = color;
+    self.edit_drawMenu_color.backgroundColor = color;
 }
 
-#pragma mark - LFColorSliderDelegate
-- (void)lf_colorSliderDidChangeColor:(UIColor *)color
+#pragma mark - JRPickColorViewDelegate
+- (void)JRPickColorView:(JRPickColorView *)pickColorView didSelectColor:(UIColor *)color
 {
+    self.edit_drawMenu_color.backgroundColor = color;
     if ([self.delegate respondsToSelector:@selector(lf_editToolbar:drawColorDidChange:)]) {
         [self.delegate lf_editToolbar:self drawColorDidChange:color];
     }

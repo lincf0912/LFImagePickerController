@@ -11,18 +11,18 @@
 #import "LFLayoutPickerController.h"
 #import "LFImagePickerHeader.h"
 #import "LFText.h"
-#import "LFColorSlider.h"
+#import "JRPickColorView.h"
 
 #define kTopbarHeight 64.f
 
 /** 来限制最大输入只能100个字符 */
 #define MAX_LIMIT_NUMS 100
 
-@interface LFTextBar () <UITextViewDelegate, LFColorSliderDelegate>
+@interface LFTextBar () <UITextViewDelegate, JRPickColorViewDelegate>
 
 @property (nonatomic, weak) UITextView *lf_textView;
 
-@property (nonatomic, weak) LFColorSlider *lf_colorSlider;
+@property (nonatomic, weak) JRPickColorView *lf_colorSlider;
 @property (nonatomic, weak) UIView *lf_keyboardBar;
 
 @end
@@ -66,6 +66,8 @@
     [self configCustomNaviBar];
     [self configTextView];
     [self configKeyBoardBar];
+
+    [self setTextColor:kSliderColors[0]]; /** 白色 */
 }
 
 - (BOOL)becomeFirstResponder
@@ -94,9 +96,8 @@
 {
     _showText = showText;
     [self.lf_textView setText:showText.text];
-    if (showText) {
-        [self.lf_textView setTextColor:showText.textColor];
-        self.lf_colorSlider.value = showText.colorValue;
+    if (showText.textColor) {
+        [self setTextColor:showText.textColor];
     }
 }
 
@@ -131,7 +132,7 @@
     UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, kTopbarHeight, self.width, self.height-kTopbarHeight)];
     textView.delegate = self;
     textView.backgroundColor = [UIColor clearColor];
-    [textView setTextColor:[UIColor whiteColor]];
+//    [textView setTextColor:[UIColor whiteColor]];
     [textView setFont:[UIFont systemFontOfSize:25.f]];
     textView.returnKeyType = UIReturnKeyDone;
     [self addSubview:textView];
@@ -145,8 +146,8 @@
     
     /** 拾色器 */
     CGFloat sliderHeight = 34.f, margin = 30.f;
-    LFColorSlider *_colorSlider = [[LFColorSlider alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, CGRectGetWidth(keyboardBar.frame)-2*margin, sliderHeight)];
-    _colorSlider.value = 0.3116; /** 白色 */
+    JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, CGRectGetWidth(keyboardBar.frame)-2*margin, sliderHeight) colors:kSliderColors];
+//    _colorSlider.showColor = kSliderColors[0]; /** 白色 */
     _colorSlider.delegate = self;
     [keyboardBar addSubview:_colorSlider];
     self.lf_colorSlider = _colorSlider;
@@ -156,16 +157,12 @@
 }
 
 /** 设置文字拾起器默认颜色 */
-- (void)setValue:(CGFloat)value
+- (void)setTextColor:(UIColor *)textColor
 {
-    self.lf_colorSlider.value = value;
-    self.lf_textView.textColor = self.lf_colorSlider.color;
+    self.lf_colorSlider.color = textColor;
+    self.lf_textView.textColor = textColor;
 }
 
-- (CGFloat)value
-{
-    return self.lf_colorSlider.value;
-}
 #pragma mark - 顶部栏(action)
 - (void)cancelButtonClick
 {
@@ -182,7 +179,6 @@
             text = [LFText new];
             text.text = self.lf_textView.text;
             text.textColor = self.lf_textView.textColor;
-            text.colorValue = self.lf_colorSlider.value;
             CGFloat fontSize = 50.f;
             UIFont *font = [UIFont systemFontOfSize:fontSize];
             text.font = font;
@@ -327,8 +323,8 @@
 //    self.lbNums.text = [NSString stringWithFormat:@"%ld/%d",MAX(0,MAX_LIMIT_NUMS - existTextNum),MAX_LIMIT_NUMS];
 }
 
-#pragma mark - LFColorSliderDelegate
-- (void)lf_colorSliderDidChangeColor:(UIColor *)color
+#pragma mark - JRPickColorViewDelegate
+- (void)JRPickColorView:(JRPickColorView *)pickColorView didSelectColor:(UIColor *)color
 {
     self.lf_textView.textColor = color;
 }

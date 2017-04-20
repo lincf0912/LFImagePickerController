@@ -17,13 +17,10 @@
 @property (nonatomic, copy) LFText *showText;
 
 /** 样式 */
-@property (nonatomic, copy) UIColor *oKButtonTitleColorNormal;
+@property (nonatomic, strong) UIColor *oKButtonTitleColorNormal;
 
 /** 代理 */
 @property (nonatomic, weak) id<LFTextBarDelegate> delegate;
-
-/** 设置文字拾起器默认颜色 */
-@property (nonatomic, assign) CGFloat value;
 
 @end
 

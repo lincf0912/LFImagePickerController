@@ -14,6 +14,6 @@
 - (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)saveImage complete:(void(^)(id asset, NSError *error))complete;
 
 /** 保存视频到自定义相册 */
-- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title filePath:(NSString *)filePath complete:(void(^)(id asset, NSError *error))complete;
+- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURL:(NSURL *)videoURL complete:(void(^)(id asset, NSError *error))complete;
 
 @end

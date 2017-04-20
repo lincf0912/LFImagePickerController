@@ -241,29 +241,25 @@
 
 
 #pragma mark - 保存视频到自定义相册
-- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title filePath:(NSString *)filePath complete:(void(^)(id asset, NSError *error))complete{
+- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURL:(NSURL *)videoURL complete:(void(^)(id asset, NSError *error))complete{
     if ([self authorizationStatusAuthorized]) {
-        NSFileManager *fileManager = [NSFileManager new];
-        if ([fileManager fileExistsAtPath:filePath]) {
-            NSURL *url = [NSURL URLWithString:filePath];
-            if (iOS8Later) {
-                [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
-                    [self saveToAlbumIOS8LaterWithVideoUR:url customAlbum:result completionBlock:^(PHAsset *asset) {
-                        if (complete) complete(asset, nil);
-                    } failureBlock:^(NSError *error) {
-                        if (complete) complete(nil, error);
-                    }];
-                } faile:^(NSError *error) {
-                    if (complete) complete(nil, error);
-                }];
-            } else {
-                //注意这个方法不能保存视频到自定义相册，只能保存到系统相册。
-                [self saveToAlbumIOS8EarlyWithData:url customAlbumName:title completionBlock:^(ALAsset *asset) {
+        if (iOS8Later) {
+            [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
+                [self saveToAlbumIOS8LaterWithVideoUR:videoURL customAlbum:result completionBlock:^(PHAsset *asset) {
                     if (complete) complete(asset, nil);
                 } failureBlock:^(NSError *error) {
                     if (complete) complete(nil, error);
                 }];
-            }
+            } faile:^(NSError *error) {
+                if (complete) complete(nil, error);
+            }];
+        } else {
+            //注意这个方法不能保存视频到自定义相册，只能保存到系统相册。
+            [self saveToAlbumIOS8EarlyWithData:videoURL customAlbumName:title completionBlock:^(ALAsset *asset) {
+                if (complete) complete(asset, nil);
+            } failureBlock:^(NSError *error) {
+                if (complete) complete(nil, error);
+            }];
         }
     } else {
         NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"没有权限访问相册"}];

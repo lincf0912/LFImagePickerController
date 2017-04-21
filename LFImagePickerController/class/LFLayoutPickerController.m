@@ -251,11 +251,6 @@
 
 
 /** 禁止横屏 */
-- (BOOL)shouldAutorotate
-{
-    return NO;
-}
-
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskPortrait;
 }

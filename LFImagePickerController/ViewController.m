@@ -33,9 +33,10 @@
 - (IBAction)buttonAction1:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
 //    imagePicker.allowTakePicture = NO;
-    //    imagePicker.sortAscendingByCreateDate = NO;
+//    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
-    //    imagePicker.allowEditting = NO;
+//    imagePicker.allowEditting = NO;
+    imagePicker.supportAutorotate = YES;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 

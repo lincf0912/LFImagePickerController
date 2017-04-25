@@ -282,4 +282,9 @@
     }
 }
 
+/** 禁止横屏 */
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return self.supportAutorotate ? UIInterfaceOrientationMaskAllButUpsideDown : UIInterfaceOrientationMaskPortrait;
+}
+
 @end

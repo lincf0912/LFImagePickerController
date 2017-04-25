@@ -80,6 +80,10 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /// 默认为YES，如果设置为NO, 选择器将不会自己dismiss
 @property(nonatomic, assign) BOOL autoDismiss;
 
+/// Default is NO, if set YES, the picker support interface orientation.
+/// 默认为NO，如果设置为YES, 选择器将会适配横屏
+@property(nonatomic, assign) BOOL supportAutorotate;
+
 /// The photos user have selected
 /// 用户选中过的图片数组
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;

@@ -17,6 +17,9 @@
 
 #pragma mark - /// 宫格图片视图
 
+#define kAdditionalSize (isiPad ? 15 : 0)
+#define kVideoBoomHeight (17.f + kAdditionalSize)
+
 @interface LFAssetCell ()
 @property (weak, nonatomic) UIImageView *imageView;       // The photo / 照片
 @property (weak, nonatomic) UIImageView *selectImageView;
@@ -81,7 +84,7 @@
     if (onlySelected) {
         _selectPhotoButton.frame = self.bounds;
     } else {
-        _selectPhotoButton.frame = CGRectMake(self.width - 30, 0, 30, 30);
+        _selectPhotoButton.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 30 + kAdditionalSize, 30 + kAdditionalSize);
     }
 }
 
@@ -107,7 +110,7 @@
 - (UIButton *)selectPhotoButton {
     if (_selectPhotoButton == nil) {
         UIButton *selectPhotoButton = [[UIButton alloc] init];
-        selectPhotoButton.frame = CGRectMake(self.width - 30, 0, 30, 30);
+        selectPhotoButton.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 30 + kAdditionalSize, 30 + kAdditionalSize);
         [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:selectPhotoButton];
         _selectPhotoButton = selectPhotoButton;
@@ -133,7 +136,7 @@
 - (UIImageView *)selectImageView {
     if (_selectImageView == nil) {
         UIImageView *selectImageView = [[UIImageView alloc] init];
-        selectImageView.frame = CGRectMake(self.width - 27, 0, 27, 27);
+        selectImageView.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 27 + kAdditionalSize, 27 + kAdditionalSize);
         [self.contentView addSubview:selectImageView];
         _selectImageView = selectImageView;
     }
@@ -144,7 +147,7 @@
 {
     if (_editMaskImageView == nil) {
         UIImageView *editMaskImageView = [[UIImageView alloc] init];
-        editMaskImageView.frame = CGRectMake(5, self.height - 27, 22, 22);
+        editMaskImageView.frame = CGRectMake(5, self.height - 27 - kAdditionalSize, 22 + kAdditionalSize, 22 + kAdditionalSize);
         [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
         [self.contentView addSubview:editMaskImageView];
         _editMaskImageView = editMaskImageView;
@@ -155,7 +158,7 @@
 - (UIView *)bottomView {
     if (_bottomView == nil) {
         UIView *bottomView = [[UIView alloc] init];
-        bottomView.frame = CGRectMake(0, self.height - 17, self.width, 17);
+        bottomView.frame = CGRectMake(0, self.height - kVideoBoomHeight, self.width, kVideoBoomHeight);
         static NSInteger rgb = 0;
         bottomView.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.8];
         [self.contentView addSubview:bottomView];
@@ -167,7 +170,7 @@
 - (UIImageView *)videoImgView {
     if (_videoImgView == nil) {
         UIImageView *videoImgView = [[UIImageView alloc] init];
-        videoImgView.frame = CGRectMake(8, 0, 17, 17);
+        videoImgView.frame = CGRectMake(8, 0, kVideoBoomHeight, kVideoBoomHeight);
         [videoImgView setImage:bundleImageNamed(@"VideoSendIcon.png")];
         [self.bottomView addSubview:videoImgView];
         _videoImgView = videoImgView;
@@ -178,8 +181,8 @@
 - (UILabel *)timeLength {
     if (_timeLength == nil) {
         UILabel *timeLength = [[UILabel alloc] init];
-        timeLength.font = [UIFont boldSystemFontOfSize:11];
-        timeLength.frame = CGRectMake(self.videoImgView.y, 0, self.width - self.videoImgView.y - 5, 17);
+        timeLength.font = [UIFont boldSystemFontOfSize:isiPad ? 17 : 11];
+        timeLength.frame = CGRectMake(self.videoImgView.x, 0, self.width - self.videoImgView.x - 5, kVideoBoomHeight);
         timeLength.textColor = [UIColor whiteColor];
         timeLength.textAlignment = NSTextAlignmentRight;
         [self.bottomView addSubview:timeLength];

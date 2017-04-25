@@ -249,10 +249,4 @@
     }
 }
 
-
-/** 禁止横屏 */
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskPortrait;
-}
-
 @end

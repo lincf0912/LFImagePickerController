@@ -96,24 +96,13 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [imagePickerVc hideProgressHUD];
                 if (!_tableView) {
-                    
-                    CGFloat top = 0;
-                    CGFloat tableViewHeight = 0;
-                    if (self.navigationController.navigationBar.isTranslucent) {
-                        top = 44;
-                        if (iOS7Later) top += 20;
-                        tableViewHeight = self.view.height - top;
-                    } else {
-                        CGFloat navigationHeight = 44;
-                        if (iOS7Later) navigationHeight += 20;
-                        tableViewHeight = self.view.height - navigationHeight;
-                    }
-                    
-                    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, top, self.view.width, tableViewHeight) style:UITableViewStylePlain];
+                    _tableView = [[UITableView alloc] initWithFrame:[self viewFrameWithoutNavigation] style:UITableViewStylePlain];
+                    _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
                     _tableView.tableFooterView = [[UIView alloc] init];
                     _tableView.dataSource = self;
                     _tableView.delegate = self;
                     [_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
+                    _tableView.cellLayoutMarginsFollowReadableWidth = false;
                     [self.view addSubview:_tableView];
                 } else {
                     [_tableView reloadData];

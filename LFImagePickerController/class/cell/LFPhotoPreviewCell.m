@@ -114,6 +114,19 @@
     return self;
 }
 
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    [self recoverSubviews];
+}
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.model = nil;
+    self.imageView.image = nil;
+}
+
 - (UIImage *)previewImage
 {
     return self.imageView.image;
@@ -190,13 +203,6 @@
         _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
         _imageView.frame = _imageContainerView.bounds;
     }
-}
-
-- (void)prepareForReuse
-{
-    [super prepareForReuse];
-    self.model = nil;
-    self.imageView.image = nil;
 }
 
 #pragma mark - UITapGestureRecognizer Event

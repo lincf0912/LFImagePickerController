@@ -41,6 +41,9 @@
 
 @property (nonatomic, assign) double progress;
 
+/** 手动滑动标记 */
+@property (nonatomic, assign) BOOL isMTScroll;
+
 /** 临时编辑图片 */
 @property (nonatomic, strong) UIImage *tempEditImage;
 @end
@@ -120,6 +123,15 @@
     [super viewWillDisappear:animated];
 }
 
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    /** 重新排版 */
+    [_collectionView.collectionViewLayout invalidateLayout];
+    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + 20), 0);
+    if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
+}
+
 - (void)checkSelectedModels {
     NSMutableArray *selectedAssets = [NSMutableArray array];
     NSMutableArray *selectedImages = [NSMutableArray array];
@@ -149,11 +161,13 @@
 
 - (void)configCustomNaviBar {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    CGFloat naviBarHeight = 64;
     
-    _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, 64)];
+    _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
     _naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
-    
+    _naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+    _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
         /** 取消 */
@@ -166,6 +180,7 @@
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
+    _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
     [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
@@ -177,15 +192,17 @@
 
 - (void)configBottomToolBar {
     _toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
+    _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     static CGFloat rgb = 34 / 255.0;
     _toolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
     
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     if (imagePickerVc.allowEditting) {
-        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15]} context:nil].size.width;
+        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:15]} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(10, 0, editWidth, 44);
+        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         _editButton.titleLabel.font = [UIFont systemFontOfSize:15];
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
         [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
@@ -198,8 +215,10 @@
         CGFloat width = fullImageWidth + 56;
         if (!imagePickerVc.allowEditting) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
+            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
             _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2-fullImageWidth/2, 0, width, 44);
+            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
         }
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
@@ -214,6 +233,11 @@
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, 44);
+        if (!imagePickerVc.allowEditting) { /** 非编辑模式 原图显示在左边 */
+            _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        } else {
+            _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
+        }
         _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
         _originalPhotoLabel.font = [UIFont systemFontOfSize:13];
         _originalPhotoLabel.textColor = [UIColor whiteColor];
@@ -223,6 +247,7 @@
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _doneButton.frame = CGRectMake(self.view.width - 44 - 12, 0, 44, 44);
+    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
@@ -231,10 +256,12 @@
     _numberImageView = [[UIImageView alloc] initWithImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName)];
     _numberImageView.backgroundColor = [UIColor clearColor];
     _numberImageView.frame = CGRectMake(self.view.width - 56 - 28, 7, 30, 30);
+    _numberImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _numberImageView.hidden = imagePickerVc.selectedModels.count <= 0;
     
     _numberLabel = [[UILabel alloc] init];
     _numberLabel.frame = _numberImageView.frame;
+    _numberLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _numberLabel.font = [UIFont systemFontOfSize:15];
     _numberLabel.textColor = [UIColor whiteColor];
     _numberLabel.textAlignment = NSTextAlignmentCenter;
@@ -258,6 +285,7 @@
     layout.minimumInteritemSpacing = 0;
     layout.minimumLineSpacing = 0;
     _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(-10, 0, self.view.width + 20, self.view.height) collectionViewLayout:layout];
+    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor blackColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -383,17 +411,29 @@
 }
 
 #pragma mark - UIScrollViewDelegate
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+    _isMTScroll = YES;
+}
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat offSetWidth = scrollView.contentOffset.x;
-    offSetWidth = offSetWidth +  ((self.view.width + 20) * 0.5);
     
-    NSInteger currentIndex = offSetWidth / (self.view.width + 20);
-    
-    if (currentIndex < _models.count && _currentIndex != currentIndex) {
-        _currentIndex = currentIndex;
-        [self refreshNaviBarAndBottomBarState];
+    if (_isMTScroll) {        
+        CGFloat offSetWidth = scrollView.contentOffset.x;
+        offSetWidth = offSetWidth +  ((self.view.width + 20) * 0.5);
+        
+        NSInteger currentIndex = offSetWidth / (self.view.width + 20);
+        
+        if (currentIndex < _models.count && _currentIndex != currentIndex) {
+            _currentIndex = currentIndex;
+            [self refreshNaviBarAndBottomBarState];
+        }
     }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    _isMTScroll = NO;
 }
 
 #pragma mark - UICollectionViewDataSource && Delegate
@@ -437,6 +477,11 @@
     if ([cell isKindOfClass:[LFPhotoPreviewCell class]]) {
         [(LFPhotoPreviewCell *)cell recoverSubviews];
     }
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(self.view.width + 20, self.view.height);
 }
 
 #pragma mark - LFPhotoEdittingControllerDelegate

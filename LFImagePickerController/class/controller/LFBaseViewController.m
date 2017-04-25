@@ -7,6 +7,8 @@
 //
 
 #import "LFBaseViewController.h"
+#import "LFImagePickerHeader.h"
+#import "UIView+LFFrame.h"
 #import "LFImagePickerController.h"
 
 @interface LFBaseViewController ()
@@ -29,6 +31,23 @@
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc hideProgressHUD];
+}
+
+- (CGRect)viewFrameWithoutNavigation
+{
+    CGFloat top = 0;
+    CGFloat height = 0;
+    if (self.navigationController.navigationBar.isTranslucent) {
+        top = 44;
+        if (iOS7Later) top += 20;
+        height = self.view.height - top;;
+    } else {
+        CGFloat navigationHeight = 44;
+        if (iOS7Later) navigationHeight += 20;
+        height = self.view.height - navigationHeight;
+    }
+    
+    return CGRectMake(0, top, self.view.width, height);
 }
 
 /*

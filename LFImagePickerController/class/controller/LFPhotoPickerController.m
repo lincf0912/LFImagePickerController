@@ -143,6 +143,7 @@
     [imagePickerVc hideProgressHUD];
     _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
     
+    
     if (_models.count == 0) {
         [self configNonePhotoView];
     } else {
@@ -155,18 +156,8 @@
 }
 
 - (void)configNonePhotoView {
-    CGFloat top = 0;
-    CGFloat height = 0;
-    if (self.navigationController.navigationBar.isTranslucent) {
-        top = 44;
-        if (iOS7Later) top += 20;
-        height = self.view.height - top;;
-    } else {
-        CGFloat navigationHeight = 44;
-        if (iOS7Later) navigationHeight += 20;
-        height = self.view.height - navigationHeight;
-    }
-    UIView *nonePhotoView = [[UIView alloc] initWithFrame:CGRectMake(0, top, self.view.width, height)];
+    
+    UIView *nonePhotoView = [[UIView alloc] initWithFrame:[self viewFrameWithoutNavigation]];
     nonePhotoView.backgroundColor = [UIColor clearColor];
     
     NSString *text = @"没有图片或视频";
@@ -174,11 +165,13 @@
     CGSize textSize = [text boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size;
     
     UILabel *label = [[UILabel alloc] initWithFrame:(CGRect){{(CGRectGetWidth(nonePhotoView.frame)-textSize.width)/2, (CGRectGetHeight(nonePhotoView.frame)-textSize.height)/2}, textSize}];
+    label.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     label.font = font;
     label.text = text;
     label.textColor = [UIColor lightGrayColor];
     
     [nonePhotoView addSubview:label];
+    nonePhotoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:nonePhotoView];
 }
 
@@ -186,27 +179,18 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
-    CGFloat margin = 5;
-    CGFloat itemWH = (self.view.width - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
+    CGFloat margin = isiPad ? 15 : 8;
+    CGFloat screenWidth = MIN(self.view.width, self.view.height);
+    CGFloat itemWH = (screenWidth - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
     layout.itemSize = CGSizeMake(itemWH, itemWH);
     layout.minimumInteritemSpacing = margin;
     layout.minimumLineSpacing = margin;
     
-    CGFloat top = 0;
-    CGFloat collectionViewHeight = 0;
-    if (self.navigationController.navigationBar.isTranslucent) {
-        top = 44;
-        if (iOS7Later) top += 20;
-        collectionViewHeight = self.view.height - top;;
-    } else {
-        CGFloat navigationHeight = 44;
-        if (iOS7Later) navigationHeight += 20;
-        collectionViewHeight = self.view.height - navigationHeight;
-    }
+    CGRect collectionViewRect = [self viewFrameWithoutNavigation];
+    collectionViewRect.size.height -= kBottomToolBarHeight;
     
-    collectionViewHeight -= kBottomToolBarHeight;
-    
-    _collectionView = [[LFCollectionView alloc] initWithFrame:CGRectMake(0, top, self.view.width, collectionViewHeight) collectionViewLayout:layout];
+    _collectionView = [[LFCollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
+    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor whiteColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -236,6 +220,7 @@
     }
     
     UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
+    bottomToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     CGFloat rgb = 253 / 255.0;
     bottomToolBar.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1.0];
     
@@ -246,6 +231,7 @@
         CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(10, 3, editWidth, 44);
+        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _editButton.titleLabel.font = [UIFont systemFontOfSize:16];
         [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
@@ -262,6 +248,7 @@
         CGFloat previewWidth = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width + 2;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _previewButton.frame = CGRectMake(buttonX+10, 3, previewWidth, 44);
+        _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = [UIFont systemFontOfSize:16];
         [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
@@ -278,6 +265,7 @@
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:13]} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _originalPhotoButton.frame = CGRectMake(buttonX, 0, fullImageWidth + 56, 50);
+        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = [UIFont systemFontOfSize:16];
@@ -295,6 +283,7 @@
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, 50);
+        _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
         _originalPhotoLabel.font = [UIFont systemFontOfSize:16];
         _originalPhotoLabel.textColor = [UIColor blackColor];
@@ -305,6 +294,7 @@
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _doneButton.frame = CGRectMake(self.view.width - 44 - 12, 3, 44, 44);
+    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
@@ -315,11 +305,13 @@
     
     _numberImageView = [[UIImageView alloc] initWithImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName)];
     _numberImageView.frame = CGRectMake(self.view.width - 56 - 28, 10, 30, 30);
+    _numberImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _numberImageView.hidden = imagePickerVc.selectedModels.count <= 0;
     _numberImageView.backgroundColor = [UIColor clearColor];
     
     _numberLabel = [[UILabel alloc] init];
     _numberLabel.frame = _numberImageView.frame;
+    _numberLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     _numberLabel.font = [UIFont systemFontOfSize:15];
     _numberLabel.textColor = [UIColor whiteColor];
     _numberLabel.textAlignment = NSTextAlignmentCenter;
@@ -331,7 +323,7 @@
     CGFloat rgb2 = 222 / 255.0;
     divide.backgroundColor = [UIColor colorWithRed:rgb2 green:rgb2 blue:rgb2 alpha:1.0];
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
-    
+    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     
     [bottomToolBar addSubview:_editButton];
     [bottomToolBar addSubview:_previewButton];

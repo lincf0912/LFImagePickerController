@@ -282,9 +282,14 @@
     }
 }
 
-/** 禁止横屏 */
+/** 横屏 */
+- (BOOL)shouldAutorotate
+{
+    return self.supportAutorotate ? [self.visibleViewController shouldAutorotate] : NO;
+}
+
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return self.supportAutorotate ? UIInterfaceOrientationMaskAllButUpsideDown : UIInterfaceOrientationMaskPortrait;
+    return self.supportAutorotate ? [self.visibleViewController supportedInterfaceOrientations] : UIInterfaceOrientationMaskPortrait;
 }
 
 @end

@@ -102,7 +102,10 @@
                     _tableView.dataSource = self;
                     _tableView.delegate = self;
                     [_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
-                    _tableView.cellLayoutMarginsFollowReadableWidth = false;
+                    /** 这个设置iOS9以后才有，主要针对iPad，不设置的话，分割线左侧空出很多 */
+                    if ([_tableView respondsToSelector:@selector(setCellLayoutMarginsFollowReadableWidth:)]) {
+                        _tableView.cellLayoutMarginsFollowReadableWidth = NO;
+                    }
                     [self.view addSubview:_tableView];
                 } else {
                     [_tableView reloadData];

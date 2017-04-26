@@ -83,6 +83,9 @@ const CGFloat kControlWidth = 30.f;
 {
     [super layoutSubviews];
     
+    self.gridLayer.frame = self.bounds;
+    self.gridMaskLayer.frame = self.bounds;
+    
     CGRect rect = self.gridRect;
     
     self.topLeftCornerView.frame = (CGRect){CGRectGetMinX(rect) - CGRectGetWidth(self.topLeftCornerView.bounds) / 2, CGRectGetMinY(rect) - CGRectGetHeight(self.topLeftCornerView.bounds) / 2, self.topLeftCornerView.bounds.size};

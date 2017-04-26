@@ -18,6 +18,8 @@
 #import "LFTextBar.h"
 #import "LFClipToolbar.h"
 
+#import "UIDevice+LFOrientation.h"
+
 #define kSplashMenu_Button_Tag1 95
 #define kSplashMenu_Button_Tag2 96
 
@@ -52,6 +54,7 @@
 {
     self = [super init];
     if (self) {
+        [UIDevice setOrientation:UIInterfaceOrientationPortrait];
         self.isHiddenNavBar = YES;
         self.isHiddenStatusBar = YES;
     }
@@ -86,6 +89,7 @@
 - (void)configScrollView
 {
     _edittingView = [[LFEdittingView alloc] initWithFrame:self.view.bounds];
+    _edittingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _edittingView.editDelegate = self;
     _edittingView.clippingDelegate = self;
     _edittingView.image = _editImage;
@@ -112,15 +116,18 @@
     CGFloat size = topbarHeight - margin*2;
     
     _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, topbarHeight)];
+    _edit_naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
     
     UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(margin, margin, size, size)];
+    _edit_cancelButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_edit_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     _edit_cancelButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_edit_cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - (size + margin), margin, size, size)];
+    _edit_finishButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_edit_finishButton setTitle:@"完成" forState:UIControlStateNormal];
     _edit_finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [_edit_finishButton setTitleColor:imagePickerVc.oKButtonTitleColorNormal forState:UIControlStateNormal];
@@ -134,6 +141,7 @@
 - (void)configBottomToolBar
 {
     _edit_toolBar = [[LFEditToolbar alloc] init];
+    _edit_toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     _edit_toolBar.delegate = self;
     UIColor *defaultColor = kSliderColors[1];
     [_edit_toolBar setDrawSliderColor:defaultColor]; /** 红色 */
@@ -528,6 +536,7 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     LFTextBar *textBar = [[LFTextBar alloc] initWithFrame:CGRectMake(0, self.view.height, self.view.width, self.view.height)];
+    textBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     textBar.showText = text;
     textBar.oKButtonTitleColorNormal = imagePickerVc.oKButtonTitleColorNormal;
     textBar.delegate = self;
@@ -542,6 +551,10 @@
         _isHideNaviBar = YES;
         [self changedBarState];
     }];
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
 }
 
 @end

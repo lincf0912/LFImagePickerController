@@ -62,6 +62,7 @@
 - (void)mainBar
 {
     UIView *edit_menu = [[UIView alloc] initWithFrame:CGRectMake(0, self.height - 44, self.width, 44)];
+    edit_menu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     CGFloat rgb = 34 / 255.0;
     edit_menu.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.85];
     NSInteger buttonCount = 5;
@@ -71,6 +72,7 @@
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.tag = i;
         button.frame = CGRectMake(width*i, 0, width, 44);
+        button.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin;
         button.titleLabel.font = [UIFont systemFontOfSize:14];
         [button setImage:bundleEditImageNamed(mainButtonImageNormals[i]) forState:UIControlStateNormal];
         [button setImage:bundleEditImageNamed(mainButtonImageHighlighted[i]) forState:UIControlStateHighlighted];
@@ -83,6 +85,7 @@
     CGFloat rgb2 = 40 / 255.0;
     divide.backgroundColor = [UIColor colorWithRed:rgb2 green:rgb2 blue:rgb2 alpha:1.0];
     divide.frame = CGRectMake(0, 0, self.width, 1);
+    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     
     [edit_menu addSubview:divide];
     self.edit_menu = edit_menu;
@@ -101,11 +104,13 @@
 {
     if (_edit_drawMenu == nil) {
         UIView *edit_drawMenu = [[UIView alloc] initWithFrame:CGRectMake(_edit_menu.x, _edit_menu.y, _edit_menu.width, 55)];
+        edit_drawMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
         edit_drawMenu.backgroundColor = _edit_menu.backgroundColor;
         edit_drawMenu.alpha = 0.f;
         /** 添加按钮获取点击 */
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.frame = edit_drawMenu.bounds;
+        button.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [edit_drawMenu addSubview:button];
         
         UIButton *edit_drawMenu_revoke = [self revokeButtonWithType:0];
@@ -115,22 +120,26 @@
         /** 分隔线 */
         UIView *separateView = [self separateView];
         separateView.frame = CGRectMake(CGRectGetMinX(edit_drawMenu_revoke.frame)-2-5, (CGRectGetHeight(edit_drawMenu.frame)-25)/2, 2, 25);
+        separateView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
         [edit_drawMenu addSubview:separateView];
         
         /** 颜色显示 */
-        CGFloat margin = 25.f, colorViewHeight = 20.f;
+        CGFloat margin = isiPad ? 85.f : 25.f, colorViewHeight = 20.f;
         UIView *colorView = [[UIView alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(edit_drawMenu.frame)-colorViewHeight)/2, colorViewHeight, colorViewHeight)];
-        UIBezierPath *cornerRadiusPath = [UIBezierPath bezierPathWithRoundedRect:colorView.bounds cornerRadius:colorViewHeight/2];
-        CAShapeLayer *radiusLayer = [CAShapeLayer new];
-        radiusLayer.path = cornerRadiusPath.CGPath;
-        colorView.layer.mask = radiusLayer;
+        colorView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        colorView.layer.cornerRadius = colorViewHeight/2;
+        colorView.layer.borderWidth = 1.0f;
+        colorView.layer.borderColor = [UIColor whiteColor].CGColor;
+        colorView.layer.masksToBounds = YES;
         colorView.userInteractionEnabled = NO;
         [edit_drawMenu addSubview:colorView];
         self.edit_drawMenu_color = colorView;
         
         /** 拾色器 */
-        CGFloat sliderHeight = 34.f;
-        JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(colorView.frame)+margin, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, CGRectGetMinX(separateView.frame)-CGRectGetMaxX(colorView.frame)-2*margin, sliderHeight) colors:kSliderColors];
+        CGFloat surplusWidth = CGRectGetMinX(separateView.frame)-CGRectGetMaxX(colorView.frame)-2*margin;
+        CGFloat sliderHeight = 34.f, sliderWidth = MIN(surplusWidth, 350);
+        JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(CGRectGetMaxX(colorView.frame) + margin + (surplusWidth - sliderWidth) / 2, (CGRectGetHeight(edit_drawMenu.frame)-sliderHeight)/2, sliderWidth, sliderHeight) colors:kSliderColors];
+        _colorSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         _colorSlider.delegate = self;
         [edit_drawMenu addSubview:_colorSlider];
         self.draw_colorSlider = _colorSlider;
@@ -148,11 +157,13 @@
 {
     if (_edit_splashMenu == nil) {
         UIView *edit_splashMenu = [[UIView alloc] initWithFrame:CGRectMake(_edit_menu.x, _edit_menu.y, _edit_menu.width, 55)];
+        edit_splashMenu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
         edit_splashMenu.backgroundColor = _edit_menu.backgroundColor;
         edit_splashMenu.alpha = 0.f;
         /** 添加按钮获取点击 */
         UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
         button.frame = edit_splashMenu.bounds;
+        button.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [edit_splashMenu addSubview:button];
         
         UIButton *edit_splashMenu_revoke = [self revokeButtonWithType:3];
@@ -162,6 +173,7 @@
         /** 分隔线 */
         UIView *separateView = [self separateView];
         separateView.frame = CGRectMake(CGRectGetMinX(edit_splashMenu_revoke.frame)-2-5, (CGRectGetHeight(edit_splashMenu.frame)-25)/2, 2, 25);
+        separateView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
         [edit_splashMenu addSubview:separateView];
         
         /** 剩余长度 */
@@ -173,6 +185,7 @@
         
         UIButton *action1 = [UIButton buttonWithType:UIButtonTypeCustom];
         action1.frame = CGRectMake(averageWidth*1-44/2, (CGRectGetHeight(edit_splashMenu.frame)-30)/2, 44, 30);
+        action1.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [action1 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
         [action1 setImage:bundleEditImageNamed(@"EditImageTraditionalMosaicBtn.png") forState:UIControlStateNormal];
         [action1 setImage:bundleEditImageNamed(@"EditImageTraditionalMosaicBtn_HL.png") forState:UIControlStateHighlighted];
@@ -183,6 +196,7 @@
         
         UIButton *action2 = [UIButton buttonWithType:UIButtonTypeCustom];
         action2.frame = CGRectMake(averageWidth*2-44/2, (CGRectGetHeight(edit_splashMenu.frame)-30)/2, 44, 30);
+        action2.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         [action2 addTarget:self action:@selector(splashMenu_buttonClick:) forControlEvents:UIControlEventTouchUpInside];
         [action2 setImage:bundleEditImageNamed(@"EditImageBrushMosaicBtn.png") forState:UIControlStateNormal];
         [action2 setImage:bundleEditImageNamed(@"EditImageBrushMosaicBtn_HL.png") forState:UIControlStateHighlighted];
@@ -202,6 +216,7 @@
 {
     UIButton *revoke = [UIButton buttonWithType:UIButtonTypeCustom];
     revoke.frame = CGRectMake(_edit_menu.width-44-5, 0, 44, 55);
+    revoke.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
     [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn.png") forState:UIControlStateNormal];
     [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn_HL.png") forState:UIControlStateHighlighted];
     [revoke setImage:bundleEditImageNamed(@"EditImageRevokeBtn_HL.png") forState:UIControlStateSelected];

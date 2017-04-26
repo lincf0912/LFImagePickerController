@@ -43,9 +43,9 @@ CGFloat const JRPickColorView_Default_ColorMinWidth = 10.0f; // 默认最小宽�
 - (instancetype)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
     if (self) {
-        [self setAnimation:YES];
-        [self setIndex:1];
-    }return self;
+        _animation = YES;
+    }
+    return self;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame colors:(NSArray <UIColor *>*)colors{
@@ -53,6 +53,14 @@ CGFloat const JRPickColorView_Default_ColorMinWidth = 10.0f; // 默认最小宽�
     if (self) {
         [self setColors:colors];
     }return self;
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    if (_showHorizontal) {
+        _colorWidth = CGRectGetWidth(self.frame) / self.colors.count;
+    }
 }
 
 #pragma mark - setter
@@ -84,25 +92,25 @@ CGFloat const JRPickColorView_Default_ColorMinWidth = 10.0f; // 默认最小宽�
 
 #pragma mark 当前颜色数组下标
 - (void)setIndex:(NSUInteger)index{
-    if (index > self.colors.count || index <= 0) index = 1;
+    if (index > self.colors.count) index = 0;
     _index = index;
-    [self setColor:[self.colors objectAtIndex:index - 1]];
+    [self setColor:[self.colors objectAtIndex:index]];
 }
 
 #pragma mark 当前选择颜色
 - (void)setColor:(UIColor *)color{
     NSInteger currentIndex = 0;
     BOOL isYES = NO;
-    for (UIColor *color1 in self.colors) {
-        currentIndex ++;
+    for (NSInteger i=0; i<self.colors.count; i++) {
+        UIColor *color1 = self.colors[i];
         if ([color isEqualToColor:color1]) {
+            currentIndex = i;
             isYES = YES;
             break;
         }
     }
     _color = isYES ? color : [self.colors firstObject];
     _index = currentIndex;
-    currentIndex = isYES ? currentIndex - 1 : 0;
     _showColorsContainer.backgroundColor = _color;
     CGPoint point = _showColorsContainer.center;
     point.x = currentIndex * _colorWidth + _colorWidth / 2;
@@ -225,15 +233,12 @@ CGFloat const JRPickColorView_Default_ColorMinWidth = 10.0f; // 默认最小宽�
     CGRect rect = CGRectMake((_colorWidth - showColorsContainerW) / 2, (CGRectGetHeight(self.frame) - JRPickColorView_Default_ColorHeight * 2.5)/2, showColorsContainerW, JRPickColorView_Default_ColorHeight * 2.5);
     if (!_showColorsContainer) {
         UIView *view = [[UIView alloc] initWithFrame:rect];
+        view.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         view.backgroundColor = [self.colors firstObject];
-        view.layer.cornerRadius = showColorsContainerW/2;
-        CAShapeLayer *borderLayer = [CAShapeLayer layer];
-        borderLayer.bounds = view.bounds;
-        borderLayer.position = CGPointMake(CGRectGetMidX(view.bounds), CGRectGetMidY(view.bounds));
-        borderLayer.cornerRadius = showColorsContainerW/2;
-        borderLayer.borderWidth = 1.0f;
-        borderLayer.borderColor = [UIColor whiteColor].CGColor;
-        [view.layer addSublayer:borderLayer];
+        view.layer.cornerRadius = CGRectGetWidth(rect)/2;
+        view.layer.masksToBounds = YES;
+        view.layer.borderWidth = 1.0f;
+        view.layer.borderColor = [UIColor whiteColor].CGColor;
         _showColorsContainer = view;
         [self addSubview:_showColorsContainer];
     } else {

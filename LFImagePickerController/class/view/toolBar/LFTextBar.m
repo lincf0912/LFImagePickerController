@@ -56,6 +56,7 @@
         UIBlurEffect * blur = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
         UIVisualEffectView * effe = [[UIVisualEffectView alloc]initWithEffect:blur];
         effe.frame = self.bounds;
+        effe.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self addSubview:effe];
     } else {
         self.backgroundColor = [UIColor colorWithWhite:0 alpha:0.8];
@@ -107,15 +108,18 @@
     CGFloat margin = 10;
     CGFloat size = kTopbarHeight - margin*2;
     UIView *topbar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.width, kTopbarHeight)];
+    topbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     topbar.backgroundColor = [UIColor clearColor];
     
     UIButton *cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(margin, margin, size, size)];
+    cancelButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     cancelButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [cancelButton setTitleColor:[UIColor colorWithWhite:0.8f alpha:1.f] forState:UIControlStateNormal];
     [cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
     UIButton *finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.width - (size+margin), margin, size, size)];
+    finishButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [finishButton setTitle:@"完成" forState:UIControlStateNormal];
     finishButton.titleLabel.font = [UIFont systemFontOfSize:15];
     [finishButton setTitleColor:self.oKButtonTitleColorNormal forState:UIControlStateNormal];
@@ -130,6 +134,7 @@
 - (void)configTextView
 {
     UITextView *textView = [[UITextView alloc] initWithFrame:CGRectMake(0, kTopbarHeight, self.width, self.height-kTopbarHeight)];
+    textView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     textView.delegate = self;
     textView.backgroundColor = [UIColor clearColor];
 //    [textView setTextColor:[UIColor whiteColor]];
@@ -142,12 +147,14 @@
 - (void)configKeyBoardBar
 {
     UIView *keyboardBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.height-44, self.width, 44)];
+    keyboardBar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
     keyboardBar.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
     
     /** 拾色器 */
-    CGFloat sliderHeight = 34.f, margin = 30.f;
-    JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(margin, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, CGRectGetWidth(keyboardBar.frame)-2*margin, sliderHeight) colors:kSliderColors];
+    CGFloat sliderHeight = 34.f, margin = 30.f, sliderWidth = MIN(400, CGRectGetWidth(keyboardBar.frame)-2*margin);
+    JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(margin+(CGRectGetWidth(keyboardBar.frame)-sliderWidth)/2, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, sliderWidth, sliderHeight) colors:kSliderColors];
 //    _colorSlider.showColor = kSliderColors[0]; /** 白色 */
+    _colorSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     _colorSlider.delegate = self;
     [keyboardBar addSubview:_colorSlider];
     self.lf_colorSlider = _colorSlider;

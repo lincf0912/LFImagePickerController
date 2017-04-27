@@ -556,9 +556,11 @@
             } else {
                 NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", imagePickerVc.maxImagesCount];
                 [imagePickerVc showAlertWithTitle:title];
+                return NO;
             }
         }
         [UIView showOscillatoryAnimationWithLayer:weakLayer type:OscillatoryAnimationToSmaller];
+        return YES;
     };
     return cell;
 }

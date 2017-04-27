@@ -95,13 +95,15 @@
 }
 
 - (void)selectPhotoButtonClick:(UIButton *)sender {
-    sender.selected = !sender.isSelected;
-    self.selectImageView.image = sender.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
-    if (sender.isSelected) {
-        [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
-    }
     if (self.didSelectPhotoBlock) {
-        self.didSelectPhotoBlock(sender.selected, self.model);
+        BOOL isSelected = self.didSelectPhotoBlock(!sender.selected, self.model);
+        if (isSelected) {
+            sender.selected = !sender.isSelected;
+            self.selectImageView.image = sender.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
+            if (sender.isSelected) {
+                [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
+            }
+        }
     }
 }
 

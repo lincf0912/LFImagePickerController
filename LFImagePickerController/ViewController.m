@@ -36,7 +36,9 @@
 //    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
 //    imagePicker.allowEditting = NO;
-    imagePicker.supportAutorotate = YES;
+    imagePicker.supportAutorotate = YES; /** 适配横屏 */
+    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
+    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 
@@ -87,9 +89,9 @@
         NSString *name = [NSString stringWithFormat:@"%@.jpeg", info[kImageInfoFileName]];
         
         /** 缩略图保存到路径 */
-        [UIImageJPEGRepresentation(thumbnailImage, 0.01f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
+        [UIImageJPEGRepresentation(thumbnailImage, 0.5f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
         /** 原图保存到路径 */
-        [UIImageJPEGRepresentation(image, 0.75f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
+        [UIImageJPEGRepresentation(image, 0.5f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
     }
 }
 

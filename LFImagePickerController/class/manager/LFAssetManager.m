@@ -454,41 +454,43 @@ static LFAssetManager *manager;
 }
 
 /**
- *  通过asset解析缩略图、标清图、图片数据字典
+ *  通过asset解析缩略图、标清图/原图、图片数据字典
  *
  *  @param asset      PHAsset／ALAsset
- *  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
- */
-- (void)getPreviewPhotoWithAsset:(id)asset completion:(void (^)(UIImage *, UIImage *, NSDictionary *))completion
-{
-    [self getPhotoWithAsset:asset isOrigin:NO completion:^(UIImage *thumbnail, UIImage *source, NSMutableDictionary *info) {
-        thumbnail = [thumbnail fastestCompressImageWithSize:10];
-        
-        NSData *sourceData = [source fastestCompressImageDataWithSize:100];
-        source = [UIImage imageWithData:sourceData];
-        /** 图片宽高 */
-        CGSize imageSize = source.size;
-        NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];
-        [info setObject:value forKey:kImageInfoFileSize];
-        /** 图片大小 */
-        [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
-        
-        if (completion) {
-            completion(thumbnail, source, info);
-        }
-    }];
-}
-
-/**
- *  通过asset解析缩略图、原图、图片数据字典
- *
- *  @param asset      PHAsset／ALAsset
+ *  @param isOriginal 是否原图
  *  @param completion 返回block 顺序：缩略图、原图、图片数据字典
  */
-- (void)getOriginPhotoWithAsset:(id)asset completion:(void (^)(UIImage *, UIImage *, NSDictionary *))completion
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
 {
-    [self getPhotoWithAsset:asset isOrigin:YES completion:^(UIImage *thumbnail, UIImage *source, NSMutableDictionary *info) {
-        thumbnail = [thumbnail fastestCompressImageWithSize:10];
+    [self getPhotoWithAsset:asset isOriginal:isOriginal compressSize:kCompressSize thumbnailCompressSize:kThumbnailCompressSize completion:completion];
+}
+
+
+/**
+ 通过asset解析缩略图、标清图/原图、图片数据字典
+
+ @param asset PHAsset／ALAsset
+ @param isOriginal 是否原图
+ @param compressSize 非原图的压缩大小
+ @param thumbnailCompressSize 缩略图压缩大小
+ @param completion 返回block 顺序：缩略图、标清图、图片数据字典
+ */
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+             compressSize:(CGFloat)compressSize
+    thumbnailCompressSize:(CGFloat)thumbnailCompressSize
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+{
+    [self getBasePhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSMutableDictionary *info) {
+        thumbnail = [thumbnail fastestCompressImageWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+        if (!isOriginal) { /** 标清图 */
+            NSData *sourceData = [source fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+            source = [UIImage imageWithData:sourceData];
+            /** 标清图片大小 */
+            [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
+        }
         /** 图片宽高 */
         CGSize imageSize = source.size;
         NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];
@@ -505,10 +507,10 @@ static LFAssetManager *manager;
  基础方法
  
  @param asset PHAsset／ALAsset
- @param isOrigin 是否获取原图
+ @param isOriginal 是否获取原图
  @param completion 返回block 顺序：缩略图、原图、图片数据字典
  */
-- (void)getPhotoWithAsset:(id)asset isOrigin:(BOOL)isOrigin completion:(void (^)(UIImage *, UIImage *, NSMutableDictionary *))completion
+- (void)getBasePhotoWithAsset:(id)asset isOriginal:(BOOL)isOriginal completion:(void (^)(UIImage *, UIImage *, NSMutableDictionary *))completion
 {
     __block UIImage *thumbnail = nil;
     __block UIImage *source = nil;
@@ -537,7 +539,7 @@ static LFAssetManager *manager;
                 if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
             }
         }];
-        if (isOrigin == NO) {
+        if (isOriginal == NO) {
             CGFloat pixelWidth = LFAM_ScreenWidth * 0.5 * LFAM_ScreenScale;
             CGFloat pixelHeight = pixelWidth / aspectRatio;
             size = CGSizeMake(pixelWidth, pixelHeight);
@@ -581,7 +583,7 @@ static LFAssetManager *manager;
         
         dispatch_globalQueue_async_safe(^{
             
-            if (isOrigin) {
+            if (isOriginal) {
                 CGImageRef fullResolutionImageRef = [assetRep fullResolutionImage]; /** 原图 */
                 // 通过 fullResolutionImage 获取到的的高清图实际上并不带上在照片应用中使用“编辑”处理的效果，需要额外在 AlAssetRepresentation 中获取这些信息
                 NSString *adjustment = [[assetRep metadata] objectForKey:@"AdjustmentXMP"];

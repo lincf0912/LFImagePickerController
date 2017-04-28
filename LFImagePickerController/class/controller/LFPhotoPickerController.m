@@ -424,21 +424,15 @@
                 LFAsset *model = imagePickerVc.selectedModels[i];
                 LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                 if (photoEdit) {
-                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                         /** 编辑图片保存到相册 */
                         [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
-                    if (imagePickerVc.isSelectOriginalPhoto) {
-                        [[LFAssetManager manager] getOriginPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                            photosComplete(thumbnail, source, info, i, model.asset);
-                        }];
-                    } else {
-                        [[LFAssetManager manager] getPreviewPhotoWithAsset:model.asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                            photosComplete(thumbnail, source, info, i, model.asset);
-                        }];
-                    }
+                    [[LFAssetManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                        photosComplete(thumbnail, source, info, i, model.asset);
+                    }];
                 }
             }
         } else {
@@ -604,7 +598,7 @@
         UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
         [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:chosenImage complete:^(id asset, NSError *error) {
             if (asset && !error) {
-                [[LFAssetManager manager] getOriginPhotoWithAsset:asset completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                [[LFAssetManager manager] getPhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                     [imagePickerVc hideProgressHUD];
                     [picker.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:^{
                         [self callDelegateMethodWithAssets:@[asset] thumbnailImages:@[thumbnail] originalImages:@[source] infoArr:@[info]];

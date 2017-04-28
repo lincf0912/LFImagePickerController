@@ -84,6 +84,14 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /// 默认为NO，如果设置为YES, 选择器将会适配横屏
 @property(nonatomic, assign) BOOL supportAutorotate;
 
+/// Compressed image size (allowPickingOriginalPhoto=YES, Invalid), Default is 100 in KB
+/// 压缩标清图的大小（没有勾选原图的情况有效），默认为100 单位KB （只能压缩到接近该值的大小）
+@property(nonatomic, assign) CGFloat imageCompressSize;
+
+/// Compressed thumbnail image size, Default is 10 in KB
+/// 压缩缩略图的大小，默认为10 单位KB
+@property(nonatomic, assign) CGFloat thumbnailCompressSize;
+
 /// The photos user have selected
 /// 用户选中过的图片数组
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;

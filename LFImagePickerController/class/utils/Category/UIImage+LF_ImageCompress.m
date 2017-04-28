@@ -32,12 +32,13 @@
     /** 临时图片 */
     UIImage *compressedImage = self;
     CGFloat targetSize = size * 1024; // 压缩目标大小
-    CGFloat percent = 0.5f; // 压缩系数
+    CGFloat defaultPercent = 0.8f; // 压缩系数
+    CGFloat percent = defaultPercent;
     if (size <= 10) {
         percent = 0.01;
     }
     /** 微调参数 */
-    NSInteger microAdjustment = 5*1024;
+    NSInteger microAdjustment = 8*1024;
     /** 设备分辨率 */
     CGSize pixel = [UIImage appPixel];
     /** 缩放图片尺寸 */
@@ -73,30 +74,33 @@
         imageData = UIImageJPEGRepresentation(compressedImage, percent);
         
         //        NSLog(@"压缩后大小:%ldk, 压缩频率:%ldk", imageData.length/1024, (imageDatalength - imageData.length)/1024);
-        // 压缩精确度调整
-        if (imageData.length - targetSize < microAdjustment) {
+        
+        CGFloat diffSize = imageData.length - targetSize;
+        if (diffSize > targetSize/3) { /** 压缩后与期望值相差超过1/3 */
+            percent -=.2f;
+        } else if (diffSize < microAdjustment) { // 压缩精确度调整
             percent -= .02f; // 微调
         } else {
             percent -= .1f;
         }
         
-        // 大小没有改变
-        if (imageData.length == imageDatalength) {
+        // 大小没有改变 & 压缩后大小可能会微略变大的情况
+        if (imageDatalength > 0 && imageData.length >= imageDatalength) {
             //            NSLog(@"压缩大小没有改变，需要调整图片尺寸");
             //            break;
-            float scale = targetSize/(imageData.length-targetSize);
             /** 精准缩放计算误差值 */
-            float gap = targetSize/(imageData.length/2-targetSize);
-            gap = gap >= 1.0f || gap <= 0 ? 0.85f : gap;
-            scale *= gap;
+            float scale = 1-diffSize/targetSize;
             if (scale >= 1.0f || scale <= 0) scale = 0.85f;
             compressedImage = [self scaleWithSize:CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale)];
+            /** 重置压缩率 */
+            percent = defaultPercent;
         }
         imageDatalength = imageData.length;
     } while (imageData.length > targetSize+1024);/** 增加1k偏移量 */
     
     return imageData;
 }
+
 
 #pragma mark - 缩放图片尺寸
 - (UIImage*)scaleWithSize:(CGSize)newSize

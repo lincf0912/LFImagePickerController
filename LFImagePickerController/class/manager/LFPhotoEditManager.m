@@ -97,7 +97,34 @@ static LFPhotoEditManager *manager;
     }
 }
 
-- (void)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+/**
+ 通过asset解析缩略图、标清图/原图、图片数据字典
+ 
+ @param asset PHAsset／ALAsset
+ @param isOriginal 是否原图
+ @param completion 返回block 顺序：缩略图、标清图、图片数据字典
+ */
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+{
+    [self getPhotoWithAsset:asset isOriginal:isOriginal compressSize:kCompressSize thumbnailCompressSize:kThumbnailCompressSize completion:completion];
+}
+
+/**
+ 通过asset解析缩略图、标清图/原图、图片数据字典
+ 
+ @param asset PHAsset／ALAsset
+ @param isOriginal 是否原图
+ @param compressSize 非原图的压缩大小
+ @param thumbnailCompressSize 缩略图压缩大小
+ @param completion 返回block 顺序：缩略图、标清图、图片数据字典
+ */
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+             compressSize:(CGFloat)compressSize
+    thumbnailCompressSize:(CGFloat)thumbnailCompressSize
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *thumbnail = nil;
@@ -116,6 +143,9 @@ static LFPhotoEditManager *manager;
         
         /** 标清图/原图 */
         source = photoEdit.editPreviewImage;
+        if (!isOriginal) { /** 标清图 */
+            source = [source fastestCompressImageWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+        }
         /** 图片大小 */
         [imageInfo setObject:@(UIImageJPEGRepresentation(source, 0.75).length) forKey:kImageInfoFileByte];
         /** 图片宽高 */
@@ -128,7 +158,7 @@ static LFPhotoEditManager *manager;
         CGFloat th_pixelWidth = 80 * 2.0; // scale
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         thumbnail = [source scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-        thumbnail = [thumbnail fastestCompressImageWithSize:10];
+        thumbnail = [thumbnail fastestCompressImageWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completion) completion(thumbnail, source, imageInfo);

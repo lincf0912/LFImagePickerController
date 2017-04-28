@@ -81,19 +81,31 @@
 - (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed;
 
 /**
- *  通过asset解析缩略图、标清图、图片数据字典
+ *  通过asset解析缩略图、标清图/原图、图片数据字典
  *
  *  @param asset      PHAsset／ALAsset
- *  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
- */
-- (void)getPreviewPhotoWithAsset:(id)asset completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
-/**
- *  通过asset解析缩略图、原图、图片数据字典
- *
- *  @param asset      PHAsset／ALAsset
+ *  @param isOriginal 是否原图
  *  @param completion 返回block 顺序：缩略图、原图、图片数据字典
  */
-- (void)getOriginPhotoWithAsset:(id)asset completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+
+
+/**
+ 通过asset解析缩略图、标清图/原图、图片数据字典
+ 
+ @param asset PHAsset／ALAsset
+ @param isOriginal 是否原图
+ @param compressSize 非原图的压缩大小
+ @param thumbnailCompressSize 缩略图压缩大小
+ @param completion 返回block 顺序：缩略图、标清图、图片数据字典
+ */
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+             compressSize:(CGFloat)compressSize
+    thumbnailCompressSize:(CGFloat)thumbnailCompressSize
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
 
 /**
  *  @author lincf, 16-06-15 13:06:26

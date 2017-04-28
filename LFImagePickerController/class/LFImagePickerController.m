@@ -167,6 +167,9 @@
     self.allowEditting = YES;
     self.sortAscendingByCreateDate = YES;
     self.autoDismiss = YES;
+    self.supportAutorotate = NO;
+    self.imageCompressSize = kCompressSize;
+    self.thumbnailCompressSize = kThumbnailCompressSize;
 }
 
 - (void)observeAuthrizationStatusChange {

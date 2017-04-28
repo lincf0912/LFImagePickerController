@@ -6,7 +6,7 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
 #define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
@@ -55,6 +55,10 @@ extern NSString *const kEditPath;
 extern NSString *const kStickersPath;
 
 
+/** 标清图压缩大小 */
+extern CGFloat const kCompressSize;
+/** 缩略图压缩大小 */
+extern CGFloat const kThumbnailCompressSize;
 
 /**
  *  NSString;

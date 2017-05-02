@@ -13,6 +13,7 @@
 #import "UIView+LFFrame.h"
 #import "LFCancelBlock.h"
 #import "UIView+LFCommon.h"
+#import "UIImage+LFCommon.h"
 
 #import <AVFoundation/AVFoundation.h>
 
@@ -226,7 +227,7 @@
     [self setZoomScale:1.f];
     UIImage *image = [self captureImageAtFrame:self.clippingView.frame];
     [self setZoomScale:zoomScale];
-    return image;
+    return [image scaleToSize:self.image.size];
 }
 
 #pragma mark - LFClippingViewDelegate

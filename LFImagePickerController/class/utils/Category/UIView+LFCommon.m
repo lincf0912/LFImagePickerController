@@ -19,8 +19,10 @@
 {
     UIImage* image = nil;
     
+    CGSize size = self.frame.size;
+    
     //1.开启上下文
-    UIGraphicsBeginImageContextWithOptions(self.frame.size, NO, 0);
+    UIGraphicsBeginImageContextWithOptions(size, YES, [UIScreen mainScreen].scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     //2.绘制图层
     [self.layer renderInContext: context];
@@ -30,8 +32,8 @@
     UIGraphicsEndImageContext();
     
     if (!CGRectEqualToRect(CGRectZero, rect)) {
-        UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
-        [image drawAtPoint:CGPointMake(-rect.origin.x, -rect.origin.y)];
+        UIGraphicsBeginImageContextWithOptions(rect.size, YES, [UIScreen mainScreen].scale);
+        [image drawAtPoint:CGPointMake(-ceilf(rect.origin.x), -ceilf(rect.origin.y))];
         image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
     }

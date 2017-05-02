@@ -151,8 +151,9 @@
     keyboardBar.backgroundColor = [UIColor colorWithWhite:0.8 alpha:0.8];
     
     /** 拾色器 */
-    CGFloat sliderHeight = 34.f, margin = 30.f, sliderWidth = MIN(400, CGRectGetWidth(keyboardBar.frame)-2*margin);
-    JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake(margin+(CGRectGetWidth(keyboardBar.frame)-sliderWidth)/2, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, sliderWidth, sliderHeight) colors:kSliderColors];
+    CGFloat sliderHeight = 34.f, margin = 30.f;
+    CGFloat sliderWidth = MIN(400, CGRectGetWidth(keyboardBar.frame)-2*margin);
+    JRPickColorView *_colorSlider = [[JRPickColorView alloc] initWithFrame:CGRectMake((CGRectGetWidth(keyboardBar.frame)-sliderWidth)/2, (CGRectGetHeight(keyboardBar.frame)-sliderHeight)/2, sliderWidth, sliderHeight) colors:kSliderColors];
 //    _colorSlider.showColor = kSliderColors[0]; /** 白色 */
     _colorSlider.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
     _colorSlider.delegate = self;

@@ -169,6 +169,7 @@
     self.sortAscendingByCreateDate = YES;
     self.autoDismiss = YES;
     self.supportAutorotate = NO;
+    self.maxVideoSize = kMaxVideoSize;
     self.imageCompressSize = kCompressSize;
     self.thumbnailCompressSize = kThumbnailCompressSize;
 }

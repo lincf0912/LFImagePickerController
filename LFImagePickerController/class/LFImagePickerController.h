@@ -23,7 +23,7 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /**
  *  NSData;
  */
-extern NSString *const kImageInfoFileData;     // 图片数据
+extern NSString *const kImageInfoFileData;     // 图片数据 GIF才有值
 
 
 @class LFAsset;
@@ -92,13 +92,17 @@ extern NSString *const kImageInfoFileData;     // 图片数据
 /// 默认为NO，如果设置为YES, 选择器将会适配横屏
 @property(nonatomic, assign) BOOL supportAutorotate;
 
+/// Limit video size, Default is 10*1024 in KB
+/// 限制视频大小发送，默认10MB（10*1024）单位KB
+@property (nonatomic, assign) float maxVideoSize;
+
 /// Compressed image size (allowPickingOriginalPhoto=YES, Invalid), Default is 100 in KB
 /// 压缩标清图的大小（没有勾选原图的情况有效），默认为100 单位KB （只能压缩到接近该值的大小）
-@property(nonatomic, assign) CGFloat imageCompressSize;
+@property(nonatomic, assign) float imageCompressSize;
 
 /// Compressed thumbnail image size, Default is 10 in KB
 /// 压缩缩略图的大小，默认为10 单位KB
-@property(nonatomic, assign) CGFloat thumbnailCompressSize;
+@property(nonatomic, assign) float thumbnailCompressSize;
 
 /// The photos user have selected
 /// 用户选中过的图片数组
@@ -166,6 +170,10 @@ extern NSString *const kImageInfoFileData;     // 图片数据
  @param picker 选择器
  @param assets 相片对象
  @param infos 相片信息
+     kImageInfoFileName 图片名称
+     kImageInfoFileSize 图片大小［长、宽］
+     kImageInfoFileByte 图片大小［字节］
+     kImageInfoFileData 图片数据
  */
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingAssets:(NSArray *)assets infos:(NSArray<NSDictionary *> *)infos;
 

@@ -12,7 +12,7 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
-#import "GifPlayerManager.h"
+#import "UIImage+LF_Format.h"
 
 @interface LFProgressView : UIView
 
@@ -125,14 +125,8 @@
 - (void)prepareForReuse
 {
     [super prepareForReuse];
-    [[GifPlayerManager shared] stopGIFWithKey:self.model.name];
     self.model = nil;
     self.imageView.image = nil;
-}
-
-- (void)dealloc
-{
-    [GifPlayerManager free];
 }
 
 - (UIImage *)previewImage
@@ -166,11 +160,7 @@
                 if ([data isKindOfClass:[UIImage class]]) {
                     self.previewImage = (UIImage *)data;
                 } else if ([data isKindOfClass:[NSData class]]) {
-                    self.previewImage = [UIImage imageWithData:data];
-                    [[GifPlayerManager shared] transformGifDataToSampBufferRef:data key:model.name execution:^(CGImageRef imageData, NSString *key) {
-                        self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
-                    } fail:^(NSString *key) {
-                    }];
+                    self.previewImage = [UIImage LF_imageWithImageData:data];
                 }
                 _progressView.hidden = YES;
                 if (self.imageProgressUpdateBlock) {

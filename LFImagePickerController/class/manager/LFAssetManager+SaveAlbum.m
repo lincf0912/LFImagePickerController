@@ -10,6 +10,8 @@
 #import "LFAssetManager+Authorization.h"
 #import "LFImagePickerHeader.h"
 
+#import "UIImage+LF_Format.h"
+
 @implementation LFAssetManager (SaveAlbum)
 
 #pragma mark - 创建相册
@@ -76,11 +78,20 @@
 
 
 #pragma mark - 保存图片到自定义相册
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageData:(NSData *)imageData complete:(void (^)(id ,NSError *))complete{
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)image complete:(void (^)(id ,NSError *))complete
+{
+    [self baseSaveImageToCustomPhotosAlbumWithTitle:title data:image complete:complete];
+}
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageData:(NSData *)imageData complete:(void (^)(id ,NSError *))complete
+{
+    [self baseSaveImageToCustomPhotosAlbumWithTitle:title data:imageData complete:complete];
+}
+- (void)baseSaveImageToCustomPhotosAlbumWithTitle:(NSString *)title data:(id /* NSData/UIImage */)data complete:(void (^)(id ,NSError *))complete
+{
     if ([self authorizationStatusAuthorized]) {
         if (iOS8Later) {
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
-                [self saveToAlbumIOS8LaterWithImage:imageData customAlbum:result completionBlock:^(PHAsset *asset) {
+                [self saveToAlbumIOS8LaterWithImage:data customAlbum:result completionBlock:^(PHAsset *asset) {
                     if (complete) complete(asset, nil);
                 } failureBlock:^(NSError *error) {
                     if (complete) complete(nil, error);
@@ -90,7 +101,7 @@
             }];
         }else{
             /** iOS7之前保存图片到自定义相册方法 */
-            [self saveToAlbumIOS8EarlyWithData:imageData customAlbumName:title completionBlock:^(ALAsset *asset) {
+            [self saveToAlbumIOS7EarlyWithData:data customAlbumName:title completionBlock:^(ALAsset *asset) {
                 if (complete) complete(asset, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
@@ -103,7 +114,7 @@
 }
 
 #pragma mark - iOS8之后保存相片到自定义相册
-- (void)saveToAlbumIOS8LaterWithImage:(NSData *)data
+- (void)saveToAlbumIOS8LaterWithImage:(id /* NSData/UIImage */)data
                           customAlbum:(PHAssetCollection *)customAlbum
                       completionBlock:(void(^)(PHAsset *asset))completionBlock
                          failureBlock:(void (^)(NSError *error))failureBlock
@@ -115,20 +126,24 @@
         [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
             
             PHAssetChangeRequest *req = nil;
-            if (iOS9Later) {
-                PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
-                req = [PHAssetCreationRequest creationRequestForAsset];
-                [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
-            } else {
-                UIImage *image = [UIImage imageWithData:data];
-                req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+            if ([data isKindOfClass:[NSData class]]) {
+                if (iOS9Later) {
+                    PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
+                    req = [PHAssetCreationRequest creationRequestForAsset];
+                    [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
+                } else {
+                    UIImage *image = [UIImage LF_imageWithImageData:data];
+                    req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+                }
+            } else if ([data isKindOfClass:[UIImage class]]) {
+                req = [PHAssetChangeRequest creationRequestForAssetFromImage:data];
             }
             
             
             PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
             //记录本地标识，等待完成后取到相册中的图片对象
             [imageIds addObject:req.placeholderForCreatedAsset.localIdentifier];
-            if (assetCollection) {
+            if (assetCollection && placeholder) {
                 PHAssetCollectionChangeRequest *request = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:assetCollection];
                 //            [request addAssets:@[placeholder]];
                 //将最新保存的图片设置为封面
@@ -160,8 +175,8 @@
     });
 }
 
-#pragma mark - iOS8之前保存相片/视频到自定义相册
-- (void)saveToAlbumIOS8EarlyWithData:(id)data
+#pragma mark - iOS7之前保存相片/视频到自定义相册
+- (void)saveToAlbumIOS7EarlyWithData:(id /* NSData/UIImage/NSURL */)data
                      customAlbumName:(NSString *)customAlbumName
                      completionBlock:(void (^)(ALAsset *asset))completionBlock
                         failureBlock:(void (^)(NSError *error))failureBlock
@@ -241,6 +256,10 @@
         [assetsLibrary writeImageDataToSavedPhotosAlbum:data metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
             completeBlock(assetURL, error);
         }];
+    } else if ([data isKindOfClass:[UIImage class]]) { /** 图片 */
+        [assetsLibrary writeImageToSavedPhotosAlbum:[(UIImage *)data CGImage] orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
+            completeBlock(assetURL, error);
+        }];
     } else if ([data isKindOfClass:[NSURL class]]) { /** 视频 */
         [assetsLibrary writeVideoAtPathToSavedPhotosAlbum:data completionBlock:^(NSURL *assetURL, NSError *error) {
             completeBlock(assetURL, error);
@@ -264,7 +283,7 @@
             }];
         } else {
             //注意这个方法不能保存视频到自定义相册，只能保存到系统相册。
-            [self saveToAlbumIOS8EarlyWithData:videoURL customAlbumName:title completionBlock:^(ALAsset *asset) {
+            [self saveToAlbumIOS7EarlyWithData:videoURL customAlbumName:title completionBlock:^(ALAsset *asset) {
                 if (complete) complete(asset, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);

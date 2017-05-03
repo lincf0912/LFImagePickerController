@@ -54,11 +54,13 @@ extern NSString *const kEditPath;
 /** 贴图资源路径 */
 extern NSString *const kStickersPath;
 
+/** 视频大小限制 */
+extern float const kMaxVideoSize;
 
 /** 标清图压缩大小 */
-extern CGFloat const kCompressSize;
+extern float const kCompressSize;
 /** 缩略图压缩大小 */
-extern CGFloat const kThumbnailCompressSize;
+extern float const kThumbnailCompressSize;
 
 /**
  *  NSString;
@@ -75,7 +77,7 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /**
  *  NSData;
  */
-extern NSString *const kImageInfoFileData;     // 图片数据
+extern NSString *const kImageInfoFileData;     // 图片数据 GIF才有值
 
 
 @interface LFImagePickerHeader : NSObject

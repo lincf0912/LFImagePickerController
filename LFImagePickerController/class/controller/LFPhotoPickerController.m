@@ -16,6 +16,7 @@
 #import "UIView+LFAnimate.h"
 #import "UIAlertView+LF_Block.h"
 #import "UIImage+LFCommon.h"
+#import "UIImage+LF_Format.h"
 
 #import "LFAlbum.h"
 #import "LFAsset.h"
@@ -351,10 +352,16 @@
     } else if (model.previewImage) { /** 读取自定义图片 */
         photoEdittingVC.editImage = model.previewImage;
     } else {
-        /** 获取对应的图片 */
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            photoEdittingVC.editImage = photo;
-        }];
+        if (model.type == LFAssetMediaTypeGIF) { /** GIF图片处理 */
+            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:^(NSData *data, NSDictionary *info, BOOL isDegraded) {
+                photoEdittingVC.editImage = [UIImage LF_imageWithImageData:data];;
+            }];
+        } else { /** 普通图片处理 */
+            /** 获取对应的图片 */
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+                photoEdittingVC.editImage = photo;
+            }];
+        }
     }
     [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:photoEdittingVC];
 }
@@ -426,8 +433,7 @@
                 if (photoEdit) {
                     [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                         /** 编辑图片保存到相册 */
-                        NSData *imageData = info[kImageInfoFileData];
-                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageData:imageData complete:nil];
+                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
@@ -597,8 +603,7 @@
     NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
     if (picker.sourceType==UIImagePickerControllerSourceTypeCamera && [mediaType isEqualToString:@"public.image"]){
         UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
-        NSData *imageData = UIImageJPEGRepresentation(chosenImage, 0.75);
-        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageData:imageData complete:^(id asset, NSError *error) {
+        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:chosenImage complete:^(id asset, NSError *error) {
             if (asset && !error) {
                 [[LFAssetManager manager] getPhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                     [imagePickerVc hideProgressHUD];

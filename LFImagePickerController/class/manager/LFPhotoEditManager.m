@@ -160,9 +160,6 @@ static LFPhotoEditManager *manager;
         }
         /** 图片数据 */
         NSData *imageData = UIImageJPEGRepresentation(source, 0.75);
-        if (imageData) {
-            [imageInfo setObject:imageData forKey:kImageInfoFileData];
-        }
         /** 图片大小 */
         [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
         /** 图片宽高 */

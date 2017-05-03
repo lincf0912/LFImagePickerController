@@ -64,6 +64,10 @@
 - (void)setEditImage:(UIImage *)editImage
 {
     _editImage = editImage;
+    /** GIF图片仅支持编辑第一帧 */
+    if (editImage.images.count) {
+        editImage = editImage.images.firstObject;
+    }
     _edittingView.image = editImage;
 }
 
@@ -92,10 +96,11 @@
     _edittingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _edittingView.editDelegate = self;
     _edittingView.clippingDelegate = self;
-    _edittingView.image = _editImage;
     if (_photoEdit) {
         [self setEditImage:_photoEdit.editImage];
         _edittingView.photoEditData = _photoEdit.editData;
+    } else {
+        [self setEditImage:_editImage];
     }
     
     /** 单击的 Recognizer */

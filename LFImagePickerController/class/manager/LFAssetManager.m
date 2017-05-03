@@ -482,6 +482,10 @@ static LFAssetManager *manager;
     return 0;
 }
 
+- (PHImageRequestID)getPhotoDataWithAsset:(id)asset completion:(void (^)(NSData *data,NSDictionary *info,BOOL isDegraded))completion
+{
+    return [self getPhotoDataWithAsset:asset completion:completion progressHandler:nil networkAccessAllowed:YES];
+}
 - (PHImageRequestID)getPhotoDataWithAsset:(id)asset completion:(void (^)(NSData *data,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHImageRequestOptions *option = [[PHImageRequestOptions alloc]init];
@@ -560,10 +564,6 @@ static LFAssetManager *manager;
             source = [UIImage imageWithData:sourceData];
             /** 标清图片大小 */
             [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
-            /** 图片数据 */
-            if (sourceData) {
-                [info setObject:sourceData forKey:kImageInfoFileData];
-            }
         }
         /** 图片宽高 */
         CGSize imageSize = source.size;
@@ -643,10 +643,12 @@ static LFAssetManager *manager;
             } else {
                 [imageInfo setObject:[NSNull null] forKey:kImageInfoFileName];
             }
-            /** 图片数据 */
-            if (imageData) {
-                [imageInfo setObject:imageData forKey:kImageInfoFileData];
-            }
+            if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                /** 图片数据 */
+                if (imageData) {
+                    [imageInfo setObject:imageData forKey:kImageInfoFileData];
+                }
+             }
             if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
         }];
         
@@ -692,12 +694,16 @@ static LFAssetManager *manager;
             if (self.shouldFixOrientation) {
                 source = [source fixOrientation];
             }
-            Byte *buffer = (Byte*)malloc(assetRep.size);
-            NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
-            NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
-            /** 图片数据 */
-            if (imageData) {
-                [imageInfo setObject:imageData forKey:kImageInfoFileData];
+            
+            ALAssetRepresentation *gifAR = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
+            if (gifAR) {
+                Byte *buffer = (Byte*)malloc(assetRep.size);
+                NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
+                NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
+                /** 图片数据 */
+                if (imageData) {
+                    [imageInfo setObject:imageData forKey:kImageInfoFileData];
+                }
             }
             
             /** 文件名称 */

@@ -72,6 +72,7 @@
     NSString *documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES) objectAtIndex:0];
     NSString *thumbnailFilePath = [documentPath stringByAppendingPathComponent:@"thumbnail"];
     NSString *originalFilePath = [documentPath stringByAppendingPathComponent:@"original"];
+    NSString *gifFilePath = [documentPath stringByAppendingPathComponent:@"gif"];
     
     NSFileManager *fileManager = [NSFileManager new];
     if (![fileManager fileExistsAtPath:thumbnailFilePath])
@@ -81,6 +82,10 @@
     if (![fileManager fileExistsAtPath:originalFilePath])
     {
         [fileManager createDirectoryAtPath:originalFilePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    if (![fileManager fileExistsAtPath:gifFilePath])
+    {
+        [fileManager createDirectoryAtPath:gifFilePath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
     for (NSInteger i = 0; i < originalImages.count; i++) {
@@ -93,6 +98,10 @@
         [UIImageJPEGRepresentation(thumbnailImage, 0.5f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
         /** 原图保存到路径 */
         [UIImageJPEGRepresentation(image, 0.5f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
+        
+        /** GIF保存到路径 */
+        NSData *data = info[kImageInfoFileData];
+        [data writeToFile:[gifFilePath stringByAppendingPathComponent:name] atomically:YES];
     }
 }
 

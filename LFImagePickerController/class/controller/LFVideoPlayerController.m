@@ -15,9 +15,6 @@
 #import "UIAlertView+LF_Block.h"
 #import "LF_FileUtility.h"
 
-/** 视频发送大小（10.0M） */
-#define kFixVideoSize (10.0 * 1000 * 1000)
-
 @interface LFVideoPlayerController ()
 {
     AVPlayer *_player;
@@ -157,7 +154,7 @@
     
     __weak typeof(self) weakSelf = self;
     void(^compressAndCacheVideoBlock)(double fileSize, NSString *videoPath) = ^(double fileSize, NSString *videoPath) {
-        if (fileSize > kFixVideoSize ) {
+        if (fileSize > (imagePickerVc.maxVideoSize * 1024)) {
             /** 视频大于5M的，不发送 */
             NSString *msg = [NSString stringWithFormat:@"你选择的视频文件尺寸过大，无法发送。请选择文件尺寸较小或者时间较短的视频"];
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"提示" message:msg cancelButtonTitle:nil otherButtonTitles:@"确认" block:^(UIAlertView *alertView, NSInteger buttonIndex) {

@@ -162,6 +162,7 @@
     self.allowPickingOriginalPhoto = YES;
     self.allowPickingVideo = YES;
     self.allowPickingImage = YES;
+    self.allowPickingGif = NO;
     self.allowTakePicture = YES;
     self.allowPreview = YES;
     self.allowEditting = YES;

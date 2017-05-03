@@ -62,19 +62,24 @@
 
 - (void)setType:(LFAssetMediaType)type {
     
-    if (type == LFAssetMediaTypePhoto || type == LFAssetMediaTypeLivePhoto) {
+    if (type == LFAssetMediaTypePhoto || type == LFAssetMediaTypeLivePhoto || type == LFAssetMediaTypeGIF) {
         _selectImageView.hidden = NO;
         _selectPhotoButton.hidden = NO;
         _bottomView.hidden = YES;
+        
+        if (type == LFAssetMediaTypeGIF) {
+            _bottomView.hidden = NO;
+            self.timeLength.text = @"GIF";
+            self.videoImgView.hidden = YES;
+            _timeLength.x = 5;
+        }
     } else if (type == LFAssetMediaTypeVideo) {
         _selectImageView.hidden = YES;
         _selectPhotoButton.hidden = YES;
         _bottomView.hidden = NO;
-        
         self.timeLength.text = _model.timeLength;
         self.videoImgView.hidden = NO;
         _timeLength.x = self.videoImgView.y;
-        _timeLength.textAlignment = NSTextAlignmentRight;
     }
 }
 
@@ -84,7 +89,7 @@
     if (onlySelected) {
         _selectPhotoButton.frame = self.bounds;
     } else {
-        _selectPhotoButton.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 30 + kAdditionalSize, 30 + kAdditionalSize);
+        _selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
     }
 }
 
@@ -112,7 +117,7 @@
 - (UIButton *)selectPhotoButton {
     if (_selectPhotoButton == nil) {
         UIButton *selectPhotoButton = [[UIButton alloc] init];
-        selectPhotoButton.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 30 + kAdditionalSize, 30 + kAdditionalSize);
+        selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
         [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.contentView addSubview:selectPhotoButton];
         _selectPhotoButton = selectPhotoButton;
@@ -138,7 +143,7 @@
 - (UIImageView *)selectImageView {
     if (_selectImageView == nil) {
         UIImageView *selectImageView = [[UIImageView alloc] init];
-        selectImageView.frame = CGRectMake(self.width - 32 - kAdditionalSize, 5, 27 + kAdditionalSize, 27 + kAdditionalSize);
+        selectImageView.frame = CGRectMake(self.width - 28 - kAdditionalSize, 2, 26 + kAdditionalSize, 26 + kAdditionalSize);
         [self.contentView addSubview:selectImageView];
         _selectImageView = selectImageView;
     }

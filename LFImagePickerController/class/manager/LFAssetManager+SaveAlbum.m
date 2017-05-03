@@ -76,11 +76,11 @@
 
 
 #pragma mark - 保存图片到自定义相册
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)saveImage complete:(void (^)(id ,NSError *))complete{
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageData:(NSData *)imageData complete:(void (^)(id ,NSError *))complete{
     if ([self authorizationStatusAuthorized]) {
         if (iOS8Later) {
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
-                [self saveToAlbumIOS8LaterWithImage:saveImage customAlbum:result completionBlock:^(PHAsset *asset) {
+                [self saveToAlbumIOS8LaterWithImage:imageData customAlbum:result completionBlock:^(PHAsset *asset) {
                     if (complete) complete(asset, nil);
                 } failureBlock:^(NSError *error) {
                     if (complete) complete(nil, error);
@@ -90,7 +90,7 @@
             }];
         }else{
             /** iOS7之前保存图片到自定义相册方法 */
-            [self saveToAlbumIOS8EarlyWithData:saveImage customAlbumName:title completionBlock:^(ALAsset *asset) {
+            [self saveToAlbumIOS8EarlyWithData:imageData customAlbumName:title completionBlock:^(ALAsset *asset) {
                 if (complete) complete(asset, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
@@ -103,7 +103,7 @@
 }
 
 #pragma mark - iOS8之后保存相片到自定义相册
-- (void)saveToAlbumIOS8LaterWithImage:(UIImage *)image
+- (void)saveToAlbumIOS8LaterWithImage:(NSData *)data
                           customAlbum:(PHAssetCollection *)customAlbum
                       completionBlock:(void(^)(PHAsset *asset))completionBlock
                          failureBlock:(void (^)(NSError *error))failureBlock
@@ -113,7 +113,18 @@
         NSMutableArray *imageIds = [NSMutableArray array];
         PHAssetCollection *assetCollection = (PHAssetCollection *)customAlbum;
         [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
-            PHAssetChangeRequest *req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+            
+            PHAssetChangeRequest *req = nil;
+            if (iOS9Later) {
+                PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
+                req = [PHAssetCreationRequest creationRequestForAsset];
+                [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
+            } else {
+                UIImage *image = [UIImage imageWithData:data];
+                req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+            }
+            
+            
             PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
             //记录本地标识，等待完成后取到相册中的图片对象
             [imageIds addObject:req.placeholderForCreatedAsset.localIdentifier];
@@ -225,15 +236,13 @@
         }
     };
     
-    if ([data isKindOfClass:[UIImage class]]) { /** 图片 */
-        UIImage *image = data;
+    if ([data isKindOfClass:[NSData class]]) { /** 图片 */
         /** 保存图片到系统相册，因为系统的 album 相当于一个 music library, 而自己的相册相当于一个 playlist, 你的 album 所有的内容必须是链接到系统相册里的内容的. */
-        [assetsLibrary writeImageToSavedPhotosAlbum:image.CGImage orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
+        [assetsLibrary writeImageDataToSavedPhotosAlbum:data metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
             completeBlock(assetURL, error);
         }];
     } else if ([data isKindOfClass:[NSURL class]]) { /** 视频 */
-        NSURL *videoURL = data;
-        [assetsLibrary writeVideoAtPathToSavedPhotosAlbum:videoURL completionBlock:^(NSURL *assetURL, NSError *error) {
+        [assetsLibrary writeVideoAtPathToSavedPhotosAlbum:data completionBlock:^(NSURL *assetURL, NSError *error) {
             completeBlock(assetURL, error);
         }];
     }

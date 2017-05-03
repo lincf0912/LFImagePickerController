@@ -8,6 +8,9 @@
 
 #import "LFAsset.h"
 
+#import <Photos/Photos.h>
+#import <AssetsLibrary/AssetsLibrary.h>
+
 @implementation LFAsset
 
 - (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type
@@ -16,6 +19,8 @@
     if (self) {
         _asset = asset;
         _type = type;
+        _timeLength = nil;
+        _name = nil;
     }
     return self;
 }
@@ -25,6 +30,13 @@
     self = [self initWithAsset:asset type:type];
     if (self) {
         _timeLength = timeLength;
+        if ([asset isKindOfClass:[PHAsset class]]) {
+            _name = [asset valueForKey:@"filename"];
+        } else if ([asset isKindOfClass:[ALAsset class]]) {
+            ALAsset *alAsset = (ALAsset *)asset;
+            ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+            _name = assetRep.filename;
+        }
     }
     return self;
 }

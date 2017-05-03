@@ -20,6 +20,10 @@ extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
  *  NSNumber;
  */
 extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
+/**
+ *  NSData;
+ */
+extern NSString *const kImageInfoFileData;     // 图片数据
 
 
 @class LFAsset;
@@ -63,6 +67,10 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /// Default is YES, if set NO, user can't picking image.
 /// 默认为YES，如果设置为NO,用户将不能选择发送图片
 @property(nonatomic, assign) BOOL allowPickingImage;
+
+/// Default is NO, if set YES, user can picking gif.
+/// 默认为NO，如果设置为YES,用户可以选择gif图片
+@property (nonatomic, assign) BOOL allowPickingGif;
 
 /// Default is YES, if set NO, take picture will be hidden.
 /// 默认为YES，如果设置为NO,拍照按钮将隐藏
@@ -178,9 +186,10 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
  @param thumbnailImages 缩略图
  @param originalImages 原图
  @param infos 图片信息
- kImageInfoFileName 图片名称
- kImageInfoFileSize 图片大小［长、宽］
- kImageInfoFileByte 图片大小［字节］
+     kImageInfoFileName 图片名称
+     kImageInfoFileSize 图片大小［长、宽］
+     kImageInfoFileByte 图片大小［字节］
+     kImageInfoFileData 图片数据
  */
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingThumbnailImages:(NSArray<UIImage *> *)thumbnailImages originalImages:(NSArray<UIImage *> *)originalImages infos:(NSArray<NSDictionary *> *)infos;
 

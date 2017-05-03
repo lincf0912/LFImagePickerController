@@ -41,15 +41,23 @@ static LFPhotoEditManager *manager;
 {
     __weak typeof(self) weakSelf = self;
     if (asset.asset) {
-        [self requestForAsset:asset.asset complete:^(NSString *name) {
-            if (name.length) {
-                if (obj) {
-                    [weakSelf.photoEditDict setObject:obj forKey:name];
-                } else {
-                    [weakSelf.photoEditDict removeObjectForKey:name];
-                }
+        if (asset.name.length) {
+            if (obj) {
+                [weakSelf.photoEditDict setObject:obj forKey:asset.name];
+            } else {
+                [weakSelf.photoEditDict removeObjectForKey:asset.name];
             }
-        }];
+        } else {
+            [self requestForAsset:asset.asset complete:^(NSString *name) {
+                if (name.length) {
+                    if (obj) {
+                        [weakSelf.photoEditDict setObject:obj forKey:name];
+                    } else {
+                        [weakSelf.photoEditDict removeObjectForKey:name];
+                    }
+                }
+            }];
+        }
     } else if (asset.previewImage) {
         NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
         if (obj) {
@@ -65,11 +73,15 @@ static LFPhotoEditManager *manager;
     __weak typeof(self) weakSelf = self;
     __block LFPhotoEdit *photoEdit = nil;
     if (asset.asset) {
-        [self requestForAsset:asset.asset complete:^(NSString *name) {
-            if (name.length) {
-                photoEdit = [weakSelf.photoEditDict objectForKey:name];
-            }
-        }];
+        if (asset.name.length) {
+            photoEdit = [weakSelf.photoEditDict objectForKey:asset.name];
+        } else {
+            [self requestForAsset:asset.asset complete:^(NSString *name) {
+                if (name.length) {
+                    photoEdit = [weakSelf.photoEditDict objectForKey:name];
+                }
+            }];
+        }
     } else if (asset.previewImage) {
         NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
         photoEdit = [weakSelf.photoEditDict objectForKey:name];
@@ -146,8 +158,13 @@ static LFPhotoEditManager *manager;
         if (!isOriginal) { /** 标清图 */
             source = [source fastestCompressImageWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
         }
+        /** 图片数据 */
+        NSData *imageData = UIImageJPEGRepresentation(source, 0.75);
+        if (imageData) {
+            [imageInfo setObject:imageData forKey:kImageInfoFileData];
+        }
         /** 图片大小 */
-        [imageInfo setObject:@(UIImageJPEGRepresentation(source, 0.75).length) forKey:kImageInfoFileByte];
+        [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
         /** 图片宽高 */
         CGSize imageSize = source.size;
         NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];

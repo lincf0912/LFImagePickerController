@@ -35,7 +35,7 @@
 /**
  *  @author lincf, 16-07-28 17:07:38
  *
- *  Get Album 获得相册/相册数组
+ *  Get Album 获得相机胶卷相册
  *
  *  @param allowPickingVideo 是否包含视频
  *  @param allowPickingImage 是否包含相片
@@ -47,7 +47,7 @@
 
 
 /**
- Get Album 获得相册/相册数组
+ Get Album 获得所有相册/相册数组
 
  @param allowPickingVideo 是否包含视频
  @param allowPickingImage 是否包含相片
@@ -61,25 +61,28 @@
  *
  *  Get Assets 获得Asset数组
  *
- *  @param result            LFAlbum.result
+ *  @param result            LFAlbum.result 相册对象
  *  @param allowPickingVideo 是否包含视频
  *  @param allowPickingImage 是否包含相片
+ *  @param allowPickingGif   是否包含Gif
  *  @param fetchLimit        相片最大数量
  *  @param ascending         顺序获取
  *  @param completion        回调结果
  */
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
+- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
 /** 获得下标为index的单个照片 */
-- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage completion:(void (^)(LFAsset *model))completion;
+- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif completion:(void (^)(LFAsset *model))completion;
 
 /// Get photo 获得照片
 - (void)getPostImageWithAlbumModel:(LFAlbum *)model ascending:(BOOL)ascending completion:(void (^)(UIImage *postImage))completion;
 
+/** 获取照片对象 回调 image */
 - (PHImageRequestID)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion;
 - (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion;
 - (PHImageRequestID)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed;
 - (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed;
-
+/** 获取照片对象 回调 data */
+- (PHImageRequestID)getPhotoDataWithAsset:(id)asset completion:(void (^)(NSData *data,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed;
 /**
  *  通过asset解析缩略图、标清图/原图、图片数据字典
  *
@@ -116,11 +119,6 @@
  *  @param completion 回调压缩后视频路径，可以复制或剪切
  */
 - (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion;
-
-
-/// Get full Image 获取原图
-/// 该方法会先返回缩略图，再返回原图，如果info[PHImageResultIsDegradedKey] 为 YES，则表明当前返回的是缩略图，否则是原图。
-- (void)getOriginalPhotoWithAsset:(id)asset completion:(void (^)(NSData *data, UIImage *photo,NSDictionary *info,BOOL isDegraded))completion;
 
 /// Get video 获得视频
 - (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;

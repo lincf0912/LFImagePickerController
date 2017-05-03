@@ -132,7 +132,7 @@
     if (imagePickerVc.sortAscendingByCreateDate) {
         index = album.count-1;
     }
-    [[LFAssetManager manager] getAssetFromFetchResult:album.result atIndex:index allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage completion:^(LFAsset *model) {
+    [[LFAssetManager manager] getAssetFromFetchResult:album.result atIndex:index allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif completion:^(LFAsset *model) {
         /** 优先显示编辑图片 */
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
         if ([cell.model isEqual:album] && photoEdit.editPosterImage) {

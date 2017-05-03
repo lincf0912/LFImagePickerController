@@ -39,12 +39,13 @@
 //    imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
+    imagePicker.allowPickingGif = YES; /** 支持GIF */
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 
 - (IBAction)buttonAction2:(id)sender {
     [[LFAssetManager manager] getCameraRollAlbum:NO allowPickingImage:YES fetchLimit:2 ascending:YES completion:^(LFAlbum *model) {
-        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES fetchLimit:2 ascending:NO completion:^(NSArray<LFAsset *> *models) {
+        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES  allowPickingGif:NO fetchLimit:2 ascending:NO completion:^(NSArray<LFAsset *> *models) {
             NSMutableArray *array = [@[] mutableCopy];
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
@@ -86,7 +87,7 @@
         UIImage *thumbnailImage = thumbnailImages[i];
         UIImage *image = originalImages[i];
         NSDictionary *info = infos[i];
-        NSString *name = [NSString stringWithFormat:@"%@.jpeg", info[kImageInfoFileName]];
+        NSString *name = info[kImageInfoFileName];
         
         /** 缩略图保存到路径 */
         [UIImageJPEGRepresentation(thumbnailImage, 0.5f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];

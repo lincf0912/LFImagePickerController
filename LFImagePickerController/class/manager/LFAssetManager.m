@@ -13,6 +13,8 @@
 #import "LF_VideoUtils.h"
 #import "LF_FileUtility.h"
 
+#import <MobileCoreServices/UTCoreTypes.h>
+
 @interface LFAssetManager ()
 
 @end
@@ -123,11 +125,11 @@ static LFAssetManager *manager;
                 }
             }
         }
-        if (completion && albumArr.count > 0) completion(albumArr);
+        if (completion) completion(albumArr);
     } else {
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             if (group == nil) {
-                if (completion && albumArr.count > 0) completion(albumArr);
+                if (completion) completion(albumArr);
             }
             if ([group numberOfAssets] < 1) return;
             NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
@@ -142,14 +144,16 @@ static LFAssetManager *manager;
             } else {
                 [albumArr addObject:[self modelWithResult:group name:name]];
             }
-        } failureBlock:nil];
+        } failureBlock:^(NSError *error) {
+            if (completion) completion(albumArr);
+        }];
     }
 }
 
 #pragma mark - Get Assets
 
 /// Get Assets 获得照片数组
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
+- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
 {
     __block NSMutableArray *photoArr = [NSMutableArray array];
     if ([result isKindOfClass:[PHFetchResult class]]) {
@@ -169,7 +173,7 @@ static LFAssetManager *manager;
         NSArray *results = [fetchResult objectsAtIndexes:indexSet];
         
         for (PHAsset *asset in results) {
-            LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+            LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
             if (model) {
                 if (ascending) {
                     [photoArr addObject:model];
@@ -193,7 +197,7 @@ static LFAssetManager *manager;
         ALAssetsGroupEnumerationResultsBlock resultBlock = ^(ALAsset *asset, NSUInteger idx, BOOL *stop)
         {
             if (asset) {
-                LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+                LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
                 if (model) {
                     if (ascending) {
                         [photoArr insertObject:model atIndex:0];
@@ -229,7 +233,7 @@ static LFAssetManager *manager;
 
 ///  Get asset at index 获得下标为index的单个照片
 ///  if index beyond bounds, return nil in callback 如果索引越界, 在回调中返回 nil
-- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage completion:(void (^)(LFAsset *))completion {
+- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif completion:(void (^)(LFAsset *))completion {
     if ([result isKindOfClass:[PHFetchResult class]]) {
         PHFetchResult *fetchResult = (PHFetchResult *)result;
         PHAsset *asset;
@@ -240,7 +244,7 @@ static LFAssetManager *manager;
             if (completion) completion(nil);
             return;
         }
-        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
         if (completion) completion(model);
     } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
@@ -255,7 +259,7 @@ static LFAssetManager *manager;
         @try {
             [group enumerateAssetsAtIndexes:indexSet options:NSEnumerationConcurrent usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
                 if (!result) return;
-                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
                 if (completion) completion(model);
             }];
         }
@@ -265,49 +269,72 @@ static LFAssetManager *manager;
     }
 }
 
-- (LFAsset *)assetModelWithAsset:(id)asset allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage {
+- (LFAsset *)assetModelWithAsset:(id)asset allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif {
     LFAsset *model;
-    LFAssetMediaType type = LFAssetMediaTypePhoto;
+    __block LFAssetMediaType type = LFAssetMediaTypePhoto;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         if (phAsset.mediaType == PHAssetMediaTypeVideo)      type = LFAssetMediaTypeVideo;
         else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
         else if (phAsset.mediaType == PHAssetMediaTypeImage) {
             if (iOS9_1Later) {
-                // if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = LFAssetMediaTypeLivePhoto;
+//                 if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = LFAssetMediaTypeLivePhoto;
+            }
+            
+            if (allowPickingGif) {
+                /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
+                if ([[phAsset valueForKey:@"filename"] hasSuffix:@"GIF"]) {
+                    type = LFAssetMediaTypeGIF;
+                }
+                
+                //            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
+                //            option.resizeMode = PHImageRequestOptionsResizeModeFast;
+                //            option.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+                //            option.synchronous = YES;
+                //            [[PHImageManager defaultManager] requestImageDataForAsset:asset
+                //                                           options:option
+                //                                     resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                //                                         //gif 图片
+                //                                         if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                //                                             type = LFAssetMediaTypeGIF;
+                //                                         }
+                //                                     }];
             }
         }
         if (!allowPickingVideo && type == LFAssetMediaTypeVideo) return nil;
         if (!allowPickingImage && type == LFAssetMediaTypePhoto) return nil;
+        if (!allowPickingImage && type == LFAssetMediaTypeGIF) return nil;
         
         // 过滤掉尺寸不满足要求的图片
         if (![self isPhotoSelectableWithAsset:phAsset]) {
             return nil;
         }
 
-        NSString *timeLength = type == LFAssetMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",phAsset.duration] : @"";
+        NSString *timeLength = type == LFAssetMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",phAsset.duration] : nil;
         timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
         model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
     } else if ([asset isKindOfClass:[ALAsset class]]) {
-        if (!allowPickingVideo){
-            model = [[LFAsset alloc] initWithAsset:asset type:type];
-            return model;
-        }
+        ALAsset *alAsset = (ALAsset *)asset;
+        
+        NSString *timeLength = nil;
         /// Allow picking video
-        if ([[asset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
+        if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
             type = LFAssetMediaTypeVideo;
-            NSTimeInterval duration = [[asset valueForProperty:ALAssetPropertyDuration] integerValue];
-            NSString *timeLength = [NSString stringWithFormat:@"%0.0f",duration];
-            timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-            model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
+            NSTimeInterval duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
+            timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",duration] integerValue]];
         } else {
             // 过滤掉尺寸不满足要求的图片
-            if (![self isPhotoSelectableWithAsset:asset]) {
+            if (![self isPhotoSelectableWithAsset:alAsset]) {
                 return nil;
             }
+            
+            if (allowPickingGif) {
+                ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
+                if (re) type = LFAssetMediaTypeGIF;
+            }
 
-            model = [[LFAsset alloc] initWithAsset:asset type:type];
         }
+        model = [[LFAsset alloc] initWithAsset:alAsset type:type timeLength:timeLength];
     }
     return model;
 }
@@ -337,7 +364,9 @@ static LFAssetManager *manager;
     for (NSInteger i = 0; i < photos.count; i++) {
         LFAsset *model = photos[i];
         if ([model.asset isKindOfClass:[PHAsset class]]) {
-            [[PHImageManager defaultManager] requestImageDataForAsset:model.asset options:nil resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
+            option.resizeMode = PHImageRequestOptionsResizeModeFast;
+            [[PHImageManager defaultManager] requestImageDataForAsset:model.asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                 if (model.type != LFAssetMediaTypeVideo) dataLength += imageData.length;
                 assetCount ++;
                 if (assetCount >= photos.count) {
@@ -418,7 +447,7 @@ static LFAssetManager *manager;
                 options.networkAccessAllowed = YES;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                    UIImage *resultImage = [UIImage imageWithData:imageData scale:0.1];
+                    UIImage *resultImage = [UIImage imageWithData:imageData scale:LFAM_ScreenScale];
                     resultImage = [resultImage scaleToSize:imageSize];
                     if (resultImage) {
                         if (self.shouldFixOrientation) {
@@ -449,6 +478,47 @@ static LFAssetManager *manager;
                 });
             });
         });
+    }
+    return 0;
+}
+
+- (PHImageRequestID)getPhotoDataWithAsset:(id)asset completion:(void (^)(NSData *data,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
+    if ([asset isKindOfClass:[PHAsset class]]) {
+        PHImageRequestOptions *option = [[PHImageRequestOptions alloc]init];
+        option.resizeMode = PHImageRequestOptionsResizeModeFast;
+        PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
+            if (downloadFinined && imageData) {
+                BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+                if (completion) completion(imageData,info,isDegraded);
+            }
+            
+            // Download image from iCloud / 从iCloud下载图片
+            if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData && networkAccessAllowed) {
+                PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+                options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                    dispatch_main_async_safe(^{
+                        if (progressHandler) {
+                            progressHandler(progress, error, stop, info);
+                        }
+                    });
+                };
+                options.networkAccessAllowed = YES;
+                options.resizeMode = PHImageRequestOptionsResizeModeFast;
+                [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                    BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+                    if (completion) completion(imageData,info,isDegraded);
+                }];
+            }
+        }];
+        return imageRequestID;
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
+        ALAsset *alAsset = (ALAsset *)asset;
+        ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+        Byte *imageBuffer = (Byte *)malloc(assetRep.size);
+        NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:assetRep.size error:nil];
+        NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
+        if (completion) completion(imageData,nil,NO);
     }
     return 0;
 }
@@ -490,6 +560,10 @@ static LFAssetManager *manager;
             source = [UIImage imageWithData:sourceData];
             /** 标清图片大小 */
             [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
+            /** 图片数据 */
+            if (sourceData) {
+                [info setObject:sourceData forKey:kImageInfoFileData];
+            }
         }
         /** 图片宽高 */
         CGSize imageSize = source.size;
@@ -564,10 +638,14 @@ static LFAssetManager *manager;
             [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
             
             NSURL *fileUrl = [info objectForKey:@"PHImageFileURLKey"];
-            if (fileUrl) {
+            if (fileUrl.lastPathComponent) {
                 [imageInfo setObject:fileUrl.lastPathComponent forKey:kImageInfoFileName];
             } else {
                 [imageInfo setObject:[NSNull null] forKey:kImageInfoFileName];
+            }
+            /** 图片数据 */
+            if (imageData) {
+                [imageInfo setObject:imageData forKey:kImageInfoFileData];
             }
             if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
         }];
@@ -575,13 +653,13 @@ static LFAssetManager *manager;
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-        CGImageRef thumbnailImageRef = alAsset.aspectRatioThumbnail;/** 缩略图 */
-        thumbnail = [UIImage imageWithCGImage:thumbnailImageRef scale:1.0 orientation:UIImageOrientationUp];
-        if (self.shouldFixOrientation) {
-            thumbnail = [thumbnail fixOrientation];
-        }
         
         dispatch_globalQueue_async_safe(^{
+            CGImageRef thumbnailImageRef = alAsset.aspectRatioThumbnail;/** 缩略图 */
+            thumbnail = [UIImage imageWithCGImage:thumbnailImageRef scale:1.0 orientation:UIImageOrientationUp];
+            if (self.shouldFixOrientation) {
+                thumbnail = [thumbnail fixOrientation];
+            }
             
             if (isOriginal) {
                 CGImageRef fullResolutionImageRef = [assetRep fullResolutionImage]; /** 原图 */
@@ -614,7 +692,15 @@ static LFAssetManager *manager;
             if (self.shouldFixOrientation) {
                 source = [source fixOrientation];
             }
+            Byte *buffer = (Byte*)malloc(assetRep.size);
+            NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
+            NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
+            /** 图片数据 */
+            if (imageData) {
+                [imageInfo setObject:imageData forKey:kImageInfoFileData];
+            }
             
+            /** 文件名称 */
             NSString *fileName = assetRep.filename;
             if (fileName.length) {
                 [imageInfo setObject:fileName forKey:kImageInfoFileName];
@@ -719,39 +805,6 @@ static LFAssetManager *manager;
         ALAssetsGroup *group = model.result;
         UIImage *postImage = [UIImage imageWithCGImage:group.posterImage];
         if (completion) completion(postImage);
-    }
-}
-
-/// Get Original Photo / 获取原图
-- (void)getOriginalPhotoWithAsset:(id)asset completion:(void (^)(NSData *data, UIImage *photo,NSDictionary *info,BOOL isDegraded))completion
-{
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        PHImageRequestOptions *option = [[PHImageRequestOptions alloc]init];
-        option.networkAccessAllowed = YES;
-        [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
-            if (downloadFinined && imageData) {
-                UIImage *result = [UIImage imageWithData:imageData];
-                if (self.shouldFixOrientation) {
-                    result = [result fixOrientation];
-                }
-                BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
-                if (completion) completion(imageData,result,info,isDegraded);
-            }
-        }];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
-        ALAsset *alAsset = (ALAsset *)asset;
-        ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-        dispatch_globalQueue_async_safe(^{
-            CGImageRef originalImageRef = [assetRep fullResolutionImage];
-            UIImage *originalImage = [UIImage imageWithCGImage:originalImageRef scale:1.0 orientation:UIImageOrientationUp];
-            Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
-            NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
-            NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
-            dispatch_main_async_safe(^{
-                if (completion) completion(imageData,originalImage,nil,NO);
-            });
-        });
     }
 }
 

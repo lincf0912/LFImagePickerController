@@ -49,6 +49,8 @@
 		6F796D871EB2032000CECB02 /* JRPickColorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F796D861EB2032000CECB02 /* JRPickColorView.m */; };
 		6F9DDCF31EB075E100CDAD13 /* UIDevice+LFOrientation.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */; };
 		6F9DF07F1E9F6E0E002C41BB /* LFClipToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DF07E1E9F6E0E002C41BB /* LFClipToolbar.m */; };
+		6FA36E481EB9CE490009E2DE /* GifPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E471EB9CE490009E2DE /* GifPlayerManager.m */; };
+		6FA36E4B1EB9D1A10009E2DE /* LFWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E4A1EB9D1A10009E2DE /* LFWeakProxy.m */; };
 		6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */; };
 		6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE453971E762C5200AE9EAF /* LFScrollView.m */; };
 		6FE4539E1E7631BF00AE9EAF /* LFClippingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE4539D1E7631BF00AE9EAF /* LFClippingView.m */; };
@@ -151,6 +153,10 @@
 		6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+LFOrientation.m"; sourceTree = "<group>"; };
 		6F9DF07D1E9F6E0E002C41BB /* LFClipToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFClipToolbar.h; sourceTree = "<group>"; };
 		6F9DF07E1E9F6E0E002C41BB /* LFClipToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFClipToolbar.m; sourceTree = "<group>"; };
+		6FA36E461EB9CE490009E2DE /* GifPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GifPlayerManager.h; sourceTree = "<group>"; };
+		6FA36E471EB9CE490009E2DE /* GifPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GifPlayerManager.m; sourceTree = "<group>"; };
+		6FA36E491EB9D1A10009E2DE /* LFWeakProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFWeakProxy.h; sourceTree = "<group>"; };
+		6FA36E4A1EB9D1A10009E2DE /* LFWeakProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFWeakProxy.m; sourceTree = "<group>"; };
 		6FA8E2B71E7BC5060033B83F /* LFPhotoEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEdit.h; sourceTree = "<group>"; };
 		6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoEdit.m; sourceTree = "<group>"; };
 		6FA8E2BB1E7BDCA00033B83F /* LFCancelBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFCancelBlock.h; sourceTree = "<group>"; };
@@ -322,6 +328,7 @@
 				6F1201D61E519E8300EA2198 /* Category */,
 				6F1201DF1E519E8300EA2198 /* FileUtils */,
 				6F1201E21E519E8300EA2198 /* VideoUtils */,
+				6FA36E451EB9CE490009E2DE /* GifUtils */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -427,6 +434,17 @@
 				6F796D861EB2032000CECB02 /* JRPickColorView.m */,
 			);
 			path = JRPickColorView;
+			sourceTree = "<group>";
+		};
+		6FA36E451EB9CE490009E2DE /* GifUtils */ = {
+			isa = PBXGroup;
+			children = (
+				6FA36E461EB9CE490009E2DE /* GifPlayerManager.h */,
+				6FA36E471EB9CE490009E2DE /* GifPlayerManager.m */,
+				6FA36E491EB9D1A10009E2DE /* LFWeakProxy.h */,
+				6FA36E4A1EB9D1A10009E2DE /* LFWeakProxy.m */,
+			);
+			path = GifUtils;
 			sourceTree = "<group>";
 		};
 		6FA8E2BA1E7BDC730033B83F /* CancelBlock */ = {
@@ -616,6 +634,7 @@
 				6F1201951E513E5500EA2198 /* LFAsset.m in Sources */,
 				6F1201791E513D1B00EA2198 /* main.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
+				6FA36E481EB9CE490009E2DE /* GifPlayerManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
 				6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */,
 				6F552A7F1E95E1B600AC362C /* LFStickerLabel.m in Sources */,
@@ -630,6 +649,7 @@
 				6F16C5941E8205C000B251A0 /* LFTextBar.m in Sources */,
 				6F16C5911E80F4D300B251A0 /* LFStickerBar.m in Sources */,
 				6FF286051E5D6D4F0008FB5B /* LFPhotoEdittingController.m in Sources */,
+				6FA36E4B1EB9D1A10009E2DE /* LFWeakProxy.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,
 				6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */,
 				6F1201AD1E514F9D00EA2198 /* LFAlbum.m in Sources */,

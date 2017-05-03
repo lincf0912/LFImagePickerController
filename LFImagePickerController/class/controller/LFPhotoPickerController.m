@@ -101,7 +101,7 @@
                 if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
                     ascending = !imagePickerVc.sortAscendingByCreateDate;
                 }
-                [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                     /** 缓存数据 */
                     _model.models = models;
                     _models = [NSMutableArray arrayWithArray:models];
@@ -426,7 +426,8 @@
                 if (photoEdit) {
                     [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                         /** 编辑图片保存到相册 */
-                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
+                        NSData *imageData = info[kImageInfoFileData];
+                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageData:imageData complete:nil];
                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
@@ -596,7 +597,8 @@
     NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
     if (picker.sourceType==UIImagePickerControllerSourceTypeCamera && [mediaType isEqualToString:@"public.image"]){
         UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
-        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:chosenImage complete:^(id asset, NSError *error) {
+        NSData *imageData = UIImageJPEGRepresentation(chosenImage, 0.75);
+        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageData:imageData complete:^(id asset, NSError *error) {
             if (asset && !error) {
                 [[LFAssetManager manager] getPhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                     [imagePickerVc hideProgressHUD];

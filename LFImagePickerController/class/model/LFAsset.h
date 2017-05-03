@@ -12,7 +12,8 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
     LFAssetMediaTypeLivePhoto,
     LFAssetMediaTypeVideo,
-    LFAssetMediaTypeAudio
+    LFAssetMediaTypeAudio,
+    LFAssetMediaTypeGIF,
 };
 
 @interface LFAsset : NSObject
@@ -21,6 +22,7 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 @property (nonatomic, assign) BOOL isSelected;      ///< The select status of a photo, default is No
 @property (nonatomic, readonly) LFAssetMediaType type;
 @property (nonatomic, copy, readonly) NSString *timeLength;
+@property (nonatomic, copy, readonly) NSString *name;
 
 /** 自定义预览图 */
 @property (nonatomic, strong) UIImage *previewImage;

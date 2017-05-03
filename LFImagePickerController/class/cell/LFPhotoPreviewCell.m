@@ -12,6 +12,8 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
+#import "GifPlayerManager.h"
+
 @interface LFProgressView : UIView
 
 @property (nonatomic, assign) double progress;
@@ -123,8 +125,14 @@
 - (void)prepareForReuse
 {
     [super prepareForReuse];
+    [[GifPlayerManager shared] stopGIFWithKey:self.model.name];
     self.model = nil;
     self.imageView.image = nil;
+}
+
+- (void)dealloc
+{
+    [GifPlayerManager free];
 }
 
 - (UIImage *)previewImage
@@ -152,15 +160,26 @@
         if (self.previewImage) {
             return;
         }
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+        
+        void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
             if ([model isEqual:self.model]) {
-                self.previewImage = photo;
+                if ([data isKindOfClass:[UIImage class]]) {
+                    self.previewImage = (UIImage *)data;
+                } else if ([data isKindOfClass:[NSData class]]) {
+                    self.previewImage = [UIImage imageWithData:data];
+                    [[GifPlayerManager shared] transformGifDataToSampBufferRef:data key:model.name execution:^(CGImageRef imageData, NSString *key) {
+                        self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                    } fail:^(NSString *key) {
+                    }];
+                }
                 _progressView.hidden = YES;
                 if (self.imageProgressUpdateBlock) {
                     self.imageProgressUpdateBlock(1);
                 }
             }
-        } progressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+        };
+        
+        void (^progressHandler)(double progress, NSError *error, BOOL *stop, NSDictionary *info) = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info){
             if ([model isEqual:self.model]) {
                 _progressView.hidden = NO;
                 [self bringSubviewToFront:_progressView];
@@ -170,7 +189,13 @@
                     self.imageProgressUpdateBlock(progress);
                 }
             }
-        } networkAccessAllowed:YES];
+        };
+        
+        if (model.type == LFAssetMediaTypeGIF) { /** GIF图片处理 */
+            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        } else { /** 普通图片处理 */
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        }
     }
 }
 

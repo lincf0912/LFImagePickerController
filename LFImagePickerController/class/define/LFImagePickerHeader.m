@@ -22,6 +22,7 @@ CGFloat const kThumbnailCompressSize = 10.f;
 NSString *const kImageInfoFileName = @"ImageInfoFileName";     // 图片名称
 NSString *const kImageInfoFileSize = @"ImageInfoFileSize";     // 图片大小［长、宽］
 NSString *const kImageInfoFileByte = @"ImageInfoFileByte";     // 图片大小［字节］
+NSString *const kImageInfoFileData = @"ImageInfoFileData";     // 图片数据
 
 @implementation LFImagePickerHeader
 

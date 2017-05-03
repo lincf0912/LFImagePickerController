@@ -32,7 +32,8 @@
     UIGraphicsEndImageContext();
     
     if (!CGRectEqualToRect(CGRectZero, rect)) {
-        UIGraphicsBeginImageContextWithOptions(rect.size, YES, [UIScreen mainScreen].scale);
+        CGSize imageSize = CGSizeMake(floorf(rect.size.width), floorf(rect.size.height));
+        UIGraphicsBeginImageContextWithOptions(imageSize, YES, [UIScreen mainScreen].scale);
         [image drawAtPoint:CGPointMake(-ceilf(rect.origin.x), -ceilf(rect.origin.y))];
         image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();

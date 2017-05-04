@@ -155,11 +155,15 @@ static LFPhotoEditManager *manager;
         
         /** 标清图/原图 */
         source = photoEdit.editPreviewImage;
-        if (!isOriginal) { /** 标清图 */
-            source = [source fastestCompressImageWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
-        }
         /** 图片数据 */
-        NSData *imageData = UIImageJPEGRepresentation(source, 0.75);
+        NSData *imageData = nil;
+        if (!isOriginal) { /** 标清图 */
+            imageData = [source fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+            source = [UIImage imageWithData:imageData];
+        } else {
+            imageData = UIImageJPEGRepresentation(source, 0.75);
+        }
+        [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
         /** 图片大小 */
         [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
         /** 图片宽高 */
@@ -172,7 +176,9 @@ static LFPhotoEditManager *manager;
         CGFloat th_pixelWidth = 80 * 2.0; // scale
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         thumbnail = [source scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-        thumbnail = [thumbnail fastestCompressImageWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+        NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+        [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumnailData];
+        thumbnail = [UIImage imageWithData:thumbnailData];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (completion) completion(thumbnail, source, imageInfo);

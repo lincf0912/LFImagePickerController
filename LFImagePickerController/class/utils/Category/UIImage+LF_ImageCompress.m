@@ -101,6 +101,27 @@
     return imageData;
 }
 
+- (UIImage *)fastestCompressAnimatedImageWithSize:(CGFloat)size {
+    
+    NSMutableArray *scaledImages = [NSMutableArray array];
+    
+    for (UIImage *image in self.images) {
+        
+        UIImage *newImage = [image fastestCompressImageWithSize:size];
+        
+        [scaledImages addObject:newImage];
+        
+        UIGraphicsEndImageContext();
+    }
+    
+    if (scaledImages.count) {
+        return [UIImage animatedImageWithImages:scaledImages duration:self.duration];
+    }
+    
+    return self;
+}
+
+
 
 #pragma mark - 缩放图片尺寸
 - (UIImage*)scaleWithSize:(CGSize)newSize

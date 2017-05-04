@@ -10,6 +10,7 @@
 #import "LFImagePickerHeader.h"
 #import "UIImage+LF_ImageCompress.h"
 #import "UIImage+LFCommon.h"
+#import "UIImage+LF_Format.h"
 #import "LF_VideoUtils.h"
 #import "LF_FileUtility.h"
 
@@ -558,12 +559,30 @@ static LFAssetManager *manager;
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
 {
     [self getBasePhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSMutableDictionary *info) {
-        thumbnail = [thumbnail fastestCompressImageWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
-        if (!isOriginal) { /** 标清图 */
-            NSData *sourceData = [source fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
-            source = [UIImage imageWithData:sourceData];
-            /** 标清图片大小 */
-            [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
+        
+        CGFloat thumbnailCompress = (thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize);
+        CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
+        
+        BOOL isGif = [info[kImageInfoIsGIF] boolValue];
+        if (isGif) { /** GIF图片处理方式 */
+            NSData *imageData = info[kImageInfoFileOriginalData];
+            source = [UIImage LF_imageWithImageData:imageData];
+            thumbnail = [source fastestCompressAnimatedImageWithSize:thumbnailCompress];
+            if (!isOriginal) { /** 标清图 */
+                source = [source fastestCompressAnimatedImageWithSize:sourceCompress];
+            }
+        } else { /** 其他图片 */
+            NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
+            /** 缩略图数据 */
+            [info setObject:thumbnailData forKey:kImageInfoFileThumnailData];
+            thumbnail = [UIImage imageWithData:thumbnailData];
+            if (!isOriginal) { /** 标清图 */
+                NSData *sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
+                source = [UIImage imageWithData:sourceData];
+                [info setObject:sourceData forKey:kImageInfoFileOriginalData];
+                /** 标清图片大小 */
+                [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
+            }
         }
         /** 图片宽高 */
         CGSize imageSize = source.size;
@@ -643,18 +662,19 @@ static LFAssetManager *manager;
             } else {
                 [imageInfo setObject:[NSNull null] forKey:kImageInfoFileName];
             }
+            /** 图片数据 */
+            if (imageData) {
+                [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
+            }
             if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                /** 图片数据 */
-                if (imageData) {
-                    [imageInfo setObject:imageData forKey:kImageInfoFileData];
-                }
-             }
+                [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+            }
             if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
         }];
         
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
-        ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+        __block ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
         
         dispatch_globalQueue_async_safe(^{
             CGImageRef thumbnailImageRef = alAsset.aspectRatioThumbnail;/** 缩略图 */
@@ -697,14 +717,21 @@ static LFAssetManager *manager;
             
             ALAssetRepresentation *gifAR = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
             if (gifAR) {
-                Byte *buffer = (Byte*)malloc(assetRep.size);
-                NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
-                NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
-                /** 图片数据 */
-                if (imageData) {
-                    [imageInfo setObject:imageData forKey:kImageInfoFileData];
-                }
+                [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+                
+                assetRep = gifAR;
             }
+            
+            Byte *buffer = (Byte*)malloc(assetRep.size);
+            NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
+            NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
+            /** 图片数据 */
+            if (imageData) {
+                [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
+            }
+            
+            /** 图片大小 */
+            [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
             
             /** 文件名称 */
             NSString *fileName = assetRep.filename;

@@ -71,13 +71,18 @@ extern NSString *const kImageInfoFileName;     // 图片名称
  */
 extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
 /**
- *  NSNumber;
+ *  NSNumber(CGFloat);
  */
 extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
 /**
  *  NSData;
  */
-extern NSString *const kImageInfoFileData;     // 图片数据 GIF才有值
+extern NSString *const kImageInfoFileOriginalData;     // 图片数据 原图
+extern NSString *const kImageInfoFileThumnailData;     // 图片数据 缩略图
+/**
+ *  NSNumber(BOOL);
+ */
+extern NSString *const kImageInfoIsGIF;     // 是否GIF
 
 
 @interface LFImagePickerHeader : NSObject

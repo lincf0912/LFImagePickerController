@@ -22,7 +22,7 @@
     CGSize size = self.frame.size;
     
     //1.开启上下文
-    UIGraphicsBeginImageContextWithOptions(size, YES, [UIScreen mainScreen].scale);
+    UIGraphicsBeginImageContextWithOptions(size, NO, [UIScreen mainScreen].scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     //2.绘制图层
     [self.layer renderInContext: context];
@@ -32,7 +32,7 @@
     UIGraphicsEndImageContext();
     
     if (!CGRectEqualToRect(CGRectZero, rect)) {
-        UIGraphicsBeginImageContextWithOptions(rect.size, YES, [UIScreen mainScreen].scale);
+        UIGraphicsBeginImageContextWithOptions(rect.size, NO, [UIScreen mainScreen].scale);
         [image drawAtPoint:CGPointMake(-roundf(rect.origin.x*100)/100, -roundf(rect.origin.y*100)/100)];
         image = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();

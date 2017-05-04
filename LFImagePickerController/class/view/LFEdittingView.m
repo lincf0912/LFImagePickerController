@@ -62,6 +62,7 @@
     clippingView.clippingDelegate = self;
     /** 创建缩放层，避免直接缩放LFClippingView，会改变其transform */
     UIView *clipZoomView = [[UIView alloc] initWithFrame:self.bounds];
+    clipZoomView.backgroundColor = [UIColor clearColor];
     [clipZoomView addSubview:clippingView];
     [self addSubview:clipZoomView];
     self.clippingView = clippingView;
@@ -225,9 +226,19 @@
 {
     CGFloat zoomScale = self.zoomScale;
     [self setZoomScale:1.f];
-    UIImage *image = [self captureImageAtFrame:self.clippingView.frame];
+    UIImage *image = [self.clipZoomView captureImageAtFrame:self.clippingView.frame];
     [self setZoomScale:zoomScale];
-    return [image scaleToSize:self.image.size];
+    
+    CGFloat width = CGImageGetWidth(image.CGImage);
+    CGFloat height = CGImageGetHeight(image.CGImage);
+    
+    CGFloat imageWidth = CGImageGetWidth(self.image.CGImage);
+    CGFloat imageHeight = CGImageGetHeight(self.image.CGImage);
+    
+    if (imageWidth > width && imageHeight > height) {
+        return [image scaleToSize:CGSizeMake(imageWidth, imageHeight)];
+    }
+    return image;
 }
 
 #pragma mark - LFClippingViewDelegate

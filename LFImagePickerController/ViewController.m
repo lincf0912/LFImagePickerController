@@ -15,6 +15,8 @@
 {
     UITapGestureRecognizer *singleTapRecognizer;
 }
+@property (weak, nonatomic) IBOutlet UIImageView *thumbnailImageVIew;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @end
 
 @implementation ViewController
@@ -60,7 +62,8 @@
 - (IBAction)buttonAction3:(id)sender {
     NSArray *array = @[[UIImage imageNamed:@"1.jpeg"], [UIImage imageNamed:@"2.jpeg"]];
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedPhotos:array index:0 complete:^(NSArray *photos) {
-        
+        [self.thumbnailImageVIew setImage:nil];
+        [self.imageView setImage:photos.firstObject];
     }];
     /** 全选 */
 //    imagePicker.selectedAssets = array;
@@ -99,6 +102,9 @@
         CGFloat byte = [info[kImageInfoFileByte] floatValue];
         NSLog(@"name:%@ -- size:%fK", name, byte/1000);
     }
+    
+    [self.thumbnailImageVIew setImage:thumbnailImages.firstObject];
+    [self.imageView setImage:originalImages.firstObject];
 }
 
 @end

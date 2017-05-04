@@ -13,7 +13,7 @@
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片 */
 - (UIImage *)fastestCompressImageWithSize:(CGFloat)size
 {
-    UIImage *compressedImage = [UIImage imageWithData:[self fastestCompressImageSize:size]];
+    UIImage *compressedImage = [UIImage imageWithData:[self fastestCompressImageSize:size] scale:[UIScreen mainScreen].scale];
     if (!compressedImage) {
         return self;
     }

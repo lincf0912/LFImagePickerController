@@ -448,7 +448,7 @@ static LFAssetManager *manager;
                 options.networkAccessAllowed = YES;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                    UIImage *resultImage = [UIImage imageWithData:imageData scale:LFAM_ScreenScale];
+                    UIImage *resultImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
                     resultImage = [resultImage scaleToSize:imageSize];
                     if (resultImage) {
                         if (self.shouldFixOrientation) {
@@ -575,10 +575,10 @@ static LFAssetManager *manager;
             NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
             /** 缩略图数据 */
             [info setObject:thumbnailData forKey:kImageInfoFileThumnailData];
-            thumbnail = [UIImage imageWithData:thumbnailData];
+            thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
             if (!isOriginal) { /** 标清图 */
                 NSData *sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
-                source = [UIImage imageWithData:sourceData];
+                source = [UIImage imageWithData:sourceData scale:[UIScreen mainScreen].scale];
                 [info setObject:sourceData forKey:kImageInfoFileOriginalData];
                 /** 标清图片大小 */
                 [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];

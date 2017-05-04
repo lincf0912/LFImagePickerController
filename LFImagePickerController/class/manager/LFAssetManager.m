@@ -520,8 +520,8 @@ static LFAssetManager *manager;
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-        Byte *imageBuffer = (Byte *)malloc(assetRep.size);
-        NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:assetRep.size error:nil];
+        Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
+        NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
         NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
         if (completion) completion(imageData,nil,NO);
     }
@@ -738,9 +738,9 @@ static LFAssetManager *manager;
                 assetRep = gifAR;
             }
             
-            Byte *buffer = (Byte*)malloc(assetRep.size);
-            NSUInteger buffered = [assetRep getBytes:buffer fromOffset:0.0 length:assetRep.size error:nil];
-            NSData *imageData = [NSData dataWithBytesNoCopy:buffer length:buffered freeWhenDone:YES];
+            Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
+            NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
+            NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
             /** 图片数据 */
             if (imageData) {
                 [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];

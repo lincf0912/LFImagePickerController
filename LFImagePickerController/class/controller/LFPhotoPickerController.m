@@ -431,13 +431,22 @@
                 LFAsset *model = imagePickerVc.selectedModels[i];
                 LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                 if (photoEdit) {
-                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset
+                                                         isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                       compressSize:imagePickerVc.imageCompressSize
+                                              thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
+                                                         completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                         /** 编辑图片保存到相册 */
                         [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
-                    [[LFAssetManager manager] getPhotoWithAsset:model.asset isOriginal:imagePickerVc.isSelectOriginalPhoto compressSize:imagePickerVc.imageCompressSize thumbnailCompressSize:imagePickerVc.thumbnailCompressSize completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                    [[LFAssetManager manager] getPhotoWithAsset:model.asset
+                                                     isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                     pickingGif:imagePickerVc.allowPickingGif
+                                                   compressSize:imagePickerVc.imageCompressSize
+                                          thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
+                                                     completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 }

@@ -539,7 +539,23 @@ static LFAssetManager *manager;
                isOriginal:(BOOL)isOriginal
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
 {
-    [self getPhotoWithAsset:asset isOriginal:isOriginal compressSize:kCompressSize thumbnailCompressSize:kThumbnailCompressSize completion:completion];
+    [self getPhotoWithAsset:asset isOriginal:isOriginal pickingGif:NO completion:completion];
+}
+
+/**
+ *  通过asset解析缩略图、标清图/原图、图片数据字典
+ *
+ *  @param asset      PHAsset／ALAsset
+ *  @param isOriginal 是否原图
+ *  @param pickingGif 是否需要处理GIF图片
+ *  @param completion 返回block 顺序：缩略图、原图、图片数据字典
+ */
+- (void)getPhotoWithAsset:(id)asset
+               isOriginal:(BOOL)isOriginal
+               pickingGif:(BOOL)pickingGif
+               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+{
+    [self getPhotoWithAsset:asset isOriginal:isOriginal pickingGif:pickingGif compressSize:kCompressSize thumbnailCompressSize:kThumbnailCompressSize completion:completion];
 }
 
 
@@ -548,12 +564,14 @@ static LFAssetManager *manager;
 
  @param asset PHAsset／ALAsset
  @param isOriginal 是否原图
+ @param pickingGif 是否需要处理GIF图片
  @param compressSize 非原图的压缩大小
  @param thumbnailCompressSize 缩略图压缩大小
  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
+               pickingGif:(BOOL)pickingGif
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
@@ -562,28 +580,26 @@ static LFAssetManager *manager;
         
         CGFloat thumbnailCompress = (thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize);
         CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
-        
         BOOL isGif = [info[kImageInfoIsGIF] boolValue];
-        if (isGif) { /** GIF图片处理方式 */
+        
+        /** 缩略图 */
+        NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
+        /** 缩略图数据 */
+        [info setObject:thumbnailData forKey:kImageInfoFileThumnailData];
+        thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
+        
+        /** GIF */
+        if (isGif && pickingGif) { /** GIF图片处理方式 */
             NSData *imageData = info[kImageInfoFileOriginalData];
             source = [UIImage LF_imageWithImageData:imageData];
-            thumbnail = [source fastestCompressAnimatedImageWithSize:thumbnailCompress];
-            if (!isOriginal) { /** 标清图 */
-                source = [source fastestCompressAnimatedImageWithSize:sourceCompress];
-            }
-        } else { /** 其他图片 */
-            NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
-            /** 缩略图数据 */
-            [info setObject:thumbnailData forKey:kImageInfoFileThumnailData];
-            thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
-            if (!isOriginal) { /** 标清图 */
-                NSData *sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
-                source = [UIImage imageWithData:sourceData scale:[UIScreen mainScreen].scale];
-                [info setObject:sourceData forKey:kImageInfoFileOriginalData];
-                /** 标清图片大小 */
-                [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
-            }
+        } else if (!isOriginal) { /** 标清图 */
+            NSData *sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
+            source = [UIImage imageWithData:sourceData scale:[UIScreen mainScreen].scale];
+            [info setObject:sourceData forKey:kImageInfoFileOriginalData];
+            /** 标清图片大小 */
+            [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
         }
+        
         /** 图片宽高 */
         CGSize imageSize = source.size;
         NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];

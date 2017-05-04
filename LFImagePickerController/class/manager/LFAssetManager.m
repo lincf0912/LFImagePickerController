@@ -200,15 +200,7 @@ static LFAssetManager *manager;
             if (asset) {
                 LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
                 if (model) {
-                    if (ascending) {
-                        [photoArr insertObject:model atIndex:0];
-                    } else {
-                        [photoArr addObject:model];
-                    }
-                    
-                }
-                if (fetchLimit > 0 && photoArr.count == fetchLimit) {
-                    *stop = YES;
+                    [photoArr addObject:model];
                 }
             }
             
@@ -226,15 +218,32 @@ static LFAssetManager *manager;
             end = count > fetchLimit ? fetchLimit : count;
         }
         NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, end)];
-        [group enumerateAssetsAtIndexes:indexSet options:NSEnumerationReverse usingBlock:resultBlock];
+        [group enumerateAssetsUsingBlock:resultBlock];
+    
+        /** 排序 */
+        [photoArr sortUsingComparator:^NSComparisonResult(LFAsset *  _Nonnull obj1, LFAsset *  _Nonnull obj2) {
+            NSDate *date1 = [obj1.asset valueForProperty:ALAssetPropertyDate];
+            NSDate *date2 = [obj2.asset valueForProperty:ALAssetPropertyDate];
+            
+            return ascending ? [date1 compare:date2] : [date2 compare:date1];
+        }];
         
-        if (completion) completion(photoArr);
+        /** 过滤 */
+        NSArray *photos = [photoArr objectsAtIndexes:indexSet];
+        
+        if (completion) completion(photos);
     }
 }
 
 ///  Get asset at index 获得下标为index的单个照片
 ///  if index beyond bounds, return nil in callback 如果索引越界, 在回调中返回 nil
-- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif completion:(void (^)(LFAsset *))completion {
+- (void)getAssetFromFetchResult:(id)result
+                        atIndex:(NSInteger)index
+              allowPickingVideo:(BOOL)allowPickingVideo
+              allowPickingImage:(BOOL)allowPickingImage
+                      ascending:(BOOL)ascending
+                     completion:(void (^)(LFAsset *))completion
+{
     if ([result isKindOfClass:[PHFetchResult class]]) {
         PHFetchResult *fetchResult = (PHFetchResult *)result;
         PHAsset *asset;
@@ -245,7 +254,7 @@ static LFAssetManager *manager;
             if (completion) completion(nil);
             return;
         }
-        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
+        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:NO];
         if (completion) completion(model);
     } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
@@ -256,13 +265,28 @@ static LFAssetManager *manager;
         } else if (allowPickingImage) {
             [group setAssetsFilter:[ALAssetsFilter allPhotos]];
         }
-        NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex:index];
+        
+        __block NSMutableArray *photoArr = [NSMutableArray array];
+        
+        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+            if (result) {
+                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:NO];
+                [photoArr addObject:model];
+            }
+        }];
+        
+        /** 排序 */
+        [photoArr sortUsingComparator:^NSComparisonResult(LFAsset *  _Nonnull obj1, LFAsset *  _Nonnull obj2) {
+            NSDate *date1 = [obj1.asset valueForProperty:ALAssetPropertyDate];
+            NSDate *date2 = [obj2.asset valueForProperty:ALAssetPropertyDate];
+            
+            return ascending ? [date1 compare:date2] : [date2 compare:date1];
+        }];
+        
+        /** 过滤 */
         @try {
-            [group enumerateAssetsAtIndexes:indexSet options:NSEnumerationConcurrent usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
-                if (!result) return;
-                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
-                if (completion) completion(model);
-            }];
+            LFAsset *model = [photoArr objectAtIndex:index];
+            if (completion) completion(model);
         }
         @catch (NSException* e) {
             if (completion) completion(nil);
@@ -462,23 +486,27 @@ static LFAssetManager *manager;
         return imageRequestID;
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
-        dispatch_globalQueue_async_safe(^{
-            CGImageRef thumbnailImageRef = alAsset.thumbnail;
-            UIImage *thumbnailImage = [UIImage imageWithCGImage:thumbnailImageRef scale:2.0 orientation:UIImageOrientationUp];
-            dispatch_main_async_safe(^{
-                if (completion) completion(thumbnailImage,nil,YES);
+        
+        if (photoWidth > [UIScreen mainScreen].bounds.size.width/2) {
+            dispatch_globalQueue_async_safe(^{
+                ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+                CGImageRef fullScrennImageRef = [assetRep fullScreenImage];
+                UIImage *fullScrennImage = [UIImage imageWithCGImage:fullScrennImageRef scale:2.0 orientation:UIImageOrientationUp];
                 
-                dispatch_globalQueue_async_safe(^{
-                    ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-                    CGImageRef fullScrennImageRef = [assetRep fullScreenImage];
-                    UIImage *fullScrennImage = [UIImage imageWithCGImage:fullScrennImageRef scale:2.0 orientation:UIImageOrientationUp];
-                    
-                    dispatch_main_async_safe(^{
-                        if (completion) completion(fullScrennImage,nil,NO);
-                    });
+                dispatch_main_async_safe(^{
+                    if (completion) completion(fullScrennImage,nil,NO);
                 });
             });
-        });
+        } else {            
+            dispatch_globalQueue_async_safe(^{
+                CGImageRef thumbnailImageRef = alAsset.thumbnail;
+                UIImage *thumbnailImage = [UIImage imageWithCGImage:thumbnailImageRef scale:2.0 orientation:UIImageOrientationUp];
+                dispatch_main_async_safe(^{
+                    if (completion) completion(thumbnailImage,nil,NO);
+                });
+            });
+        }
+        
     }
     return 0;
 }

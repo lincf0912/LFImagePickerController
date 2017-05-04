@@ -71,7 +71,12 @@
  */
 - (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
 /** 获得下标为index的单个照片 */
-- (void)getAssetFromFetchResult:(id)result atIndex:(NSInteger)index allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif completion:(void (^)(LFAsset *model))completion;
+- (void)getAssetFromFetchResult:(id)result
+                        atIndex:(NSInteger)index
+              allowPickingVideo:(BOOL)allowPickingVideo
+              allowPickingImage:(BOOL)allowPickingImage
+                      ascending:(BOOL)ascending
+                     completion:(void (^)(LFAsset *))completion;
 
 /// Get photo 获得照片
 - (void)getPostImageWithAlbumModel:(LFAlbum *)model ascending:(BOOL)ascending completion:(void (^)(UIImage *postImage))completion;

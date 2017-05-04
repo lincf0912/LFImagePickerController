@@ -25,24 +25,6 @@
 
 @implementation LFAlbumPickerController
 
-- (void)setReplaceModel:(LFAlbum *)replaceModel
-{
-    _replaceModel = replaceModel;
-    if (_albumArr && _replaceModel) {
-        for (NSInteger i=0; i<_albumArr.count; i++) {
-            LFAlbum *model = _albumArr[i];
-            if ([model.name isEqualToString:_replaceModel.name]) {
-                [_albumArr replaceObjectAtIndex:i withObject:_replaceModel];
-                _replaceModel = nil;
-                /** 刷新 */
-                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:i inSection:0];
-                [_tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
-                break;
-            }
-        }
-    }
-}
-
 - (instancetype)init
 {
     self = [super init];
@@ -82,16 +64,6 @@
         [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
             
             _albumArr = [NSMutableArray arrayWithArray:models];
-            if (_replaceModel) { /** 替换对象 */
-                for (NSInteger i=0; i<_albumArr.count; i++) {
-                    LFAlbum *model = _albumArr[i];
-                    if ([model.name isEqualToString:_replaceModel.name]) {
-                        [_albumArr replaceObjectAtIndex:i withObject:_replaceModel];
-                        _replaceModel = nil;
-                        break;
-                    }
-                }
-            }
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [imagePickerVc hideProgressHUD];
@@ -128,24 +100,26 @@
     cell.model = album;
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
-    NSInteger index = 0;
-    if (imagePickerVc.sortAscendingByCreateDate) {
-        index = album.count-1;
-    }
-    [[LFAssetManager manager] getAssetFromFetchResult:album.result atIndex:index allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif completion:^(LFAsset *model) {
-        /** 优先显示编辑图片 */
-        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-        if ([cell.model isEqual:album] && photoEdit.editPosterImage) {
-            cell.posterImage = photoEdit.editPosterImage;
-        } else {
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-                if ([cell.model isEqual:album]) {
-                    cell.posterImage = photo;
-                }
-                
-            } progressHandler:nil networkAccessAllowed:NO];
+    if (album.posterAsset == nil) { /** 没有缓存数据 */
+        NSInteger index = 0;
+        if (imagePickerVc.sortAscendingByCreateDate) {
+            index = album.count-1;
         }
-    }];
+        [[LFAssetManager manager] getAssetFromFetchResult:album.result
+                                                  atIndex:index
+                                        allowPickingVideo:imagePickerVc.allowPickingVideo
+                                        allowPickingImage:imagePickerVc.allowPickingImage
+                                                ascending:imagePickerVc.sortAscendingByCreateDate
+                                               completion:^(LFAsset *model) {
+            
+            if ([cell.model isEqual:album]) {
+                cell.model.posterAsset = model;
+                [self setCellPosterImage:cell];
+            }
+        }];
+    } else {
+        [self setCellPosterImage:cell];
+    }
     
     return cell;
 }
@@ -163,5 +137,23 @@
     return [LFAlbumCell cellHeight];
 }
 
+
+#pragma mark - 设置封面
+- (void)setCellPosterImage:(LFAlbumCell *)cell
+{
+    LFAsset *model = cell.model.posterAsset;
+    /** 优先显示编辑图片 */
+    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+    if (photoEdit.editPosterImage) {
+        cell.posterImage = photoEdit.editPosterImage;
+    } else {
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if ([cell.model.posterAsset isEqual:model]) {
+                cell.posterImage = photo;
+            }
+            
+        } progressHandler:nil networkAccessAllowed:NO];
+    }
+}
 
 @end

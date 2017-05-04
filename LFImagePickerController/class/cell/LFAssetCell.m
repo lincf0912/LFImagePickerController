@@ -51,13 +51,19 @@
         } progressHandler:nil networkAccessAllowed:NO];
     }
     
-    /** 显示编辑标记 */
-    self.editMaskImageView.hidden = (photoEdit.editPreviewImage == nil);
-    
     self.selectPhotoButton.selected = model.isSelected;
     self.selectImageView.image = self.selectPhotoButton.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     
+    /** 显示编辑标记 */
+    self.editMaskImageView.hidden = (photoEdit.editPreviewImage == nil);
+    
     [self setType:model.type];
+}
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.imageView.image = nil;
 }
 
 - (void)setType:(LFAssetMediaType)type {
@@ -136,6 +142,7 @@
         
         [self.contentView bringSubviewToFront:_selectImageView];
         [self.contentView bringSubviewToFront:_bottomView];
+        [self.contentView bringSubviewToFront:_editMaskImageView];
     }
     return _imageView;
 }
@@ -156,6 +163,7 @@
         UIImageView *editMaskImageView = [[UIImageView alloc] init];
         editMaskImageView.frame = CGRectMake(5, self.height - 27 - kAdditionalSize, 22 + kAdditionalSize, 22 + kAdditionalSize);
         [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
+        editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
         [self.contentView addSubview:editMaskImageView];
         _editMaskImageView = editMaskImageView;
     }

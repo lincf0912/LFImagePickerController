@@ -39,6 +39,12 @@
     [self.posterImageView setImage:posterImage];
 }
 
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.posterImage = nil;
+}
+
 /// For fitting iOS6
 - (void)layoutSubviews {
     if (iOS7Later) [super layoutSubviews];

@@ -85,31 +85,37 @@
         [imagePickerVc showProgressHUD];
         
         dispatch_globalQueue_async_safe(^{
-            if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
-                [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-                    self.model = model;
-                }];
-            }
             
-            if (self.model.models.count) { /** 使用缓存数据 */
-                _models = [NSMutableArray arrayWithArray:_model.models];
-                dispatch_main_async_safe(^{
-                    [self initSubviews];
-                });
-            } else {
-                /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
-                BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-                    ascending = !imagePickerVc.sortAscendingByCreateDate;
-                }
-                [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-                    /** 缓存数据 */
-                    _model.models = models;
-                    _models = [NSMutableArray arrayWithArray:models];
+            void (^initDataHandle)() = ^{
+                if (self.model.models.count) { /** 使用缓存数据 */
+                    _models = [NSMutableArray arrayWithArray:_model.models];
                     dispatch_main_async_safe(^{
                         [self initSubviews];
                     });
+                } else {
+                    /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+                    BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+                    if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+                        ascending = !imagePickerVc.sortAscendingByCreateDate;
+                    }
+                    [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                        /** 缓存数据 */
+                        _model.models = models;
+                        _models = [NSMutableArray arrayWithArray:models];
+                        dispatch_main_async_safe(^{
+                            [self initSubviews];
+                        });
+                    }];
+                }
+            };
+            
+            if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
+                [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
+                    self.model = model;
+                    initDataHandle();
                 }];
+            } else { /** 已存在相册数据 */
+                initDataHandle();
             }
         });
     }

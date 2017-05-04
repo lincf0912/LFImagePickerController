@@ -15,6 +15,7 @@
 @property (nonatomic, readonly) NSString *name;        ///< The album name
 @property (nonatomic, readonly) NSInteger count;       ///< Count of photos the album contain
 @property (nonatomic, readonly) id result;             ///< PHFetchResult<PHAsset> or ALAssetsGroup<ALAsset>
+@property (nonatomic, strong) LFAsset *posterAsset;    /** 封面对象 */
 
 /** 缓存数据 */
 @property (nonatomic, strong) NSArray <LFAsset *>*models;

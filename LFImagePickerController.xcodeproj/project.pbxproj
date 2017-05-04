@@ -46,10 +46,10 @@
 		6F552A821E961C8400AC362C /* 1.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A801E961C8400AC362C /* 1.jpeg */; };
 		6F552A831E961C8400AC362C /* 2.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A811E961C8400AC362C /* 2.jpeg */; };
 		6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */; };
-		6F796D871EB2032000CECB02 /* JRPickColorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F796D861EB2032000CECB02 /* JRPickColorView.m */; };
 		6F9DDCF31EB075E100CDAD13 /* UIDevice+LFOrientation.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */; };
 		6F9DF07F1E9F6E0E002C41BB /* LFClipToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DF07E1E9F6E0E002C41BB /* LFClipToolbar.m */; };
 		6FA36E511EB9DC700009E2DE /* UIImage+LF_Format.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */; };
+		6FA36E561EBB0B240009E2DE /* JRPickColorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E551EBB0B240009E2DE /* JRPickColorView.m */; };
 		6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */; };
 		6FE453981E762C5200AE9EAF /* LFScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE453971E762C5200AE9EAF /* LFScrollView.m */; };
 		6FE4539E1E7631BF00AE9EAF /* LFClippingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FE4539D1E7631BF00AE9EAF /* LFClippingView.m */; };
@@ -146,14 +146,14 @@
 		6F552A811E961C8400AC362C /* 2.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 2.jpeg; sourceTree = "<group>"; };
 		6F74DC961E85147A00170A95 /* LFAssetManager+SaveAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+SaveAlbum.h"; sourceTree = "<group>"; };
 		6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+SaveAlbum.m"; sourceTree = "<group>"; };
-		6F796D851EB2032000CECB02 /* JRPickColorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRPickColorView.h; sourceTree = "<group>"; };
-		6F796D861EB2032000CECB02 /* JRPickColorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRPickColorView.m; sourceTree = "<group>"; };
 		6F9DDCF11EB075E100CDAD13 /* UIDevice+LFOrientation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+LFOrientation.h"; sourceTree = "<group>"; };
 		6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+LFOrientation.m"; sourceTree = "<group>"; };
 		6F9DF07D1E9F6E0E002C41BB /* LFClipToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFClipToolbar.h; sourceTree = "<group>"; };
 		6F9DF07E1E9F6E0E002C41BB /* LFClipToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFClipToolbar.m; sourceTree = "<group>"; };
 		6FA36E4F1EB9DC700009E2DE /* UIImage+LF_Format.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+LF_Format.h"; sourceTree = "<group>"; };
 		6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LF_Format.m"; sourceTree = "<group>"; };
+		6FA36E541EBB0B240009E2DE /* JRPickColorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRPickColorView.h; sourceTree = "<group>"; };
+		6FA36E551EBB0B240009E2DE /* JRPickColorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRPickColorView.m; sourceTree = "<group>"; };
 		6FA8E2B71E7BC5060033B83F /* LFPhotoEdit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEdit.h; sourceTree = "<group>"; };
 		6FA8E2B81E7BC5060033B83F /* LFPhotoEdit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoEdit.m; sourceTree = "<group>"; };
 		6FA8E2BB1E7BDCA00033B83F /* LFCancelBlock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFCancelBlock.h; sourceTree = "<group>"; };
@@ -221,6 +221,7 @@
 		6F1201761E513D1B00EA2198 /* LFImagePickerController */ = {
 			isa = PBXGroup;
 			children = (
+				6FA36E521EBB0B240009E2DE /* vendors */,
 				6F12018E1E513DF200EA2198 /* class */,
 				6F12017A1E513D1B00EA2198 /* AppDelegate.h */,
 				6F12017B1E513D1B00EA2198 /* AppDelegate.m */,
@@ -253,7 +254,6 @@
 				6F1201971E513E6600EA2198 /* manager */,
 				6F1201921E513E5500EA2198 /* model */,
 				6FF286091E5E6DC70008FB5B /* view */,
-				6F796D831EB2032000CECB02 /* vendors */,
 				6F1201B11E517E9D00EA2198 /* utils */,
 				6F1201BC1E5183E000EA2198 /* controller */,
 				6F1201A71E5140C900EA2198 /* LFImagePickerController.h */,
@@ -417,19 +417,19 @@
 			path = model;
 			sourceTree = "<group>";
 		};
-		6F796D831EB2032000CECB02 /* vendors */ = {
+		6FA36E521EBB0B240009E2DE /* vendors */ = {
 			isa = PBXGroup;
 			children = (
-				6F796D841EB2032000CECB02 /* JRPickColorView */,
+				6FA36E531EBB0B240009E2DE /* JRPickColorView */,
 			);
 			path = vendors;
 			sourceTree = "<group>";
 		};
-		6F796D841EB2032000CECB02 /* JRPickColorView */ = {
+		6FA36E531EBB0B240009E2DE /* JRPickColorView */ = {
 			isa = PBXGroup;
 			children = (
-				6F796D851EB2032000CECB02 /* JRPickColorView.h */,
-				6F796D861EB2032000CECB02 /* JRPickColorView.m */,
+				6FA36E541EBB0B240009E2DE /* JRPickColorView.h */,
+				6FA36E551EBB0B240009E2DE /* JRPickColorView.m */,
 			);
 			path = JRPickColorView;
 			sourceTree = "<group>";
@@ -602,8 +602,8 @@
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6F9DDCF31EB075E100CDAD13 /* UIDevice+LFOrientation.m in Sources */,
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
-				6F796D871EB2032000CECB02 /* JRPickColorView.m in Sources */,
 				6FF286121E5EB9AD0008FB5B /* UIView+LFCommon.m in Sources */,
+				6FA36E561EBB0B240009E2DE /* JRPickColorView.m in Sources */,
 				6F16C58C1E80F42300B251A0 /* LFEditToolbar.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
 				6F552A7C1E95DFFE00AC362C /* NSString+LFCoreText.m in Sources */,

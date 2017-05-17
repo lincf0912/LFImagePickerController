@@ -7,6 +7,7 @@
 //
 
 #import "UIImage+LF_ImageCompress.h"
+#import "LFGIFImageSerialization.h"
 
 @implementation UIImage (LF_ImageCompress)
 
@@ -101,42 +102,66 @@
     return imageData;
 }
 
-- (UIImage *)fastestCompressAnimatedImageWithSize:(CGFloat)size {
+
+/** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片(动图) */
+- (NSData *)fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio
+{
+    if (self.images.count == 0) return nil;
     
-    NSMutableArray *scaledImages = [NSMutableArray array];
+    NSMutableArray *images = [@[] mutableCopy];
     
-    for (UIImage *image in self.images) {
-        
-        UIImage *newImage = [image fastestCompressImageWithSize:size];
-        
-        [scaledImages addObject:newImage];
-        
-        UIGraphicsEndImageContext();
+    CGSize imageSize = CGSizeMake(self.size.width*ratio, self.size.height*ratio);
+    for (UIImage *subImage in self.images) {
+        UIImage *compressImage = [subImage scaleWithSize:imageSize];
+        [images addObject:compressImage];
     }
     
-    if (scaledImages.count) {
-        return [UIImage animatedImageWithImages:scaledImages duration:self.duration];
-    }
+    UIImage *aminatedImage = [UIImage animatedImageWithImages:images duration:self.duration];
     
-    return self;
+    return LF_UIImageGIFRepresentation(aminatedImage);;
 }
 
 
 
 #pragma mark - 缩放图片尺寸
-- (UIImage*)scaleWithSize:(CGSize)newSize
+- (UIImage*)scaleWithSize:(CGSize)size
 {
+    CGFloat width = CGImageGetWidth(self.CGImage);
+    CGFloat height = CGImageGetHeight(self.CGImage);
     
-    //We prepare a bitmap with the new size
-    UIGraphicsBeginImageContextWithOptions(newSize, YES, 0.0);
+    float verticalRadio = size.height*1.0/height;
+    float horizontalRadio = size.width*1.0/width;
     
-    //Draws a rect for the image
-    [self drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+    float radio = 1;
+    if(verticalRadio>1 && horizontalRadio>1)
+    {
+        radio = verticalRadio > horizontalRadio ? horizontalRadio : verticalRadio;
+    }
+    else
+    {
+        radio = verticalRadio < horizontalRadio ? verticalRadio : horizontalRadio;
+    }
     
-    //We set the scaled image from the context
+    width = floorf(width*radio);
+    height = floorf(height*radio);
+    
+    int xPos = (size.width - width)/2;
+    int yPos = (size.height-height)/2;
+    
+    // 创建一个context
+    // 并把它设置成为当前正在使用的context
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
+    
+    // 绘制改变大小的图片
+    [self drawInRect:CGRectMake(xPos, yPos, width, height)];
+    
+    // 从当前context中创建一个改变大小后的图片
     UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    // 使当前的context出堆栈
     UIGraphicsEndImageContext();
     
+    // 返回新的改变大小后的图片
     return scaledImage;
 }
 

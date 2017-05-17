@@ -91,16 +91,20 @@
         UIImage *image = originalImages[i];
         NSDictionary *info = infos[i];
         NSString *name = info[kImageInfoFileName];
+        NSData *thumnailData = info[kImageInfoFileThumbnailData];
+        NSData *originalData =info[kImageInfoFileOriginalData];
+        CGFloat byte = [info[kImageInfoFileByte] floatValue];
+        
         
         /** 缩略图保存到路径 */
 //        [UIImageJPEGRepresentation(thumbnailImage, 0.5f) writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
-        [info[kImageInfoFileThumnailData] writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
+        [thumnailData writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
         /** 原图保存到路径 */
 //        [UIImageJPEGRepresentation(image, 0.5f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
-        [info[kImageInfoFileOriginalData] writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
+        [originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
         
-        CGFloat byte = [info[kImageInfoFileByte] floatValue];
-        NSLog(@"name:%@ -- size:%fK", name, byte/1000);
+        
+        NSLog(@"⚠️Info name:%@ -- infoSize:%fK -- thumnailSize:%fK -- originalSize:%fK", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0);
     }
     
     [self.thumbnailImageVIew setImage:thumbnailImages.firstObject];

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6F0480181E7A6018004F20B4 /* LFZoomingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F0480171E7A6018004F20B4 /* LFZoomingView.m */; };
+		6F07E5B71ECBE88400738648 /* LFGIFImageSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F07E5B61ECBE88400738648 /* LFGIFImageSerialization.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
 		6F12017F1E513D1B00EA2198 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017E1E513D1B00EA2198 /* ViewController.m */; };
@@ -73,6 +74,8 @@
 		6F0480011E7785CD004F20B4 /* LFImagePickerType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFImagePickerType.h; sourceTree = "<group>"; };
 		6F0480161E7A6018004F20B4 /* LFZoomingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFZoomingView.h; sourceTree = "<group>"; };
 		6F0480171E7A6018004F20B4 /* LFZoomingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFZoomingView.m; sourceTree = "<group>"; };
+		6F07E5B51ECBE88400738648 /* LFGIFImageSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFGIFImageSerialization.h; sourceTree = "<group>"; };
+		6F07E5B61ECBE88400738648 /* LFGIFImageSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFGIFImageSerialization.m; sourceTree = "<group>"; };
 		6F1201741E513D1B00EA2198 /* LFImagePickerController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LFImagePickerController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F1201781E513D1B00EA2198 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		6F12017A1E513D1B00EA2198 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -202,6 +205,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6F07E5B31ECBE7C700738648 /* GIFImageSerialization */ = {
+			isa = PBXGroup;
+			children = (
+				6F07E5B51ECBE88400738648 /* LFGIFImageSerialization.h */,
+				6F07E5B61ECBE88400738648 /* LFGIFImageSerialization.m */,
+			);
+			path = GIFImageSerialization;
+			sourceTree = "<group>";
+		};
 		6F12016B1E513D1B00EA2198 = {
 			isa = PBXGroup;
 			children = (
@@ -321,6 +333,7 @@
 		6F1201B11E517E9D00EA2198 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				6F07E5B31ECBE7C700738648 /* GIFImageSerialization */,
 				6FA8E2BA1E7BDC730033B83F /* CancelBlock */,
 				6F1201D61E519E8300EA2198 /* Category */,
 				6F1201DF1E519E8300EA2198 /* FileUtils */,
@@ -616,6 +629,7 @@
 				6F9DF07F1E9F6E0E002C41BB /* LFClipToolbar.m in Sources */,
 				6FFD83221E713B5B005F3FFC /* LFGridView.m in Sources */,
 				6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */,
+				6F07E5B71ECBE88400738648 /* LFGIFImageSerialization.m in Sources */,
 				6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */,
 				6F3DC4761E8A59BC00BF623E /* LFColorSlider.m in Sources */,
 				6FFD83591E7235D5005F3FFC /* LFSplashView.m in Sources */,

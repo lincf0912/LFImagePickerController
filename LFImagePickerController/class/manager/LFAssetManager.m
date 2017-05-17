@@ -610,19 +610,38 @@ static LFAssetManager *manager;
         CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
         BOOL isGif = [info[kImageInfoIsGIF] boolValue];
         
-        /** 缩略图 */
-        NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
-        /** 缩略图数据 */
-        [info setObject:thumbnailData forKey:kImageInfoFileThumnailData];
-        thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
-        
-        /** GIF */
+        NSData *sourceData = nil, *thumbnailData = nil;
         if (isGif && pickingGif) { /** GIF图片处理方式 */
+            
+            /** 原图 */
             NSData *imageData = info[kImageInfoFileOriginalData];
             source = [UIImage LF_imageWithImageData:imageData];
-        } else if (!isOriginal) { /** 标清图 */
-            NSData *sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
-            source = [UIImage imageWithData:sourceData scale:[UIScreen mainScreen].scale];
+            if (!isOriginal) {
+                /** 忽略标清图 */
+            }
+            /** 缩略图 */
+            CGFloat minWidth = MIN(source.size.width, source.size.height);
+            CGFloat imageRatio = 0.5f;
+            if (minWidth > 100.f) {
+                imageRatio = 50.f/minWidth;
+            }
+            thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+            
+        } else {
+            /** 标清图 */
+            if (!isOriginal) {
+                sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
+            }
+            /** 缩略图 */
+            thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
+        }
+        if (thumbnailData) {
+            /** 缩略图数据 */
+            [info setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
+            thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+        }
+        if (sourceData) {
+            source = [UIImage LF_imageWithImageData:sourceData];
             [info setObject:sourceData forKey:kImageInfoFileOriginalData];
             /** 标清图片大小 */
             [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];

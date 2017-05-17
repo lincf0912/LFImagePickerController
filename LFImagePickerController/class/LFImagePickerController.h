@@ -24,7 +24,7 @@ extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
  *  NSData;
  */
 extern NSString *const kImageInfoFileOriginalData;     // 图片数据 原图
-extern NSString *const kImageInfoFileThumnailData;     // 图片数据 缩略图
+extern NSString *const kImageInfoFileThumbnailData;     // 图片数据 缩略图
 /**
  *  NSNumber(BOOL);
  */

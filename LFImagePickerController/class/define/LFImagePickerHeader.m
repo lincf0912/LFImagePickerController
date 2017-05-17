@@ -26,7 +26,7 @@ NSString *const kImageInfoFileName = @"ImageInfoFileName";     // 图片名称
 NSString *const kImageInfoFileSize = @"ImageInfoFileSize";     // 图片大小［长、宽］
 NSString *const kImageInfoFileByte = @"ImageInfoFileByte";     // 图片大小［字节］
 NSString *const kImageInfoFileOriginalData = @"ImageInfoFileOriginalData";     // 图片数据 原图
-NSString *const kImageInfoFileThumnailData = @"ImageInfoFileThumnailData";     // 图片数据 缩略图
+NSString *const kImageInfoFileThumbnailData = @"ImageInfoFileThumbnailData";     // 图片数据 缩略图
 NSString *const kImageInfoIsGIF = @"ImageInfoIsGIF";     // 是否GIF
 
 @implementation LFImagePickerHeader

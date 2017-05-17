@@ -442,9 +442,12 @@
                                                        compressSize:imagePickerVc.imageCompressSize
                                               thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
                                                          completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                        /** 编辑图片保存到相册 */
-                        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
-                        photosComplete(thumbnail, source, info, i, model.asset);
+                                                             
+                                                             if (imagePickerVc.autoSavePhotoAlbum) {
+                                                                 /** 编辑图片保存到相册 */
+                                                                 [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:source complete:nil];
+                                                             }
+                                                             photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
                     [[LFAssetManager manager] getPhotoWithAsset:model.asset
@@ -453,7 +456,8 @@
                                                    compressSize:imagePickerVc.imageCompressSize
                                           thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
                                                      completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                        photosComplete(thumbnail, source, info, i, model.asset);
+                                                         
+                                                         photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 }
             }

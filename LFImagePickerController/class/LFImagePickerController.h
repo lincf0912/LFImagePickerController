@@ -109,6 +109,10 @@ extern NSString *const kImageInfoIsGIF;     // 是否GIF
 /// 压缩缩略图的大小，默认为10 单位KB
 @property(nonatomic, assign) float thumbnailCompressSize;
 
+/// Default is YES, if set NO，The edited photo is not saved to the photo album
+/// 默认为YES，如果设置为NO，编辑后的图片不会保存到系统相册
+@property(nonatomic, assign) BOOL autoSavePhotoAlbum;
+
 /// The photos user have selected
 /// 用户选中过的图片数组
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;

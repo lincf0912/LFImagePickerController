@@ -172,6 +172,7 @@
     self.maxVideoSize = kMaxVideoSize;
     self.imageCompressSize = kCompressSize;
     self.thumbnailCompressSize = kThumbnailCompressSize;
+    self.autoSavePhotoAlbum = YES;
 }
 
 - (void)observeAuthrizationStatusChange {

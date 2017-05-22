@@ -307,9 +307,22 @@ static LFAssetManager *manager;
             }
             
             if (allowPickingGif) {
-                /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
-                if ([[phAsset valueForKey:@"filename"] hasSuffix:@"GIF"]) {
-                    type = LFAssetMediaTypeGIF;
+                
+                if (iOS9_1Later) {
+                    /** 新判断GIF图片方法 */
+                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
+                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        PHAssetResource *resource = obj;
+                        if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
+                            type = LFAssetMediaTypeGIF;
+                            *stop = YES;
+                        }
+                    }];
+                } else {
+                    /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
+                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                        type = LFAssetMediaTypeGIF;
+                    }
                 }
                 
                 //            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
@@ -729,8 +742,21 @@ static LFAssetManager *manager;
             if (imageData) {
                 [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
             }
-            if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+            
+            if (iOS9_1Later) {
+                /** 新判断GIF图片方法 */
+                NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:phAsset];
+                [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    PHAssetResource *resource = obj;
+                    if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
+                        [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+                        *stop = YES;
+                    }
+                }];
+            } else {
+                if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                    [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+                }
             }
             if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
         }];

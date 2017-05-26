@@ -20,4 +20,7 @@
 /** 图片预览模式 */
 - (instancetype)initWithPhotos:(NSArray <UIImage *>*)photos index:(NSInteger)index;
 
+/** 总是显示预览框 */
+@property (nonatomic, assign) BOOL alwaysShowPreviewBar;
+
 @end

@@ -25,11 +25,12 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 @property (nonatomic, copy, readonly) NSString *name;
 
 /** 自定义预览图 */
-@property (nonatomic, strong) UIImage *previewImage;
+@property (nonatomic, readonly) UIImage *previewImage;
 
 /// Init a photo dataModel With a asset
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型
 - (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type;
 - (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type timeLength:(NSString *)timeLength;
 
+- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type;
 @end

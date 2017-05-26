@@ -147,7 +147,7 @@
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit.editPreviewImage) {
         self.previewImage = photoEdit.editPreviewImage;
-    } else if (model.asset == nil) { /** 显示自定义图片 */
+    } else if (model.previewImage) { /** 显示自定义图片 */
         self.previewImage = model.previewImage;
     } else {
         /** 如果已被设置图片，忽略这次图片获取 */

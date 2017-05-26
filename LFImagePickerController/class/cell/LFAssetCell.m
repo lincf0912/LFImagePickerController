@@ -42,7 +42,9 @@
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit.editPreviewImage) {
         self.imageView.image = photoEdit.editPreviewImage;
-    } else {
+    } else if (model.previewImage) { /** 显示自定义图片 */
+        self.imageView.image = model.previewImage;
+    }  else {
         [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([model.asset isEqual:self.model.asset]) {
                 self.imageView.image = photo;

@@ -224,8 +224,8 @@
             LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
             model = [[LFAsset alloc] initWithAsset:asset type:type];
         } else if ([asset isKindOfClass:[UIImage class]]) {
-            model = [[LFAsset alloc] initWithAsset:nil type:LFAssetMediaTypePhoto];
-            model.previewImage = asset;
+            UIImage *image = (UIImage *)asset;
+            model = [[LFAsset alloc] initWithImage:image type:(image.images.count ? LFAssetMediaTypeGIF : LFAssetMediaTypePhoto)];
         }
         model.isSelected = YES;
         if (model) {

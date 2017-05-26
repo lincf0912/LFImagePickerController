@@ -27,6 +27,11 @@
 @property (nonatomic, strong) UIFont *naviTitleFont;
 @property (nonatomic, strong) UIColor *barItemTextColor;
 @property (nonatomic, strong) UIFont *barItemTextFont;
+@property (nonatomic, strong) UIColor *toolbarBgColor;
+@property (nonatomic, strong) UIColor *toolbarTitleColorNormal;
+@property (nonatomic, strong) UIColor *toolbarTitleColorDisabled;
+@property (nonatomic, strong) UIFont *toolbarTitleFont;
+@property (nonatomic, strong) UIColor *previewNaviBgColor;
 
 /// 自定义文字
 @property (nonatomic, copy) NSString *doneBtnTitleStr;

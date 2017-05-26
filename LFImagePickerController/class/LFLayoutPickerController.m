@@ -140,12 +140,18 @@
 
 - (void)configDefaultSetting {
     
-    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:1.0];
-    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(26/255.0) green:(178/255.0) blue:(10/255.0) alpha:0.5];
+    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(173/255.0) blue:(25/255.0) alpha:1.0];
+    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(23/255.0) green:(82/255.0) blue:(22/255.0) alpha:1.0];
     self.naviTitleColor = [UIColor whiteColor];
     self.naviTitleFont = [UIFont systemFontOfSize:17];
     self.barItemTextFont = [UIFont systemFontOfSize:15];
     self.barItemTextColor = [UIColor whiteColor];
+    self.toolbarBgColor = [UIColor colorWithWhite:.1f alpha:0.9];
+    self.toolbarTitleColorNormal = [UIColor whiteColor];
+    self.toolbarTitleColorDisabled = [UIColor colorWithRed:(92/255.0) green:(102/255.0) blue:(106/255.0) alpha:1.0];
+    self.toolbarTitleFont = [UIFont systemFontOfSize:14];
+    self.previewNaviBgColor = [UIColor colorWithRed:(36/255.0) green:(36/255.0)  blue:(36/255.0) alpha:0.9];
+    
     
     [self configDefaultImageName];
     [self configDefaultBtnTitle];

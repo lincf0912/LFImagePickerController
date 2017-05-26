@@ -40,4 +40,14 @@
     }
     return self;
 }
+
+- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type
+{
+    
+    self = [self initWithAsset:nil type:type];
+    if (self) {
+        _previewImage = image;
+    }
+    return self;
+}
 @end

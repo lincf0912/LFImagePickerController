@@ -12,7 +12,7 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
-#import "UIImage+LF_Format.h"
+#import "LFGifPlayerManager.h"
 
 @interface LFProgressView : UIView
 
@@ -125,6 +125,7 @@
 - (void)prepareForReuse
 {
     [super prepareForReuse];
+    [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
     self.model = nil;
     self.imageView.image = nil;
 }
@@ -160,7 +161,17 @@
                 if ([data isKindOfClass:[UIImage class]]) {
                     self.previewImage = (UIImage *)data;
                 } else if ([data isKindOfClass:[NSData class]]) {
-                    self.previewImage = [UIImage LF_imageWithImageData:data];
+                    /** 静态加载gif */
+                    self.previewImage = [UIImage imageWithData:data];
+                    NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
+                    [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:data key:modelKey execution:^(CGImageRef imageData, NSString *key) {
+                        if ([modelKey isEqualToString:key]) {
+                            self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                        }
+                    } fail:^(NSString *key) {
+                    }];
+                    /** 这个方式价值GIF内存使用非常高 */
+//                    self.previewImage = [UIImage LF_imageWithImageData:data];
                 }
                 _progressView.hidden = YES;
                 if (self.imageProgressUpdateBlock) {

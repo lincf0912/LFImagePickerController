@@ -18,6 +18,7 @@
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
+#import "LFGifPlayerManager.h"
 
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate, LFPhotoEdittingControllerDelegate>
 {
@@ -135,6 +136,11 @@
     [_collectionView.collectionViewLayout invalidateLayout];
     _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + 20), 0);
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
+}
+
+- (void)dealloc
+{
+    [LFGifPlayerManager free];
 }
 
 - (void)checkSelectedModels {

@@ -41,8 +41,8 @@
 		6F552A831E961C8400AC362C /* 2.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A811E961C8400AC362C /* 2.jpeg */; };
 		6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */; };
 		6F8D07361ED7FC7800601BEA /* 3.gif in Resources */ = {isa = PBXBuildFile; fileRef = 6F8D07351ED7FC7800601BEA /* 3.gif */; };
-		6F8D073C1ED7FED100601BEA /* GifPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F8D07391ED7FED100601BEA /* GifPlayerManager.m */; };
-		6F8D073D1ED7FED100601BEA /* LFWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F8D073B1ED7FED100601BEA /* LFWeakProxy.m */; };
+		6F8D074A1ED8091C00601BEA /* LFGifPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F8D07471ED8091C00601BEA /* LFGifPlayerManager.m */; };
+		6F8D074B1ED8091C00601BEA /* LFWeakProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F8D07491ED8091C00601BEA /* LFWeakProxy.m */; };
 		6F9DDCF31EB075E100CDAD13 /* UIDevice+LFOrientation.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */; };
 		6FA36E511EB9DC700009E2DE /* UIImage+LF_Format.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */; };
 		6FA36E561EBB0B240009E2DE /* JRPickColorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E551EBB0B240009E2DE /* JRPickColorView.m */; };
@@ -140,10 +140,10 @@
 		6F74DC961E85147A00170A95 /* LFAssetManager+SaveAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+SaveAlbum.h"; sourceTree = "<group>"; };
 		6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+SaveAlbum.m"; sourceTree = "<group>"; };
 		6F8D07351ED7FC7800601BEA /* 3.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = 3.gif; sourceTree = "<group>"; };
-		6F8D07381ED7FED100601BEA /* GifPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GifPlayerManager.h; sourceTree = "<group>"; };
-		6F8D07391ED7FED100601BEA /* GifPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GifPlayerManager.m; sourceTree = "<group>"; };
-		6F8D073A1ED7FED100601BEA /* LFWeakProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFWeakProxy.h; sourceTree = "<group>"; };
-		6F8D073B1ED7FED100601BEA /* LFWeakProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFWeakProxy.m; sourceTree = "<group>"; };
+		6F8D07461ED8091C00601BEA /* LFGifPlayerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFGifPlayerManager.h; sourceTree = "<group>"; };
+		6F8D07471ED8091C00601BEA /* LFGifPlayerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFGifPlayerManager.m; sourceTree = "<group>"; };
+		6F8D07481ED8091C00601BEA /* LFWeakProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFWeakProxy.h; sourceTree = "<group>"; };
+		6F8D07491ED8091C00601BEA /* LFWeakProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFWeakProxy.m; sourceTree = "<group>"; };
 		6F9DDCF11EB075E100CDAD13 /* UIDevice+LFOrientation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+LFOrientation.h"; sourceTree = "<group>"; };
 		6F9DDCF21EB075E100CDAD13 /* UIDevice+LFOrientation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+LFOrientation.m"; sourceTree = "<group>"; };
 		6FA36E4F1EB9DC700009E2DE /* UIImage+LF_Format.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+LF_Format.h"; sourceTree = "<group>"; };
@@ -423,22 +423,21 @@
 			path = VideoUtils;
 			sourceTree = "<group>";
 		};
-		6F8D07371ED7FED100601BEA /* GifUtils */ = {
+		6F8D07451ED8091C00601BEA /* LFGifPlayer */ = {
 			isa = PBXGroup;
 			children = (
-				6F8D07381ED7FED100601BEA /* GifPlayerManager.h */,
-				6F8D07391ED7FED100601BEA /* GifPlayerManager.m */,
-				6F8D073A1ED7FED100601BEA /* LFWeakProxy.h */,
-				6F8D073B1ED7FED100601BEA /* LFWeakProxy.m */,
+				6F8D07461ED8091C00601BEA /* LFGifPlayerManager.h */,
+				6F8D07471ED8091C00601BEA /* LFGifPlayerManager.m */,
+				6F8D07481ED8091C00601BEA /* LFWeakProxy.h */,
+				6F8D07491ED8091C00601BEA /* LFWeakProxy.m */,
 			);
-			name = GifUtils;
-			path = ../../../MEMobileV2/MEMobile/MEMobile/Utils/GifUtils;
+			path = LFGifPlayer;
 			sourceTree = "<group>";
 		};
 		6FA36E521EBB0B240009E2DE /* vendors */ = {
 			isa = PBXGroup;
 			children = (
-				6F8D07371ED7FED100601BEA /* GifUtils */,
+				6F8D07451ED8091C00601BEA /* LFGifPlayer */,
 				6FA36E531EBB0B240009E2DE /* JRPickColorView */,
 			);
 			path = vendors;
@@ -671,8 +670,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6F8D073D1ED7FED100601BEA /* LFWeakProxy.m in Sources */,
+				6F8D074B1ED8091C00601BEA /* LFWeakProxy.m in Sources */,
 				6FAA50AC1ED532A3002D88A2 /* LFEdittingView.m in Sources */,
+				6F8D074A1ED8091C00601BEA /* LFGifPlayerManager.m in Sources */,
 				6FAA50B11ED532A3002D88A2 /* LFGridMaskLayer.m in Sources */,
 				6FAA50B71ED532A3002D88A2 /* LFStickerLabel.m in Sources */,
 				6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */,
@@ -716,7 +716,6 @@
 				6F1201A01E513FB100EA2198 /* LFAssetManager.m in Sources */,
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
 				6FAA50B21ED532A3002D88A2 /* LFGridView.m in Sources */,
-				6F8D073C1ED7FED100601BEA /* GifPlayerManager.m in Sources */,
 				6FF286051E5D6D4F0008FB5B /* LFPhotoEdittingController.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,
 				6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */,

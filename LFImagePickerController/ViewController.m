@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "LFImagePickerController.h"
 
+#import "UIImage+LF_Format.h"
 #import "LFAssetManager.h"
 
 @interface ViewController () <LFImagePickerControllerDelegate>
@@ -60,7 +61,9 @@
 }
 
 - (IBAction)buttonAction3:(id)sender {
-    NSArray *array = @[[UIImage imageNamed:@"1.jpeg"], [UIImage imageNamed:@"2.jpeg"]];
+    NSString *gifPath = [[NSBundle mainBundle] pathForResource:@"3" ofType:@"gif"];
+//    [UIImage imageNamed:@"3.gif"] //这样加载是静态图片
+    NSArray *array = @[[UIImage imageNamed:@"1.jpeg"], [UIImage imageNamed:@"2.jpeg"], [UIImage LF_imageWithImagePath:gifPath]];
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedPhotos:array index:0 complete:^(NSArray *photos) {
         [self.thumbnailImageVIew setImage:nil];
         [self.imageView setImage:photos.firstObject];

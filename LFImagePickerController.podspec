@@ -19,4 +19,10 @@ ss.source_files = 'LFImagePickerController/vendors/JRPickColorView/*.{h,m}'
 ss.public_header_files = 'LFImagePickerController/vendors/JRPickColorView/JRPickColorView.h'
 end
 
+# LFGifPlayer模块
+s.subspec 'LFGifPlayer' do |ss|
+ss.source_files = 'LFImagePickerController/vendors/LFGifPlayer/*.{h,m}'
+ss.public_header_files = 'LFImagePickerController/vendors/LFGifPlayer/LFGifPlayerManager.h'
+end
+
 end

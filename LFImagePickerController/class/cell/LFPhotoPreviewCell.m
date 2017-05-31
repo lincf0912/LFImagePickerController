@@ -152,10 +152,6 @@
     } else if (model.previewImage) { /** 显示自定义图片 */
         self.previewImage = model.previewImage;
     } else {
-        /** 如果已被设置图片，忽略这次图片获取 */
-        if (self.previewImage && self.model.type == LFAssetMediaTypePhoto) {
-            return;
-        }
         
         void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
             if ([model isEqual:self.model]) {
@@ -169,7 +165,7 @@
                         }
                     } fail:^(NSString *key) {
                     }];
-                    /** 这个方式价值GIF内存使用非常高 */
+                    /** 这个方式加载GIF内存使用非常高 */
 //                    self.previewImage = [UIImage LF_imageWithImageData:data];
                 } else if ([data isKindOfClass:[PHLivePhoto class]]) { /** live photo */
                     self.livePhotoView.livePhoto = data;
@@ -194,8 +190,12 @@
             }
         };
         
-        /** 普通图片处理 */
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        
+        /** 如果已被设置图片，忽略这次图片获取 */
+        if (self.previewImage == nil) {
+            /** 普通图片处理 */
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        }
         
         if (self.displayGif && model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
             [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
@@ -205,6 +205,25 @@
     }
 }
 
+- (void)willDisplayCell
+{
+    if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
+        [self setModel:self.model];
+    } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
+        _livePhotoView.delegate = self;
+        [_livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+    }
+}
+
+- (void)didEndDisplayCell
+{
+    if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
+        [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
+    } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
+        _livePhotoView.delegate = nil;
+        [_livePhotoView stopPlayback];
+    }
+}
 
 - (void)resizeSubviews {
     _imageContainerView.origin = CGPointZero;
@@ -313,8 +332,8 @@
         _livePhotoView = [[PHLivePhotoView alloc] initWithFrame:_imageContainerView.bounds];
         _livePhotoView.muted = YES;
         _livePhotoView.contentMode = UIViewContentModeScaleAspectFill;
-        _livePhotoView.delegate = self;
     }
+    _livePhotoView.delegate = self;
     [_imageContainerView addSubview:_livePhotoView];
     return _livePhotoView;
 }

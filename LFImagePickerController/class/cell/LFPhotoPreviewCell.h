@@ -21,4 +21,6 @@
 @property (nonatomic, assign) BOOL displayGif;
 @property (nonatomic, assign) BOOL displayLivePhoto;
 
+- (void)willDisplayCell;
+- (void)didEndDisplayCell;
 @end

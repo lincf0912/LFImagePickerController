@@ -123,10 +123,18 @@
     [super viewWillAppear:animated];
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
+    
+    [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didEndDisplayCell)];
 }
 
 - (void)viewWillLayoutSubviews

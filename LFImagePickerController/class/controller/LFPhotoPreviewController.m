@@ -100,7 +100,7 @@
             _models = [@[] mutableCopy];
             _currentIndex = index;
             for (UIImage *image in photos) {
-                LFAsset *model = [[LFAsset alloc] initWithImage:image type:(image.images.count ? LFAssetMediaTypeGIF : LFAssetMediaTypePhoto)];
+                LFAsset *model = [[LFAsset alloc] initWithImage:image type:LFAssetMediaTypePhoto subType:(image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone)];
                 [_models addObject:model];
             }
             _isPhotoPreview = YES;
@@ -319,12 +319,14 @@
 }
 
 - (void)configCollectionView {
+    CGFloat margin = 20.f;
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    layout.itemSize = CGSizeMake(self.view.width + 20, self.view.height);
+    layout.itemSize = CGSizeMake(self.view.width, self.view.height);
     layout.minimumInteritemSpacing = 0;
-    layout.minimumLineSpacing = 0;
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(-10, 0, self.view.width + 20, self.view.height) collectionViewLayout:layout];
+    layout.minimumLineSpacing = margin;
+    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, margin);
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width + margin, self.view.height) collectionViewLayout:layout];
     _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor blackColor];
     _collectionView.dataSource = self;
@@ -333,7 +335,7 @@
     _collectionView.scrollsToTop = NO;
     _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.contentOffset = CGPointMake(0, 0);
-    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + 20), 0);
+    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + margin), 0);
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
 }
@@ -469,9 +471,9 @@
     
     if (_isMTScroll) {        
         CGFloat offSetWidth = scrollView.contentOffset.x;
-        offSetWidth = offSetWidth +  ((self.view.width + 20) * 0.5);
+        offSetWidth = offSetWidth +  (_collectionView.width/2);
         
-        NSInteger currentIndex = offSetWidth / (self.view.width + 20);
+        NSInteger currentIndex = offSetWidth / (_collectionView.width);
         
         if (currentIndex < _models.count && _currentIndex != currentIndex) {
             _currentIndex = currentIndex;
@@ -493,6 +495,9 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     LFPhotoPreviewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    cell.displayGif = imagePickerVc.allowPickingGif;
+    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
     /** 设置图片，与编辑图片的必须一致，因为获取图片选择快速优化方案，图片大小会有小许偏差 */
     if (self.tempEditImage) {
         cell.previewImage = self.tempEditImage;
@@ -520,23 +525,6 @@
         weakSelf.progress = progress;
     }];
     return cell;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:[LFPhotoPreviewCell class]]) {
-        [(LFPhotoPreviewCell *)cell recoverSubviews];
-    }
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-    if ([cell isKindOfClass:[LFPhotoPreviewCell class]]) {
-        [(LFPhotoPreviewCell *)cell recoverSubviews];
-    }
-}
-
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    return CGSizeMake(self.view.width + 20, self.view.height);
 }
 
 #pragma mark - LFPhotoEdittingControllerDelegate

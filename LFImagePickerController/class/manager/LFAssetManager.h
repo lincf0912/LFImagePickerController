@@ -64,12 +64,11 @@
  *  @param result            LFAlbum.result 相册对象
  *  @param allowPickingVideo 是否包含视频
  *  @param allowPickingImage 是否包含相片
- *  @param allowPickingGif   是否包含Gif
  *  @param fetchLimit        相片最大数量
  *  @param ascending         顺序获取
  *  @param completion        回调结果
  */
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
+- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
 /** 获得下标为index的单个照片 */
 - (void)getAssetFromFetchResult:(id)result
                         atIndex:(NSInteger)index
@@ -161,9 +160,6 @@
 /// 检查照片大小是否满足最小要求
 - (BOOL)isPhotoSelectableWithAsset:(id)asset;
 - (CGSize)photoSizeWithAsset:(id)asset;
-
-/** 对象媒体类型 */
-- (LFAssetMediaType)mediaTypeWithModel:(id)asset;
 
 /// Return Cache Path 返回压缩缓存视频路径
 + (NSString *)CacheVideoPath;

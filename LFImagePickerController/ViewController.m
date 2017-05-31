@@ -43,19 +43,21 @@
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
     imagePicker.allowPickingGif = YES; /** 支持GIF */
+    imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 
 - (IBAction)buttonAction2:(id)sender {
     int limit = 10;
     [[LFAssetManager manager] getCameraRollAlbum:NO allowPickingImage:YES fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
-        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES  allowPickingGif:NO fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
+        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
             NSMutableArray *array = [@[] mutableCopy];
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
             }
             LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:0 excludeVideo:YES];
             imagePicker.pickerDelegate = self;
+//            imagePicker.allowPickingGif = YES; /** 支持GIF */
             [self presentViewController:imagePicker animated:YES completion:nil];
         }];
     }];

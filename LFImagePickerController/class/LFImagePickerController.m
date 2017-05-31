@@ -105,8 +105,7 @@
 
         NSMutableArray *models = [@[] mutableCopy];
         for (id asset in selectedAssets) {
-            LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
-            LFAsset *model = [[LFAsset alloc] initWithAsset:asset type:type];
+            LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
             [models addObject:model];
         }
         LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
@@ -222,11 +221,10 @@
     for (id asset in selectedAssets) {
         LFAsset *model = nil;
         if ([asset isKindOfClass:[PHAsset class]] || [asset isKindOfClass:[ALAsset class]]) {
-            LFAssetMediaType type = [[LFAssetManager manager] mediaTypeWithModel:asset];
-            model = [[LFAsset alloc] initWithAsset:asset type:type];
+            model = [[LFAsset alloc] initWithAsset:asset];
         } else if ([asset isKindOfClass:[UIImage class]]) {
             UIImage *image = (UIImage *)asset;
-            model = [[LFAsset alloc] initWithImage:image type:(image.images.count ? LFAssetMediaTypeGIF : LFAssetMediaTypePhoto)];
+            model = [[LFAsset alloc] initWithImage:image type:LFAssetMediaTypePhoto subType:(image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone)];
         }
         model.isSelected = YES;
         if (model) {

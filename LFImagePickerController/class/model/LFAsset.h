@@ -10,10 +10,14 @@
 
 typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
-    LFAssetMediaTypeLivePhoto,
     LFAssetMediaTypeVideo,
-    LFAssetMediaTypeAudio,
-    LFAssetMediaTypeGIF,
+};
+
+typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
+    LFAssetSubMediaTypeNone = 0,
+    
+    LFAssetSubMediaTypeGIF = 10,
+    LFAssetSubMediaTypeLivePhoto,
 };
 
 @interface LFAsset : NSObject
@@ -21,6 +25,7 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 @property (nonatomic, readonly) id asset;             ///< PHAsset or ALAsset
 @property (nonatomic, assign) BOOL isSelected;      ///< The select status of a photo, default is No
 @property (nonatomic, readonly) LFAssetMediaType type;
+@property (nonatomic, readonly) LFAssetSubMediaType subType;
 @property (nonatomic, copy, readonly) NSString *timeLength;
 @property (nonatomic, copy, readonly) NSString *name;
 
@@ -29,8 +34,8 @@ typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
 
 /// Init a photo dataModel With a asset
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型
-- (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type;
-- (instancetype)initWithAsset:(id)asset type:(LFAssetMediaType)type timeLength:(NSString *)timeLength;
+- (instancetype)initWithAsset:(id)asset;
 
 - (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type;
+- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type subType:(LFAssetSubMediaType)subType;
 @end

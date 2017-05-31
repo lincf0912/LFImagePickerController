@@ -59,7 +59,7 @@
     /** 显示编辑标记 */
     self.editMaskImageView.hidden = (photoEdit.editPreviewImage == nil);
     
-    [self setType:model.type];
+    [self setTypeToSubView];
 }
 
 - (void)prepareForReuse
@@ -68,25 +68,25 @@
     self.imageView.image = nil;
 }
 
-- (void)setType:(LFAssetMediaType)type {
+- (void)setTypeToSubView {
     
-    if (type == LFAssetMediaTypePhoto || type == LFAssetMediaTypeLivePhoto || type == LFAssetMediaTypeGIF) {
+    if (self.model.type == LFAssetMediaTypePhoto) {
         _selectImageView.hidden = NO;
         _selectPhotoButton.hidden = NO;
         _bottomView.hidden = YES;
         
-        if (type == LFAssetMediaTypeGIF) {
+        if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) {
             _bottomView.hidden = NO;
             self.timeLength.text = @"GIF";
             self.videoImgView.hidden = YES;
             _timeLength.x = 5;
-        } else if (type == LFAssetMediaTypeLivePhoto) {
+        } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
             _bottomView.hidden = NO;
             self.timeLength.text = @"Live Photo";
             self.videoImgView.hidden = YES;
             _timeLength.x = 5;
         }
-    } else if (type == LFAssetMediaTypeVideo) {
+    } else if (self.model.type == LFAssetMediaTypeVideo) {
         _selectImageView.hidden = YES;
         _selectPhotoButton.hidden = YES;
         _bottomView.hidden = NO;

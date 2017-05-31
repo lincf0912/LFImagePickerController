@@ -85,6 +85,7 @@
         
         dispatch_globalQueue_async_safe(^{
             
+            long long start = [[NSDate date] timeIntervalSince1970] * 1000;
             void (^initDataHandle)() = ^{
                 if (self.model.models.count) { /** 使用缓存数据 */
                     _models = [NSMutableArray arrayWithArray:_model.models];
@@ -97,11 +98,13 @@
                     if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
                         ascending = !imagePickerVc.sortAscendingByCreateDate;
                     }
-                    [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage allowPickingGif:imagePickerVc.allowPickingGif fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                    [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                         /** 缓存数据 */
                         _model.models = models;
                         _models = [NSMutableArray arrayWithArray:models];
                         dispatch_main_async_safe(^{
+                            long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                            NSLog(@"%lu张图片加载耗时：%lld毫秒", (unsigned long)models.count, end - start);
                             [self initSubviews];
                         });
                     }];
@@ -111,6 +114,8 @@
             if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
                 [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
                     self.model = model;
+                    long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                    NSLog(@"加载相册耗时：%lld毫秒", end - start);
                     initDataHandle();
                 }];
             } else { /** 已存在相册数据 */
@@ -518,6 +523,9 @@
     LFAssetCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetCell" forIndexPath:indexPath];
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
     cell.photoSelImageName = imagePickerVc.photoSelImageName;
+    cell.displayGif = imagePickerVc.allowPickingGif;
+    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
+    
     NSInteger index = indexPath.row - 1;
     if (imagePickerVc.sortAscendingByCreateDate || !_showTakePhotoBtn) {
         index = indexPath.row;

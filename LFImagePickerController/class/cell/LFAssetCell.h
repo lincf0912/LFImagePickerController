@@ -25,6 +25,9 @@
 @property (nonatomic, copy) NSString *photoSelImageName;
 @property (nonatomic, copy) NSString *photoDefImageName;
 
+@property (nonatomic, assign) BOOL displayGif;
+@property (nonatomic, assign) BOOL displayLivePhoto;
+
 @end
 
 /// 拍照视图

@@ -72,7 +72,7 @@ static LFAssetManager *manager;
         if (iOS9Later) {
             option.fetchLimit = fetchLimit;
         }
-        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil];
         for (PHAssetCollection *collection in smartAlbums) {
             // 有可能是PHCollectionList类的的对象，过滤掉
             if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
@@ -154,7 +154,7 @@ static LFAssetManager *manager;
 #pragma mark - Get Assets
 
 /// Get Assets 获得照片数组
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
+- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
 {
     __block NSMutableArray *photoArr = [NSMutableArray array];
     if ([result isKindOfClass:[PHFetchResult class]]) {
@@ -171,10 +171,11 @@ static LFAssetManager *manager;
             end = count > fetchLimit ? fetchLimit : count;
         }
         NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, end)];
+        
         NSArray *results = [fetchResult objectsAtIndexes:indexSet];
         
         for (PHAsset *asset in results) {
-            LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
+            LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
             if (model) {
                 if (ascending) {
                     [photoArr addObject:model];
@@ -198,7 +199,7 @@ static LFAssetManager *manager;
         ALAssetsGroupEnumerationResultsBlock resultBlock = ^(ALAsset *asset, NSUInteger idx, BOOL *stop)
         {
             if (asset) {
-                LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:allowPickingGif];
+                LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
                 if (model) {
                     [photoArr addObject:model];
                 }
@@ -254,7 +255,7 @@ static LFAssetManager *manager;
             if (completion) completion(nil);
             return;
         }
-        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:NO];
+        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
         if (completion) completion(model);
     } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
@@ -270,7 +271,7 @@ static LFAssetManager *manager;
         
         [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
             if (result) {
-                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage allowPickingGif:NO];
+                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
                 [photoArr addObject:model];
             }
         }];
@@ -294,104 +295,13 @@ static LFAssetManager *manager;
     }
 }
 
-- (LFAsset *)assetModelWithAsset:(id)asset allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage allowPickingGif:(BOOL)allowPickingGif {
-    LFAsset *model;
-    __block LFAssetMediaType type = LFAssetMediaTypePhoto;
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        PHAsset *phAsset = (PHAsset *)asset;
-        if (phAsset.mediaType == PHAssetMediaTypeVideo)      type = LFAssetMediaTypeVideo;
-        else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
-        else if (phAsset.mediaType == PHAssetMediaTypeImage) {
-            if (iOS9_1Later) {
-                if (phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = LFAssetMediaTypeLivePhoto;
-            }
-            
-            if (allowPickingGif) {
-                
-                if (iOS9_1Later) {
-                    /** 新判断GIF图片方法 */
-                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
-                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                        PHAssetResource *resource = obj;
-                        if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
-                            type = LFAssetMediaTypeGIF;
-                            *stop = YES;
-                        }
-                    }];
-                } else {
-                    /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
-                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
-                        type = LFAssetMediaTypeGIF;
-                    }
-                }
-                
-                //            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-                //            option.resizeMode = PHImageRequestOptionsResizeModeFast;
-                //            option.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-                //            option.synchronous = YES;
-                //            [[PHImageManager defaultManager] requestImageDataForAsset:asset
-                //                                           options:option
-                //                                     resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                //                                         //gif 图片
-                //                                         if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                //                                             type = LFAssetMediaTypeGIF;
-                //                                         }
-                //                                     }];
-            }
-        }
-        if (!allowPickingVideo && type == LFAssetMediaTypeVideo) return nil;
-        if (!allowPickingImage && (type == LFAssetMediaTypePhoto || type == LFAssetMediaTypeGIF || type == LFAssetMediaTypeLivePhoto)) return nil;
-        
-        // 过滤掉尺寸不满足要求的图片
-        if (![self isPhotoSelectableWithAsset:phAsset]) {
-            return nil;
-        }
-
-        NSString *timeLength = type == LFAssetMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",phAsset.duration] : nil;
-        timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-        model = [[LFAsset alloc] initWithAsset:asset type:type timeLength:timeLength];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
-        ALAsset *alAsset = (ALAsset *)asset;
-        
-        NSString *timeLength = nil;
-        /// Allow picking video
-        if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
-            type = LFAssetMediaTypeVideo;
-            NSTimeInterval duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
-            timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",duration] integerValue]];
-        } else {
-            // 过滤掉尺寸不满足要求的图片
-            if (![self isPhotoSelectableWithAsset:alAsset]) {
-                return nil;
-            }
-            
-            if (allowPickingGif) {
-                ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
-                if (re) type = LFAssetMediaTypeGIF;
-            }
-
-        }
-        model = [[LFAsset alloc] initWithAsset:alAsset type:type timeLength:timeLength];
-    }
+- (LFAsset *)assetModelWithAsset:(id)asset allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage {
+    LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
+    
+    if (!allowPickingVideo && model.type == LFAssetMediaTypeVideo) return nil;
+    if (!allowPickingImage && model.type == LFAssetMediaTypePhoto) return nil;
+    
     return model;
-}
-
-- (NSString *)getNewTimeFromDurationSecond:(NSInteger)duration {
-    NSString *newTime;
-    if (duration < 10) {
-        newTime = [NSString stringWithFormat:@"0:0%zd",duration];
-    } else if (duration < 60) {
-        newTime = [NSString stringWithFormat:@"0:%zd",duration];
-    } else {
-        NSInteger min = duration / 60;
-        NSInteger sec = duration - (min * 60);
-        if (sec < 10) {
-            newTime = [NSString stringWithFormat:@"%zd:0%zd",min,sec];
-        } else {
-            newTime = [NSString stringWithFormat:@"%zd:%zd",min,sec];
-        }
-    }
-    return newTime;
 }
 
 /// Get photo bytes 获得一组照片的大小
@@ -1064,43 +974,6 @@ static LFAssetManager *manager;
         return alAsset.defaultRepresentation.dimensions;
     }
     return CGSizeZero;
-}
-
-- (LFAssetMediaType)mediaTypeWithModel:(id)asset
-{
-    __block LFAssetMediaType type = LFAssetMediaTypePhoto;
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        PHAsset *phAsset = (PHAsset *)asset;
-        if (phAsset.mediaType == PHAssetMediaTypeVideo)      type = LFAssetMediaTypeVideo;
-        else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
-        else if (phAsset.mediaType == PHAssetMediaTypeImage) {
-            if (iOS9_1Later) {
-                if (phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {type = LFAssetMediaTypeLivePhoto;}
-                else {
-                    /** 新判断GIF图片方法 */
-                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
-                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                        PHAssetResource *resource = obj;
-                        if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
-                            type = LFAssetMediaTypeGIF;
-                            *stop = YES;
-                        }
-                    }];
-                }
-                
-            } else {
-                /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
-                if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
-                    type = LFAssetMediaTypeGIF;
-                }
-            }
-        }
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
-        if ([[asset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
-            type = LFAssetMediaTypeVideo;
-        }
-    }
-    return type;
 }
 
 #pragma mark - Private Method

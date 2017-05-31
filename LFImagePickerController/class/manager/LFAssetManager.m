@@ -303,7 +303,7 @@ static LFAssetManager *manager;
         else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
         else if (phAsset.mediaType == PHAssetMediaTypeImage) {
             if (iOS9_1Later) {
-//                 if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = LFAssetMediaTypeLivePhoto;
+                if (phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = LFAssetMediaTypeLivePhoto;
             }
             
             if (allowPickingGif) {
@@ -340,8 +340,7 @@ static LFAssetManager *manager;
             }
         }
         if (!allowPickingVideo && type == LFAssetMediaTypeVideo) return nil;
-        if (!allowPickingImage && type == LFAssetMediaTypePhoto) return nil;
-        if (!allowPickingImage && type == LFAssetMediaTypeGIF) return nil;
+        if (!allowPickingImage && (type == LFAssetMediaTypePhoto || type == LFAssetMediaTypeGIF || type == LFAssetMediaTypeLivePhoto)) return nil;
         
         // 过滤掉尺寸不满足要求的图片
         if (![self isPhotoSelectableWithAsset:phAsset]) {
@@ -447,11 +446,6 @@ static LFAssetManager *manager;
     return [self getPhotoWithAsset:asset photoWidth:photoWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
 }
 
-- (PHImageRequestID)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
-    CGFloat fullScreenWidth = LFAM_ScreenWidth;
-    return [self getPhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:progressHandler networkAccessAllowed:networkAccessAllowed];
-}
-
 - (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
     if ([asset isKindOfClass:[PHAsset class]]) {
         
@@ -524,6 +518,7 @@ static LFAssetManager *manager;
     return 0;
 }
 
+#pragma mark - Get photo data (gif)
 - (PHImageRequestID)getPhotoDataWithAsset:(id)asset completion:(void (^)(NSData *data,NSDictionary *info,BOOL isDegraded))completion
 {
     return [self getPhotoDataWithAsset:asset completion:completion progressHandler:nil networkAccessAllowed:YES];
@@ -565,6 +560,60 @@ static LFAssetManager *manager;
         NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
         NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
         if (completion) completion(imageData,nil,NO);
+    }
+    return 0;
+}
+
+#pragma mark - Get live photo
+
+- (PHImageRequestID)getLivePhotoWithAsset:(id)asset completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion {
+    CGFloat fullScreenWidth = LFAM_ScreenWidth;
+    return [self getLivePhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
+}
+
+- (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion {
+    return [self getLivePhotoWithAsset:asset photoWidth:photoWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
+}
+
+- (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
+    
+    if ([asset isKindOfClass:[PHAsset class]]) {
+        PHAsset *phAsset = (PHAsset *)asset;
+        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+        CGFloat pixelWidth = photoWidth * LFAM_ScreenScale;
+        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
+        
+        PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
+        option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+            
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
+            if (downloadFinined && livePhoto) {
+                BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+                if (completion) completion(livePhoto,info,isDegraded);
+            }
+            
+            // Download image from iCloud / 从iCloud下载图片
+            if ([info objectForKey:PHImageResultIsInCloudKey] && !livePhoto && networkAccessAllowed) {
+                PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
+                options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                    dispatch_main_async_safe(^{
+                        if (progressHandler) {
+                            progressHandler(progress, error, stop, info);
+                        }
+                    });
+                };
+                options.networkAccessAllowed = YES;
+                options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+                    
+                    BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+                    if (completion) completion(livePhoto,info,isDegraded);
+                }];
+            }
+        }];
+        return imageRequestID;
     }
     return 0;
 }
@@ -1019,11 +1068,33 @@ static LFAssetManager *manager;
 
 - (LFAssetMediaType)mediaTypeWithModel:(id)asset
 {
-    LFAssetMediaType type = LFAssetMediaTypePhoto;
+    __block LFAssetMediaType type = LFAssetMediaTypePhoto;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         if (phAsset.mediaType == PHAssetMediaTypeVideo)      type = LFAssetMediaTypeVideo;
         else if (phAsset.mediaType == PHAssetMediaTypeAudio) type = LFAssetMediaTypeAudio;
+        else if (phAsset.mediaType == PHAssetMediaTypeImage) {
+            if (iOS9_1Later) {
+                if (phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {type = LFAssetMediaTypeLivePhoto;}
+                else {
+                    /** 新判断GIF图片方法 */
+                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
+                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        PHAssetResource *resource = obj;
+                        if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
+                            type = LFAssetMediaTypeGIF;
+                            *stop = YES;
+                        }
+                    }];
+                }
+                
+            } else {
+                /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
+                if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                    type = LFAssetMediaTypeGIF;
+                }
+            }
+        }
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         if ([[asset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
             type = LFAssetMediaTypeVideo;

@@ -163,6 +163,7 @@
     self.allowPickingVideo = YES;
     self.allowPickingImage = YES;
     self.allowPickingGif = NO;
+    self.allowPickingLivePhoto = NO;
     self.allowTakePicture = YES;
     self.allowPreview = YES;
     self.allowEditting = YES;

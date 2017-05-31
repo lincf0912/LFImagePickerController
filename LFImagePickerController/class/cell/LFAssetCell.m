@@ -80,6 +80,11 @@
             self.timeLength.text = @"GIF";
             self.videoImgView.hidden = YES;
             _timeLength.x = 5;
+        } else if (type == LFAssetMediaTypeLivePhoto) {
+            _bottomView.hidden = NO;
+            self.timeLength.text = @"Live Photo";
+            self.videoImgView.hidden = YES;
+            _timeLength.x = 5;
         }
     } else if (type == LFAssetMediaTypeVideo) {
         _selectImageView.hidden = YES;

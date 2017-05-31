@@ -18,6 +18,7 @@
 /** 当前展示的图片 */
 @property (nonatomic, readwrite) UIImage *previewImage;
 
-- (void)recoverSubviews;
+@property (nonatomic, assign) BOOL displayGif;
+@property (nonatomic, assign) BOOL displayLivePhoto;
 
 @end

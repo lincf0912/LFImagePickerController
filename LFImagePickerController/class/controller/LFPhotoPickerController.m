@@ -236,21 +236,21 @@
     
     CGFloat buttonX = 0;
     
-    if (imagePickerVc.allowEditting) {
-        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
-        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
-        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        _editButton.titleLabel.font = toolbarTitleFont;
-        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
-        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
-        [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
-        [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-        _editButton.enabled = imagePickerVc.selectedModels.count==1;
-        
-        buttonX = CGRectGetMaxX(_editButton.frame);
-    }
+//    if (imagePickerVc.allowEditting) {
+//        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
+//        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
+//        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+//        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+//        _editButton.titleLabel.font = toolbarTitleFont;
+//        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+//        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
+//        [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
+//        [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
+//        _editButton.enabled = imagePickerVc.selectedModels.count==1;
+//        
+//        buttonX = CGRectGetMaxX(_editButton.frame);
+//    }
     
     
     if (imagePickerVc.allowPreview) {
@@ -348,16 +348,10 @@
     } else if (model.previewImage) { /** 读取自定义图片 */
         photoEdittingVC.editImage = model.previewImage;
     } else {
-        if (model.type == LFAssetMediaTypeGIF) { /** GIF图片处理 */
-            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:^(NSData *data, NSDictionary *info, BOOL isDegraded) {
-                photoEdittingVC.editImage = [UIImage LF_imageWithImageData:data];;
-            }];
-        } else { /** 普通图片处理 */
-            /** 获取对应的图片 */
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-                photoEdittingVC.editImage = photo;
-            }];
-        }
+        /** 获取对应的图片 */
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            photoEdittingVC.editImage = photo;
+        }];
     }
     [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:photoEdittingVC];
 }

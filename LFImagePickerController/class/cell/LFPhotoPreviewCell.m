@@ -11,6 +11,7 @@
 #import "LFAssetManager.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#import <PhotosUI/PhotosUI.h>
 
 #import "LFGifPlayerManager.h"
 
@@ -65,8 +66,9 @@
 
 
 
-@interface LFPhotoPreviewCell () <UIScrollViewDelegate>
+@interface LFPhotoPreviewCell () <UIScrollViewDelegate, PHLivePhotoViewDelegate>
 @property (nonatomic, strong) UIImageView *imageView;
+@property (nonatomic, strong) PHLivePhotoView *livePhotoView;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *imageContainerView;
 @property (nonatomic, strong) LFProgressView *progressView;
@@ -80,7 +82,7 @@
         self.backgroundColor = [UIColor blackColor];
         
         _scrollView = [[UIScrollView alloc] init];
-        _scrollView.frame = CGRectMake(10, 0, self.width - 20, self.height);
+        _scrollView.frame = CGRectMake(0, 0, self.width, self.height);
         _scrollView.bouncesZoom = YES;
         _scrollView.maximumZoomScale = 2.5;
         _scrollView.minimumZoomScale = 1.0;
@@ -100,11 +102,10 @@
         _imageContainerView.contentMode = UIViewContentModeScaleAspectFill;
         [_scrollView addSubview:_imageContainerView];
         
-        _imageView = [[UIImageView alloc] init];
-//        _imageView.backgroundColor = [UIColor colorWithWhite:1.000 alpha:0.500];
-        _imageView.contentMode = UIViewContentModeScaleAspectFill;
-        _imageView.clipsToBounds = YES;
-        [_imageContainerView addSubview:_imageView];
+        UIView *view = [self subViewInitDisplayView];
+        if (view) {
+            [_imageContainerView addSubview:view];
+        }
         
         UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
         [self addGestureRecognizer:tap1];
@@ -119,15 +120,15 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    [self recoverSubviews];
+    [self resizeSubviews];
 }
 
 - (void)prepareForReuse
 {
     [super prepareForReuse];
     [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
-    self.model = nil;
-    self.imageView.image = nil;
+    _model = nil;
+    [self subViewReset];
 }
 
 - (UIImage *)previewImage
@@ -152,17 +153,15 @@
         self.previewImage = model.previewImage;
     } else {
         /** 如果已被设置图片，忽略这次图片获取 */
-        if (self.previewImage) {
+        if (self.previewImage && self.model.type == LFAssetMediaTypePhoto) {
             return;
         }
         
         void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
             if ([model isEqual:self.model]) {
-                if ([data isKindOfClass:[UIImage class]]) {
+                if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
-                } else if ([data isKindOfClass:[NSData class]]) {
-                    /** 静态加载gif */
-                    self.previewImage = [UIImage imageWithData:data];
+                } else if ([data isKindOfClass:[NSData class]]) { /** gif */
                     NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
                     [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:data key:modelKey execution:^(CGImageRef imageData, NSString *key) {
                         if ([modelKey isEqualToString:key]) {
@@ -172,6 +171,9 @@
                     }];
                     /** 这个方式价值GIF内存使用非常高 */
 //                    self.previewImage = [UIImage LF_imageWithImageData:data];
+                } else if ([data isKindOfClass:[PHLivePhoto class]]) { /** live photo */
+                    self.livePhotoView.livePhoto = data;
+                    [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
                 }
                 _progressView.hidden = YES;
                 if (self.imageProgressUpdateBlock) {
@@ -192,16 +194,15 @@
             }
         };
         
-        if (model.type == LFAssetMediaTypeGIF) { /** GIF图片处理 */
+        /** 普通图片处理 */
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        
+        if (self.displayGif && model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
             [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
-        } else { /** 普通图片处理 */
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
+        } else if (self.displayLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
+            [[LFAssetManager manager] getLivePhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
         }
     }
-}
-
-- (void)recoverSubviews {
-    [self resizeSubviews];
 }
 
 
@@ -209,12 +210,12 @@
     _imageContainerView.origin = CGPointZero;
     _imageContainerView.width = self.scrollView.width;
     
-    UIImage *image = _imageView.image;
-    if (image) {
-        if (image.size.height / image.size.width > self.height / self.scrollView.width) {
-            _imageContainerView.height = floor(image.size.height / (image.size.width / self.scrollView.width));
+    CGSize imageSize = [self subViewImageSize];
+    if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
+        if (imageSize.height / imageSize.width > self.height / self.scrollView.width) {
+            _imageContainerView.height = floor(imageSize.height / (imageSize.width / self.scrollView.width));
         } else {
-            CGFloat height = image.size.height / image.size.width * self.scrollView.width;
+            CGFloat height = imageSize.height / imageSize.width * self.scrollView.width;
             if (height < 1 || isnan(height)) height = self.height;
             height = floor(height);
             _imageContainerView.height = height;
@@ -228,6 +229,7 @@
         [_scrollView scrollRectToVisible:self.bounds animated:NO];
         _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
         _imageView.frame = _imageContainerView.bounds;
+        _livePhotoView.frame = _imageContainerView.bounds;
     }
 }
 
@@ -262,6 +264,14 @@
     [self refreshImageContainerViewCenter];
 }
 
+#pragma mark - PHLivePhotoViewDelegate
+- (void)livePhotoView:(PHLivePhotoView *)livePhotoView didEndPlaybackWithStyle:(PHLivePhotoViewPlaybackStyle)playbackStyle
+{
+    if (playbackStyle == PHLivePhotoViewPlaybackStyleFull) {
+        [livePhotoView startPlaybackWithStyle:playbackStyle];
+    }
+}
+
 #pragma mark - Private
 
 - (void)refreshImageContainerViewCenter {
@@ -269,6 +279,46 @@
     CGFloat offsetY = (_scrollView.height > _scrollView.contentSize.height) ? ((_scrollView.height - _scrollView.contentSize.height) * 0.5) : 0.0;
     self.imageContainerView.center = CGPointMake(_scrollView.contentSize.width * 0.5 + offsetX, _scrollView.contentSize.height * 0.5 + offsetY);
 }
+
+/** 创建显示视图 */
+- (UIView *)subViewInitDisplayView
+{
+    if (_imageView == nil) {
+        _imageView = [[UIImageView alloc] init];
+        //        _imageView.backgroundColor = [UIColor colorWithWhite:1.000 alpha:0.500];
+        _imageView.contentMode = UIViewContentModeScaleAspectFill;
+    }
+    
+    return _imageView;
+}
+
+/** 图片大小 */
+- (CGSize)subViewImageSize
+{
+    return self.imageView.image.size;
+}
+
+/** 重置视图 */
+- (void)subViewReset
+{
+    self.imageView.image = nil;
+    [_livePhotoView stopPlayback];
+    _livePhotoView.livePhoto = nil;
+    [_livePhotoView removeFromSuperview];
+}
+
+- (PHLivePhotoView *)livePhotoView
+{
+    if (_livePhotoView == nil) {
+        _livePhotoView = [[PHLivePhotoView alloc] initWithFrame:_imageContainerView.bounds];
+        _livePhotoView.muted = YES;
+        _livePhotoView.contentMode = UIViewContentModeScaleAspectFill;
+        _livePhotoView.delegate = self;
+    }
+    [_imageContainerView addSubview:_livePhotoView];
+    return _livePhotoView;
+}
+
 
 @end
 

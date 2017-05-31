@@ -74,8 +74,12 @@ extern NSString *const kImageInfoIsGIF;     // 是否GIF
 @property(nonatomic, assign) BOOL allowPickingImage;
 
 /// Default is NO, if set YES, user can picking gif.(support compress，CompressSize parameter is ignored)
-/// 默认为NO，如果设置为YES,用户可以选择gif图片(gif支持压缩，忽略压缩参数)
+/// 默认为NO，如果设置为YES,用户可以选择gif图片(支持压缩，忽略压缩参数)
 @property (nonatomic, assign) BOOL allowPickingGif;
+
+/// Default is NO, if set YES, user can picking live photo.(support compress，CompressSize parameter is ignored)
+/// 默认为NO，如果设置为YES,用户可以选择live photo(支持压缩，忽略压缩参数)
+@property (nonatomic, assign) BOOL allowPickingLivePhoto;
 
 /// Default is YES, if set NO, take picture will be hidden.
 /// 默认为YES，如果设置为NO,拍照按钮将隐藏

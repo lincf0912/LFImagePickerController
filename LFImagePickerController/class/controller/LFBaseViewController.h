@@ -16,7 +16,8 @@
 /** 是否隐藏状态 默认NO */
 @property (nonatomic, assign) BOOL isHiddenStatusBar;
 
-
+/** 导航栏高度+状态栏 */
+- (CGFloat)navigationHeight;
 /** 不计算导航栏的屏幕大小 */
 - (CGRect)viewFrameWithoutNavigation;
 @end

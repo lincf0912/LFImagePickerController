@@ -33,19 +33,17 @@
     [imagePickerVc hideProgressHUD];
 }
 
+- (CGFloat)navigationHeight
+{
+    CGFloat top = CGRectGetHeight(self.navigationController.navigationBar.frame);
+    if (iOS7Later) top += 20;
+    return top;
+}
+
 - (CGRect)viewFrameWithoutNavigation
 {
-    CGFloat top = 0;
-    CGFloat height = 0;
-    if (self.navigationController.navigationBar.isTranslucent) {
-        top = 44;
-        if (iOS7Later) top += 20;
-        height = self.view.height - top;;
-    } else {
-        CGFloat navigationHeight = 44;
-        if (iOS7Later) navigationHeight += 20;
-        height = self.view.height - navigationHeight;
-    }
+    CGFloat top = [self navigationHeight];
+    CGFloat height = self.view.height - top;
     
     return CGRectMake(0, top, self.view.width, height);
 }

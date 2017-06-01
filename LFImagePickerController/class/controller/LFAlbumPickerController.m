@@ -42,6 +42,12 @@
     [self configTableView];
 }
 
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    _tableView.frame = [self viewFrameWithoutNavigation];
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;

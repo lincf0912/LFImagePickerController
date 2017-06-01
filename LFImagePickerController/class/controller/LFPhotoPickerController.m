@@ -125,6 +125,14 @@
     }
 }
 
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    CGRect collectionViewRect = [self viewFrameWithoutNavigation];
+    collectionViewRect.size.height -= kBottomToolBarHeight;
+    _collectionView.frame = collectionViewRect;
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     // Determine the size of the thumbnails to request from the PHCachingImageManager

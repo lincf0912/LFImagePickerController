@@ -22,6 +22,8 @@
 #import "LFPhotoEditManager.h"
 #import "LFGifPlayerManager.h"
 
+CGFloat const cellMargin = 20.f;
+
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate, LFPhotoEdittingControllerDelegate>
 {
     UIView *_naviBar;
@@ -123,7 +125,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
+    if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
     
     [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
@@ -142,10 +144,12 @@
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
+    _naviBar.height = [self navigationHeight];
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
-    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + 20), 0);
-    if (_currentIndex) [_collectionView setContentOffset:CGPointMake((self.view.width + 20) * _currentIndex, 0) animated:NO];
+    _collectionView.frame = CGRectMake(0, 0, self.view.width + cellMargin, self.view.height);
+    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
+    if (_currentIndex) [_collectionView setContentOffset:CGPointMake((_collectionView.width) * _currentIndex, 0) animated:NO];
 }
 
 - (void)dealloc
@@ -182,7 +186,8 @@
 
 - (void)configCustomNaviBar {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    CGFloat naviBarHeight = 64;
+    
+    CGFloat naviBarHeight = [self navigationHeight];
     
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
     _naviBar.backgroundColor = imagePickerVc.previewNaviBgColor;
@@ -329,15 +334,15 @@
 }
 
 - (void)configCollectionView {
-    CGFloat margin = 20.f;
+    
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    layout.itemSize = CGSizeMake(self.view.width, self.view.height);
+//    layout.itemSize = CGSizeMake(self.view.width, self.view.height);
     layout.minimumInteritemSpacing = 0;
-    layout.minimumLineSpacing = margin;
-    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, margin);
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width + margin, self.view.height) collectionViewLayout:layout];
-    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    layout.minimumLineSpacing = cellMargin;
+    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, cellMargin);
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width + cellMargin, self.view.height) collectionViewLayout:layout];
+//    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor blackColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -345,7 +350,7 @@
     _collectionView.scrollsToTop = NO;
     _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.contentOffset = CGPointMake(0, 0);
-    _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + margin), 0);
+    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
     [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
@@ -543,6 +548,12 @@
         weakSelf.progress = progress;
     }];
     return cell;
+}
+
+#pragma mark -  UICollectionViewDelegateFlowLayout
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(self.view.width, self.view.height);
 }
 
 #pragma mark - LFPhotoEdittingControllerDelegate

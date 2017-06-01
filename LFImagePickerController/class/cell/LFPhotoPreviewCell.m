@@ -8,6 +8,7 @@
 
 #import "LFPhotoPreviewCell.h"
 #import "UIView+LFFrame.h"
+#import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
@@ -96,15 +97,18 @@
         _imageContainerView = [[UIView alloc] init];
         _imageContainerView.clipsToBounds = YES;
         _imageContainerView.contentMode = UIViewContentModeScaleAspectFill;
+        _imageContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [_scrollView addSubview:_imageContainerView];
         
         _imageView = [[UIImageView alloc] init];
         //        _imageView.backgroundColor = [UIColor colorWithWhite:1.000 alpha:0.500];
         _imageView.contentMode = UIViewContentModeScaleAspectFill;
+        _imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [_imageContainerView addSubview:_imageView];
         
         UIView *view = [self subViewInitDisplayView];
         if (view) {
+            view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
             [_imageContainerView addSubview:view];
         }
         
@@ -193,27 +197,18 @@
 }
 
 - (void)resizeSubviews {
-    _imageContainerView.origin = CGPointZero;
-    _imageContainerView.width = self.scrollView.width;
+    [self.scrollView setZoomScale:1.f];
+    _imageContainerView.bounds = self.scrollView.bounds;
     
     CGSize imageSize = [self subViewImageSize];
+    
     if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
-        if (imageSize.height / imageSize.width > self.height / self.scrollView.width) {
-            _imageContainerView.height = floor(imageSize.height / (imageSize.width / self.scrollView.width));
-        } else {
-            CGFloat height = imageSize.height / imageSize.width * self.scrollView.width;
-            if (height < 1 || isnan(height)) height = self.height;
-            height = floor(height);
-            _imageContainerView.height = height;
-            _imageContainerView.centerY = self.height / 2;
-        }
-        if (_imageContainerView.height > self.height && _imageContainerView.height - self.height <= 1) {
-            _imageContainerView.height = self.height;
-        }
-        CGFloat contentSizeH = MAX(_imageContainerView.height, self.height);
-        _scrollView.contentSize = CGSizeMake(self.scrollView.width, contentSizeH);
-        [_scrollView scrollRectToVisible:self.bounds animated:NO];
-        _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
+        
+        CGSize newSize = [UIImage scaleImageSizeBySize:imageSize targetSize:self.scrollView.size isBoth:NO];
+        
+        _imageContainerView.size = newSize;
+        _imageContainerView.center = self.scrollView.center;
+        
         _imageView.frame = _imageContainerView.bounds;
         UIView *view = [self subViewInitDisplayView];
         view.frame = _imageContainerView.bounds;

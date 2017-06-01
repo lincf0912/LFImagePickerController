@@ -11,9 +11,6 @@
 #import "LFAssetManager.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
-#import <PhotosUI/PhotosUI.h>
-
-#import "LFGifPlayerManager.h"
 
 @interface LFProgressView : UIView
 
@@ -66,9 +63,8 @@
 
 
 
-@interface LFPhotoPreviewCell () <UIScrollViewDelegate, PHLivePhotoViewDelegate>
+@interface LFPhotoPreviewCell () <UIScrollViewDelegate>
 @property (nonatomic, strong) UIImageView *imageView;
-@property (nonatomic, strong) PHLivePhotoView *livePhotoView;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *imageContainerView;
 @property (nonatomic, strong) LFProgressView *progressView;
@@ -102,6 +98,11 @@
         _imageContainerView.contentMode = UIViewContentModeScaleAspectFill;
         [_scrollView addSubview:_imageContainerView];
         
+        _imageView = [[UIImageView alloc] init];
+        //        _imageView.backgroundColor = [UIColor colorWithWhite:1.000 alpha:0.500];
+        _imageView.contentMode = UIViewContentModeScaleAspectFill;
+        [_imageContainerView addSubview:_imageView];
+        
         UIView *view = [self subViewInitDisplayView];
         if (view) {
             [_imageContainerView addSubview:view];
@@ -126,9 +127,8 @@
 - (void)prepareForReuse
 {
     [super prepareForReuse];
-    [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
-    _model = nil;
     [self subViewReset];
+    _model = nil;
 }
 
 - (UIImage *)previewImage
@@ -157,19 +157,6 @@
             if ([model isEqual:self.model]) {
                 if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
-                } else if ([data isKindOfClass:[NSData class]]) { /** gif */
-                    NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
-                    [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:data key:modelKey execution:^(CGImageRef imageData, NSString *key) {
-                        if ([modelKey isEqualToString:key]) {
-                            self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
-                        }
-                    } fail:^(NSString *key) {
-                    }];
-                    /** 这个方式加载GIF内存使用非常高 */
-//                    self.previewImage = [UIImage LF_imageWithImageData:data];
-                } else if ([data isKindOfClass:[PHLivePhoto class]]) { /** live photo */
-                    self.livePhotoView.livePhoto = data;
-                    [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
                 }
                 _progressView.hidden = YES;
                 if (self.imageProgressUpdateBlock) {
@@ -191,38 +178,18 @@
         };
         
         
-        /** 如果已被设置图片，忽略这次图片获取 */
-        if (self.previewImage == nil) {
-            /** 普通图片处理 */
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
-        }
-        
-        if (self.displayGif && model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
-            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
-        } else if (self.displayLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
-            [[LFAssetManager manager] getLivePhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completion progressHandler:progressHandler networkAccessAllowed:YES];
-        }
+        [self subViewSetModel:model completeHandler:completion progressHandler:progressHandler];
     }
 }
 
 - (void)willDisplayCell
 {
-    if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
-        [self setModel:self.model];
-    } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
-        _livePhotoView.delegate = self;
-        [_livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
-    }
+    
 }
 
 - (void)didEndDisplayCell
 {
-    if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
-        [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
-    } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
-        _livePhotoView.delegate = nil;
-        [_livePhotoView stopPlayback];
-    }
+    
 }
 
 - (void)resizeSubviews {
@@ -248,7 +215,8 @@
         [_scrollView scrollRectToVisible:self.bounds animated:NO];
         _scrollView.alwaysBounceVertical = _imageContainerView.height <= self.height ? NO : YES;
         _imageView.frame = _imageContainerView.bounds;
-        _livePhotoView.frame = _imageContainerView.bounds;
+        UIView *view = [self subViewInitDisplayView];
+        view.frame = _imageContainerView.bounds;
     }
 }
 
@@ -283,14 +251,6 @@
     [self refreshImageContainerViewCenter];
 }
 
-#pragma mark - PHLivePhotoViewDelegate
-- (void)livePhotoView:(PHLivePhotoView *)livePhotoView didEndPlaybackWithStyle:(PHLivePhotoViewPlaybackStyle)playbackStyle
-{
-    if (playbackStyle == PHLivePhotoViewPlaybackStyleFull) {
-        [livePhotoView startPlaybackWithStyle:playbackStyle];
-    }
-}
-
 #pragma mark - Private
 
 - (void)refreshImageContainerViewCenter {
@@ -302,13 +262,7 @@
 /** 创建显示视图 */
 - (UIView *)subViewInitDisplayView
 {
-    if (_imageView == nil) {
-        _imageView = [[UIImageView alloc] init];
-        //        _imageView.backgroundColor = [UIColor colorWithWhite:1.000 alpha:0.500];
-        _imageView.contentMode = UIViewContentModeScaleAspectFill;
-    }
-    
-    return _imageView;
+    return nil;
 }
 
 /** 图片大小 */
@@ -321,21 +275,16 @@
 - (void)subViewReset
 {
     self.imageView.image = nil;
-    [_livePhotoView stopPlayback];
-    _livePhotoView.livePhoto = nil;
-    [_livePhotoView removeFromSuperview];
 }
 
-- (PHLivePhotoView *)livePhotoView
+/** 设置数据 */
+- (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
-    if (_livePhotoView == nil) {
-        _livePhotoView = [[PHLivePhotoView alloc] initWithFrame:_imageContainerView.bounds];
-        _livePhotoView.muted = YES;
-        _livePhotoView.contentMode = UIViewContentModeScaleAspectFill;
+    /** 如果已被设置图片，忽略这次图片获取 */
+    if (self.previewImage == nil) {
+        /** 普通图片处理 */
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
     }
-    _livePhotoView.delegate = self;
-    [_imageContainerView addSubview:_livePhotoView];
-    return _livePhotoView;
 }
 
 

@@ -18,9 +18,15 @@
 /** 当前展示的图片 */
 @property (nonatomic, readwrite) UIImage *previewImage;
 
-@property (nonatomic, assign) BOOL displayGif;
-@property (nonatomic, assign) BOOL displayLivePhoto;
-
 - (void)willDisplayCell;
 - (void)didEndDisplayCell;
+
+
+/** 子类重写 */
+/** 创建显示视图 */
+- (UIView *)subViewInitDisplayView;
+/** 重置视图 */
+- (void)subViewReset;
+/** 设置数据 */
+- (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler;
 @end

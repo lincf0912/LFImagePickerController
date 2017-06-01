@@ -13,6 +13,8 @@
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 #import "LFPhotoPreviewCell.h"
+#import "LFPhotoPreviewGifCell.h"
+#import "LFPhotoPreviewLivePhotoCell.h"
 #import "LFPreviewBar.h"
 
 #import "LFAssetManager.h"
@@ -321,7 +323,7 @@
         NSInteger index = [weakSelf.models indexOfObject:asset];
         NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
         weakSelf.isMTScroll = YES;
-        [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+        [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
     };
     [self.view addSubview:_previewBar];
 }
@@ -346,6 +348,8 @@
     _collectionView.contentSize = CGSizeMake(_models.count * (self.view.width + margin), 0);
     [self.view addSubview:_collectionView];
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
+    [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
+    [_collectionView registerClass:[LFPhotoPreviewLivePhotoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell"];
 }
 
 #pragma mark - Click Event
@@ -502,16 +506,22 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    LFPhotoPreviewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
+    LFPhotoPreviewCell *cell = nil;
+    LFAsset *model = _models[indexPath.row];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    cell.displayGif = imagePickerVc.allowPickingGif;
-    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
+    if (imagePickerVc.allowPickingGif && model.subType == LFAssetSubMediaTypeGIF) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewGifCell" forIndexPath:indexPath];
+    } else if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell" forIndexPath:indexPath];
+    } else {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
+    }
     /** 设置图片，与编辑图片的必须一致，因为获取图片选择快速优化方案，图片大小会有小许偏差 */
     if (self.tempEditImage) {
         cell.previewImage = self.tempEditImage;
         self.tempEditImage = nil;
     }
-    cell.model = _models[indexPath.row];
+    cell.model = model;
     __weak typeof(self) weakSelf = self;
     if (!cell.singleTapGestureBlock) {
         __weak typeof(_naviBar) weakNaviBar = _naviBar;

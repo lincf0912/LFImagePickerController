@@ -53,14 +53,14 @@
     imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
-    [self addSubview:imageView];
+    [self.contentView addSubview:imageView];
     self.imageView = imageView;
     
     UIView *maskHitView = [[UIView alloc] initWithFrame:self.bounds];
     maskHitView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     maskHitView.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.5f];
     maskHitView.hidden = YES;
-    [self addSubview:maskHitView];
+    [self.contentView addSubview:maskHitView];
     self.maskHitView = maskHitView;
 }
 
@@ -73,7 +73,7 @@
     if (photoEdit.editPosterImage) {
         self.imageView.image = photoEdit.editPosterImage;
     } else if (asset.previewImage) { /** 显示自定义图片 */
-        self.imageView.image = asset.previewImage;
+        self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.previewImage);
     }  else {
         [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([asset.asset isEqual:self.asset.asset]) {

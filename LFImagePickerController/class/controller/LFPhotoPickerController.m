@@ -840,7 +840,10 @@
     if (selectedAssets.count) {        
         for (LFAsset *model in _models) {
             model.isSelected = NO;
-            if ([[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset]) {
+            model.closeLivePhoto = NO;
+            NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
+            if (index != NSNotFound) {
+                model.closeLivePhoto = [imagePickerVc.selectedModels objectAtIndex:index].closeLivePhoto;
                 model.isSelected = YES;
             }
         }

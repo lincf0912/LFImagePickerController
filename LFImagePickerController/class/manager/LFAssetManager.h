@@ -164,7 +164,7 @@
 - (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytes))completion;
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
-- (BOOL)isAssetsArray:(NSArray *)assets containAsset:(id)asset;
+- (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset;
 
 - (NSString *)getAssetIdentifier:(id)asset;
 - (BOOL)isCameraRollAlbum:(NSString *)albumName;

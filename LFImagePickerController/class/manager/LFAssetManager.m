@@ -938,15 +938,15 @@ static LFAssetManager *manager;
 }
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
-- (BOOL)isAssetsArray:(NSArray *)assets containAsset:(id)asset {
+- (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset {
     if (iOS8Later) {
-        return [assets containsObject:asset];
+        return [assets indexOfObject:asset];
     } else {
         NSMutableArray *selectedAssetUrls = [NSMutableArray array];
         for (ALAsset *asset_item in assets) {
             [selectedAssetUrls addObject:[asset_item valueForProperty:ALAssetPropertyURLs]];
         }
-        return [selectedAssetUrls containsObject:[asset valueForProperty:ALAssetPropertyURLs]];
+        return [selectedAssetUrls indexOfObject:[asset valueForProperty:ALAssetPropertyURLs]];
     }
 }
 

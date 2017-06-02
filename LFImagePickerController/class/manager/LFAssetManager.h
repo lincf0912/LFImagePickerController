@@ -23,7 +23,7 @@
 
 /** 缩放值 */
 @property (nonatomic, readonly) CGFloat screenScale;
-
+/** default YES，fix image orientation */
 @property (nonatomic, assign) BOOL shouldFixOrientation;
 
 /// 最小可选中的图片宽度，默认是0，小于这个宽度的图片不可选中

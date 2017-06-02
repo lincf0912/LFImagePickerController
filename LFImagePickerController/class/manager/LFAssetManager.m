@@ -32,7 +32,7 @@ static LFAssetManager *manager;
 
     if (manager == nil) {        
         manager = [[self alloc] init];
-        
+        manager.shouldFixOrientation = YES;
         LFAM_ScreenWidth = [UIScreen mainScreen].bounds.size.width;
         // 测试发现，如果scale在plus真机上取到3.0，内存会增大特别多。故这里写死成2.0
         LFAM_ScreenScale = 2.0;

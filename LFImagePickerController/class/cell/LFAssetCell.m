@@ -82,7 +82,7 @@
             _timeLength.x = 5;
         } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
             _bottomView.hidden = NO;
-            self.timeLength.text = @"Live Photo";
+            self.timeLength.text = @"Live";
             self.videoImgView.hidden = YES;
             _timeLength.x = 5;
         }

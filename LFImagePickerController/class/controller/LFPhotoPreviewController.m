@@ -16,6 +16,7 @@
 #import "LFPhotoPreviewGifCell.h"
 #import "LFPhotoPreviewLivePhotoCell.h"
 #import "LFPreviewBar.h"
+#import <PhotosUI/PhotosUI.h>
 
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
@@ -23,8 +24,9 @@
 #import "LFGifPlayerManager.h"
 
 CGFloat const cellMargin = 20.f;
+CGFloat const livePhotoSignMargin = 10.f;
 
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate, LFPhotoEdittingControllerDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEdittingControllerDelegate>
 {
     UIView *_naviBar;
     UIButton *_backButton;
@@ -37,6 +39,9 @@ CGFloat const cellMargin = 20.f;
     UILabel *_originalPhotoLabel;
     UIButton *_editButton;
     
+    UIView *_livePhotoSignView;
+    UIButton *_livePhotobadgeImageButton;
+    
     LFPreviewBar *_previewBar;
 }
 
@@ -45,9 +50,7 @@ CGFloat const cellMargin = 20.f;
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;                  ///< All photo models / 所有图片模型数组
 @property (nonatomic, assign) NSInteger currentIndex;           ///< Index of the photo user click / 用户点击的图片的索引
 
-@property (nonatomic, assign) BOOL isHideNaviBar;
-
-@property (nonatomic, assign) double progress;
+@property (nonatomic, assign) BOOL isHideMyNaviBar;
 
 @property (nonatomic, assign) BOOL isPhotoPreview;
 /** 手动滑动标记 */
@@ -121,6 +124,7 @@ CGFloat const cellMargin = 20.f;
     [self configCustomNaviBar];
     [self configBottomToolBar];
     [self configPreviewBar];
+    [self configLivePhotoSign];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -145,6 +149,7 @@ CGFloat const cellMargin = 20.f;
 {
     [super viewWillLayoutSubviews];
     _naviBar.height = [self navigationHeight];
+    _livePhotoSignView.y = [self navigationHeight] + livePhotoSignMargin;
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
     _collectionView.frame = CGRectMake(0, 0, self.view.width + cellMargin, self.view.height);
@@ -333,6 +338,41 @@ CGFloat const cellMargin = 20.f;
     [self.view addSubview:_previewBar];
 }
 
+- (void)configLivePhotoSign
+{
+    CGFloat naviHeight = [self navigationHeight];
+    _livePhotoSignView = [[UIView alloc] initWithFrame:CGRectMake(livePhotoSignMargin, livePhotoSignMargin + naviHeight, 30, 30)];
+    _livePhotoSignView.backgroundColor = [UIColor colorWithWhite:.8f alpha:.8f];
+//    _livePhotoSignView.alpha = 0.8f;
+    _livePhotoSignView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _livePhotoSignView.layer.masksToBounds = YES;
+    _livePhotoSignView.layer.cornerRadius = 30 * 0.2f;
+    [self.view addSubview:_livePhotoSignView];
+    
+    
+    UIImageView *badgeImageView = [[UIImageView alloc] initWithFrame:_livePhotoSignView.bounds];
+    badgeImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [badgeImageView setImage:[PHLivePhotoView livePhotoBadgeImageWithOptions:PHLivePhotoBadgeOptionsOverContent]];
+    CALayer *maskLayer = badgeImageView.layer;
+    
+    
+    UIButton *badgeImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    badgeImageButton.frame = _livePhotoSignView.bounds;
+    badgeImageButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    badgeImageButton.layer.masksToBounds = YES;
+    badgeImageButton.layer.mask = maskLayer;
+    
+    UIImage *badgeImage = [PHLivePhotoView livePhotoBadgeImageWithOptions:PHLivePhotoBadgeOptionsOverContent];
+    [badgeImageButton setImage:badgeImage forState:UIControlStateNormal];
+    [badgeImageButton setImage:badgeImage forState:UIControlStateHighlighted];
+    [badgeImageButton setImage:badgeImage forState:UIControlStateSelected | UIControlStateHighlighted];
+    [badgeImageButton addTarget:self action:@selector(livePhotoSignButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    [_livePhotoSignView addSubview:badgeImageButton];
+    _livePhotobadgeImageButton = badgeImageButton;
+    
+    [self selectedLivePhotobadgeImageButton:YES];
+}
+
 - (void)configCollectionView {
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
@@ -421,10 +461,7 @@ CGFloat const cellMargin = 20.f;
 
 - (void)doneButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    // 如果图片正在从iCloud同步中,提醒用户
-    if (_progress > 0 && _progress < 1) {
-        [imagePickerVc showAlertWithTitle:@"正在从iCloud同步照片"]; return;
-    }
+    
     // 如果没有选中过照片 点击确定时选中当前预览的照片
     if (imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
         LFAsset *model = _models[_currentIndex];
@@ -478,6 +515,21 @@ CGFloat const cellMargin = 20.f;
     }
 }
 
+- (void)livePhotoSignButtonClick:(UIButton *)button
+{
+    [self selectedLivePhotobadgeImageButton:!button.isSelected];
+    LFAsset *model = _models[_currentIndex];
+    model.closeLivePhoto = !model.closeLivePhoto;
+    
+    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
+    
+    if (model.closeLivePhoto) {
+        [cell didEndDisplayCell];
+    } else {
+        [cell willDisplayCell];
+    }
+}
+
 #pragma mark - UIScrollViewDelegate
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
@@ -521,32 +573,14 @@ CGFloat const cellMargin = 20.f;
     } else {
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
     }
+    cell.delegate = self;
     /** 设置图片，与编辑图片的必须一致，因为获取图片选择快速优化方案，图片大小会有小许偏差 */
     if (self.tempEditImage) {
         cell.previewImage = self.tempEditImage;
         self.tempEditImage = nil;
     }
     cell.model = model;
-    __weak typeof(self) weakSelf = self;
-    if (!cell.singleTapGestureBlock) {
-        __weak typeof(_naviBar) weakNaviBar = _naviBar;
-        __weak typeof(_toolBar) weakToolBar = _toolBar;
-        __weak typeof(_previewBar) weakPreviewBar = _previewBar;
-        cell.singleTapGestureBlock = ^(){
-            // show or hide naviBar / 显示或隐藏导航栏
-            weakSelf.isHideNaviBar = !weakSelf.isHideNaviBar;
-            weakNaviBar.hidden = weakSelf.isHideNaviBar;
-            weakToolBar.hidden = weakSelf.isHideNaviBar;
-            
-            /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
-            if (!(!weakSelf.alwaysShowPreviewBar && weakPreviewBar.dataSource.count == 0)) {
-                weakPreviewBar.hidden = weakSelf.isHideNaviBar;
-            }
-        };
-    }
-    [cell setImageProgressUpdateBlock:^(double progress) {
-        weakSelf.progress = progress;
-    }];
+    
     return cell;
 }
 
@@ -554,6 +588,28 @@ CGFloat const cellMargin = 20.f;
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     return CGSizeMake(self.view.width, self.view.height);
+}
+
+#pragma mark - LFPhotoPreviewCellDelegate
+- (void)lf_photoPreviewCellSingleTapHandler:(LFPhotoPreviewCell *)cell
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    // show or hide naviBar / 显示或隐藏导航栏
+    self.isHideMyNaviBar = !self.isHideMyNaviBar;
+    CGFloat alpha = self.isHideMyNaviBar ? 0.f : 1.f;
+    [UIView animateWithDuration:0.25f animations:^{
+        _naviBar.alpha = alpha;
+        _toolBar.alpha = alpha;
+        /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
+        if (!(!self.alwaysShowPreviewBar && _previewBar.dataSource.count == 0)) {
+            _previewBar.alpha = alpha;
+        }
+        
+        /** live photo 标记 */
+        if (imagePickerVc.allowPickingLivePhoto && cell.model.subType == LFAssetSubMediaTypeLivePhoto) {
+            _livePhotoSignView.alpha = alpha;
+        }
+    }];
 }
 
 #pragma mark - LFPhotoEdittingControllerDelegate
@@ -624,7 +680,7 @@ CGFloat const cellMargin = 20.f;
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || model.isSelected);
     
-    /** 动画 */
+    /** 预览栏动画 */
     if (!self.alwaysShowPreviewBar) {
         if (imagePickerVc.selectedModels.count) {
             [UIView animateWithDuration:0.25f animations:^{
@@ -638,11 +694,34 @@ CGFloat const cellMargin = 20.f;
     }
     /** 预览栏选中与刷新 */
     _previewBar.selectAsset = model;
+    
+    /** live photo 标记 */
+    if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
+        [self selectedLivePhotobadgeImageButton:!model.closeLivePhoto];
+        if (self.isHideMyNaviBar) return;
+        [UIView animateWithDuration:0.25f animations:^{
+            _livePhotoSignView.alpha = 1.f;
+        }];
+    } else {
+        [UIView animateWithDuration:0.25f animations:^{
+            _livePhotoSignView.alpha = 0.f;
+        }];
+    }
 }
 
 - (void)showPhotoBytes {
     [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytes) {
         _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
     }];
+}
+
+- (void)selectedLivePhotobadgeImageButton:(BOOL)isSelected
+{
+    _livePhotobadgeImageButton.selected = isSelected;
+    if (isSelected) {
+        _livePhotobadgeImageButton.backgroundColor = [UIColor yellowColor];
+    } else {
+        _livePhotobadgeImageButton.backgroundColor = [UIColor whiteColor];
+    }
 }
 @end

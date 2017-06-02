@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LFImagePickerPublicHeader.h"
 
 #define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
 #define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
@@ -61,28 +62,6 @@ extern float const kMaxVideoSize;
 extern float const kCompressSize;
 /** 缩略图压缩大小 */
 extern float const kThumbnailCompressSize;
-
-/**
- *  NSString;
- */
-extern NSString *const kImageInfoFileName;     // 图片名称
-/**
- *  NSValue; CGSize size;[value getValue:&size];
- */
-extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
-/**
- *  NSNumber(CGFloat);
- */
-extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
-/**
- *  NSData;
- */
-extern NSString *const kImageInfoFileOriginalData;     // 图片数据 原图
-extern NSString *const kImageInfoFileThumbnailData;     // 图片数据 缩略图
-/**
- *  NSNumber(BOOL);
- */
-extern NSString *const kImageInfoIsGIF;     // 是否GIF
 
 
 @interface LFImagePickerHeader : NSObject

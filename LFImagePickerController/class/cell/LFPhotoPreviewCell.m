@@ -163,9 +163,6 @@
                     self.previewImage = (UIImage *)data;
                 }
                 _progressView.hidden = YES;
-                if (self.imageProgressUpdateBlock) {
-                    self.imageProgressUpdateBlock(1);
-                }
             }
         };
         
@@ -175,9 +172,6 @@
                 [self bringSubviewToFront:_progressView];
                 progress = progress > 0.02 ? progress : 0.02;;
                 _progressView.progress = progress;
-                if (self.imageProgressUpdateBlock) {
-                    self.imageProgressUpdateBlock(progress);
-                }
             }
         };
         
@@ -231,8 +225,8 @@
 }
 
 - (void)singleTap:(UITapGestureRecognizer *)tap {
-    if (self.singleTapGestureBlock) {
-        self.singleTapGestureBlock();
+    if ([self.delegate respondsToSelector:@selector(lf_photoPreviewCellSingleTapHandler:)]) {
+        [self.delegate lf_photoPreviewCellSingleTapHandler:self];
     }
 }
 

@@ -13,23 +13,10 @@
 @interface LFPhotoPreviewLivePhotoCell () <PHLivePhotoViewDelegate>
 
 @property (nonatomic, strong) PHLivePhotoView *livePhotoView;
-@property (nonatomic, strong) UIButton *badgeImageButton;
 
 @end
 
 @implementation LFPhotoPreviewLivePhotoCell
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        _badgeImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _badgeImageButton.frame = CGRectMake(10, 10 + 64, 10, 10);
-        [_badgeImageButton setImage:[PHLivePhotoView livePhotoBadgeImageWithOptions:PHLivePhotoBadgeOptionsOverContent] forState:UIControlStateNormal];
-        [self addSubview:_badgeImageButton];
-    }
-    return self;
-}
 
 #pragma mark - 重写父类方法
 /** 创建显示视图 */
@@ -59,8 +46,10 @@
             
             if ([model isEqual:self.model]) { /** live photo */
                 self.livePhotoView.livePhoto = livePhoto;
-                self.livePhotoView.delegate = self;
-                [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+                if (model.closeLivePhoto == NO) {
+                    self.livePhotoView.delegate = self;
+                    [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+                }
                 if (completeHandler) {
                     completeHandler(livePhoto, info, isDegraded);
                 }

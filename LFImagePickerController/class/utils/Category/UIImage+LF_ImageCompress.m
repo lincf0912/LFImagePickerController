@@ -68,15 +68,13 @@
     
     /** 压缩核心方法 */
     do {
-        if (percent < 0.01) {
-            /** 压缩系数不能少于0 */
-            percent = 0.1f;
-        }
+        
         imageData = UIImageJPEGRepresentation(compressedImage, percent);
         
         //        NSLog(@"压缩后大小:%ldk, 压缩频率:%ldk", imageData.length/1024, (imageDatalength - imageData.length)/1024);
         
         CGFloat diffSize = imageData.length - targetSize;
+        
         if (diffSize > targetSize/3) { /** 压缩后与期望值相差超过1/3 */
             percent -=.2f;
         } else if (diffSize < microAdjustment) { // 压缩精确度调整
@@ -85,16 +83,20 @@
             percent -= .1f;
         }
         
+        if (percent < 0.01) {
+            /** 压缩系数不能少于0 */
+            percent = 0.1;
+        }
+        
         // 大小没有改变 & 压缩后大小可能会微略变大的情况
         if (imageDatalength > 0 && imageData.length >= imageDatalength) {
             //            NSLog(@"压缩大小没有改变，需要调整图片尺寸");
             //            break;
             /** 精准缩放计算误差值 */
             float scale = 1-diffSize/targetSize;
-            if (scale >= 1.0f || scale <= 0) scale = 0.85f;
+            if (scale < 1.f) scale = 0.85f;
+            if (scale >= 1.f) scale = 0.5f;
             compressedImage = [self scaleWithSize:CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale)];
-            /** 重置压缩率 */
-            percent = defaultPercent;
         }
         imageDatalength = imageData.length;
     } while (imageData.length > targetSize+1024);/** 增加1k偏移量 */
@@ -124,44 +126,19 @@
 
 
 #pragma mark - 缩放图片尺寸
-- (UIImage*)scaleWithSize:(CGSize)size
+- (UIImage*)scaleWithSize:(CGSize)newSize
 {
-    CGFloat width = CGImageGetWidth(self.CGImage);
-    CGFloat height = CGImageGetHeight(self.CGImage);
     
-    float verticalRadio = size.height*1.0/height;
-    float horizontalRadio = size.width*1.0/width;
+    //We prepare a bitmap with the new size
+    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
     
-    float radio = 1;
-    if(verticalRadio>1 && horizontalRadio>1)
-    {
-        radio = verticalRadio > horizontalRadio ? horizontalRadio : verticalRadio;
-    }
-    else
-    {
-        radio = verticalRadio < horizontalRadio ? verticalRadio : horizontalRadio;
-    }
+    //Draws a rect for the image
+    [self drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
     
-    width = floorf(width*radio);
-    height = floorf(height*radio);
-    
-    int xPos = (size.width - width)/2;
-    int yPos = (size.height-height)/2;
-    
-    // 创建一个context
-    // 并把它设置成为当前正在使用的context
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    
-    // 绘制改变大小的图片
-    [self drawInRect:CGRectMake(xPos, yPos, width, height)];
-    
-    // 从当前context中创建一个改变大小后的图片
+    //We set the scaled image from the context
     UIImage* scaledImage = UIGraphicsGetImageFromCurrentImageContext();
-    
-    // 使当前的context出堆栈
     UIGraphicsEndImageContext();
     
-    // 返回新的改变大小后的图片
     return scaledImage;
 }
 

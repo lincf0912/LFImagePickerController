@@ -28,6 +28,8 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 @property (nonatomic, readonly) LFAssetSubMediaType subType;
 @property (nonatomic, copy, readonly) NSString *timeLength;
 @property (nonatomic, copy, readonly) NSString *name;
+/** 关闭livePhoto （ subType = LFAssetSubMediaTypeLivePhoto is work ）default is No */
+@property (nonatomic, assign) BOOL closeLivePhoto;
 
 /** 自定义预览图 */
 @property (nonatomic, readonly) UIImage *previewImage;

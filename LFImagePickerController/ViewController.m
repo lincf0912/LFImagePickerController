@@ -39,7 +39,7 @@
 //    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
 //    imagePicker.allowEditting = NO;
-//    imagePicker.supportAutorotate = YES; /** 适配横屏 */
+    imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
     imagePicker.allowPickingGif = YES; /** 支持GIF */
@@ -100,6 +100,7 @@
         NSData *thumnailData = info[kImageInfoFileThumbnailData];
         NSData *originalData =info[kImageInfoFileOriginalData];
         CGFloat byte = [info[kImageInfoFileByte] floatValue];
+        CGSize size = [info[kImageInfoFileSize] CGSizeValue];
         
         
         /** 缩略图保存到路径 */
@@ -109,8 +110,7 @@
 //        [UIImageJPEGRepresentation(image, 0.5f) writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
         [originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
         
-        
-        NSLog(@"⚠️Info name:%@ -- infoSize:%fK -- thumnailSize:%fK -- originalSize:%fK", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0);
+        NSLog(@"⚠️Info name:%@ -- infoLength:%fK -- thumnailSize:%fK -- originalSize:%fK -- infoSize:%@", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0, NSStringFromCGSize(size));
     }
     
     [self.thumbnailImageVIew setImage:thumbnailImages.firstObject];

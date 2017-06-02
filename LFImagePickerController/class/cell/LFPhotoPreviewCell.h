@@ -8,12 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol LFPhotoPreviewCellDelegate;
+
 @class LFAsset;
 @interface LFPhotoPreviewCell : UICollectionViewCell
 
 @property (nonatomic, strong) LFAsset *model;
-@property (nonatomic, copy) void (^singleTapGestureBlock)();
-@property (nonatomic, copy) void (^imageProgressUpdateBlock)(double progress);
+@property (nonatomic, weak) id<LFPhotoPreviewCellDelegate> delegate;
 
 /** 当前展示的图片 */
 @property (nonatomic, readwrite) UIImage *previewImage;
@@ -29,4 +30,9 @@
 - (void)subViewReset;
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler;
+@end
+
+@protocol LFPhotoPreviewCellDelegate <NSObject>
+@optional
+- (void)lf_photoPreviewCellSingleTapHandler:(LFPhotoPreviewCell *)cell;
 @end

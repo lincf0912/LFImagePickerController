@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <Photos/Photos.h>
+#import <PhotosUI/PhotosUI.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "LFAlbum.h"
 #import "LFAsset.h"
@@ -117,7 +118,6 @@
                pickingGif:(BOOL)pickingGif
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
 
-
 /**
  通过asset解析缩略图、标清图/原图、图片数据字典
  
@@ -134,6 +134,18 @@
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+
+
+/**
+ 通过asset解析缩略图、标清图/原图、图片数据字典
+
+ @param asset PHAsset
+ @param isOriginal 是否原图
+ @param completion  返回block 顺序：缩略图、标清图、图片数据字典
+ */
+- (void)getLivePhotoWithAsset:(id)asset
+                   isOriginal:(BOOL)isOriginal
+                   completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
 
 /**
  *  @author lincf, 16-06-15 13:06:26

@@ -7,28 +7,7 @@
 //
 
 #import "LFLayoutPickerController.h"
-
-/**
- *  NSString;
- */
-extern NSString *const kImageInfoFileName;     // 图片名称
-/**
- *  NSValue; CGSize size;[value getValue:&size];
- */
-extern NSString *const kImageInfoFileSize;     // 图片大小［长、宽］
-/**
- *  NSNumber(CGFloat);
- */
-extern NSString *const kImageInfoFileByte;     // 图片大小［字节］
-/**
- *  NSData;
- */
-extern NSString *const kImageInfoFileOriginalData;     // 图片数据 原图
-extern NSString *const kImageInfoFileThumbnailData;     // 图片数据 缩略图
-/**
- *  NSNumber(BOOL);
- */
-extern NSString *const kImageInfoIsGIF;     // 是否GIF
+#import "LFImagePickerPublicHeader.h"
 
 
 @class LFAsset;

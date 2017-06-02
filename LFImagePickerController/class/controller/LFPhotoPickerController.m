@@ -448,15 +448,26 @@
                                                              photosComplete(thumbnail, source, info, i, model.asset);
                     }];
                 } else {
-                    [[LFAssetManager manager] getPhotoWithAsset:model.asset
-                                                     isOriginal:imagePickerVc.isSelectOriginalPhoto
-                                                     pickingGif:imagePickerVc.allowPickingGif
-                                                   compressSize:imagePickerVc.imageCompressSize
-                                          thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
-                                                     completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
-                                                         
-                                                         photosComplete(thumbnail, source, info, i, model.asset);
-                    }];
+                    
+                    if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
+                        [[LFAssetManager manager] getLivePhotoWithAsset:model.asset
+                                                             isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                             completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                                                                 
+                                                                 photosComplete(thumbnail, source, info, i, model.asset);
+                        }];
+                    } else {
+                        [[LFAssetManager manager] getPhotoWithAsset:model.asset
+                                                         isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                         pickingGif:imagePickerVc.allowPickingGif
+                                                       compressSize:imagePickerVc.imageCompressSize
+                                              thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
+                                                         completion:^(UIImage *thumbnail, UIImage *source, NSDictionary *info) {
+                                                             
+                                                             photosComplete(thumbnail, source, info, i, model.asset);
+                                                         }];
+                    }
+                    
                 }
             }
         } else {

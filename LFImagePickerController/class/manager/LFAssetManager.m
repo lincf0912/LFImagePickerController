@@ -13,6 +13,7 @@
 #import "UIImage+LF_Format.h"
 #import "LF_VideoUtils.h"
 #import "LF_FileUtility.h"
+#import "LFToGIF.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
 
@@ -478,16 +479,16 @@ static LFAssetManager *manager;
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion {
     CGFloat fullScreenWidth = LFAM_ScreenWidth;
-    return [self getLivePhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
+    return [self getLivePhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:nil networkAccessAllowed:NO];
 }
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion {
-    return [self getLivePhotoWithAsset:asset photoWidth:photoWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
+    return [self getLivePhotoWithAsset:asset photoWidth:photoWidth completion:completion progressHandler:nil networkAccessAllowed:NO];
 }
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
     
-    if ([asset isKindOfClass:[PHAsset class]]) {
+    if (iOS9_1Later && [asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
         CGFloat pixelWidth = photoWidth * LFAM_ScreenScale;
@@ -576,18 +577,22 @@ static LFAssetManager *manager;
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
                completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
 {
-    [self getBasePhotoWithAsset:asset isOriginal:YES completion:^(UIImage *thumbnail, UIImage *source, NSMutableDictionary *info) {
+    [self getBasePhotoWithAsset:asset completion:^(NSMutableDictionary *info) {
         
         CGFloat thumbnailCompress = (thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize);
         CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
-        BOOL isGif = [info[kImageInfoIsGIF] boolValue];
+        BOOL isGif = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeGIF;
+//        BOOL isLivePhoto = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeLivePhoto;
         
         NSData *sourceData = nil, *thumbnailData = nil;
+        UIImage *thumbnail = nil, *source = nil;
+        
+        /** 原图 */
+        NSData *originalData = info[kImageInfoFileOriginalData];
+        source = [UIImage LF_imageWithImageData:originalData];
+        
         if (isGif && pickingGif) { /** GIF图片处理方式 */
             
-            /** 原图 */
-            NSData *imageData = info[kImageInfoFileOriginalData];
-            source = [UIImage LF_imageWithImageData:imageData];
             if (!isOriginal) {
                 /** 忽略标清图 */
             }
@@ -597,16 +602,22 @@ static LFAssetManager *manager;
             if (minWidth > 100.f) {
                 imageRatio = 50.f/minWidth;
             }
+            /** 缩略图 */
             thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
             
         } else {
+            /** 重写标记 */
+            [info setObject:@(LFImagePickerSubMediaTypeNone) forKey:kImageInfoMediaType];
+            
             /** 标清图 */
             if (!isOriginal) {
                 sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
             }
             /** 缩略图 */
-            thumbnailData = [thumbnail fastestCompressImageDataWithSize:thumbnailCompress];
+            thumbnailData = [source fastestCompressImageDataWithSize:thumbnailCompress];
         }
+        
+        /** 创建展示图片 */
         if (thumbnailData) {
             /** 缩略图数据 */
             [info setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
@@ -619,13 +630,18 @@ static LFAssetManager *manager;
             [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
         }
         
+        if (self.shouldFixOrientation) {
+            source = [source fixOrientation];
+            thumbnail = [thumbnail fixOrientation];
+        }
+        
         /** 图片宽高 */
         CGSize imageSize = source.size;
         NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];
         [info setObject:value forKey:kImageInfoFileSize];
         
         if (completion) {
-            completion(thumbnail, source, info);
+            completion(thumbnail, source, [info copy]);
         }
     }];
 }
@@ -635,140 +651,60 @@ static LFAssetManager *manager;
  基础方法
  
  @param asset PHAsset／ALAsset
- @param isOriginal 是否获取原图
  @param completion 返回block 顺序：缩略图、原图、图片数据字典
  */
-- (void)getBasePhotoWithAsset:(id)asset isOriginal:(BOOL)isOriginal completion:(void (^)(UIImage *, UIImage *, NSMutableDictionary *))completion
+- (void)getBasePhotoWithAsset:(id)asset completion:(void (^)(NSMutableDictionary *info))completion
 {
-    __block UIImage *thumbnail = nil;
-    __block UIImage *source = nil;
     NSMutableDictionary *imageInfo = [NSMutableDictionary dictionary];
-    CGSize size = PHImageManagerMaximumSize;
     
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
-        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        CGFloat th_pixelWidth = 80 * LFAM_ScreenScale;
-        CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         
         // 修复获取图片时出现的瞬间内存过高问题
         PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
         option.resizeMode = PHImageRequestOptionsResizeModeFast;
         
-        /** 缩略图 */
-        [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:CGSizeMake(th_pixelWidth, th_pixelHeight) contentMode:PHImageContentModeAspectFit options:option resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]&& ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-            if (downloadFinined) {
-                if (self.shouldFixOrientation) {
-                    thumbnail = [result fixOrientation];
-                } else {
-                    thumbnail = result;
-                }
-                if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
-            }
-        }];
-        if (isOriginal == NO) {
-            CGFloat pixelWidth = LFAM_ScreenWidth * 0.5 * LFAM_ScreenScale;
-            CGFloat pixelHeight = pixelWidth / aspectRatio;
-            size = CGSizeMake(pixelWidth, pixelHeight);
-        }
-        /** 标清图／原图 */
-        [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:size contentMode:PHImageContentModeAspectFit options:option resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]&& ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-            if (downloadFinined) {
-                if (self.shouldFixOrientation) {
-                    source = [result fixOrientation];
-                } else {
-                    source = result;
-                }
-                
-                if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
-            }
-        }];
-        
         /** 图片文件名+图片大小 */
-        [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+        [[PHImageManager defaultManager] requestImageDataForAsset:phAsset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
             /** 图片大小 */
             [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
             
             NSURL *fileUrl = [info objectForKey:@"PHImageFileURLKey"];
-            if (fileUrl.lastPathComponent) {
-                [imageInfo setObject:fileUrl.lastPathComponent forKey:kImageInfoFileName];
-            } else {
-                [imageInfo setObject:[NSNull null] forKey:kImageInfoFileName];
+            NSString *fileName = fileUrl.lastPathComponent;
+            if (fileName == nil) {
+                fileName = [phAsset valueForKey:@"filename"];
             }
+            [imageInfo setObject:fileName forKey:kImageInfoFileName];
             /** 图片数据 */
             if (imageData) {
                 [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
             }
             
-            if (iOS9_1Later) {
-                /** 新判断GIF图片方法 */
-                NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:phAsset];
-                [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    PHAssetResource *resource = obj;
-                    if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
-                        [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
-                        *stop = YES;
-                    }
-                }];
-            } else {
-                if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                    [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
-                }
+            LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
+            if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
+                mediaType = LFImagePickerSubMediaTypeLivePhoto;
+            } else if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                mediaType = LFImagePickerSubMediaTypeGIF;
             }
-            if (completion && thumbnail && source && imageInfo.count) completion(thumbnail, source, imageInfo);
+            [imageInfo setObject:@(mediaType) forKey:kImageInfoMediaType];
+            
+            if (completion) completion(imageInfo);
         }];
         
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
-        __block ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
         
         dispatch_globalQueue_async_safe(^{
-            CGImageRef thumbnailImageRef = alAsset.aspectRatioThumbnail;/** 缩略图 */
-            thumbnail = [UIImage imageWithCGImage:thumbnailImageRef scale:1.0 orientation:UIImageOrientationUp];
-            if (self.shouldFixOrientation) {
-                thumbnail = [thumbnail fixOrientation];
-            }
+            ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
             
-            if (isOriginal) {
-                CGImageRef fullResolutionImageRef = [assetRep fullResolutionImage]; /** 原图 */
-                // 通过 fullResolutionImage 获取到的的高清图实际上并不带上在照片应用中使用“编辑”处理的效果，需要额外在 AlAssetRepresentation 中获取这些信息
-                NSString *adjustment = [[assetRep metadata] objectForKey:@"AdjustmentXMP"];
-                if (adjustment) {
-                    // 如果有在照片应用中使用“编辑”效果，则需要获取这些编辑后的滤镜，手工叠加到原图中
-                    NSData *xmpData = [adjustment dataUsingEncoding:NSUTF8StringEncoding];
-                    CIImage *tempImage = [CIImage imageWithCGImage:fullResolutionImageRef];
-                    
-                    NSError *error;
-                    NSArray *filterArray = [CIFilter filterArrayFromSerializedXMP:xmpData
-                                                                 inputImageExtent:tempImage.extent
-                                                                            error:&error];
-                    CIContext *context = [CIContext contextWithOptions:nil];
-                    if (filterArray && !error) {
-                        for (CIFilter *filter in filterArray) {
-                            [filter setValue:tempImage forKey:kCIInputImageKey];
-                            tempImage = [filter outputImage];
-                        }
-                        fullResolutionImageRef = [context createCGImage:tempImage fromRect:[tempImage extent]];
-                    }
-                }
-                // 生成最终返回的 UIImage，同时把图片的 orientation 也补充上去
-                source = [UIImage imageWithCGImage:fullResolutionImageRef scale:[assetRep scale] orientation:(UIImageOrientation)[assetRep orientation]];
-            } else {
-                CGImageRef fullScrennImageRef = [assetRep fullScreenImage]; /** 标清图 */
-                source = [UIImage imageWithCGImage:fullScrennImageRef scale:1.0 orientation:UIImageOrientationUp];
-            }
-            if (self.shouldFixOrientation) {
-                source = [source fixOrientation];
-            }
-            
+            LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
             ALAssetRepresentation *gifAR = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
             if (gifAR) {
-                [imageInfo setObject:@(YES) forKey:kImageInfoIsGIF];
+                mediaType = LFImagePickerSubMediaTypeGIF;
                 
                 assetRep = gifAR;
             }
+            [imageInfo setObject:@(mediaType) forKey:kImageInfoMediaType];
             
             Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
             NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
@@ -787,16 +723,104 @@ static LFAssetManager *manager;
                 [imageInfo setObject:fileName forKey:kImageInfoFileName];
             }
             
-            /** 相册没有生成缩略图 */
-            if (thumbnail == nil) {
-                thumbnail = source;
-            }
-            
-            
             dispatch_main_async_safe(^{
-                if (completion) completion(thumbnail, source, imageInfo);
+                if (completion) completion(imageInfo);
             });
         });
+    }
+}
+
+- (void)getLivePhotoWithAsset:(id)asset isOriginal:(BOOL)isOriginal completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+{
+    if (iOS9_1Later && [asset isKindOfClass:[PHAsset class]]) {
+        
+        NSMutableDictionary *imageInfo = [NSMutableDictionary dictionary];
+        
+        PHAsset *phAsset = (PHAsset *)asset;
+        
+        PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
+        option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        
+        [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+            
+            NSURL *fileUrl = [info objectForKey:@"PHImageFileURLKey"];
+            NSString *fileName = fileUrl.lastPathComponent;
+            if (fileName == nil) {
+                fileName = [phAsset valueForKey:@"filename"];
+            }
+            NSString *fileFirstName = [fileName stringByDeletingPathExtension];
+            
+            NSArray *resourceArray = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+            PHAssetResourceManager *arm = [PHAssetResourceManager defaultManager];
+            PHAssetResource *assetResource = resourceArray.lastObject;
+            NSString *cache = [LFAssetManager CacheVideoPath];
+            NSString *filePath = [cache stringByAppendingPathComponent:[fileFirstName stringByAppendingPathExtension:@"mov"]];
+            BOOL isExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
+            
+            NSURL *videoURL = [[NSURL alloc] initFileURLWithPath:filePath];
+            
+            void (^livePhotoToGif)(NSURL *) = ^(NSURL *videoURL){
+                [LFToGIF optimalGIFfromURL:videoURL loopCount:0 completion:^(NSURL *GifURL) {
+                    
+                    if (GifURL) {
+                        
+                        /** 图片类型 */
+                        [imageInfo setObject:@(LFImagePickerSubMediaTypeGIF) forKey:kImageInfoMediaType];
+                        
+                        /** 图片数据 */
+                        NSData *imageData = [NSData dataWithContentsOfURL:GifURL];
+                        if (imageData) {
+                            [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
+                        }
+                        /** 图片大小 */
+                        [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
+                        /** 图片名称 */
+                        [imageInfo setObject:[fileFirstName stringByAppendingPathExtension:@"gif"] forKey:kImageInfoFileName];
+                        
+                        /** 原图 */
+                        UIImage *source = [UIImage LF_imageWithImageData:imageData];
+                        
+                        /** 缩略图 */
+                        CGFloat minWidth = MIN(source.size.width, source.size.height);
+                        CGFloat imageRatio = 0.5f;
+                        if (minWidth > 100.f) {
+                            imageRatio = 50.f/minWidth;
+                        }
+                        /** 缩略图 */
+                        NSData *thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                        /** 缩略图数据 */
+                        [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
+                        UIImage *thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+                        
+                        /** 图片宽高 */
+                        CGSize imageSize = source.size;
+                        NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];
+                        [imageInfo setObject:value forKey:kImageInfoFileSize];
+                        
+                        if (completion) completion(thumbnail, source, [imageInfo copy]);
+                    } else {
+                        if (completion) completion(nil, nil, nil);
+                    }
+                }];
+            };
+            
+            
+            if (isExists) {
+                livePhotoToGif(videoURL);
+            } else {
+                [arm writeDataForAssetResource:assetResource toFile:videoURL options:nil completionHandler:^(NSError * _Nullable error)
+                 {
+                     if (error) {
+                         [self getPhotoWithAsset:phAsset isOriginal:isOriginal completion:completion];
+                     } else {
+                         livePhotoToGif(videoURL);
+                     }
+                 }];
+            }
+            
+        }];
+    } else {
+        if (completion) completion(nil, nil, nil);
     }
 }
 

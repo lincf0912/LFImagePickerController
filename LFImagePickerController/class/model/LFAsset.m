@@ -65,19 +65,19 @@
                 //                                                                    }
                 //                                                                }];
                 //                }
-            } else if ([asset isKindOfClass:[ALAsset class]]) {
-                ALAsset *alAsset = (ALAsset *)asset;
-                ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-                _name = assetRep.filename;
-                /// Allow picking video
-                if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
-                    _type = LFAssetMediaTypeVideo;
-                    NSTimeInterval duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
-                    _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",duration] integerValue]];
-                } else {
-                    ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
-                    if (re) _subType = LFAssetSubMediaTypeGIF;
-                }
+            }
+        } else if ([asset isKindOfClass:[ALAsset class]]) {
+            ALAsset *alAsset = (ALAsset *)asset;
+            ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+            _name = assetRep.filename;
+            /// Allow picking video
+            if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
+                _type = LFAssetMediaTypeVideo;
+                NSTimeInterval duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
+                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",duration] integerValue]];
+            } else {
+                ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
+                if (re) _subType = LFAssetSubMediaTypeGIF;
             }
         }
     }

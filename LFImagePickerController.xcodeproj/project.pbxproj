@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F02A2251EE158B00063D33D /* LFToGIF.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
 		6F12017F1E513D1B00EA2198 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017E1E513D1B00EA2198 /* ViewController.m */; };
@@ -41,7 +42,6 @@
 		6F552A821E961C8400AC362C /* 1.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A801E961C8400AC362C /* 1.jpeg */; };
 		6F552A831E961C8400AC362C /* 2.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A811E961C8400AC362C /* 2.jpeg */; };
 		6F5930321EDFF7C3008EC7B0 /* LFGIFImageSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F59302F1EDFF7C3008EC7B0 /* LFGIFImageSerialization.m */; };
-		6F5930391EE0FE65008EC7B0 /* LFToGIF.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F5930381EE0FE65008EC7B0 /* LFToGIF.m */; };
 		6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */; };
 		6F8D07361ED7FC7800601BEA /* 3.gif in Resources */ = {isa = PBXBuildFile; fileRef = 6F8D07351ED7FC7800601BEA /* 3.gif */; };
 		6F8D074A1ED8091C00601BEA /* LFGifPlayerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F8D07471ED8091C00601BEA /* LFGifPlayerManager.m */; };
@@ -80,6 +80,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6F02A2241EE158B00063D33D /* LFToGIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFToGIF.h; sourceTree = "<group>"; };
+		6F02A2251EE158B00063D33D /* LFToGIF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFToGIF.m; sourceTree = "<group>"; };
 		6F0480011E7785CD004F20B4 /* LFImagePickerType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFImagePickerType.h; sourceTree = "<group>"; };
 		6F1201741E513D1B00EA2198 /* LFImagePickerController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LFImagePickerController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F1201781E513D1B00EA2198 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -146,8 +148,6 @@
 		6F552A811E961C8400AC362C /* 2.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 2.jpeg; sourceTree = "<group>"; };
 		6F59302E1EDFF7C3008EC7B0 /* LFGIFImageSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFGIFImageSerialization.h; sourceTree = "<group>"; };
 		6F59302F1EDFF7C3008EC7B0 /* LFGIFImageSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFGIFImageSerialization.m; sourceTree = "<group>"; };
-		6F5930371EE0FE65008EC7B0 /* LFToGIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFToGIF.h; sourceTree = "<group>"; };
-		6F5930381EE0FE65008EC7B0 /* LFToGIF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFToGIF.m; sourceTree = "<group>"; };
 		6F74DC961E85147A00170A95 /* LFAssetManager+SaveAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+SaveAlbum.h"; sourceTree = "<group>"; };
 		6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+SaveAlbum.m"; sourceTree = "<group>"; };
 		6F8D07351ED7FC7800601BEA /* 3.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = 3.gif; sourceTree = "<group>"; };
@@ -233,6 +233,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6F02A2231EE158B00063D33D /* LFToGIF */ = {
+			isa = PBXGroup;
+			children = (
+				6F02A2241EE158B00063D33D /* LFToGIF.h */,
+				6F02A2251EE158B00063D33D /* LFToGIF.m */,
+			);
+			path = LFToGIF;
+			sourceTree = "<group>";
+		};
 		6F12016B1E513D1B00EA2198 = {
 			isa = PBXGroup;
 			children = (
@@ -436,8 +445,6 @@
 			children = (
 				6F59302E1EDFF7C3008EC7B0 /* LFGIFImageSerialization.h */,
 				6F59302F1EDFF7C3008EC7B0 /* LFGIFImageSerialization.m */,
-				6F5930371EE0FE65008EC7B0 /* LFToGIF.h */,
-				6F5930381EE0FE65008EC7B0 /* LFToGIF.m */,
 			);
 			path = GIFUtils;
 			sourceTree = "<group>";
@@ -456,6 +463,7 @@
 		6FA36E521EBB0B240009E2DE /* vendors */ = {
 			isa = PBXGroup;
 			children = (
+				6F02A2231EE158B00063D33D /* LFToGIF */,
 				6F8D07451ED8091C00601BEA /* LFGifPlayer */,
 				6FA36E531EBB0B240009E2DE /* JRPickColorView */,
 			);
@@ -696,6 +704,7 @@
 				6FAA50B71ED532A3002D88A2 /* LFStickerLabel.m in Sources */,
 				6FA8E2B91E7BC5060033B83F /* LFPhotoEdit.m in Sources */,
 				6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */,
+				6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */,
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6F9DDCF31EB075E100CDAD13 /* UIDevice+LFOrientation.m in Sources */,
 				6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */,
@@ -703,7 +712,6 @@
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6FAA50B81ED532A3002D88A2 /* LFDrawView.m in Sources */,
 				6FAA50AB1ED532A3002D88A2 /* LFClippingView.m in Sources */,
-				6F5930391EE0FE65008EC7B0 /* LFToGIF.m in Sources */,
 				6FF286121E5EB9AD0008FB5B /* UIView+LFCommon.m in Sources */,
 				6FA36E561EBB0B240009E2DE /* JRPickColorView.m in Sources */,
 				6FAA50BD1ED532A3002D88A2 /* LFEditToolbar.m in Sources */,

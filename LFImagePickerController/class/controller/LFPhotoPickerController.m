@@ -837,14 +837,14 @@
             [selectedAssets addObject:model.asset];
         }
     }
+    [imagePickerVc.selectedModels removeAllObjects];
     if (selectedAssets.count) {        
         for (LFAsset *model in _models) {
             model.isSelected = NO;
-            model.closeLivePhoto = NO;
             NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
-            if (index != NSNotFound) {
-                model.closeLivePhoto = [imagePickerVc.selectedModels objectAtIndex:index].closeLivePhoto;
+            if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
                 model.isSelected = YES;
+                [imagePickerVc.selectedModels addObject:model];
             }
         }
     }

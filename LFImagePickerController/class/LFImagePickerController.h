@@ -98,7 +98,7 @@
 
 /// The photos user have selected
 /// 用户选中过的图片数组
-@property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
+@property (nonatomic, readonly) NSMutableArray<LFAsset *> *selectedModels;
 @property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage *>*/*selectedAssets;
 /** 是否选择原图 */
 @property (nonatomic, assign) BOOL isSelectOriginalPhoto;

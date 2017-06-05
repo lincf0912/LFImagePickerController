@@ -55,9 +55,12 @@
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
             }
-            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:0 excludeVideo:YES];
+            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:6 excludeVideo:YES];
             imagePicker.pickerDelegate = self;
 //            imagePicker.allowPickingGif = YES; /** 支持GIF */
+            /** 全选 */
+//            imagePicker.selectedAssets = array;
+            
             [self presentViewController:imagePicker animated:YES completion:nil];
         }];
     }];
@@ -72,7 +75,7 @@
         [self.imageView setImage:photos.firstObject];
     }];
     /** 全选 */
-//    imagePicker.selectedAssets = array;
+    imagePicker.selectedAssets = array;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 

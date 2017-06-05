@@ -99,17 +99,13 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
     return self;
 }
-- (instancetype)initWithPhotos:(NSArray <UIImage *>*)photos index:(NSInteger)index
+- (instancetype)initWithPhotos:(NSArray <LFAsset *>*)photos index:(NSInteger)index
 {
     self = [self init];
     if (self) {
         if (photos) {
-            _models = [@[] mutableCopy];
+            _models = [photos mutableCopy];
             _currentIndex = index;
-            for (UIImage *image in photos) {
-                LFAsset *model = [[LFAsset alloc] initWithImage:image type:LFAssetMediaTypePhoto subType:(image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone)];
-                [_models addObject:model];
-            }
             _isPhotoPreview = YES;
         }
     }
@@ -119,7 +115,6 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    [self checkSelectedModels];
     [self configCollectionView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
@@ -160,36 +155,6 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)dealloc
 {
     [LFGifPlayerManager free];
-}
-
-- (void)checkSelectedModels {
-    NSMutableArray *selectedAssets = [NSMutableArray array];
-    NSMutableArray *selectedImages = [NSMutableArray array];
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    for (LFAsset *model in imagePickerVc.selectedModels) {
-        if (!self.isPhotoPreview) {
-            [selectedAssets addObject:model.asset];
-        } else {
-            [selectedImages addObject:@([model.previewImage hash])];
-        }
-    }
-    if (selectedAssets.count) {
-        for (LFAsset *model in _models) {
-            model.isSelected = NO;
-            model.closeLivePhoto = NO;
-            NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
-            if (index != NSNotFound) {
-                model.closeLivePhoto = [imagePickerVc.selectedModels objectAtIndex:index].closeLivePhoto;
-                model.isSelected = YES;
-            }
-        }
-    } else if (selectedImages.count) {
-        for (LFAsset *model in _models) {
-            if (model.previewImage) {
-                model.isSelected = [selectedImages containsObject:@([model.previewImage hash])];
-            }
-        }
-    }
 }
 
 - (void)configCustomNaviBar {
@@ -334,9 +299,11 @@ CGFloat const livePhotoSignMargin = 10.f;
     __weak typeof(self) weakSelf = self;
     _previewBar.didSelectItem = ^(LFAsset *asset) {
         NSInteger index = [weakSelf.models indexOfObject:asset];
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        weakSelf.isMTScroll = YES;
-        [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+        if (index != NSNotFound) {            
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+            weakSelf.isMTScroll = YES;
+            [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+        }
     };
     [self.view addSubview:_previewBar];
 }

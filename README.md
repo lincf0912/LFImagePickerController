@@ -1,6 +1,6 @@
 # LFImagePickerController
 
-* 项目UI与资源方面大部分使用TZImagePickerController项目，感谢分享。
+* 项目UI与资源方面部分使用TZImagePickerController项目，感谢分享。
 * 兼容非系统相册的调用方式
 * 支持Gif(压缩)、视频（压缩）、图片（压缩）、图片编辑
 * 支持iPhone、iPad 横屏

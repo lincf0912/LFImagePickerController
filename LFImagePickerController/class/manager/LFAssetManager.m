@@ -583,7 +583,6 @@ static LFAssetManager *manager;
         CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
         BOOL isGif = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeGIF;
 //        BOOL isLivePhoto = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeLivePhoto;
-        
         NSData *sourceData = nil, *thumbnailData = nil;
         UIImage *thumbnail = nil, *source = nil;
         
@@ -606,12 +605,24 @@ static LFAssetManager *manager;
             thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
             
         } else {
+            
+            /** 原图方向更正 */
+            BOOL isFixOrientation = NO;
+            if (self.shouldFixOrientation && source.imageOrientation != UIImageOrientationUp) {
+                source = [source fixOrientation];
+                isFixOrientation = YES;
+            }
+            
             /** 重写标记 */
             [info setObject:@(LFImagePickerSubMediaTypeNone) forKey:kImageInfoMediaType];
             
             /** 标清图 */
             if (!isOriginal) {
                 sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
+            } else {
+                if (isFixOrientation) { /** 更正方向，原图data需要更新 */
+                    sourceData = UIImageJPEGRepresentation(source, 1);
+                }
             }
             /** 缩略图 */
             thumbnailData = [source fastestCompressImageDataWithSize:thumbnailCompress];

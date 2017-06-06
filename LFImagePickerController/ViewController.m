@@ -114,6 +114,8 @@
         [originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
         
         NSLog(@"⚠️Info name:%@ -- infoLength:%fK -- thumnailSize:%fK -- originalSize:%fK -- infoSize:%@", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0, NSStringFromCGSize(size));
+        
+        NSLog(@"🎉thumbnail_imageOrientation:%ld -- original_imageOrientation:%ld -- thumbnailData_imageOrientation:%ld -- originalData_imageOrientation:%ld", (long)thumbnailImage.imageOrientation, (long)image.imageOrientation, [UIImage imageWithData:thumnailData scale:[UIScreen mainScreen].scale].imageOrientation, [UIImage imageWithData:originalData scale:[UIScreen mainScreen].scale].imageOrientation);
     }
     
     [self.thumbnailImageVIew setImage:thumbnailImages.firstObject];

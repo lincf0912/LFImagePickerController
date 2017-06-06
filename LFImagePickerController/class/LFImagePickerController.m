@@ -129,7 +129,7 @@
         _allowPickingOriginalPhoto = NO;
         
         for (UIImage *image in selectedPhotos) {
-            LFAsset *model = [[LFAsset alloc] initWithImage:image type:LFAssetMediaTypePhoto subType:(image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone)];
+            LFAsset *model = [[LFAsset alloc] initWithImage:image];
             [_models addObject:model];
         }
 

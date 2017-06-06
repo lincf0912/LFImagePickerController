@@ -120,7 +120,7 @@
     
     UIImage *aminatedImage = [UIImage animatedImageWithImages:images duration:self.duration];
     
-    return LF_UIImageGIFRepresentation(aminatedImage);;
+    return LF_UIImageGIFRepresentation(aminatedImage);
 }
 
 

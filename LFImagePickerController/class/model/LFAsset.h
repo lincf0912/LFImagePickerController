@@ -38,6 +38,5 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型
 - (instancetype)initWithAsset:(id)asset;
 
-- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type;
-- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type subType:(LFAssetSubMediaType)subType;
+- (instancetype)initWithImage:(UIImage *)image;
 @end

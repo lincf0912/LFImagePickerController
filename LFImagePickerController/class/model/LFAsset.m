@@ -84,21 +84,13 @@
     return self;
 }
 
-- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type
+- (instancetype)initWithImage:(UIImage *)image
 {
     self = [self initWithAsset:nil];
     if (self) {
-        _type = type;
+        _type = LFAssetMediaTypePhoto;
         _previewImage = image;
-    }
-    return self;
-}
-
-- (instancetype)initWithImage:(UIImage *)image type:(LFAssetMediaType)type subType:(LFAssetSubMediaType)subType
-{
-    self = [self initWithImage:image type:type];
-    if (self) {
-        _subType = subType;
+        _subType = image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
     }
     return self;
 }

@@ -19,9 +19,6 @@
 * imagePicker.doneBtnTitleStr = @"发送"; //最终确定按钮名称
 * [self presentViewController:imagePicker animated:YES completion:nil];
 
-* 设置代理方法，按钮实现
-* imagePicker.delegate;
-
 ## 图片展示
 
 ![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot.gif)

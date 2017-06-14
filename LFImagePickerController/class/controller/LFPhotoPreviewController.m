@@ -433,7 +433,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     // 如果没有选中过照片 点击确定时选中当前预览的照片
-    if (imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
+    if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
         LFAsset *model = _models[_currentIndex];
         [imagePickerVc.selectedModels addObject:model];
     }

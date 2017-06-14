@@ -36,6 +36,10 @@
 /// 最小照片必选张数,默认是0
 @property (nonatomic, assign) NSInteger minImagesCount;
 
+/// If not selected, the current image is automatically selected, Default is YES
+/// 没有选中的情况下,自动选中当前张，默认是YES
+@property (nonatomic, assign) BOOL autoSelectCurrentImage;
+
 /// Sort photos ascending by creationDate，Default is YES
 /// 对照片排序，按创建时间升序，默认是YES。如果设置为NO,最新的照片会显示在最前面，内部的拍照按钮会排在第一个
 @property (nonatomic, assign) BOOL sortAscendingByCreateDate;

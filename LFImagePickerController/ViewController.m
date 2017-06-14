@@ -76,6 +76,8 @@
     }];
     /** 全选 */
     imagePicker.selectedAssets = array;
+    /** 关闭自动选中 */
+    imagePicker.autoSelectCurrentImage = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 

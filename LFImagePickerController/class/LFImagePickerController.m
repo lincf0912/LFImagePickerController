@@ -166,6 +166,8 @@
     _selectedModels = [NSMutableArray array];
     _models = [NSMutableArray array];
     self.maxImagesCount = 9;
+    self.minImagesCount = 0;
+    self.autoSelectCurrentImage = YES;
     self.allowPickingOriginalPhoto = YES;
     self.allowPickingVideo = YES;
     self.allowPickingImage = YES;

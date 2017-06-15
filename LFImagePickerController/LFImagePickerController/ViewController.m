@@ -45,6 +45,7 @@
     imagePicker.allowPickingGif = YES; /** 支持GIF */
     imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
     [self presentViewController:imagePicker animated:YES completion:nil];
+    
 }
 
 - (IBAction)buttonAction2:(id)sender {

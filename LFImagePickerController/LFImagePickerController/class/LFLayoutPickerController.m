@@ -45,37 +45,32 @@
 
 - (void)customInit
 {
-    self.delegate = self;
     [self configDefaultSetting];
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.view.backgroundColor = [UIColor whiteColor];
-    self.navigationBar.barStyle = UIBarStyleBlack;
-    self.navigationBar.translucent = YES;
+    self.view.backgroundColor = [UIColor clearColor];
+//    self.navigationBar.barStyle = UIBarStyleBlack;
+//    self.navigationBar.translucent = YES;
+    self.delegate = self;
     
     if (iOS7Later) {
-        self.navigationBar.barTintColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:1.0];
-        self.navigationBar.tintColor = [UIColor whiteColor];
-        self.automaticallyAdjustsScrollViewInsets = NO;
+//        self.automaticallyAdjustsScrollViewInsets = NO;
+        
+        UIImage *backIndicatorImage = bundleImageNamed(@"navigationbar_back_arrow");
+        self.navigationBar.backIndicatorImage = backIndicatorImage;
+        self.navigationBar.backIndicatorTransitionMaskImage = backIndicatorImage;
     }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    _originStatusBarStyle = [UIApplication sharedApplication].statusBarStyle;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [UIApplication sharedApplication].statusBarStyle = iOS7Later ? UIStatusBarStyleLightContent : UIStatusBarStyleBlackOpaque;
-#pragma clang diagnostic pop
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [UIApplication sharedApplication].statusBarStyle = _originStatusBarStyle;
-    [self hideProgressHUD];
 }
 
 - (void)viewWillLayoutSubviews
@@ -128,6 +123,7 @@
 
 - (void)setBarItemTextColor:(UIColor *)barItemTextColor {
     _barItemTextColor = barItemTextColor;
+    self.navigationBar.tintColor = self.barItemTextColor;
     [self configBarButtonItemAppearance];
 }
 
@@ -148,6 +144,7 @@
     
     self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(173/255.0) blue:(25/255.0) alpha:1.0];
     self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(23/255.0) green:(82/255.0) blue:(22/255.0) alpha:1.0];
+    self.naviBgColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:1.0];
     self.naviTitleColor = [UIColor whiteColor];
     self.naviTitleFont = [UIFont systemFontOfSize:17];
     self.barItemTextFont = [UIFont systemFontOfSize:15];
@@ -257,8 +254,20 @@
         /** 处理推送VC传参 */
         LFBaseViewController *targetVC = (LFBaseViewController *)viewController;        
         [self setNavigationBarHidden:targetVC.isHiddenNavBar animated:animated];
-        if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = targetVC.isHiddenStatusBar;
     }
 }
+
+#pragma mark - 状态栏
+- (UIViewController *)childViewControllerForStatusBarStyle
+{
+    return self.topViewController;
+}
+//- (UIStatusBarStyle)preferredStatusBarStyle
+
+- (UIViewController *)childViewControllerForStatusBarHidden
+{
+    return self.topViewController;
+}
+//- (BOOL)prefersStatusBarHidden
 
 @end

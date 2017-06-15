@@ -198,7 +198,7 @@
     
     if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
         
-        CGSize newSize = [UIImage scaleImageSizeBySize:imageSize targetSize:self.scrollView.size isBoth:NO];
+        CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:self.scrollView.size isBoth:NO];
         
         _imageContainerView.size = newSize;
         _imageContainerView.center = self.scrollView.center;

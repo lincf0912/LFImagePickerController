@@ -373,7 +373,7 @@ static LFAssetManager *manager;
             BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
             if (downloadFinined && result) {
                 if (self.shouldFixOrientation) {
-                    result = [result fixOrientation];
+                    result = [result lf_fixOrientation];
                 }
                 if (completion) completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
             }
@@ -391,10 +391,10 @@ static LFAssetManager *manager;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     UIImage *resultImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
-                    resultImage = [resultImage scaleToSize:imageSize];
+                    resultImage = [resultImage lf_scaleToSize:imageSize];
                     if (resultImage) {
                         if (self.shouldFixOrientation) {
-                            resultImage = [resultImage fixOrientation];
+                            resultImage = [resultImage lf_fixOrientation];
                         }
                         if (completion) completion(resultImage,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
                     }
@@ -609,7 +609,7 @@ static LFAssetManager *manager;
             /** 原图方向更正 */
             BOOL isFixOrientation = NO;
             if (self.shouldFixOrientation && source.imageOrientation != UIImageOrientationUp) {
-                source = [source fixOrientation];
+                source = [source lf_fixOrientation];
                 isFixOrientation = YES;
             }
             
@@ -639,11 +639,6 @@ static LFAssetManager *manager;
             [info setObject:sourceData forKey:kImageInfoFileOriginalData];
             /** 标清图片大小 */
             [info setObject:@(sourceData.length) forKey:kImageInfoFileByte];
-        }
-        
-        if (self.shouldFixOrientation) {
-            source = [source fixOrientation];
-            thumbnail = [thumbnail fixOrientation];
         }
         
         /** 图片宽高 */

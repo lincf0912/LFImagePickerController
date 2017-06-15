@@ -24,8 +24,6 @@
     UIView *_toolBar;
     UIButton *_doneButton;
     UIProgressView *_progress;
-    
-    UIStatusBarStyle _originStatusBarStyle;
 }
 @end
 
@@ -43,13 +41,10 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    _originStatusBarStyle = [UIApplication sharedApplication].statusBarStyle;
-    [UIApplication sharedApplication].statusBarStyle = UIStatusBarStyleLightContent;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [UIApplication sharedApplication].statusBarStyle = _originStatusBarStyle;
 }
 
 - (void)configMoviePlayer {
@@ -126,7 +121,8 @@
         [self.navigationController setNavigationBarHidden:YES];
         _toolBar.hidden = YES;
         [_playButton setImage:nil forState:UIControlStateNormal];
-        if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = YES;
+        self.isHiddenStatusBar = YES;
+        [self setNeedsStatusBarAppearanceUpdate];
     } else {
         [self pausePlayerAndShowNaviBar];
     }
@@ -265,7 +261,8 @@
     _toolBar.hidden = NO;
     [self.navigationController setNavigationBarHidden:NO];
     [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
-    if (iOS7Later) [UIApplication sharedApplication].statusBarHidden = NO;
+    self.isHiddenStatusBar = NO;
+    [self setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)dealloc {

@@ -175,7 +175,7 @@ static LFPhotoEditManager *manager;
         CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
         CGFloat th_pixelWidth = 80 * 2.0; // scale
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
-        thumbnail = [source scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
+        thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
         NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
         [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
         thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];

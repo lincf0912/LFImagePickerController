@@ -20,6 +20,34 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+//    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+//    
+//    if (imagePickerVc.viewControllers.count > 1) {
+//        
+//        UIViewController *prevVC = imagePickerVc.viewControllers[imagePickerVc.viewControllers.count-2];
+//        if (imagePickerVc.viewControllers.count == 2) {
+//            prevVC = nil;
+//        }
+//        
+//        UIImage *leftBackImg = bundleImageNamed(@"navigationbar_back_arrow");
+//        NSString *title = prevVC.navigationItem.title.length ? prevVC.navigationItem.title : @"返回";
+//        UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:self action:@selector(popToViewController)];
+////        leftItem.tintColor = imagePickerVc.barItemTextColor;
+//        [leftItem setBackgroundImage:[leftBackImg resizableImageWithCapInsets:UIEdgeInsetsMake(-1, leftBackImg.size.width, 0, 0)]  forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+//        
+//        //[leftItem setBackButtonTitlePositionAdjustment:UIOffsetMake(-400.f, 0) forBarMetrics:UIBarMetricsDefault];
+//        [leftItem setTitlePositionAdjustment:UIOffsetMake(5, 0) forBarMetrics:UIBarMetricsDefault];
+//        [leftItem setTitleTextAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[UIFont systemFontOfSize:16], NSFontAttributeName, nil] forState:UIControlStateNormal];
+//        
+//        //创建UIBarButtonSystemItemFixedSpace
+//        UIBarButtonItem *spaceItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:nil];
+//        
+//        /* 在iPhone6之后（leftBarButtonItem才会向右偏移） */
+//        spaceItem.width = ([[UIScreen mainScreen] currentMode].size.width > 640 ? -8 : 0);
+//        
+//        self.navigationItem.leftBarButtonItems = @[spaceItem, leftItem];
+//    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -48,6 +76,11 @@
     return CGRectMake(0, top, self.view.width, height);
 }
 
+- (void)popToViewController
+{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
 /*
 #pragma mark - Navigation
 
@@ -61,7 +94,7 @@
 #pragma mark - 状态栏
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
-    return UIStatusBarStyleDefault;
+    return UIStatusBarStyleLightContent;
 }
 
 - (BOOL)prefersStatusBarHidden

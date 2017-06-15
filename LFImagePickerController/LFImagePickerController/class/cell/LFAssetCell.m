@@ -40,8 +40,8 @@
 
     /** 优先显示编辑图片 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    if (photoEdit.editPreviewImage) {
-        self.imageView.image = photoEdit.editPreviewImage;
+    if (photoEdit.editPosterImage) {
+        self.imageView.image = photoEdit.editPosterImage;
     } else if (model.previewImage) { /** 显示自定义图片 */
         self.imageView.image = model.previewImage;
     }  else {
@@ -57,7 +57,7 @@
     self.selectImageView.image = self.selectPhotoButton.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     
     /** 显示编辑标记 */
-    self.editMaskImageView.hidden = (photoEdit.editPreviewImage == nil);
+    self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
     
     [self setTypeToSubView];
 }
@@ -168,7 +168,8 @@
 {
     if (_editMaskImageView == nil) {
         UIImageView *editMaskImageView = [[UIImageView alloc] init];
-        editMaskImageView.frame = CGRectMake(5, self.height - 27 - kAdditionalSize, 22 + kAdditionalSize, 22 + kAdditionalSize);
+        CGRect frame = CGRectMake(5, self.height - 27 - kAdditionalSize, 22 + kAdditionalSize, 22 + kAdditionalSize);
+        editMaskImageView.frame = frame;
         [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
         editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
         [self.contentView addSubview:editMaskImageView];

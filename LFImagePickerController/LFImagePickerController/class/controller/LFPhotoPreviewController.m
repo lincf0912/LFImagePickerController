@@ -56,7 +56,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 /** 手动滑动标记 */
 @property (nonatomic, assign) BOOL isMTScroll;
 
-/** 临时编辑图片 */
+/** 临时编辑图片(仅用于在夸页面编辑时使用，目前已移除此需求) */
 @property (nonatomic, strong) UIImage *tempEditImage;
 @end
 
@@ -165,7 +165,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
     _naviBar.backgroundColor = imagePickerVc.previewNaviBgColor;
     _naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 44, 44)];
+    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(5, (naviBarHeight-21)/2, 21, 21)];
     _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
@@ -173,12 +173,12 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = [UIFont systemFontOfSize:15];
     } else {
-        [_backButton setImage:bundleImageNamed(@"navi_back.png") forState:UIControlStateNormal];
+        [_backButton setImage:bundleImageNamed(@"navigationbar_back_arrow") forState:UIControlStateNormal];
     }
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
-    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 54, 10, 42, 42)];
+    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 30 - 5, (naviBarHeight-30)/2, 30, 30)];
     _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
@@ -585,17 +585,11 @@ CGFloat const livePhotoSignMargin = 10.f;
 #pragma mark - LFPhotoEditingControllerDelegate
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEdittingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
 {
-    if (self.models.count > self.currentIndex) {
-        LFAsset *model = [self.models objectAtIndex:self.currentIndex];
-        /** 缓存对象 */
-        [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
-        
-        if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
-            self.tempEditImage = photoEdittingVC.editImage;
-        }
-        
-        [self.navigationController popViewControllerAnimated:NO];
+    if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
+        self.tempEditImage = photoEdittingVC.editImage;
     }
+    
+    [self.navigationController popViewControllerAnimated:NO];
 }
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEdittingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
 {

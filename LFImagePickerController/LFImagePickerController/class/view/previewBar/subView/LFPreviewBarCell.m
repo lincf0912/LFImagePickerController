@@ -8,6 +8,7 @@
 
 #import "LFPreviewBarCell.h"
 #import "UIView+LFFrame.h"
+#import "LFImagePickerHeader.h"
 
 #import "LFAssetManager.h"
 #import "LFPhotoEditManager.h"
@@ -15,8 +16,11 @@
 
 @interface LFPreviewBarCell ()
 
+/** 展示图片 */
 @property (nonatomic, weak) UIImageView *imageView;
-
+/** 编辑标记 */
+@property (weak, nonatomic) UIImageView *editMaskImageView;
+/** 遮罩 */
 @property (nonatomic, weak) UIView *maskHitView;
 
 @end
@@ -56,6 +60,14 @@
     [self.contentView addSubview:imageView];
     self.imageView = imageView;
     
+    UIImageView *editMaskImageView = [[UIImageView alloc] init];
+    CGRect frame = CGRectMake(5, self.height - 22 - 5, 22, 22);
+    editMaskImageView.frame = frame;
+    [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
+    editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.contentView addSubview:editMaskImageView];
+    _editMaskImageView = editMaskImageView;
+    
     UIView *maskHitView = [[UIView alloc] initWithFrame:self.bounds];
     maskHitView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     maskHitView.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.5f];
@@ -82,7 +94,9 @@
             
         } progressHandler:nil networkAccessAllowed:NO];
     }
-    
+    /** 显示编辑标记 */
+    self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+    /** 显示遮罩 */
     self.maskHitView.hidden = asset.isSelected;
 }
 

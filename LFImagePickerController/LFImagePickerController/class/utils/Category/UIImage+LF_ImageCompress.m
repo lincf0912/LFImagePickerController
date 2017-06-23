@@ -12,9 +12,9 @@
 @implementation UIImage (LF_ImageCompress)
 
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片 */
-- (UIImage *)fastestCompressImageWithSize:(CGFloat)size
+- (UIImage *)lf_fastestCompressImageWithSize:(CGFloat)size
 {
-    UIImage *compressedImage = [UIImage imageWithData:[self fastestCompressImageSize:size] scale:[UIScreen mainScreen].scale];
+    UIImage *compressedImage = [UIImage imageWithData:[self lf_fastestCompressImageSize:size] scale:[UIScreen mainScreen].scale];
     if (!compressedImage) {
         return self;
     }
@@ -22,13 +22,13 @@
 }
 
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回data */
-- (NSData *)fastestCompressImageDataWithSize:(CGFloat)size
+- (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size
 {
-    return [self fastestCompressImageSize:size];
+    return [self lf_fastestCompressImageSize:size];
 }
 
 #pragma mark - 压缩图片接口
-- (NSData *)fastestCompressImageSize:(CGFloat)size
+- (NSData *)lf_fastestCompressImageSize:(CGFloat)size
 {
     /** 临时图片 */
     UIImage *compressedImage = self;
@@ -41,7 +41,7 @@
     /** 微调参数 */
     NSInteger microAdjustment = 8*1024;
     /** 设备分辨率 */
-    CGSize pixel = [UIImage appPixel];
+    CGSize pixel = [UIImage lf_appPixel];
     /** 缩放图片尺寸 */
     int MIN_UPLOAD_RESOLUTION = pixel.width * pixel.height;
     if (size < 100) {
@@ -60,7 +60,7 @@
     /** 缩放图片 */
     if (currentResolution > MIN_UPLOAD_RESOLUTION) {
         factor = sqrt(currentResolution / MIN_UPLOAD_RESOLUTION) * 2;
-        compressedImage = [self scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
+        compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
     }
     
     /** 记录上一次的压缩大小 */
@@ -96,7 +96,7 @@
             float scale = 1-diffSize/targetSize;
             if (scale < 1.f) scale = 0.85f;
             if (scale >= 1.f) scale = 0.5f;
-            compressedImage = [self scaleWithSize:CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale)];
+            compressedImage = [self lf_scaleWithSize:CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale)];
         }
         imageDatalength = imageData.length;
     } while (imageData.length > targetSize+1024);/** 增加1k偏移量 */
@@ -106,7 +106,7 @@
 
 
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片(动图) */
-- (NSData *)fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio
+- (NSData *)lf_fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio
 {
     if (self.images.count == 0) return nil;
     
@@ -114,7 +114,7 @@
     
     CGSize imageSize = CGSizeMake(self.size.width*ratio, self.size.height*ratio);
     for (UIImage *subImage in self.images) {
-        UIImage *compressImage = [subImage scaleWithSize:imageSize];
+        UIImage *compressImage = [subImage lf_scaleWithSize:imageSize];
         [images addObject:compressImage];
     }
     
@@ -126,7 +126,7 @@
 
 
 #pragma mark - 缩放图片尺寸
-- (UIImage*)scaleWithSize:(CGSize)newSize
+- (UIImage*)lf_scaleWithSize:(CGSize)newSize
 {
     
     //We prepare a bitmap with the new size
@@ -143,7 +143,7 @@
 }
 
 /** 设备分辨率 */
-+ (CGSize)appPixel
++ (CGSize)lf_appPixel
 {
     CGRect rect_screen = [[UIScreen mainScreen]bounds];
     CGSize size_screen = rect_screen.size;

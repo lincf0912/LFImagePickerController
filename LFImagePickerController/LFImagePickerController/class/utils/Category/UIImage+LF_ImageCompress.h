@@ -11,10 +11,10 @@
 @interface UIImage (LF_ImageCompress)
 
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片 */
-- (UIImage *)fastestCompressImageWithSize:(CGFloat)size;
+- (UIImage *)lf_fastestCompressImageWithSize:(CGFloat)size;
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回data */
-- (NSData *)fastestCompressImageDataWithSize:(CGFloat)size;
+- (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size;
 
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片(动图) */
-- (NSData *)fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio;
+- (NSData *)lf_fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio;
 @end

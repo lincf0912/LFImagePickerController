@@ -602,7 +602,7 @@ static LFAssetManager *manager;
                 imageRatio = 50.f/minWidth;
             }
             /** 缩略图 */
-            thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+            thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
             
         } else {
             
@@ -618,14 +618,14 @@ static LFAssetManager *manager;
             
             /** 标清图 */
             if (!isOriginal) {
-                sourceData = [source fastestCompressImageDataWithSize:sourceCompress];
+                sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress];
             } else {
                 if (isFixOrientation) { /** 更正方向，原图data需要更新 */
                     sourceData = UIImageJPEGRepresentation(source, 1);
                 }
             }
             /** 缩略图 */
-            thumbnailData = [source fastestCompressImageDataWithSize:thumbnailCompress];
+            thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress];
         }
         
         /** 创建展示图片 */
@@ -793,7 +793,7 @@ static LFAssetManager *manager;
                             imageRatio = 50.f/minWidth;
                         }
                         /** 缩略图 */
-                        NSData *thumbnailData = [source fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                        NSData *thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
                         /** 缩略图数据 */
                         [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
                         UIImage *thumbnail = [UIImage LF_imageWithImageData:thumbnailData];

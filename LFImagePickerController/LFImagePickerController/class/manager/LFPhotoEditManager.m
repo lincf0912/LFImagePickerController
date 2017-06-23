@@ -158,7 +158,7 @@ static LFPhotoEditManager *manager;
         /** 图片数据 */
         NSData *imageData = nil;
         if (!isOriginal) { /** 标清图 */
-            imageData = [source fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+            imageData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
             source = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
         } else {
             imageData = UIImageJPEGRepresentation(source, 0.75);
@@ -176,7 +176,7 @@ static LFPhotoEditManager *manager;
         CGFloat th_pixelWidth = 80 * 2.0; // scale
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-        NSData *thumbnailData = [thumbnail fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+        NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
         [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
         thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
         

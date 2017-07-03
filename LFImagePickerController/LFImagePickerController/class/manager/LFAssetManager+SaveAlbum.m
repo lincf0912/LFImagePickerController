@@ -120,8 +120,8 @@
                          failureBlock:(void (^)(NSError *error))failureBlock
 {
     dispatch_globalQueue_async_safe(^{
-        __block NSError *error = nil;
-        NSMutableArray *imageIds = [NSMutableArray array];
+        NSError *error = nil;
+        __block NSString *createdAssetId = nil;
         PHAssetCollection *assetCollection = (PHAssetCollection *)customAlbum;
         [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
             
@@ -142,13 +142,8 @@
             
             PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
             //记录本地标识，等待完成后取到相册中的图片对象
-            [imageIds addObject:req.placeholderForCreatedAsset.localIdentifier];
-            if (assetCollection && placeholder) {
-                PHAssetCollectionChangeRequest *request = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:assetCollection];
-                //            [request addAssets:@[placeholder]];
-                //将最新保存的图片设置为封面
-                [request insertAssets:@[placeholder] atIndexes:[NSIndexSet indexSetWithIndex:0]];
-            }
+            createdAssetId = placeholder.localIdentifier;
+            
         } error:&error];
         
         if (error) {
@@ -157,20 +152,37 @@
                 if (failureBlock) failureBlock(error);
             });
         } else {
-            NSLog(@"保存成功");
-            //成功后取相册中的图片对象
-            __block PHAsset *imageAsset = nil;
-            PHFetchResult *result = [PHAsset fetchAssetsWithLocalIdentifiers:imageIds options:nil];
-            [result enumerateObjectsUsingBlock:^(PHAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSError *nextError = nil;
+            PHFetchResult <PHAsset *>*result = nil;
+            if (createdAssetId && assetCollection) {
+                //成功后取相册中的图片对象
+                result = [PHAsset fetchAssetsWithLocalIdentifiers:@[createdAssetId] options:nil];
                 
-                imageAsset = obj;
-                *stop = YES;
-                
-            }];
-            
-            dispatch_main_async_safe(^{
-                if (completionBlock) completionBlock(imageAsset);
-            });
+                if (result) {
+                    [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
+                        PHAssetCollectionChangeRequest *request = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:assetCollection];
+                        //            [request addAssets:@[placeholder]];
+                        //将最新保存的图片设置为封面
+                        [request insertAssets:result atIndexes:[NSIndexSet indexSetWithIndex:0]];
+                        NSLog(@"保存成功");
+                    } error:&nextError];
+                } else {
+                    nextError = [NSError errorWithDomain:@"SaveImageError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveImageError"}];
+                }
+            } else {
+                nextError = [NSError errorWithDomain:@"SaveImageError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveImageError"}];
+            }
+            if (nextError) {
+                NSLog(@"保存失败");
+                dispatch_main_async_safe(^{
+                    if (failureBlock) failureBlock(nextError);
+                });
+            } else {
+                PHAsset *imageAsset = [result firstObject];
+                dispatch_main_async_safe(^{
+                    if (completionBlock) completionBlock(imageAsset);
+                });
+            }
         }
     });
 }
@@ -302,20 +314,15 @@
                            failureBlock:(void (^)(NSError *error))failureBlock
 {
     dispatch_globalQueue_async_safe(^{
-        __block NSError *error = nil;
-        NSMutableArray *imageIds = [NSMutableArray array];
+        NSError *error = nil;
+        __block NSString *createdAssetId = nil;
         PHAssetCollection *assetCollection = (PHAssetCollection *)customAlbum;
         [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
             PHAssetChangeRequest *req = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];
             PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
             //记录本地标识，等待完成后取到相册中的图片对象
-            [imageIds addObject:req.placeholderForCreatedAsset.localIdentifier];
-            if (assetCollection) {
-                PHAssetCollectionChangeRequest *request = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:assetCollection];
-                //            [request addAssets:@[placeholder]];
-                //将最新保存的图片设置为封面
-                [request insertAssets:@[placeholder] atIndexes:[NSIndexSet indexSetWithIndex:0]];
-            }
+            createdAssetId = placeholder.localIdentifier;
+            
         } error:&error];
         
         if (error) {
@@ -324,19 +331,37 @@
                 if (failureBlock) failureBlock(error);
             });
         } else {
-            NSLog(@"保存成功");
-            //成功后取相册中的图片对象
-            __block PHAsset *imageAsset = nil;
-            PHFetchResult *result = [PHAsset fetchAssetsWithLocalIdentifiers:imageIds options:nil];
-            [result enumerateObjectsUsingBlock:^(PHAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSError *nextError = nil;
+            PHFetchResult <PHAsset *>*result = nil;
+            if (createdAssetId && assetCollection) {
+                //成功后取相册中的图片对象
+                result = [PHAsset fetchAssetsWithLocalIdentifiers:@[createdAssetId] options:nil];
                 
-                imageAsset = obj;
-                *stop = YES;
-                
-            }];
-            dispatch_main_async_safe(^{
-                if (completionBlock) completionBlock(imageAsset);
-            });
+                if (result) {
+                    [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
+                        PHAssetCollectionChangeRequest *request = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:assetCollection];
+                        //            [request addAssets:@[placeholder]];
+                        //将最新保存的图片设置为封面
+                        [request insertAssets:result atIndexes:[NSIndexSet indexSetWithIndex:0]];
+                        NSLog(@"保存成功");
+                    } error:&nextError];
+                } else {
+                    nextError = [NSError errorWithDomain:@"SaveVideoError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveVideoError"}];
+                }
+            } else {
+                nextError = [NSError errorWithDomain:@"SaveVideoError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveVideoError"}];
+            }
+            if (nextError) {
+                NSLog(@"保存失败");
+                dispatch_main_async_safe(^{
+                    if (failureBlock) failureBlock(nextError);
+                });
+            } else {
+                PHAsset *imageAsset = [result firstObject];
+                dispatch_main_async_safe(^{
+                    if (completionBlock) completionBlock(imageAsset);
+                });
+            }
         }
     });
 }

@@ -251,7 +251,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         _originalPhotoLabel.textColor = toolbarTitleColorNormal;
         _originalPhotoLabel.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addSubview:_originalPhotoLabel];
-        if (imagePickerVc.isSelectOriginalPhoto) [self showPhotoBytes];
+        if (_originalPhotoButton.selected) [self showPhotoBytes];
     }
     
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingString:@"(10)" ] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
@@ -473,7 +473,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
-    if (imagePickerVc.isSelectOriginalPhoto) {
+    if (_originalPhotoButton.selected) {
         [self showPhotoBytes];
         if (!_selectButton.isSelected) {
             // 如果当前已选择照片张数 < 最大可选张数 && 最大可选张数大于1，就选中该张图
@@ -482,6 +482,8 @@ CGFloat const livePhotoSignMargin = 10.f;
                 [self select:_selectButton];
             }
         }
+    } else {
+        _originalPhotoLabel.text = nil;
     }
 }
 
@@ -638,8 +640,8 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     }
     
-    _originalPhotoLabel.hidden = (_originalPhotoButton.selected && imagePickerVc.selectedModels.count == 0);
-    if (imagePickerVc.isSelectOriginalPhoto) [self showPhotoBytes];
+    _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
+    if (_originalPhotoButton.selected) [self showPhotoBytes];
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || model.isSelected);

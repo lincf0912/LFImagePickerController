@@ -311,7 +311,7 @@
         _originalPhotoLabel.textColor = toolbarTitleColorNormal;
         
         [_originalPhotoButton addSubview:_originalPhotoLabel];
-        if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+        if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
     }
     
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingString:@"(10)" ] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
@@ -382,7 +382,12 @@
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;;
-    if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+    if (_originalPhotoButton.selected) {
+        [self getSelectedPhotoBytes];
+    } else {
+        _originalPhotoLabel.text = nil;
+    }
+    
 }
 
 - (void)doneButtonClick {
@@ -773,8 +778,8 @@
     [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)",imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     
 //    _originalPhotoButton.selected = (imagePickerVc.isSelectOriginalPhoto && imagePickerVc.selectedModels.count > 0);
-    _originalPhotoLabel.hidden = (_originalPhotoButton.selected && imagePickerVc.selectedModels.count == 0);
-    if (imagePickerVc.isSelectOriginalPhoto) [self getSelectedPhotoBytes];
+    _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
+    if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
 }
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {

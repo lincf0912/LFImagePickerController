@@ -165,7 +165,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
     _naviBar.backgroundColor = imagePickerVc.previewNaviBgColor;
     _naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(5, (naviBarHeight-21)/2, 21, 21)];
+    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(8, 0, 50, naviBarHeight)];
     _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
@@ -173,12 +173,14 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = [UIFont systemFontOfSize:15];
     } else {
-        [_backButton setImage:bundleImageNamed(@"navigationbar_back_arrow") forState:UIControlStateNormal];
+        UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
+        [_backButton setImage:image forState:UIControlStateNormal];
+        _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50, 0, 0);
     }
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     
-    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 30 - 5, (naviBarHeight-30)/2, 30, 30)];
+    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 30 - 8, (naviBarHeight-30)/2, 30, 30)];
     _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];

@@ -68,7 +68,10 @@
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *imageContainerView;
-@property (nonatomic, strong) LFProgressView *progressView;
+//@property (nonatomic, strong) LFProgressView *progressView;
+@property (nonatomic, strong) UITapGestureRecognizer *tap1;
+@property (nonatomic, strong) UITapGestureRecognizer *tap2;
+
 @end
 
 @implementation LFPhotoPreviewCell
@@ -112,12 +115,12 @@
             [_imageContainerView addSubview:view];
         }
         
-        UITapGestureRecognizer *tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
-        [self addGestureRecognizer:tap1];
-        UITapGestureRecognizer *tap2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
-        tap2.numberOfTapsRequired = 2;
-        [tap1 requireGestureRecognizerToFail:tap2];
-        [self addGestureRecognizer:tap2];
+        _tap1 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTap:)];
+        [self addGestureRecognizer:_tap1];
+        _tap2 = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap:)];
+        _tap2.numberOfTapsRequired = 2;
+        [_tap1 requireGestureRecognizerToFail:_tap2];
+        [self addGestureRecognizer:_tap2];
     }
     return self;
 }
@@ -162,21 +165,21 @@
                 if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
                 }
-                _progressView.hidden = YES;
+//                _progressView.hidden = YES;
             }
         };
         
-        void (^progressHandler)(double progress, NSError *error, BOOL *stop, NSDictionary *info) = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info){
-            if ([model isEqual:self.model]) {
-                _progressView.hidden = NO;
-                [self bringSubviewToFront:_progressView];
-                progress = progress > 0.02 ? progress : 0.02;;
-                _progressView.progress = progress;
-            }
-        };
+//        void (^progressHandler)(double progress, NSError *error, BOOL *stop, NSDictionary *info) = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info){
+//            if ([model isEqual:self.model]) {
+//                _progressView.hidden = NO;
+//                [self bringSubviewToFront:_progressView];
+//                progress = progress > 0.02 ? progress : 0.02;;
+//                _progressView.progress = progress;
+//            }
+//        };
         
         
-        [self subViewSetModel:model completeHandler:completion progressHandler:progressHandler];
+        [self subViewSetModel:model completeHandler:completion progressHandler:nil];
     }
 }
 

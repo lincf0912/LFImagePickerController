@@ -34,13 +34,12 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), bl
 
 extern NSString *const kBundlePath;
 
-/** 视频大小限制 */
-extern float const kMaxVideoSize;
-
 /** 标清图压缩大小 */
 extern float const kCompressSize;
 /** 缩略图压缩大小 */
 extern float const kThumbnailCompressSize;
+/** 视频最大时长 */
+extern float const kMaxVideoDurationze;
 
 
 @interface LFImagePickerHeader : NSObject

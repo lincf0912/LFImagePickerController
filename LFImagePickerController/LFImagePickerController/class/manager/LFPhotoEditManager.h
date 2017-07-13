@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class LFPhotoEdit, LFAsset;
+@class LFPhotoEdit, LFAsset, LFResultImage;
 @interface LFPhotoEditManager : NSObject
 
 + (instancetype)manager NS_SWIFT_NAME(default());
@@ -29,7 +29,7 @@
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+               completion:(void (^)(LFResultImage *resultImage))completion;
 
 
 /**
@@ -45,5 +45,5 @@
                isOriginal:(BOOL)isOriginal
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+               completion:(void (^)(LFResultImage *resultImage))completion;
 @end

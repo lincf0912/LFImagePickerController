@@ -14,6 +14,7 @@
 #import "LFAsset.h"
 #import "UIImage+LF_ImageCompress.h"
 #import "UIImage+LFCommon.h"
+#import "LFResultObject_property.h"
 
 @interface LFPhotoEditManager ()
 
@@ -93,14 +94,8 @@ static LFPhotoEditManager *manager;
 {
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
-        PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-        option.resizeMode = PHImageRequestOptionsResizeModeFast;
-        option.synchronous = YES; /** 同步 */
-        [[PHImageManager defaultManager] requestImageDataForAsset:phAsset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-            
-            NSURL *fileUrl = [info objectForKey:@"PHImageFileURLKey"];
-            if (complete) complete(fileUrl.lastPathComponent);
-        }];
+        NSString *fileName = [phAsset valueForKey:@"filename"];
+        if (complete) complete(fileName);
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
@@ -118,7 +113,7 @@ static LFPhotoEditManager *manager;
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+               completion:(void (^)(LFResultImage *resultImage))completion
 {
     [self getPhotoWithAsset:asset isOriginal:isOriginal compressSize:kCompressSize thumbnailCompressSize:kThumbnailCompressSize completion:completion];
 }
@@ -136,12 +131,12 @@ static LFPhotoEditManager *manager;
                isOriginal:(BOOL)isOriginal
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion
+               completion:(void (^)(LFResultImage *resultImage))completion
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *thumbnail = nil;
         UIImage *source = nil;
-        NSMutableDictionary *imageInfo = [NSMutableDictionary dictionary];
+        __block NSString *imageName = nil;
         
         __weak typeof(self) weakSelf = self;
         __block LFPhotoEdit *photoEdit = nil;
@@ -149,7 +144,7 @@ static LFPhotoEditManager *manager;
             if (name.length) {
                 photoEdit = [weakSelf.photoEditDict objectForKey:name];
                 /** 图片文件名 */
-                [imageInfo setObject:name forKey:kImageInfoFileName];
+                imageName = name;
             }
         }];
         
@@ -163,13 +158,8 @@ static LFPhotoEditManager *manager;
         } else {
             imageData = UIImageJPEGRepresentation(source, 0.75);
         }
-        [imageInfo setObject:imageData forKey:kImageInfoFileOriginalData];
-        /** 图片大小 */
-        [imageInfo setObject:@(imageData.length) forKey:kImageInfoFileByte];
         /** 图片宽高 */
         CGSize imageSize = source.size;
-        NSValue *value = [NSValue valueWithBytes:&imageSize objCType:@encode(CGSize)];
-        [imageInfo setObject:value forKey:kImageInfoFileSize];
         
         /** 缩略图 */
         CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
@@ -177,11 +167,27 @@ static LFPhotoEditManager *manager;
         CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
         thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
         NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
-        [imageInfo setObject:thumbnailData forKey:kImageInfoFileThumbnailData];
         thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
         
+        LFResultImage *result = [LFResultImage new];
+        result.asset = asset;
+        result.thumbnailImage = thumbnail;
+        result.thumbnailData = thumbnailData;
+        result.originalImage = source;
+        result.originalData = imageData;
+        
+        LFResultInfo *info = [LFResultInfo new];
+        result.info = info;
+        
+        /** 图片文件名 */
+        info.name = imageName;
+        /** 图片大小 */
+        info.byte = imageData.length;
+        /** 图片宽高 */
+        info.size = imageSize;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion) completion(thumbnail, source, imageInfo);
+            if (completion) completion(result);
         });
     });
 }

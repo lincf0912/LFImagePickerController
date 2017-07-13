@@ -30,8 +30,8 @@
             _name = [asset valueForKey:@"filename"];
             if (phAsset.mediaType == PHAssetMediaTypeVideo) {
                 _type = LFAssetMediaTypeVideo;
-                NSString *duration = [NSString stringWithFormat:@"%0.0f",phAsset.duration];
-                _timeLength = [self getNewTimeFromDurationSecond:duration.integerValue];
+                _duration = phAsset.duration;
+                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",_duration] integerValue]];
             } else if (phAsset.mediaType == PHAssetMediaTypeImage) {
                 if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
                     _subType = LFAssetSubMediaTypeLivePhoto;
@@ -73,8 +73,8 @@
             /// Allow picking video
             if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
                 _type = LFAssetMediaTypeVideo;
-                NSTimeInterval duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
-                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",duration] integerValue]];
+                _duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
+                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",_duration] integerValue]];
             } else {
                 ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
                 if (re) _subType = LFAssetSubMediaTypeGIF;

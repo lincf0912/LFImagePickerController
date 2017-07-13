@@ -14,6 +14,8 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import "LFAlbum.h"
 #import "LFAsset.h"
+#import "LFResultImage.h"
+#import "LFResultVideo.h"
 
 
 @interface LFAssetManager : NSObject
@@ -104,7 +106,7 @@
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+               completion:(void (^)(LFResultImage *resultImage))completion;
 /**
  *  通过asset解析缩略图、标清图/原图、图片数据字典
  *
@@ -116,7 +118,7 @@
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
                pickingGif:(BOOL)pickingGif
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+               completion:(void (^)(LFResultImage *resultImage))completion;
 
 /**
  通过asset解析缩略图、标清图/原图、图片数据字典
@@ -133,7 +135,7 @@
                pickingGif:(BOOL)pickingGif
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
-               completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+               completion:(void (^)(LFResultImage *resultImage))completion;
 
 
 /**
@@ -145,7 +147,11 @@
  */
 - (void)getLivePhotoWithAsset:(id)asset
                    isOriginal:(BOOL)isOriginal
-                   completion:(void (^)(UIImage *thumbnail, UIImage *source, NSDictionary *info))completion;
+                   completion:(void (^)(LFResultImage *resultImage))completion;
+
+/// Get video 获得视频
+- (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;
+- (void)getVideoResultWithAsset:(id)asset completion:(void (^)(LFResultVideo *resultVideo))completion;
 
 /**
  *  @author lincf, 16-06-15 13:06:26
@@ -157,8 +163,6 @@
  */
 - (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion;
 
-/// Get video 获得视频
-- (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;
 
 /// Get photo bytes 获得一组照片的大小
 - (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytes))completion;

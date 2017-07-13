@@ -10,13 +10,12 @@
 
 NSString *const kBundlePath = @"LFImagePickerController.bundle";
 
-/** 视频大小限制10M */
-float const kMaxVideoSize = (10.0 * 1024);
-
 /** 标清图压缩大小 */
 float const kCompressSize = 100.f;
 /** 缩略图压缩大小 */
 float const kThumbnailCompressSize = 10.f;
+/** 视频最大时长 */
+float const kMaxVideoDurationze = 5*60.f;
 
 NSString *const kImageInfoFileName = @"ImageInfoFileName";     // 图片名称
 NSString *const kImageInfoFileSize = @"ImageInfoFileSize";     // 图片大小［长、宽］

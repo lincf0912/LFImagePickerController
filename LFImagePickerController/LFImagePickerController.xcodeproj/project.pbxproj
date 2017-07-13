@@ -33,12 +33,15 @@
 		6F1201EA1E519E8300EA2198 /* LF_VideoUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201E41E519E8300EA2198 /* LF_VideoUtils.m */; };
 		6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */; };
 		6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */; };
-		6F1201F31E51AE2E00EA2198 /* LFVideoPlayerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */; };
+		6F1699271F15AEB9008B1818 /* LFResultObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1699261F15AEB9008B1818 /* LFResultObject.m */; };
+		6F16992A1F15AEDD008B1818 /* LFResultImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1699291F15AEDD008B1818 /* LFResultImage.m */; };
+		6F16992D1F15AEE9008B1818 /* LFResultVideo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16992C1F15AEE9008B1818 /* LFResultVideo.m */; };
+		6F1699301F15B0B6008B1818 /* LFResultInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16992F1F15B0B6008B1818 /* LFResultInfo.m */; };
+		6F1699331F15F9CB008B1818 /* LFPhotoPreviewVideoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1699321F15F9CB008B1818 /* LFPhotoPreviewVideoCell.m */; };
 		6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */; };
 		6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2EEAF21E52F4A500765689 /* LFPhotoPreviewCell.m */; };
 		6F3378E91EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F3378E81EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m */; };
 		6F3378EC1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F3378EB1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m */; };
-		6F552A7C1E95DFFE00AC362C /* NSString+LFCoreText.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */; };
 		6F552A821E961C8400AC362C /* 1.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A801E961C8400AC362C /* 1.jpeg */; };
 		6F552A831E961C8400AC362C /* 2.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 6F552A811E961C8400AC362C /* 2.jpeg */; };
 		6F5930321EDFF7C3008EC7B0 /* LFGIFImageSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F59302F1EDFF7C3008EC7B0 /* LFGIFImageSerialization.m */; };
@@ -104,8 +107,17 @@
 		6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LFCommon.m"; sourceTree = "<group>"; };
 		6F1201EE1E51A6EA00EA2198 /* LFPhotoPreviewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewController.h; sourceTree = "<group>"; };
 		6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewController.m; sourceTree = "<group>"; };
-		6F1201F11E51AE2E00EA2198 /* LFVideoPlayerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFVideoPlayerController.h; sourceTree = "<group>"; };
-		6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFVideoPlayerController.m; sourceTree = "<group>"; };
+		6F1699251F15AEB9008B1818 /* LFResultObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFResultObject.h; sourceTree = "<group>"; };
+		6F1699261F15AEB9008B1818 /* LFResultObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFResultObject.m; sourceTree = "<group>"; };
+		6F1699281F15AEDD008B1818 /* LFResultImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFResultImage.h; sourceTree = "<group>"; };
+		6F1699291F15AEDD008B1818 /* LFResultImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFResultImage.m; sourceTree = "<group>"; };
+		6F16992B1F15AEE9008B1818 /* LFResultVideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFResultVideo.h; sourceTree = "<group>"; };
+		6F16992C1F15AEE9008B1818 /* LFResultVideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFResultVideo.m; sourceTree = "<group>"; };
+		6F16992E1F15B0B6008B1818 /* LFResultInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFResultInfo.h; sourceTree = "<group>"; };
+		6F16992F1F15B0B6008B1818 /* LFResultInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFResultInfo.m; sourceTree = "<group>"; };
+		6F1699311F15F9CB008B1818 /* LFPhotoPreviewVideoCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewVideoCell.h; sourceTree = "<group>"; };
+		6F1699321F15F9CB008B1818 /* LFPhotoPreviewVideoCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewVideoCell.m; sourceTree = "<group>"; };
+		6F1699371F176742008B1818 /* LFResultObject_property.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFResultObject_property.h; sourceTree = "<group>"; };
 		6F16C5951E8224EF00B251A0 /* LFBaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFBaseViewController.h; sourceTree = "<group>"; };
 		6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFBaseViewController.m; sourceTree = "<group>"; };
 		6F2EEAF11E52F4A500765689 /* LFPhotoPreviewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewCell.h; sourceTree = "<group>"; };
@@ -116,8 +128,6 @@
 		6F3378EB1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPreviewGifCell.m; sourceTree = "<group>"; };
 		6F3378ED1EDFA6DA00DAB709 /* LFPhotoPreviewCell_property.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoPreviewCell_property.h; sourceTree = "<group>"; };
 		6F3378EE1EDFC0DB00DAB709 /* LFImagePickerPublicHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFImagePickerPublicHeader.h; sourceTree = "<group>"; };
-		6F552A7A1E95DFFE00AC362C /* NSString+LFCoreText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+LFCoreText.h"; sourceTree = "<group>"; };
-		6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+LFCoreText.m"; sourceTree = "<group>"; };
 		6F552A801E961C8400AC362C /* 1.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 1.jpeg; sourceTree = "<group>"; };
 		6F552A811E961C8400AC362C /* 2.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 2.jpeg; sourceTree = "<group>"; };
 		6F59302E1EDFF7C3008EC7B0 /* LFGIFImageSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFGIFImageSerialization.h; sourceTree = "<group>"; };
@@ -256,6 +266,7 @@
 				6F1201941E513E5500EA2198 /* LFAsset.m */,
 				6F1201AB1E514F9D00EA2198 /* LFAlbum.h */,
 				6F1201AC1E514F9D00EA2198 /* LFAlbum.m */,
+				6F1699241F15AEB9008B1818 /* result */,
 			);
 			path = model;
 			sourceTree = "<group>";
@@ -274,6 +285,8 @@
 				6F3378EB1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m */,
 				6F3378E71EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.h */,
 				6F3378E81EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m */,
+				6F1699311F15F9CB008B1818 /* LFPhotoPreviewVideoCell.h */,
+				6F1699321F15F9CB008B1818 /* LFPhotoPreviewVideoCell.m */,
 			);
 			name = cell;
 			path = LFImagePickerController/class/cell;
@@ -301,6 +314,7 @@
 				6FF2861A1E5FFF170008FB5B /* LFImagePickerHeader.h */,
 				6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */,
 				6F3378EE1EDFC0DB00DAB709 /* LFImagePickerPublicHeader.h */,
+				6F1699371F176742008B1818 /* LFResultObject_property.h */,
 			);
 			path = define;
 			sourceTree = "<group>";
@@ -328,8 +342,6 @@
 				6F1201BE1E5183E000EA2198 /* LFPhotoPickerController.m */,
 				6F1201EE1E51A6EA00EA2198 /* LFPhotoPreviewController.h */,
 				6F1201EF1E51A6EA00EA2198 /* LFPhotoPreviewController.m */,
-				6F1201F11E51AE2E00EA2198 /* LFVideoPlayerController.h */,
-				6F1201F21E51AE2E00EA2198 /* LFVideoPlayerController.m */,
 			);
 			path = controller;
 			sourceTree = "<group>";
@@ -337,8 +349,6 @@
 		6F1201D61E519E8300EA2198 /* Category */ = {
 			isa = PBXGroup;
 			children = (
-				6F552A7A1E95DFFE00AC362C /* NSString+LFCoreText.h */,
-				6F552A7B1E95DFFE00AC362C /* NSString+LFCoreText.m */,
 				6F1201D71E519E8300EA2198 /* UIAlertView+LF_Block.h */,
 				6F1201D81E519E8300EA2198 /* UIAlertView+LF_Block.m */,
 				6F1201D91E519E8300EA2198 /* UIImage+LF_ImageCompress.h */,
@@ -371,6 +381,21 @@
 				6F1201E41E519E8300EA2198 /* LF_VideoUtils.m */,
 			);
 			path = VideoUtils;
+			sourceTree = "<group>";
+		};
+		6F1699241F15AEB9008B1818 /* result */ = {
+			isa = PBXGroup;
+			children = (
+				6F1699251F15AEB9008B1818 /* LFResultObject.h */,
+				6F1699261F15AEB9008B1818 /* LFResultObject.m */,
+				6F1699281F15AEDD008B1818 /* LFResultImage.h */,
+				6F1699291F15AEDD008B1818 /* LFResultImage.m */,
+				6F16992B1F15AEE9008B1818 /* LFResultVideo.h */,
+				6F16992C1F15AEE9008B1818 /* LFResultVideo.m */,
+				6F16992E1F15B0B6008B1818 /* LFResultInfo.h */,
+				6F16992F1F15B0B6008B1818 /* LFResultInfo.m */,
+			);
+			path = result;
 			sourceTree = "<group>";
 		};
 		6F59302D1EDFF7C3008EC7B0 /* GIFUtils */ = {
@@ -568,28 +593,32 @@
 				6F8D074A1ED8091C00601BEA /* LFGifPlayerManager.m in Sources */,
 				6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */,
 				6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */,
+				6F16992A1F15AEDD008B1818 /* LFResultImage.m in Sources */,
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */,
 				6FAA50C81ED5336A002D88A2 /* LFPreviewBarCell.m in Sources */,
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
 				6F3378EC1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m in Sources */,
-				6F552A7C1E95DFFE00AC362C /* NSString+LFCoreText.m in Sources */,
 				6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */,
 				6FA36E511EB9DC700009E2DE /* UIImage+LF_Format.m in Sources */,
 				6F12017F1E513D1B00EA2198 /* ViewController.m in Sources */,
+				6F1699301F15B0B6008B1818 /* LFResultInfo.m in Sources */,
 				6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */,
 				6F2EEAF31E52F4A500765689 /* LFPhotoPreviewCell.m in Sources */,
 				6F74DC981E85147A00170A95 /* LFAssetManager+SaveAlbum.m in Sources */,
 				6F1201951E513E5500EA2198 /* LFAsset.m in Sources */,
+				6F1699331F15F9CB008B1818 /* LFPhotoPreviewVideoCell.m in Sources */,
 				6F1201791E513D1B00EA2198 /* main.m in Sources */,
 				6F3378E91EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m in Sources */,
+				6F1699271F15AEB9008B1818 /* LFResultObject.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
 				6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */,
 				6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */,
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,
 				6F1201A01E513FB100EA2198 /* LFAssetManager.m in Sources */,
+				6F16992D1F15AEE9008B1818 /* LFResultVideo.m in Sources */,
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,
 				6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */,
@@ -599,7 +628,6 @@
 				6F1201A91E5140C900EA2198 /* LFImagePickerController.m in Sources */,
 				6F1201E91E519E8300EA2198 /* LF_FileUtility.m in Sources */,
 				6F1201C21E51884B00EA2198 /* LFLayoutPickerController.m in Sources */,
-				6F1201F31E51AE2E00EA2198 /* LFVideoPlayerController.m in Sources */,
 				6F1201EA1E519E8300EA2198 /* LF_VideoUtils.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

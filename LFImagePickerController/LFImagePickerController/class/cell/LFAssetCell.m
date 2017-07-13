@@ -18,7 +18,7 @@
 #pragma mark - /// 宫格图片视图
 
 #define kAdditionalSize (isiPad ? 15 : 0)
-#define kVideoBoomHeight (17.f + kAdditionalSize)
+#define kVideoBoomHeight (20.f + kAdditionalSize)
 
 @interface LFAssetCell ()
 @property (weak, nonatomic) UIImageView *imageView;       // The photo / 照片
@@ -87,8 +87,8 @@
             _timeLength.x = 5;
         }
     } else if (self.model.type == LFAssetMediaTypeVideo) {
-        _selectImageView.hidden = YES;
-        _selectPhotoButton.hidden = YES;
+        _selectImageView.hidden = NO;
+        _selectPhotoButton.hidden = NO;
         _bottomView.hidden = NO;
         self.timeLength.text = _model.timeLength;
         self.videoImgView.hidden = NO;
@@ -182,9 +182,11 @@
     if (_bottomView == nil) {
         UIView *bottomView = [[UIView alloc] init];
         bottomView.frame = CGRectMake(0, self.height - kVideoBoomHeight, self.width, kVideoBoomHeight);
-        static NSInteger rgb = 0;
-        bottomView.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.8];
         [self.contentView addSubview:bottomView];
+        CAGradientLayer* gradientLayer = [CAGradientLayer layer];
+        gradientLayer.frame = bottomView.bounds;
+        gradientLayer.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithWhite:0.0f alpha:.0f] CGColor], (id)[[UIColor colorWithWhite:0.0f alpha:0.8f] CGColor], nil];
+        [bottomView.layer insertSublayer:gradientLayer atIndex:0];
         _bottomView = bottomView;
     }
     return _bottomView;
@@ -193,8 +195,9 @@
 - (UIImageView *)videoImgView {
     if (_videoImgView == nil) {
         UIImageView *videoImgView = [[UIImageView alloc] init];
-        videoImgView.frame = CGRectMake(8, 0, kVideoBoomHeight, kVideoBoomHeight);
-        [videoImgView setImage:bundleImageNamed(@"VideoSendIcon.png")];
+        videoImgView.frame = CGRectMake(8, 0, 18, 11);
+        videoImgView.contentMode = UIViewContentModeScaleAspectFit;
+        [videoImgView setImage:bundleImageNamed(@"fileicon_video_wall.png")];
         [self.bottomView addSubview:videoImgView];
         _videoImgView = videoImgView;
     }
@@ -205,7 +208,8 @@
     if (_timeLength == nil) {
         UILabel *timeLength = [[UILabel alloc] init];
         timeLength.font = [UIFont boldSystemFontOfSize:isiPad ? 17 : 11];
-        timeLength.frame = CGRectMake(self.videoImgView.x, 0, self.width - self.videoImgView.x - 5, kVideoBoomHeight);
+        CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, kVideoBoomHeight) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:timeLength.font} context:nil].size.height;
+        timeLength.frame = CGRectMake(self.videoImgView.x, (11-height)/2, self.width - self.videoImgView.x - 5, height);
         timeLength.textColor = [UIColor whiteColor];
         timeLength.textAlignment = NSTextAlignmentRight;
         [self.bottomView addSubview:timeLength];

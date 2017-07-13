@@ -15,6 +15,7 @@
 #import "LFPhotoPreviewCell.h"
 #import "LFPhotoPreviewGifCell.h"
 #import "LFPhotoPreviewLivePhotoCell.h"
+#import "LFPhotoPreviewVideoCell.h"
 #import "LFPreviewBar.h"
 #import <PhotosUI/PhotosUI.h>
 
@@ -367,6 +368,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
     [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
     [_collectionView registerClass:[LFPhotoPreviewLivePhotoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell"];
+    [_collectionView registerClass:[LFPhotoPreviewVideoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell"];
 }
 
 #pragma mark - Click Event
@@ -382,6 +384,11 @@ CGFloat const livePhotoSignMargin = 10.f;
             return;
             // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
         } else {
+            /** 检测是否超过视频最大时长 */
+            if (model.type == LFAssetMediaTypeVideo && model.duration > imagePickerVc.maxVideoDuration) {
+                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
+                return;
+            }
             [imagePickerVc.selectedModels addObject:model];
         }
     } else {
@@ -508,6 +515,11 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
     _isMTScroll = YES;
+    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(__kindof UICollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:[LFPhotoPreviewVideoCell class]]) {
+            [(LFPhotoPreviewVideoCell *)obj didPauseCell];
+        }
+    }];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -540,12 +552,16 @@ CGFloat const livePhotoSignMargin = 10.f;
     LFPhotoPreviewCell *cell = nil;
     LFAsset *model = _models[indexPath.row];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (imagePickerVc.allowPickingGif && model.subType == LFAssetSubMediaTypeGIF) {
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewGifCell" forIndexPath:indexPath];
-    } else if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell" forIndexPath:indexPath];
+    if (model.type == LFAssetMediaTypeVideo) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell" forIndexPath:indexPath];
     } else {
-        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
+        if (imagePickerVc.allowPickingGif && model.subType == LFAssetSubMediaTypeGIF) {
+            cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewGifCell" forIndexPath:indexPath];
+        } else if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
+            cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell" forIndexPath:indexPath];
+        } else {
+            cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
+        }
     }
     cell.delegate = self;
     /** 设置图片，与编辑图片的必须一致，因为获取图片选择快速优化方案，图片大小会有小许偏差 */
@@ -558,6 +574,13 @@ CGFloat const livePhotoSignMargin = 10.f;
     return cell;
 }
 
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    if ([cell isKindOfClass:[LFPhotoPreviewVideoCell class]]) {
+        [(LFPhotoPreviewVideoCell *)cell didEndDisplayCell];
+    }
+}
+
 #pragma mark -  UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -567,6 +590,13 @@ CGFloat const livePhotoSignMargin = 10.f;
 #pragma mark - LFPhotoPreviewCellDelegate
 - (void)lf_photoPreviewCellSingleTapHandler:(LFPhotoPreviewCell *)cell
 {
+    if (cell.model.type == LFAssetMediaTypeVideo) {
+        if (((LFPhotoPreviewVideoCell *)cell).isPlaying && self.isHideMyNaviBar) {
+            return;
+        } else if (!((LFPhotoPreviewVideoCell *)cell).isPlaying && !self.isHideMyNaviBar) {
+            return;
+        }
+    }
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     // show or hide naviBar / 显示或隐藏导航栏
     self.isHideMyNaviBar = !self.isHideMyNaviBar;
@@ -642,6 +672,10 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     }
     
+    _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;
+    /** 视频编辑 */
+    _editButton.hidden = model.type == LFAssetMediaTypeVideo;
+    
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
     if (_originalPhotoButton.selected) [self showPhotoBytes];
     
@@ -678,9 +712,11 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 - (void)showPhotoBytes {
-    [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytes) {
-        _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
-    }];
+    if (/* DISABLES CODE */ (1)==0) {
+        [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytes) {
+            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
+        }];
+    }
 }
 
 - (void)selectedLivePhotobadgeImageButton:(BOOL)isSelected

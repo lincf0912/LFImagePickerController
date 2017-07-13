@@ -11,5 +11,9 @@
 @interface LFPhotoPreviewCell ()
 
 @property (nonatomic, readonly) UIImageView *imageView;
+@property (nonatomic, readonly) UIScrollView *scrollView;
+@property (nonatomic, readonly) UIView *imageContainerView;
 
+@property (nonatomic, readonly) UITapGestureRecognizer *tap1;
+@property (nonatomic, readonly) UITapGestureRecognizer *tap2;
 @end

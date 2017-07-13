@@ -20,6 +20,8 @@
 @property (nonatomic, weak) UIImageView *imageView;
 /** 编辑标记 */
 @property (weak, nonatomic) UIImageView *editMaskImageView;
+/** 视频标记 */
+@property (weak, nonatomic) UIImageView *videoMaskImageView;
 /** 遮罩 */
 @property (nonatomic, weak) UIView *maskHitView;
 
@@ -61,12 +63,22 @@
     self.imageView = imageView;
     
     UIImageView *editMaskImageView = [[UIImageView alloc] init];
-    CGRect frame = CGRectMake(5, self.height - 22 - 5, 22, 22);
-    editMaskImageView.frame = frame;
+    CGRect editFrame = CGRectMake(5, self.height - 22 - 5, 22, 22);
+    editMaskImageView.frame = editFrame;
     [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
     editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
     [self.contentView addSubview:editMaskImageView];
     _editMaskImageView = editMaskImageView;
+    
+    UIImageView *videoMaskImageView = [[UIImageView alloc] init];
+    CGRect videoFrame = CGRectMake(self.width - 18 - 5, self.height - (22 - 11)/2 - 11 - 5, 18, 11);
+    videoMaskImageView.frame = videoFrame;
+    [videoMaskImageView setImage:bundleImageNamed(@"fileicon_video_wall.png")];
+    videoMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
+    videoMaskImageView.hidden = YES;
+    [self.contentView addSubview:videoMaskImageView];
+    _videoMaskImageView = videoMaskImageView;
+    
     
     UIView *maskHitView = [[UIView alloc] initWithFrame:self.bounds];
     maskHitView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -96,6 +108,12 @@
     }
     /** 显示编辑标记 */
     self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+    /** 显示视频标记 */
+    if (_asset.type == LFAssetMediaTypeVideo) {
+        self.videoMaskImageView.hidden = NO;
+    } else {
+        self.videoMaskImageView.hidden = YES;
+    }
     /** 显示遮罩 */
     self.maskHitView.hidden = asset.isSelected;
 }

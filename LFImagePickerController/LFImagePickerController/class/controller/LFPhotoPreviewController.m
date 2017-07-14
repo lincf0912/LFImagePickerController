@@ -459,8 +459,25 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 - (void)editButtonClick {
-    LFPhotoEditingController *photoEdittingVC = [[LFPhotoEditingController alloc] init];
-    if (self.models.count > self.currentIndex) {        
+    if (self.models.count > self.currentIndex) {
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        LFPhotoEditingController *photoEdittingVC = [[LFPhotoEditingController alloc] init];
+        if (imagePickerVc.edit_oKButtonTitleColorNormal) {
+            photoEdittingVC.oKButtonTitleColorNormal = imagePickerVc.edit_oKButtonTitleColorNormal;
+        }
+        if (imagePickerVc.edit_cancelButtonTitleColorNormal) {
+            photoEdittingVC.cancelButtonTitleColorNormal = imagePickerVc.edit_cancelButtonTitleColorNormal;
+        }
+        if (imagePickerVc.edit_oKButtonTitle) {
+            photoEdittingVC.oKButtonTitle = imagePickerVc.edit_oKButtonTitle;
+        }
+        if (imagePickerVc.edit_cancelButtonTitle) {
+            photoEdittingVC.cancelButtonTitle = imagePickerVc.edit_cancelButtonTitle;
+        }
+        if (imagePickerVc.edit_processHintStr) {
+            photoEdittingVC.processHintStr = imagePickerVc.edit_processHintStr;
+        }
+        
         /** 获取缓存编辑对象 */
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
@@ -473,7 +490,7 @@ CGFloat const livePhotoSignMargin = 10.f;
             photoEdittingVC.editImage = cell.previewImage;
         }
         photoEdittingVC.delegate = self;
-        [self.navigationController pushViewController:photoEdittingVC animated:NO];
+        [imagePickerVc pushViewController:photoEdittingVC animated:NO];
     }
 }
 

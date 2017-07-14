@@ -10,4 +10,19 @@
 
 @implementation LFResultInfo
 
+- (void)setName:(NSString *)name
+{
+    _name = name;
+}
+
+- (void)setSize:(CGSize)size
+{
+    _size = size;
+}
+
+- (void)setByte:(CGFloat)byte
+{
+    _byte = byte;
+}
+
 @end

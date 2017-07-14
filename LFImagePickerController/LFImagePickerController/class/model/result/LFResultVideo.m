@@ -10,4 +10,19 @@
 
 @implementation LFResultVideo
 
+- (void)setCoverImage:(UIImage *)coverImage
+{
+    _coverImage = coverImage;
+}
+
+- (void)setData:(NSData *)data
+{
+    _data = data;
+}
+
+- (void)setDuration:(NSTimeInterval)duration
+{
+    _duration = duration;
+}
+
 @end

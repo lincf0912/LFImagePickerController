@@ -41,6 +41,15 @@
 @property (nonatomic, copy) NSString *settingBtnTitleStr;
 @property (nonatomic, copy) NSString *processHintStr;
 
+#pragma mark - 编辑模式
+/// 自定义外观颜色
+@property (nonatomic, strong) UIColor *edit_oKButtonTitleColorNormal;
+@property (nonatomic, strong) UIColor *edit_cancelButtonTitleColorNormal;
+/// 自定义文字
+@property (nonatomic, copy) NSString *edit_oKButtonTitle;
+@property (nonatomic, copy) NSString *edit_cancelButtonTitle;
+@property (nonatomic, copy) NSString *edit_processHintStr;
+
 
 - (void)showAlertWithTitle:(NSString *)title;
 - (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop;

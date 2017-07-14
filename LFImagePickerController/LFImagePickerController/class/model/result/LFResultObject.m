@@ -10,4 +10,14 @@
 
 @implementation LFResultObject
 
+- (void)setAsset:(id)asset
+{
+    _asset = asset;
+}
+
+- (void)setInfo:(LFResultInfo *)info
+{
+    _info = info;
+}
+
 @end

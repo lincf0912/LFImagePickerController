@@ -11,7 +11,7 @@ s.source       = { :git => 'https://github.com/lincf0912/LFImagePickerController
 s.requires_arc = true
 s.resources    = 'LFImagePickerController/LFImagePickerController/class/*.bundle'
 s.source_files = 'LFImagePickerController/LFImagePickerController/class/*.{h,m}','LFImagePickerController/LFImagePickerController/class/**/*.{h,m}'
-s.public_header_files = 'LFImagePickerController/LFImagePickerController/class/*.h','LFImagePickerController/LFImagePickerController/class/manager/*.h','LFImagePickerController/LFImagePickerController/class/model/*.h','LFImagePickerController/LFImagePickerController/class/define/LFImagePickerPublicHeader.h'
+s.public_header_files = 'LFImagePickerController/LFImagePickerController/class/*.h','LFImagePickerController/LFImagePickerController/class/manager/*.h','LFImagePickerController/LFImagePickerController/class/model/*.h','LFImagePickerController/LFImagePickerController/class/model/**/*.h','LFImagePickerController/LFImagePickerController/class/define/LFImagePickerPublicHeader.h'
 
 # LFGifPlayer模块
 s.subspec 'LFGifPlayer' do |ss|

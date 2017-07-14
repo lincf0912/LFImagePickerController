@@ -19,6 +19,9 @@
 /** 缩放图片到指定大小 */
 - (UIImage*)lf_scaleToSize:(CGSize)size;
 
+/** 合并图片与文字 */
++ (UIImage *)lf_mergeImage:(UIImage *)image text:(NSString *)text;
+
 /*
  *转换成马赛克,level代表一个点转为多少level*level的正方形
  */

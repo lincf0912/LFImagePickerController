@@ -12,6 +12,7 @@
 #import "LFAssetManager.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
+#import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
@@ -52,9 +53,6 @@
             
         } progressHandler:nil networkAccessAllowed:NO];
     }
-    
-    self.selectPhotoButton.selected = model.isSelected;
-    self.selectImageView.image = self.selectPhotoButton.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
     
     /** 显示编辑标记 */
     self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
@@ -114,14 +112,24 @@
 
 - (void)selectPhotoButtonClick:(UIButton *)sender {
     if (self.didSelectPhotoBlock) {
-        BOOL isSelected = self.didSelectPhotoBlock(!sender.selected, self.model);
-        if (isSelected) {
-            sender.selected = !sender.isSelected;
-            self.selectImageView.image = sender.isSelected ? bundleImageNamed(self.photoSelImageName) : bundleImageNamed(self.photoDefImageName);
-            if (sender.isSelected) {
-                [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
-            }
-        }
+        __weak typeof(self) weakSelf = self;
+        self.didSelectPhotoBlock(!sender.selected, self.model, weakSelf);
+    }
+}
+
+- (void)selectPhoto:(BOOL)isSelected index:(NSUInteger)index animated:(BOOL)animated
+{
+    self.selectPhotoButton.selected = isSelected;
+    UIImage *image = nil;
+    if (_selectPhotoButton.selected) {
+        NSString *text = [NSString stringWithFormat:@"%ld", index];
+        image = [UIImage lf_mergeImage:bundleImageNamed(self.photoSelImageName) text:text];
+    } else {
+        image = bundleImageNamed(self.photoDefImageName);
+    }
+    self.selectImageView.image = image;
+    if (animated) {
+        [UIView showOscillatoryAnimationWithLayer:_selectImageView.layer type:OscillatoryAnimationToBigger];
     }
 }
 
@@ -150,6 +158,7 @@
         [self.contentView bringSubviewToFront:_selectImageView];
         [self.contentView bringSubviewToFront:_bottomView];
         [self.contentView bringSubviewToFront:_editMaskImageView];
+        [self.contentView bringSubviewToFront:_maskHitView];
     }
     return _imageView;
 }

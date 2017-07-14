@@ -16,7 +16,6 @@
 @property (nonatomic, copy) NSString *photoDefImageName;
 @property (nonatomic, copy) NSString *photoOriginSelImageName;
 @property (nonatomic, copy) NSString *photoOriginDefImageName;
-@property (nonatomic, copy) NSString *photoPreviewOriginDefImageName;
 @property (nonatomic, copy) NSString *photoNumberIconImageName;
 
 /// 自定义外观颜色

@@ -527,26 +527,26 @@
     }
     // the cell dipaly photo or video / 展示照片或视频的cell
     LFAssetCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetCell" forIndexPath:indexPath];
-    cell.photoDefImageName = imagePickerVc.photoDefImageName;
-    cell.photoSelImageName = imagePickerVc.photoSelImageName;
-    cell.displayGif = imagePickerVc.allowPickingGif;
-    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
     
     NSInteger index = indexPath.row - 1;
     if (imagePickerVc.sortAscendingByCreateDate || !_showTakePhotoBtn) {
         index = indexPath.row;
     }
     LFAsset *model = _models[index];
-    cell.model = model;
+    
+    cell.photoDefImageName = imagePickerVc.photoDefImageName;
+    cell.photoSelImageName = imagePickerVc.photoNumberIconImageName;
+    cell.displayGif = imagePickerVc.allowPickingGif;
+    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 最大数量时，非选择部分显示不可选 */
-    BOOL noSelectedItem = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
+    cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
     
-    cell.noSelected = noSelectedItem;
-    
+    cell.model = model;
+    [cell selectPhoto:model.isSelected index:[imagePickerVc.selectedModels indexOfObject:model]+1 animated:NO];
     
     __weak typeof(self) weakSelf = self;
-    cell.didSelectPhotoBlock = ^(BOOL isSelected, LFAsset *cellModel) {
+    cell.didSelectPhotoBlock = ^(BOOL isSelected, LFAsset *cellModel, LFAssetCell *weakCell) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)weakSelf.navigationController;
         // 1. cancel select / 取消选择
         if (!isSelected) {
@@ -562,8 +562,18 @@
             
             if (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount-1) {
                 /** 取消选择为最大数量-1时，显示其他可选 */
+                NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
+                NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
+                [visibleIPs removeObject:cellIndexPath];
+                if (visibleIPs.count) {
+                    [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
+                }
+            } else {
                 [weakSelf refreshSelectedCell];
             }
+            
+            [weakCell selectPhoto:NO index:0 animated:NO];
+            
         } else {
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
             if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
@@ -571,7 +581,7 @@
                 /** 检测是否超过视频最大时长 */
                 if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > imagePickerVc.maxVideoDuration) {
                     [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
-                    return NO;
+                    return;
                 }
                 cellModel.isSelected = YES;
                 [imagePickerVc.selectedModels addObject:cellModel];
@@ -579,16 +589,16 @@
                 
                 if (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount) {
                     /** 选择到最大数量，禁止其他的可选显示 */
-                    [weakSelf refreshSelectedCell];
+                    [weakSelf refreshNoSelectedCell];
                 }
+                
+                [weakCell selectPhoto:YES index:imagePickerVc.selectedModels.count animated:YES];
                 
             } else {
                 NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", imagePickerVc.maxImagesCount];
                 [imagePickerVc showAlertWithTitle:title];
-                return NO;
             }
         }
-        return YES;
     };
     return cell;
 }
@@ -699,6 +709,24 @@
 }
 
 - (void)refreshSelectedCell
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([cell isKindOfClass:[LFAssetCell class]] && [imagePickerVc.selectedModels containsObject:cell.model]) {
+            NSInteger index = [_models indexOfObject:cell.model];
+            if (_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
+                index += 1;
+            }
+            [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+        }
+    }];
+    if (indexPaths.count) {
+        [self.collectionView reloadItemsAtIndexPaths:indexPaths];
+    }
+}
+
+- (void)refreshNoSelectedCell
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];

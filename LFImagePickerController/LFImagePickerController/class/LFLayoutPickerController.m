@@ -165,7 +165,6 @@
     self.photoSelImageName = @"photo_sel_photoPickerVc.png";
     self.photoDefImageName = @"photo_def_photoPickerVc.png";
     self.photoNumberIconImageName = @"photo_number_icon.png";
-    self.photoPreviewOriginDefImageName = @"preview_original_def.png";
     self.photoOriginDefImageName = @"photo_original_def.png";
     self.photoOriginSelImageName = @"photo_original_sel.png";
 }

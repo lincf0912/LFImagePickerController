@@ -237,7 +237,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoPreviewOriginDefImageName) forState:UIControlStateNormal];
+        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
         
         _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
@@ -663,6 +663,11 @@ CGFloat const livePhotoSignMargin = 10.f;
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     LFAsset *model = _models[_currentIndex];
     _selectButton.selected = model.isSelected;
+    if (_selectButton.selected) {
+        NSString *text = [NSString stringWithFormat:@"%ld", [imagePickerVc.selectedModels indexOfObject:model]+1];
+        UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
+        [_selectButton setImage:image forState:UIControlStateSelected];
+    }
     
     _doneButton.enabled = !self.alwaysShowPreviewBar || imagePickerVc.selectedModels.count;
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;

@@ -16,7 +16,7 @@
 @interface LFAssetCell : UICollectionViewCell
 
 @property (nonatomic, strong) LFAsset *model;
-@property (nonatomic, copy) BOOL (^didSelectPhotoBlock)(BOOL isSelected, LFAsset *model);
+@property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL isSelected, LFAsset *model, LFAssetCell *weakCell);
 /** 只能选中 */
 @property (nonatomic, assign) BOOL onlySelected;
 /** 不能选中 */
@@ -27,6 +27,9 @@
 
 @property (nonatomic, assign) BOOL displayGif;
 @property (nonatomic, assign) BOOL displayLivePhoto;
+
+/** 设置选中 */
+- (void)selectPhoto:(BOOL)isSelected index:(NSUInteger)index animated:(BOOL)animated;
 
 @end
 

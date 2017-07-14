@@ -192,6 +192,22 @@
     return scaledImage;
 }
 
+/** 合并图片与文字 */
++ (UIImage *)lf_mergeImage:(UIImage *)image text:(NSString *)text
+{
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, 0);
+    [[UIColor clearColor] setFill];
+    
+    UIFont *font = [UIFont boldSystemFontOfSize:15.0];//设置
+    [image drawAtPoint:CGPointZero];
+    CGSize size = [text boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size;
+    [text drawInRect:CGRectMake((image.size.width-size.width)/2, (image.size.height-size.height)/2, size.width, size.height) withAttributes:@{NSFontAttributeName:font, NSForegroundColorAttributeName:[UIColor whiteColor]}];
+    UIImage *outputImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return outputImage;
+}
+
 #define kBitsPerComponent (8)
 #define kBitsPerPixel (32)
 #define kPixelChannelCount (4)

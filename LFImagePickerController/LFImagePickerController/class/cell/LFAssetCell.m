@@ -122,7 +122,7 @@
     self.selectPhotoButton.selected = isSelected;
     UIImage *image = nil;
     if (_selectPhotoButton.selected) {
-        NSString *text = [NSString stringWithFormat:@"%ld", index];
+        NSString *text = [NSString stringWithFormat:@"%zd", index];
         image = [UIImage lf_mergeImage:bundleImageNamed(self.photoSelImageName) text:text];
     } else {
         image = bundleImageNamed(self.photoDefImageName);

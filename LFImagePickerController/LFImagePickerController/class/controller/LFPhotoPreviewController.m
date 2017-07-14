@@ -681,7 +681,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     LFAsset *model = _models[_currentIndex];
     _selectButton.selected = model.isSelected;
     if (_selectButton.selected) {
-        NSString *text = [NSString stringWithFormat:@"%ld", [imagePickerVc.selectedModels indexOfObject:model]+1];
+        NSString *text = [NSString stringWithFormat:@"%zd", [imagePickerVc.selectedModels indexOfObject:model]+1];
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }

@@ -86,37 +86,57 @@
             
             long long start = [[NSDate date] timeIntervalSince1970] * 1000;
             void (^initDataHandle)() = ^{
-                if (self.model.models.count) { /** 使用缓存数据 */
-                    _models = [NSMutableArray arrayWithArray:_model.models];
+                if (self.model) {
+                    if (self.model.models.count) { /** 使用缓存数据 */
+                        _models = [NSMutableArray arrayWithArray:_model.models];
+                        dispatch_main_async_safe(^{
+                            [self initSubviews];
+                        });
+                    } else {
+                        /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+                        BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+                        if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+                            ascending = !imagePickerVc.sortAscendingByCreateDate;
+                        }
+                        [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                            /** 缓存数据 */
+                            _model.models = models;
+                            _models = [NSMutableArray arrayWithArray:models];
+                            dispatch_main_async_safe(^{
+                                long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                                NSLog(@"%lu张图片加载耗时：%lld毫秒", (unsigned long)models.count, end - start);
+                                [self initSubviews];
+                            });
+                        }];
+                    }
+                } else {
                     dispatch_main_async_safe(^{
                         [self initSubviews];
                     });
-                } else {
-                    /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
-                    BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                    if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-                        ascending = !imagePickerVc.sortAscendingByCreateDate;
-                    }
-                    [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-                        /** 缓存数据 */
-                        _model.models = models;
-                        _models = [NSMutableArray arrayWithArray:models];
-                        dispatch_main_async_safe(^{
-                            long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                            NSLog(@"%lu张图片加载耗时：%lld毫秒", (unsigned long)models.count, end - start);
-                            [self initSubviews];
-                        });
-                    }];
                 }
             };
             
             if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
-                [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-                    self.model = model;
-                    long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                    NSLog(@"加载相册耗时：%lld毫秒", end - start);
-                    initDataHandle();
-                }];
+                if (imagePickerVc.defaultAlbumName) { /** 有指定相册 */
+                    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
+                        for (LFAlbum *album in models) {
+                            if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
+                                self.model = album;
+                                break;
+                            }
+                        }
+                        long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                        NSLog(@"加载相册耗时：%lld毫秒", end - start);
+                        initDataHandle();
+                    }];
+                } else {
+                    [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
+                        self.model = model;
+                        long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                        NSLog(@"加载相册耗时：%lld毫秒", end - start);
+                        initDataHandle();
+                    }];
+                }
             } else { /** 已存在相册数据 */
                 initDataHandle();
             }

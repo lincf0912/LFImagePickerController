@@ -27,6 +27,8 @@
 /** 预览模式 */
 @property (nonatomic, readonly) BOOL isPreview;
 
+#pragma mark - UI
+
 /** 每行的数量 */
 @property (nonatomic, readonly) NSInteger columnNumber;
 
@@ -85,6 +87,12 @@
 /// 默认为NO，如果设置为YES, 选择器将会适配横屏
 @property (nonatomic, assign) BOOL supportAutorotate;
 
+/// The name of the album displayed, default SmartAlbumUserLibrary
+/// 显示的相册名称，默认为相机胶卷
+@property (nonatomic, copy) NSString *defaultAlbumName;
+
+#pragma mark - option
+
 /// Limit video size, Default is 10*1024 in KB
 /// 限制视频大小发送，默认10MB（10*1024）单位KB
 @property (nonatomic, assign) float maxVideoSize __deprecated_msg("Property deprecated. Use `maxVideoDuration`");
@@ -105,15 +113,11 @@
 /// 默认为YES，如果设置为NO，编辑后的图片不会保存到系统相册
 @property (nonatomic, assign) BOOL autoSavePhotoAlbum;
 
-/// The photos user
-/// 用户选中过的图片数组(正常情况无需操作)
-@property (nonatomic, readonly) NSMutableArray<LFAsset *> *selectedModels;
-
 /// Set picture or video have selected
 /// 设置默认选中的图片或视频
 @property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;
-/** 是否选择原图 */
-@property (nonatomic, assign) BOOL isSelectOriginalPhoto;
+
+#pragma mark - delegate & block
 
 /// Public Method
 //- (void)cancelButtonClick;
@@ -129,6 +133,15 @@
  */
 @property (nonatomic, copy) void (^didFinishPickingResultHandle)(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *results);
 
+#pragma mark - private
+
+/// Select original
+/** 是否选择原图 */
+@property (nonatomic, assign) BOOL isSelectOriginalPhoto;
+
+/// The photos selected
+/// 用户选中过的图片数组(正常情况无需操作)
+@property (nonatomic, readonly) NSMutableArray<LFAsset *> *selectedModels;
 
 #pragma mark - Deprecated
 /** 图片 */

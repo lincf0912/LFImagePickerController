@@ -516,11 +516,10 @@
     id <LFImagePickerControllerDelegate> pickerDelegate = (id <LFImagePickerControllerDelegate>)imagePickerVc.pickerDelegate;
     
     
-    
-    if ([pickerDelegate respondsToSelector:@selector(lf_imagePickerController:didFinishPickingResult:)]) {
-        [pickerDelegate lf_imagePickerController:imagePickerVc didFinishPickingResult:results];
-    } else if (imagePickerVc.didFinishPickingResultHandle) {
+    if (imagePickerVc.didFinishPickingResultHandle) {
         imagePickerVc.didFinishPickingResultHandle(results);
+    } else if ([pickerDelegate respondsToSelector:@selector(lf_imagePickerController:didFinishPickingResult:)]) {
+        [pickerDelegate lf_imagePickerController:imagePickerVc didFinishPickingResult:results];
     }
 }
 

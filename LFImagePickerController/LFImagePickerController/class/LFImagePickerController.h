@@ -145,13 +145,13 @@
 
 #pragma mark - Deprecated
 /** 图片 */
-@property (nonatomic, copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
-@property (nonatomic, copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey, id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
-@property (nonatomic, copy) void (^didFinishPickingImagesHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
-@property (nonatomic, copy) void (^didFinishPickingImagesWithInfosHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages, NSArray<NSDictionary *> *infos) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey, id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingImagesHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingImagesWithInfosHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages, NSArray<NSDictionary *> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 /** 视频 */
-@property (nonatomic, copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
-@property (nonatomic, copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage, NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishImagePickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic, copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage, NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 
 @end
 

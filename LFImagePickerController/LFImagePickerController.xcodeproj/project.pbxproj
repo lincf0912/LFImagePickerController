@@ -52,6 +52,7 @@
 		6FA36E511EB9DC700009E2DE /* UIImage+LF_Format.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */; };
 		6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FAA50C31ED532DF002D88A2 /* LFPreviewBar.m */; };
 		6FAA50C81ED5336A002D88A2 /* LFPreviewBarCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FAA50C71ED5336A002D88A2 /* LFPreviewBarCell.m */; };
+		6FAB0D2F1F25CE3A00C1BCFD /* LFVideoEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FAB0D2E1F25CE3A00C1BCFD /* LFVideoEditManager.m */; };
 		6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */; };
 		6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */; };
 		B9530F92260AF2E0D988FD0A /* libPods-LFImagePickerController.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6AFC7E26577C89E24C904A /* libPods-LFImagePickerController.a */; };
@@ -146,6 +147,8 @@
 		6FAA50C31ED532DF002D88A2 /* LFPreviewBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPreviewBar.m; sourceTree = "<group>"; };
 		6FAA50C61ED5336A002D88A2 /* LFPreviewBarCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPreviewBarCell.h; sourceTree = "<group>"; };
 		6FAA50C71ED5336A002D88A2 /* LFPreviewBarCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPreviewBarCell.m; sourceTree = "<group>"; };
+		6FAB0D2D1F25CE3A00C1BCFD /* LFVideoEditManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFVideoEditManager.h; sourceTree = "<group>"; };
+		6FAB0D2E1F25CE3A00C1BCFD /* LFVideoEditManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFVideoEditManager.m; sourceTree = "<group>"; };
 		6FF286161E5EDA510008FB5B /* LFPhotoEditManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFPhotoEditManager.h; sourceTree = "<group>"; };
 		6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoEditManager.m; sourceTree = "<group>"; };
 		6FF2861A1E5FFF170008FB5B /* LFImagePickerHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFImagePickerHeader.h; sourceTree = "<group>"; };
@@ -303,6 +306,8 @@
 				6F1201AF1E51520400EA2198 /* LFAssetManager+Authorization.m */,
 				6FF286161E5EDA510008FB5B /* LFPhotoEditManager.h */,
 				6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */,
+				6FAB0D2D1F25CE3A00C1BCFD /* LFVideoEditManager.h */,
+				6FAB0D2E1F25CE3A00C1BCFD /* LFVideoEditManager.m */,
 			);
 			name = manager;
 			path = LFImagePickerController/class/manager;
@@ -597,6 +602,7 @@
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */,
 				6FAA50C81ED5336A002D88A2 /* LFPreviewBarCell.m in Sources */,
+				6FAB0D2F1F25CE3A00C1BCFD /* LFVideoEditManager.m in Sources */,
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
 				6F3378EC1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m in Sources */,

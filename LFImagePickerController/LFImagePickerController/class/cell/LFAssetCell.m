@@ -15,6 +15,8 @@
 #import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#import "LFVideoEditManager.h"
+#import "LFVideoEdit.h"
 
 #pragma mark - /// 宫格图片视图
 
@@ -39,11 +41,35 @@
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
-    /** 优先显示编辑图片 */
-    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    if (photoEdit.editPosterImage) {
-        self.imageView.image = photoEdit.editPosterImage;
-    } else if (model.previewImage) { /** 显示自定义图片 */
+    if (self.model.type == LFAssetMediaTypePhoto) {
+        /** 优先显示编辑图片 */
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+        if (photoEdit.editPosterImage) {
+            self.imageView.image = photoEdit.editPosterImage;
+        } else {
+            [self getAssetImage:model];
+        }
+        /** 显示编辑标记 */
+        self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+    } else if (self.model.type == LFAssetMediaTypeVideo) {
+        /** 优先显示编辑图片 */
+        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+        if (videoEdit.editPosterImage) {
+            self.imageView.image = videoEdit.editPosterImage;
+        } else {
+            [self getAssetImage:model];
+        }
+        /** 显示编辑标记 */
+        self.editMaskImageView.hidden = (videoEdit.editPosterImage == nil);
+    }
+    
+    
+    [self setTypeToSubView];
+}
+
+- (void)getAssetImage:(LFAsset *)model
+{
+    if (model.previewImage) { /** 显示自定义图片 */
         self.imageView.image = model.previewImage;
     }  else {
         [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
@@ -53,11 +79,6 @@
             
         } progressHandler:nil networkAccessAllowed:NO];
     }
-    
-    /** 显示编辑标记 */
-    self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
-    
-    [self setTypeToSubView];
 }
 
 - (void)prepareForReuse

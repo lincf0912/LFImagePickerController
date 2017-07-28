@@ -7,10 +7,13 @@
 //
 
 #import "LFPhotoPreviewCell.h"
+#import <AVFoundation/AVFoundation.h>
 
 @interface LFPhotoPreviewVideoCell : LFPhotoPreviewCell
 
 @property (nonatomic, readonly) BOOL isPlaying;
+@property (nonatomic, readonly) AVAsset *asset;
 
 - (void)didPauseCell;
+- (void)changeVideoPlayer:(NSURL *)url image:(UIImage *)image;
 @end

@@ -25,4 +25,9 @@
     _duration = duration;
 }
 
+- (void)setUrl:(NSURL *)url
+{
+    _url = url;
+}
+
 @end

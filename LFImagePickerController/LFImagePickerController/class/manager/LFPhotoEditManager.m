@@ -15,6 +15,7 @@
 #import "UIImage+LF_ImageCompress.h"
 #import "UIImage+LFCommon.h"
 #import "LFResultObject_property.h"
+#import "LFAssetManager.h"
 
 @interface LFPhotoEditManager ()
 
@@ -49,7 +50,7 @@ static LFPhotoEditManager *manager;
                 [weakSelf.photoEditDict removeObjectForKey:asset.name];
             }
         } else {
-            [self requestForAsset:asset.asset complete:^(NSString *name) {
+            [[LFAssetManager manager] requestForAsset:asset.asset complete:^(NSString *name) {
                 if (name.length) {
                     if (obj) {
                         [weakSelf.photoEditDict setObject:obj forKey:name];
@@ -77,7 +78,7 @@ static LFPhotoEditManager *manager;
         if (asset.name.length) {
             photoEdit = [weakSelf.photoEditDict objectForKey:asset.name];
         } else {
-            [self requestForAsset:asset.asset complete:^(NSString *name) {
+            [[LFAssetManager manager] requestForAsset:asset.asset complete:^(NSString *name) {
                 if (name.length) {
                     photoEdit = [weakSelf.photoEditDict objectForKey:name];
                 }
@@ -88,20 +89,6 @@ static LFPhotoEditManager *manager;
         photoEdit = [weakSelf.photoEditDict objectForKey:name];
     }
     return photoEdit;
-}
-
-- (void)requestForAsset:(id)asset complete:(void (^)(NSString *name))complete
-{
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        PHAsset *phAsset = (PHAsset *)asset;
-        NSString *fileName = [phAsset valueForKey:@"filename"];
-        if (complete) complete(fileName);
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
-        ALAsset *alAsset = (ALAsset *)asset;
-        ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
-        NSString *fileName = assetRep.filename;
-        if (complete) complete(fileName);
-    }
 }
 
 /**
@@ -140,7 +127,7 @@ static LFPhotoEditManager *manager;
         
         __weak typeof(self) weakSelf = self;
         __block LFPhotoEdit *photoEdit = nil;
-        [self requestForAsset:asset complete:^(NSString *name) {
+        [[LFAssetManager manager] requestForAsset:asset complete:^(NSString *name) {
             if (name.length) {
                 photoEdit = [weakSelf.photoEditDict objectForKey:name];
                 /** 图片文件名 */

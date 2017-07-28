@@ -13,6 +13,8 @@
 #import "LFAssetManager.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#import "LFVideoEditManager.h"
+#import "LFVideoEdit.h"
 
 @interface LFPreviewBarCell ()
 
@@ -50,6 +52,12 @@
         [self customInit];
     }
     return self;
+}
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.imageView.image = nil;
 }
 
 - (void)customInit
@@ -92,22 +100,27 @@
 {
     _asset = asset;
     
-    /** 优先显示编辑图片 */
-    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:asset];
-    if (photoEdit.editPosterImage) {
-        self.imageView.image = photoEdit.editPosterImage;
-    } else if (asset.previewImage) { /** 显示自定义图片 */
-        self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.previewImage);
-    }  else {
-        [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            if ([asset.asset isEqual:self.asset.asset]) {
-                self.imageView.image = photo;
-            }
-            
-        } progressHandler:nil networkAccessAllowed:NO];
+    if (self.asset.type == LFAssetMediaTypePhoto) {
+        /** 优先显示编辑图片 */
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:asset];
+        if (photoEdit.editPosterImage) {
+            self.imageView.image = photoEdit.editPosterImage;
+        } else {
+            [self getAssetImage:asset];
+        }
+        /** 显示编辑标记 */
+        self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+    } else if (self.asset.type == LFAssetMediaTypeVideo) {
+        /** 优先显示编辑图片 */
+        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:asset];
+        if (videoEdit.editPosterImage) {
+            self.imageView.image = videoEdit.editPosterImage;
+        } else {
+            [self getAssetImage:asset];
+        }
+        /** 显示编辑标记 */
+        self.editMaskImageView.hidden = (videoEdit.editPosterImage == nil);
     }
-    /** 显示编辑标记 */
-    self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
     /** 显示视频标记 */
     if (_asset.type == LFAssetMediaTypeVideo) {
         self.videoMaskImageView.hidden = NO;
@@ -118,4 +131,18 @@
     self.maskHitView.hidden = asset.isSelected;
 }
 
+
+- (void)getAssetImage:(LFAsset *)asset
+{
+    if (asset.previewImage) { /** 显示自定义图片 */
+        self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.previewImage);
+    }  else {
+        [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if ([asset.asset isEqual:self.asset.asset]) {
+                self.imageView.image = photo;
+            }
+            
+        } progressHandler:nil networkAccessAllowed:NO];
+    }
+}
 @end

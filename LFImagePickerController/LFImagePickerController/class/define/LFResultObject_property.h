@@ -43,6 +43,8 @@
 @property (nonatomic, strong) UIImage *coverImage;
 /** 视频数据 */
 @property (nonatomic, strong) NSData *data;
+/** 视频地址 */
+@property (nonatomic, strong) NSURL *url;
 /** 视频时长 */
 @property (nonatomic, assign) NSTimeInterval duration;
 

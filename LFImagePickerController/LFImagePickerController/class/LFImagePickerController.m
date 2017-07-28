@@ -11,6 +11,7 @@
 #import "LFAssetManager.h"
 #import "LFAssetManager+Authorization.h"
 #import "LFPhotoEditManager.h"
+#import "LFVideoEditManager.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 
@@ -73,6 +74,7 @@
     /** 清空单例 */
     [LFAssetManager free];
     [LFPhotoEditManager free];
+    [LFVideoEditManager free];
 }
 
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate {
@@ -175,7 +177,7 @@
     self.allowPickingLivePhoto = NO;
     self.allowTakePicture = YES;
     self.allowPreview = YES;
-    self.allowEditting = YES;
+    self.allowEditing = YES;
     self.sortAscendingByCreateDate = YES;
     self.autoDismiss = YES;
     self.supportAutorotate = NO;

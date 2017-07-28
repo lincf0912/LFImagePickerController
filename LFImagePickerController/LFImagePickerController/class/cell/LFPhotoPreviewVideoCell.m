@@ -10,6 +10,8 @@
 #import "LFImagePickerHeader.h"
 #import "LFPhotoPreviewCell_property.h"
 #import "LFAssetManager.h"
+#import "LFVideoEditManager.h"
+#import "LFVideoEdit.h"
 
 @interface LFPhotoPreviewVideoCell ()
 
@@ -55,19 +57,42 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
-    [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
-    if (model.type == LFAssetMediaTypeVideo) { /** video */
-        [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
-            _player = [AVPlayer playerWithPlayerItem:playerItem];
-            AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-            playerLayer.frame = self.contentView.bounds;
-            [self.contentView.layer addSublayer:playerLayer];
-            [_playerLayer removeFromSuperlayer];
-            _playerLayer = playerLayer;
-            [self configPlayButton];
-            self.imageView.hidden = YES;
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
-        }];
+    /** 优先显示编辑图片 */
+    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+    if (videoEdit.editPreviewImage) {
+        self.previewImage = videoEdit.editPreviewImage;
+        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoEdit.editFinalURL];
+        [self readyToPlay:playerItem];
+    } else {
+        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
+        if (model.type == LFAssetMediaTypeVideo) { /** video */
+            [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
+                [self readyToPlay:playerItem];
+            }];
+        }
+    }
+}
+
+- (void)readyToPlay:(AVPlayerItem *)playerItem
+{
+    _player = [AVPlayer playerWithPlayerItem:playerItem];
+    AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+    playerLayer.frame = self.contentView.bounds;
+    [self.contentView.layer addSublayer:playerLayer];
+    [_playerLayer removeFromSuperlayer];
+    _playerLayer = playerLayer;
+    [self configPlayButton];
+    self.imageView.hidden = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
+}
+
+- (void)changeVideoPlayer:(NSURL *)url image:(UIImage *)image
+{
+    if (url) {        
+        [self subViewReset];
+        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:url];
+        self.previewImage = image;
+        [self readyToPlay:playerItem];
     }
 }
 
@@ -142,6 +167,11 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (AVAsset *)asset
+{
+    return self.player.currentItem.asset;
 }
 
 

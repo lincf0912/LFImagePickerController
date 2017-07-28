@@ -24,6 +24,8 @@
 #import "LFAssetManager+SaveAlbum.h"
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#import "LFVideoEditManager.h"
+#import "LFVideoEdit.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
 
@@ -268,7 +270,7 @@
     
     CGFloat buttonX = 0;
     
-//    if (imagePickerVc.allowEditting) {
+//    if (imagePickerVc.allowEditing) {
 //        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
 //        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
 //        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
@@ -370,23 +372,23 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     NSArray *models = [imagePickerVc.selectedModels copy];
     LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:_models index:[_models indexOfObject:models.firstObject] excludeVideo:NO];
-    LFPhotoEditingController *photoEdittingVC = [[LFPhotoEditingController alloc] init];
+    LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
     
     /** 抽取第一个对象 */
     LFAsset *model = models.firstObject;
     /** 获取缓存编辑对象 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit) {
-        photoEdittingVC.photoEdit = photoEdit;
+        photoEditingVC.photoEdit = photoEdit;
     } else if (model.previewImage) { /** 读取自定义图片 */
-        photoEdittingVC.editImage = model.previewImage;
+        photoEditingVC.editImage = model.previewImage;
     } else {
         /** 获取对应的图片 */
         [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            photoEdittingVC.editImage = photo;
+            photoEditingVC.editImage = photo;
         }];
     }
-    [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:photoEdittingVC];
+    [self pushPhotoPrevireViewController:photoPreviewVc photoEditingViewController:photoEditingVC];
 }
 
 - (void)previewButtonClick {
@@ -452,25 +454,22 @@
             
             for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
                 LFAsset *model = imagePickerVc.selectedModels[i];
-                LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-                if (photoEdit) {
-                    [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset
-                                                         isOriginal:imagePickerVc.isSelectOriginalPhoto
-                                                       compressSize:imagePickerVc.imageCompressSize
-                                              thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
-                                                         completion:^(LFResultImage *resultImage) {
-                                                             
-                                                             if (imagePickerVc.autoSavePhotoAlbum) {
-                                                                 /** 编辑图片保存到相册 */
-                                                                 [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:resultImage.originalImage complete:nil];
-                                                             }
-                                                             photosComplete(resultImage, i);
-                    }];
-                } else {
-                    if (model.type == LFAssetMediaTypeVideo) {
-                        [[LFAssetManager manager] getVideoResultWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
-                            photosComplete(resultVideo, i);
-                        }];
+                
+                if (model.type == LFAssetMediaTypePhoto) {
+                    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                    if (photoEdit) {
+                        [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset
+                                                             isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                           compressSize:imagePickerVc.imageCompressSize
+                                                  thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
+                                                             completion:^(LFResultImage *resultImage) {
+                                                                 
+                                                                 if (imagePickerVc.autoSavePhotoAlbum) {
+                                                                     /** 编辑图片保存到相册 */
+                                                                     [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:resultImage.originalImage complete:nil];
+                                                                 }
+                                                                 photosComplete(resultImage, i);
+                                                             }];
                     } else {
                         if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
                             [[LFAssetManager manager] getLivePhotoWithAsset:model.asset
@@ -491,7 +490,21 @@
                                                              }];
                         }
                     }
-                    
+                } else if (model.type == LFAssetMediaTypeVideo) {
+                    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                    if (videoEdit) {
+                        [[LFVideoEditManager manager] getVideoWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
+                            if (imagePickerVc.autoSavePhotoAlbum) {
+                                /** 编辑视频保存到相册 */
+                                [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURL:resultVideo.url complete:nil];
+                            }
+                            photosComplete(resultVideo, i);
+                        }];
+                    } else {
+                        [[LFAssetManager manager] getVideoResultWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
+                            photosComplete(resultVideo, i);
+                        }];
+                    }
                 }
             }
         } else {
@@ -781,13 +794,13 @@
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
     
-    [self pushPhotoPrevireViewController:photoPreviewVc photoEdittingViewController:nil];
+    [self pushPhotoPrevireViewController:photoPreviewVc photoEditingViewController:nil];
 }
 
-- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEdittingViewController:(LFPhotoEditingController *)photoEdittingVC {
+- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEditingViewController:(LFPhotoEditingController *)photoEditingVC {
     
     /** 关联代理 */
-    photoEdittingVC.delegate = (id)photoPreviewVc;
+    photoEditingVC.delegate = (id)photoPreviewVc;
     
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{
@@ -798,10 +811,10 @@
         [weakSelf doneButtonClick];
     }];
     
-    if (photoEdittingVC) {
+    if (photoEditingVC) {
         NSMutableArray *viewControllers = [self.navigationController.viewControllers mutableCopy];
         [viewControllers addObject:photoPreviewVc];
-        [viewControllers addObject:photoEdittingVC];
+        [viewControllers addObject:photoEditingVC];
         [self.navigationController setViewControllers:viewControllers animated:YES];
     } else {
         [self.navigationController pushViewController:photoPreviewVc animated:YES];

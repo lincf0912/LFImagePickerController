@@ -46,7 +46,7 @@
 //    imagePicker.allowTakePicture = NO;
 //    imagePicker.sortAscendingByCreateDate = NO;
     imagePicker.doneBtnTitleStr = @"发送";
-//    imagePicker.allowEditting = NO;
+//    imagePicker.allowEditing = NO;
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */

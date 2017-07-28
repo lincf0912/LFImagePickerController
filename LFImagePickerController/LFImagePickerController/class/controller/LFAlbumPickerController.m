@@ -57,7 +57,7 @@
     /** 恢复原图 */
     imagePickerVc.isSelectOriginalPhoto = NO;
     
-    if (imagePickerVc.allowEditting) {
+    if (imagePickerVc.allowEditing) {
         [_tableView reloadData];
     }
 }

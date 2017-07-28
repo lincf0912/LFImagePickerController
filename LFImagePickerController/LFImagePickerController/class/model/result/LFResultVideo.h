@@ -14,6 +14,8 @@
 @property (nonatomic, readonly) UIImage *coverImage;
 /** 视频数据 */
 @property (nonatomic, readonly) NSData *data;
+/** 视频地址 */
+@property (nonatomic, readonly) NSURL *url;
 /** 视频时长 */
 @property (nonatomic, assign, readonly) NSTimeInterval duration;
 

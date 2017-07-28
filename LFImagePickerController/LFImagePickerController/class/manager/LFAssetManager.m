@@ -888,6 +888,7 @@ static LFAssetManager *manager;
                     
                     
                     result.data = data;
+                    result.url = [NSURL fileURLWithPath:videoPath];
                     result.duration = duration;
                     
                     LFResultInfo *info = [LFResultInfo new];
@@ -932,14 +933,14 @@ static LFAssetManager *manager;
     if (completion == nil) return;
     NSString *cache = [LFAssetManager CacheVideoPath];
     if ([asset isKindOfClass:[PHAsset class]]) {
-        [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:nil resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
-            if ([asset isKindOfClass:[AVURLAsset class]]) {
-                NSURL *url = ((AVURLAsset *)asset).URL;
+        [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:nil resultHandler:^(AVAsset * _Nullable av_asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
+            if ([av_asset isKindOfClass:[AVURLAsset class]]) {
+                NSURL *url = ((AVURLAsset *)av_asset).URL;
                 if (url) {
                     NSString *videoName = [[url.lastPathComponent stringByDeletingPathExtension] stringByAppendingString:@".mp4"];
                     NSString *path = [cache stringByAppendingPathComponent:videoName];
                     
-                    [LF_VideoUtils encodeVideoWithAsset:asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
+                    [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
                         if (error) {
                             dispatch_main_async_safe(^{
                                 completion(nil);
@@ -1069,6 +1070,20 @@ static LFAssetManager *manager;
         return alAsset.defaultRepresentation.dimensions;
     }
     return CGSizeZero;
+}
+
+- (void)requestForAsset:(id)asset complete:(void (^)(NSString *name))complete
+{
+    if ([asset isKindOfClass:[PHAsset class]]) {
+        PHAsset *phAsset = (PHAsset *)asset;
+        NSString *fileName = [phAsset valueForKey:@"filename"];
+        if (complete) complete(fileName);
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
+        ALAsset *alAsset = (ALAsset *)asset;
+        ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+        NSString *fileName = assetRep.filename;
+        if (complete) complete(fileName);
+    }
 }
 
 #pragma mark - Private Method

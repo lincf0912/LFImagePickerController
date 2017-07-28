@@ -8,7 +8,6 @@
 
 #import "LFPhotoPreviewController.h"
 #import "LFImagePickerController.h"
-#import "LFPhotoEditingController.h"
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
@@ -19,15 +18,19 @@
 #import "LFPreviewBar.h"
 #import <PhotosUI/PhotosUI.h>
 
+#import "LFPhotoEditingController.h"
+#import "LFVideoEditingController.h"
+
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
+#import "LFVideoEditManager.h"
 #import "LFGifPlayerManager.h"
 
 CGFloat const cellMargin = 20.f;
 CGFloat const livePhotoSignMargin = 10.f;
 
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEditingControllerDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
 {
     UIView *_naviBar;
     UIButton *_backButton;
@@ -205,7 +208,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     _toolBar.backgroundColor = toolbarBGColor;
     
     
-    if (imagePickerVc.allowEditting) {
+    if (imagePickerVc.allowEditing) {
         CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(10, 0, editWidth, 44);
@@ -221,7 +224,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
-        if (!imagePickerVc.allowEditting) { /** 非编辑模式 原图显示在左边 */
+        if (!imagePickerVc.allowEditing) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
             _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
@@ -244,7 +247,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, 44);
-        if (!imagePickerVc.allowEditting) { /** 非编辑模式 原图显示在左边 */
+        if (!imagePickerVc.allowEditing) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
@@ -461,36 +464,58 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)editButtonClick {
     if (self.models.count > self.currentIndex) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        LFPhotoEditingController *photoEdittingVC = [[LFPhotoEditingController alloc] init];
-        if (imagePickerVc.edit_oKButtonTitleColorNormal) {
-            photoEdittingVC.oKButtonTitleColorNormal = imagePickerVc.edit_oKButtonTitleColorNormal;
-        }
-        if (imagePickerVc.edit_cancelButtonTitleColorNormal) {
-            photoEdittingVC.cancelButtonTitleColorNormal = imagePickerVc.edit_cancelButtonTitleColorNormal;
-        }
-        if (imagePickerVc.edit_oKButtonTitle) {
-            photoEdittingVC.oKButtonTitle = imagePickerVc.edit_oKButtonTitle;
-        }
-        if (imagePickerVc.edit_cancelButtonTitle) {
-            photoEdittingVC.cancelButtonTitle = imagePickerVc.edit_cancelButtonTitle;
-        }
-        if (imagePickerVc.edit_processHintStr) {
-            photoEdittingVC.processHintStr = imagePickerVc.edit_processHintStr;
-        }
-        
         /** 获取缓存编辑对象 */
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
-        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-        if (photoEdit) {
-            photoEdittingVC.photoEdit = photoEdit;
-        } else {
-            /** 当前页面只显示一张图片 */
-            LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
-            /** 当前显示的图片 */
-            photoEdittingVC.editImage = cell.previewImage;
+        
+        LFBaseEditingController *editingVC = nil;
+        
+        if (model.type == LFAssetMediaTypePhoto) {
+            LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
+            editingVC = photoEditingVC;
+            
+            LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+            if (photoEdit) {
+                photoEditingVC.photoEdit = photoEdit;
+            } else {
+                /** 当前页面只显示一张图片 */
+                LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+                /** 当前显示的图片 */
+                photoEditingVC.editImage = cell.previewImage;
+            }
+            photoEditingVC.delegate = self;
+        } else if (model.type == LFAssetMediaTypeVideo) {
+            LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
+            editingVC = videoEditingVC;
+            
+            LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+            if (videoEdit) {
+                videoEditingVC.videoEdit = videoEdit;
+            } else {
+                LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
+                /** 当前显示的图片 */
+                [videoEditingVC setVideoAsset:cell.asset placeholderImage:cell.previewImage];
+            }
+            videoEditingVC.delegate = self;
         }
-        photoEdittingVC.delegate = self;
-        [imagePickerVc pushViewController:photoEdittingVC animated:NO];
+        
+        if (editingVC) {
+            if (imagePickerVc.edit_oKButtonTitleColorNormal) {
+                editingVC.oKButtonTitleColorNormal = imagePickerVc.edit_oKButtonTitleColorNormal;
+            }
+            if (imagePickerVc.edit_cancelButtonTitleColorNormal) {
+                editingVC.cancelButtonTitleColorNormal = imagePickerVc.edit_cancelButtonTitleColorNormal;
+            }
+            if (imagePickerVc.edit_oKButtonTitle) {
+                editingVC.oKButtonTitle = imagePickerVc.edit_oKButtonTitle;
+            }
+            if (imagePickerVc.edit_cancelButtonTitle) {
+                editingVC.cancelButtonTitle = imagePickerVc.edit_cancelButtonTitle;
+            }
+            if (imagePickerVc.edit_processHintStr) {
+                editingVC.processHintStr = imagePickerVc.edit_processHintStr;
+            }
+            [imagePickerVc pushViewController:editingVC animated:NO];
+        }
     }
 }
 
@@ -634,15 +659,15 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 #pragma mark - LFPhotoEditingControllerDelegate
-- (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEdittingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
+- (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
 {
     if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
-        self.tempEditImage = photoEdittingVC.editImage;
+        self.tempEditImage = photoEditingVC.editImage;
     }
     
     [self.navigationController popViewControllerAnimated:NO];
 }
-- (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEdittingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
+- (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
 {
     if (self.models.count > self.currentIndex) {
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
@@ -659,13 +684,51 @@ CGFloat const livePhotoSignMargin = 10.f;
         } else { /** 编辑不存在 */
             if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
                 /** 还原编辑图片 */
-                cell.previewImage = photoEdittingVC.editImage;
+                cell.previewImage = photoEditingVC.editImage;
             } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
-                self.tempEditImage = photoEdittingVC.editImage;
+                self.tempEditImage = photoEditingVC.editImage;
             }
         }
         
         /** 默认选中编辑后的图片 */
+        if (!_selectButton.isSelected) {
+            [self select:_selectButton];
+        }
+        
+        [self.navigationController popViewControllerAnimated:NO];
+    }
+}
+
+#pragma mark - LFVideoEditingControllerDelegate
+- (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didCancelPhotoEdit:(LFVideoEdit *)videoEdit
+{
+    [self.navigationController popViewControllerAnimated:NO];
+    
+}
+- (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didFinishPhotoEdit:(LFVideoEdit *)videoEdit
+{
+    if (self.models.count > self.currentIndex) {
+        LFAsset *model = [self.models objectAtIndex:self.currentIndex];
+        /** 缓存对象 */
+        [[LFVideoEditManager manager] setVideoEdit:videoEdit forAsset:model];
+        /** 清空缓存 */
+        NSString *videoName = model.name;
+        if (![videoName hasPrefix:@".mp4"]) {
+            videoName = [videoName stringByDeletingPathExtension];
+            videoName = [videoName stringByAppendingPathExtension:@"mp4"];
+        }
+        NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:videoName];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
+            [[NSFileManager defaultManager] removeItemAtPath:videoPath error:nil];
+        }
+        LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
+        if (videoEdit) { /** 编辑存在 */
+            [cell changeVideoPlayer:videoEdit.editFinalURL image:videoEdit.editPreviewImage];
+        } else {
+            [cell changeVideoPlayer:videoEditingVC.editURL image:videoEditingVC.placeholderImage];
+        }
+        
+        /** 默认选中编辑后的视频 */
         if (!_selectButton.isSelected) {
             [self select:_selectButton];
         }
@@ -695,8 +758,6 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
     
     _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;
-    /** 视频编辑 */
-    _editButton.hidden = model.type == LFAssetMediaTypeVideo;
     
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
     if (_originalPhotoButton.selected) [self showPhotoBytes];

@@ -177,6 +177,9 @@
 - (BOOL)isPhotoSelectableWithAsset:(id)asset;
 - (CGSize)photoSizeWithAsset:(id)asset;
 
+/// 获取照片名称
+- (void)requestForAsset:(id)asset complete:(void (^)(NSString *name))complete;
+
 /// Return Cache Path 返回压缩缓存视频路径
 + (NSString *)CacheVideoPath;
 

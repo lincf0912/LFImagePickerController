@@ -368,28 +368,28 @@
 }
 
 #pragma mark - Click Event
-- (void)editButtonClick {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    NSArray *models = [imagePickerVc.selectedModels copy];
-    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:_models index:[_models indexOfObject:models.firstObject] excludeVideo:NO];
-    LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
-    
-    /** 抽取第一个对象 */
-    LFAsset *model = models.firstObject;
-    /** 获取缓存编辑对象 */
-    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    if (photoEdit) {
-        photoEditingVC.photoEdit = photoEdit;
-    } else if (model.previewImage) { /** 读取自定义图片 */
-        photoEditingVC.editImage = model.previewImage;
-    } else {
-        /** 获取对应的图片 */
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            photoEditingVC.editImage = photo;
-        }];
-    }
-    [self pushPhotoPrevireViewController:photoPreviewVc photoEditingViewController:photoEditingVC];
-}
+//- (void)editButtonClick {
+//    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+//    NSArray *models = [imagePickerVc.selectedModels copy];
+//    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:_models index:[_models indexOfObject:models.firstObject] excludeVideo:NO];
+//    LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
+//    
+//    /** 抽取第一个对象 */
+//    LFAsset *model = models.firstObject;
+//    /** 获取缓存编辑对象 */
+//    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+//    if (photoEdit) {
+//        photoEditingVC.photoEdit = photoEdit;
+//    } else if (model.previewImage) { /** 读取自定义图片 */
+//        photoEditingVC.editImage = model.previewImage;
+//    } else {
+//        /** 获取对应的图片 */
+//        [[LFAssetManager manager] getPhotoWithAsset:model.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+//            photoEditingVC.editImage = photo;
+//        }];
+//    }
+//    [self pushPhotoPrevireViewController:photoPreviewVc photoEditingViewController:photoEditingVC];
+//}
 
 - (void)previewButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;

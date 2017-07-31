@@ -486,6 +486,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         } else if (model.type == LFAssetMediaTypeVideo) {
             LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
             editingVC = videoEditingVC;
+            videoEditingVC.minClippingDuration = 3.f;
             
             LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
             if (videoEdit) {
@@ -722,7 +723,7 @@ CGFloat const livePhotoSignMargin = 10.f;
             [[NSFileManager defaultManager] removeItemAtPath:videoPath error:nil];
         }
         LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
-        if (videoEdit) { /** 编辑存在 */
+        if (videoEdit.editPreviewImage) { /** 编辑存在 */
             [cell changeVideoPlayer:videoEdit.editFinalURL image:videoEdit.editPreviewImage];
         } else {
             [cell changeVideoPlayer:videoEditingVC.editURL image:videoEditingVC.placeholderImage];

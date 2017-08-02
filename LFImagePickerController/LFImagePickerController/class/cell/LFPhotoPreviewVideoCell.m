@@ -86,15 +86,16 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
 }
 
-- (void)changeVideoPlayer:(NSURL *)url image:(UIImage *)image
+- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image
 {
-    if (url) {        
+    if (asset) {
         [self subViewReset];
-        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:url];
+        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithAsset:asset];
         self.previewImage = image;
         [self readyToPlay:playerItem];
     }
 }
+
 
 
 - (void)willDisplayCell

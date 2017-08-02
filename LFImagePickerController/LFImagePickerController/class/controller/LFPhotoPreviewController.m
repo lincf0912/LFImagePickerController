@@ -724,9 +724,9 @@ CGFloat const livePhotoSignMargin = 10.f;
         }
         LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
         if (videoEdit.editPreviewImage) { /** 编辑存在 */
-            [cell changeVideoPlayer:videoEdit.editFinalURL image:videoEdit.editPreviewImage];
+            [cell changeVideoPlayer:[AVAsset assetWithURL:videoEdit.editFinalURL] image:videoEdit.editPreviewImage];
         } else {
-            [cell changeVideoPlayer:videoEditingVC.editURL image:videoEditingVC.placeholderImage];
+            [cell changeVideoPlayer:videoEditingVC.asset image:videoEditingVC.placeholderImage];
         }
         
         /** 默认选中编辑后的视频 */

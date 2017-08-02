@@ -15,5 +15,5 @@
 @property (nonatomic, readonly) AVAsset *asset;
 
 - (void)didPauseCell;
-- (void)changeVideoPlayer:(NSURL *)url image:(UIImage *)image;
+- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image;
 @end

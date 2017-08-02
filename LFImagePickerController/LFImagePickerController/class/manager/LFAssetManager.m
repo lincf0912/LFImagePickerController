@@ -932,44 +932,22 @@ static LFAssetManager *manager;
 {
     if (completion == nil) return;
     NSString *cache = [LFAssetManager CacheVideoPath];
+    NSString *name = nil;
+    if ([asset isKindOfClass:[PHAsset class]]) {
+        name = [asset valueForKey:@"filename"];
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
+        ALAssetRepresentation *assetRep = [asset defaultRepresentation];
+        name = assetRep.filename;
+    }
+    if (![name hasPrefix:@".mp4"]) {
+        name = [name stringByDeletingPathExtension];
+        name = [name stringByAppendingPathExtension:@"mp4"];
+    }
+    NSString *path = [cache stringByAppendingPathComponent:name];
+    
     if ([asset isKindOfClass:[PHAsset class]]) {
         [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:nil resultHandler:^(AVAsset * _Nullable av_asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
-            if ([av_asset isKindOfClass:[AVURLAsset class]]) {
-                NSURL *url = ((AVURLAsset *)av_asset).URL;
-                if (url) {
-                    NSString *videoName = [[url.lastPathComponent stringByDeletingPathExtension] stringByAppendingString:@".mp4"];
-                    NSString *path = [cache stringByAppendingPathComponent:videoName];
-                    
-                    [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
-                        if (error) {
-                            dispatch_main_async_safe(^{
-                                completion(nil);
-                            });
-                        }else{
-                            dispatch_main_async_safe(^{
-                                completion(path);
-                            });
-                        }
-                    }];
-                } else {
-                    dispatch_main_async_safe(^{
-                        completion(nil);
-                    });
-                }
-            } else {
-                dispatch_main_async_safe(^{
-                    completion(nil);
-                });
-            }
-        }];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
-        ALAssetRepresentation *rep = [asset defaultRepresentation];
-        NSString *videoName = [rep filename];
-        NSURL *videoURL = [rep url];
-        if (videoName.length && videoURL) {
-            NSString *path = [cache stringByAppendingPathComponent:videoName];
-            AVURLAsset *asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
-            [LF_VideoUtils encodeVideoWithAsset:asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
+            [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
                 if (error) {
                     dispatch_main_async_safe(^{
                         completion(nil);
@@ -980,11 +958,21 @@ static LFAssetManager *manager;
                     });
                 }
             }];
-        } else {
-            dispatch_main_async_safe(^{
-                completion(nil);
-            });
-        }
+        }];
+    } else if ([asset isKindOfClass:[ALAsset class]]) {
+        ALAssetRepresentation *rep = [asset defaultRepresentation];
+        NSURL *videoURL = [rep url];
+        [LF_VideoUtils encodeVideoWithURL:videoURL outPath:path complete:^(BOOL isSuccess, NSError *error) {
+            if (error) {
+                dispatch_main_async_safe(^{
+                    completion(nil);
+                });
+            }else{
+                dispatch_main_async_safe(^{
+                    completion(path);
+                });
+            }
+        }];
     }else{
         dispatch_main_async_safe(^{
             completion(nil);

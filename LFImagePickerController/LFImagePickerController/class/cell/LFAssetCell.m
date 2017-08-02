@@ -198,7 +198,7 @@
 {
     if (_editMaskImageView == nil) {
         UIImageView *editMaskImageView = [[UIImageView alloc] init];
-        CGRect frame = CGRectMake(5, 5 - kAdditionalSize, 13.5 + kAdditionalSize, 11 + kAdditionalSize);
+        CGRect frame = CGRectMake(5, 5, 13.5 + kAdditionalSize, 11 + kAdditionalSize);
         editMaskImageView.frame = frame;
         [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
         editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;

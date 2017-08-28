@@ -113,6 +113,11 @@
 /// 默认为YES，如果设置为NO，编辑后的图片不会保存到系统相册
 @property (nonatomic, assign) BOOL autoSavePhotoAlbum;
 
+/// Default is LFEditPhotoOperation_All/LFEditVideoOperation_All, set edit photo/video options
+/// 默认为LFEditPhotoOperation_All/LFEditVideoOperation_All，设置编辑功能
+@property (nonatomic, assign) LFEditPhotoOperation editPhotoOperation;
+@property (nonatomic, assign) LFEditVideoOperation editVideoOperation;
+
 /// Set picture or video have selected
 /// 设置默认选中的图片或视频
 @property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;

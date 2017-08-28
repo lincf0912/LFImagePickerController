@@ -483,6 +483,7 @@ CGFloat const livePhotoSignMargin = 10.f;
                 photoEditingVC.editImage = cell.previewImage;
             }
             photoEditingVC.delegate = self;
+            photoEditingVC.operationType = (LFPhotoEditOperationType)imagePickerVc.editPhotoOperation;
         } else if (model.type == LFAssetMediaTypeVideo) {
             LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
             editingVC = videoEditingVC;
@@ -497,6 +498,7 @@ CGFloat const livePhotoSignMargin = 10.f;
                 [videoEditingVC setVideoAsset:cell.asset placeholderImage:cell.previewImage];
             }
             videoEditingVC.delegate = self;
+            videoEditingVC.operationType = (LFVideoEditOperationType)imagePickerVc.editVideoOperation;
         }
         
         if (editingVC) {

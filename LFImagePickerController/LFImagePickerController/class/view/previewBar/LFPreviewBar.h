@@ -27,4 +27,6 @@
 - (void)removeAssetInDataSource:(LFAsset *)asset;
 
 @property (nonatomic, copy) void(^didSelectItem)(LFAsset *asset);
+@property (nonatomic, copy) void(^didMoveItem)(NSInteger sourceIndex, NSInteger destinationIndex);
+
 @end

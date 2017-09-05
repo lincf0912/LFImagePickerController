@@ -327,6 +327,50 @@ CGFloat const livePhotoSignMargin = 10.f;
             [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
         }
     };
+    
+    _previewBar.didMoveItem = ^(NSInteger sourceIndex, NSInteger destinationIndex) {
+        if (weakSelf.alwaysShowPreviewBar) {
+            //取出移动row数据
+            LFAsset *asset = weakSelf.models[sourceIndex];
+            //从数据源中移除该数据
+            [weakSelf.models removeObject:asset];
+            //将数据插入到数据源中的目标位置
+            [weakSelf.models insertObject:asset atIndex:destinationIndex];
+            
+            /** 重新创建选择数组内容 */
+            [imagePickerVc.selectedModels removeAllObjects];
+            for (LFAsset *asset in weakSelf.models) {
+                if (asset.isSelected) {
+                    [imagePickerVc.selectedModels addObject:asset];
+                }
+            }
+            
+            NSInteger index = weakSelf.currentIndex;
+            if (weakSelf.currentIndex == sourceIndex) {
+                weakSelf.currentIndex = destinationIndex;
+            } else if (sourceIndex > weakSelf.currentIndex && destinationIndex <= weakSelf.currentIndex) {
+                weakSelf.currentIndex ++;
+            } else if (sourceIndex < weakSelf.currentIndex && destinationIndex >= weakSelf.currentIndex) {
+                weakSelf.currentIndex --;
+            }
+            [weakSelf.collectionView reloadData];
+            if (index != weakSelf.currentIndex) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                weakSelf.isMTScroll = YES;
+                [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+            }
+        } else {
+            //取出移动row数据
+            LFAsset *asset = imagePickerVc.selectedModels[sourceIndex];
+            //从数据源中移除该数据
+            [imagePickerVc.selectedModels removeObject:asset];
+            //将数据插入到数据源中的目标位置
+            [imagePickerVc.selectedModels insertObject:asset atIndex:destinationIndex];
+        }
+        
+        [weakSelf refreshNaviBarAndBottomBarState];
+    };
+    
     [self.view addSubview:_previewBar];
 }
 
@@ -408,7 +452,20 @@ CGFloat const livePhotoSignMargin = 10.f;
                 [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
                 return;
             }
-            [imagePickerVc.selectedModels addObject:model];
+            if (self.alwaysShowPreviewBar) {
+                NSInteger index = 0;
+                for (LFAsset *asset in self.models) {
+                    if (asset.isSelected) {
+                        index ++;
+                    }
+                    if (asset == model) {
+                        break;
+                    }
+                }
+                [imagePickerVc.selectedModels insertObject:model atIndex:index];
+            } else {
+                [imagePickerVc.selectedModels addObject:model];
+            }
         }
     } else {
         NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];

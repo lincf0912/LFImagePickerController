@@ -11,14 +11,22 @@
 
 #import "UIImage+LF_Format.h"
 #import "LFAssetManager.h"
+#import "LFAssetManager+CreateMedia.h"
 
-@interface ViewController () <LFImagePickerControllerDelegate>
+@interface ViewController () <LFImagePickerControllerDelegate, UIDocumentInteractionControllerDelegate>
 {
     UITapGestureRecognizer *singleTapRecognizer;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *thumbnailImageVIew;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) AVPlayerLayer *playerLayer;
+
+@property (assign, nonatomic) BOOL isCreateGif;
+@property (assign, nonatomic) BOOL isCreateMP4;
+
+/** share */
+@property (strong, nonatomic) UIDocumentInteractionController *documentInConVC;
+@property (strong, nonatomic) NSString *sharePath;
 
 @end
 
@@ -92,9 +100,22 @@
     imagePicker.autoSelectCurrentImage = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
+- (IBAction)buttonAction4_c_gif:(id)sender {
+    self.isCreateGif = YES;
+    
+    LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
+    imagePicker.allowPickingVideo = NO;
+    [self presentViewController:imagePicker animated:YES completion:nil];
+}
+- (IBAction)buttonAction5_c_mp4:(id)sender {
+    self.isCreateMP4 = YES;
+    
+}
 
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingResult:(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *)results;
 {
+    self.sharePath = nil;
+    
     NSString *documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES) objectAtIndex:0];
     NSString *thumbnailFilePath = [documentPath stringByAppendingPathComponent:@"thumbnail"];
     NSString *originalFilePath = [documentPath stringByAppendingPathComponent:@"original"];
@@ -119,6 +140,8 @@
     [self.imageView.layer addSublayer:playerLayer];
     _playerLayer = playerLayer;
     
+    NSMutableArray *images = [@[] mutableCopy];
+    
     for (NSInteger i = 0; i < results.count; i++) {
         LFResultObject *result = results[i];
         if ([result isKindOfClass:[LFResultImage class]]) {
@@ -138,11 +161,13 @@
                 /** 缩略图保存到路径 */
                 //            [thumnailData writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
                 /** 原图保存到路径 */
-                //            [originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES];
+                if ([originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES]) {
+                    self.sharePath = [originalFilePath stringByAppendingPathComponent:name];
+                }
                 
                 NSLog(@"⚠️Info name:%@ -- infoLength:%fK -- thumnailSize:%fK -- originalSize:%fK -- infoSize:%@", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0, NSStringFromCGSize(size));
                 
-                NSLog(@"🎉thumbnail_imageOrientation:%ld -- original_imageOrientation:%ld -- thumbnailData_imageOrientation:%ld -- originalData_imageOrientation:%ld", (long)thumbnailImage.imageOrientation, (long)originalImage.imageOrientation, [UIImage imageWithData:thumnailData scale:[UIScreen mainScreen].scale].imageOrientation, [UIImage imageWithData:originalData scale:[UIScreen mainScreen].scale].imageOrientation);
+                [images addObject:originalImage];
             }
             
         } else if ([result isKindOfClass:[LFResultVideo class]]) {
@@ -161,9 +186,58 @@
         }
     }
     
+    if (self.isCreateGif) {
+        NSData *imageData = [[LFAssetManager manager] createGifDataWithImages:images duration:images.count loopCount:0 error:nil];
+        NSString *path = [originalFilePath stringByAppendingPathComponent:@"newGif.gif"];
+        if ([imageData writeToFile:path atomically:YES]) {
+            self.sharePath = path;
+        }
+        UIImage *gif = [UIImage LF_imageWithImageData:imageData];
+        if (gif) {
+            originalImage = gif;
+        }
+    } else if (self.isCreateMP4) {
+        
+    }
+    
     [self.thumbnailImageVIew setImage:thumbnailImage];
     [self.imageView setImage:originalImage];
+    
+    self.isCreateGif = NO;
+    self.isCreateMP4 = NO;
+}
 
+- (void)lf_imagePickerControllerDidCancel:(LFImagePickerController *)picker
+{
+    self.isCreateGif = NO;
+    self.isCreateMP4 = NO;
+}
+
+
+#pragma mark - Share
+- (IBAction)buttonAction6_share:(id)sender {
+    if (self.sharePath.length == 0) {
+        NSLog(@"分享失败！");
+        return;
+    }
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
+        _documentInConVC = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:self.sharePath]];
+        _documentInConVC.delegate = self;
+        [_documentInConVC presentOptionsMenuFromRect:CGRectZero inView:self.view animated:YES];
+    }
+}
+
+#pragma mark - UIDocumentInteractionControllerDelegate
+- (UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller{
+    return self;
+}
+
+- (UIView *)documentInteractionControllerViewForPreview:(UIDocumentInteractionController *)controller{
+    return self.view;
+}
+
+- (CGRect)documentInteractionControllerRectForPreview:(UIDocumentInteractionController *)controller{
+    return self.view.frame;
 }
 
 @end

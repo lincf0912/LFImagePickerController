@@ -185,6 +185,7 @@
     self.thumbnailCompressSize = kThumbnailCompressSize;
     self.maxVideoDuration = kMaxVideoDurationze;
     self.autoSavePhotoAlbum = YES;
+    self.displayImageFilename = NO;
     self.editPhotoOperation = LFEditPhotoOperation_All;
     self.editVideoOperation = LFEditVideoOperation_All;
 }

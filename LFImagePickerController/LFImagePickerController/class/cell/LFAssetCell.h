@@ -27,6 +27,7 @@
 
 @property (nonatomic, assign) BOOL displayGif;
 @property (nonatomic, assign) BOOL displayLivePhoto;
+@property (nonatomic, assign) BOOL displayPhotoName;
 
 /** 设置选中 */
 - (void)selectPhoto:(BOOL)isSelected index:(NSUInteger)index animated:(BOOL)animated;

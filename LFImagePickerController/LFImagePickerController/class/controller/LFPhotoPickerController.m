@@ -243,7 +243,8 @@
         _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
     }
     [self.view addSubview:_collectionView];
-    [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetCell"];
+    [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
+    [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
     [_collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
 }
 
@@ -558,7 +559,7 @@
         return cell;
     }
     // the cell dipaly photo or video / 展示照片或视频的cell
-    LFAssetCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetCell" forIndexPath:indexPath];
+    LFAssetCell *cell = nil;
     
     NSInteger index = indexPath.row - 1;
     if (imagePickerVc.sortAscendingByCreateDate || !_showTakePhotoBtn) {
@@ -566,10 +567,17 @@
     }
     LFAsset *model = _models[index];
     
+    if (model.type == LFAssetMediaTypePhoto) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetPhotoCell" forIndexPath:indexPath];
+    } else if (model.type == LFAssetMediaTypeVideo) {
+        cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetVideoCell" forIndexPath:indexPath];
+    }
+    
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
     cell.photoSelImageName = imagePickerVc.photoNumberIconImageName;
     cell.displayGif = imagePickerVc.allowPickingGif;
     cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
+    cell.displayPhotoName = imagePickerVc.displayImageFilename;
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 最大数量时，非选择部分显示不可选 */
     cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);

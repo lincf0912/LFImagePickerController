@@ -113,6 +113,10 @@
 /// 默认为YES，如果设置为NO，编辑后的图片不会保存到系统相册
 @property (nonatomic, assign) BOOL autoSavePhotoAlbum;
 
+/// Default is NO, if set YES，The image file name will be displayed
+/// 默认为NO，如果设置为YES，显示图片文件名称
+@property (nonatomic, assign) BOOL displayImageFilename;
+
 /// Default is LFEditPhotoOperation_All/LFEditVideoOperation_All, set edit photo/video options
 /// 默认为LFEditPhotoOperation_All/LFEditVideoOperation_All，设置编辑功能
 @property (nonatomic, assign) LFEditPhotoOperation editPhotoOperation;

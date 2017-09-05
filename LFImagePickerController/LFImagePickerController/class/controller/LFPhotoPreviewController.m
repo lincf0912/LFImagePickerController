@@ -34,6 +34,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 {
     UIView *_naviBar;
     UIButton *_backButton;
+    UILabel *_titleLabel;
     UIButton *_selectButton;
     
     UIView *_toolBar;
@@ -183,6 +184,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    [_naviBar addSubview:_backButton];
     
     _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 30 - 8, (naviBarHeight-30)/2, 30, 30)];
     _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
@@ -191,7 +193,21 @@ CGFloat const livePhotoSignMargin = 10.f;
     [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
     [_naviBar addSubview:_selectButton];
     
-    [_naviBar addSubview:_backButton];
+    if (imagePickerVc.displayImageFilename) {        
+        _titleLabel = [[UILabel alloc] init];
+        _titleLabel.font = [UIFont boldSystemFontOfSize:17];
+        CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, naviBarHeight) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
+        
+        CGFloat titleMargin = MAX(_backButton.width, _selectButton.width) + 8;
+        
+        _titleLabel.frame = CGRectMake(titleMargin, (naviBarHeight-height)/2, CGRectGetMaxX(_naviBar.frame) - titleMargin * 2, height);
+        _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _titleLabel.textColor = [UIColor whiteColor];
+        _titleLabel.textAlignment = NSTextAlignmentCenter;
+        _titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
+        [_naviBar addSubview:_titleLabel];
+    }
+    
     [self.view addSubview:_naviBar];
 }
 
@@ -754,6 +770,9 @@ CGFloat const livePhotoSignMargin = 10.f;
     
     _doneButton.enabled = !self.alwaysShowPreviewBar || imagePickerVc.selectedModels.count;
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
+    
+    _titleLabel.text = [model.name stringByDeletingPathExtension];
+    
     if (imagePickerVc.selectedModels.count) {
         [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)",imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     } else {

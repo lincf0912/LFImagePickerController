@@ -90,28 +90,29 @@
 - (void)setTypeToSubView {
     
     if (self.model.type == LFAssetMediaTypePhoto) {
-        _selectImageView.hidden = NO;
-        _selectPhotoButton.hidden = NO;
         _bottomView.hidden = YES;
         
         if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) {
-            _bottomView.hidden = NO;
+            _videoImgView.hidden = YES;
             self.timeLength.text = @"GIF";
-            self.videoImgView.hidden = YES;
-            _timeLength.x = 5;
-        } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
+            self.timeLength.textAlignment = NSTextAlignmentRight;
             _bottomView.hidden = NO;
+        } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
+            _videoImgView.hidden = YES;
             self.timeLength.text = @"Live";
-            self.videoImgView.hidden = YES;
-            _timeLength.x = 5;
+            self.timeLength.textAlignment = NSTextAlignmentRight;
+            _bottomView.hidden = NO;
+        } else if (self.displayPhotoName) {
+            _videoImgView.hidden = YES;
+            self.timeLength.text = [self.model.name stringByDeletingPathExtension];
+            self.timeLength.textAlignment = NSTextAlignmentCenter;
+            _bottomView.hidden = NO;
         }
     } else if (self.model.type == LFAssetMediaTypeVideo) {
-        _selectImageView.hidden = NO;
-        _selectPhotoButton.hidden = NO;
-        _bottomView.hidden = NO;
-        self.timeLength.text = _model.timeLength;
         self.videoImgView.hidden = NO;
-        _timeLength.x = self.videoImgView.y;
+        self.timeLength.text = _model.timeLength;
+        self.timeLength.textAlignment = NSTextAlignmentRight;
+        _bottomView.hidden = NO;
     }
 }
 
@@ -239,9 +240,13 @@
         UILabel *timeLength = [[UILabel alloc] init];
         timeLength.font = [UIFont boldSystemFontOfSize:isiPad ? 17 : 11];
         CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, kVideoBoomHeight) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:timeLength.font} context:nil].size.height;
-        timeLength.frame = CGRectMake(self.videoImgView.x, (11-height)/2, self.width - self.videoImgView.x - 5, height);
+        
+        CGFloat videoImageMaxX = MAX(CGRectGetMaxX(_videoImgView.frame), 8);
+        
+        timeLength.frame = CGRectMake(videoImageMaxX, (11-height)/2, self.width - videoImageMaxX - 8, height);
         timeLength.textColor = [UIColor whiteColor];
         timeLength.textAlignment = NSTextAlignmentRight;
+        timeLength.lineBreakMode = NSLineBreakByTruncatingHead;
         [self.bottomView addSubview:timeLength];
         _timeLength = timeLength;
     }

@@ -54,6 +54,7 @@
     imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
 //    imagePicker.autoSelectCurrentImage = NO; /** 关闭自动选中 */
 //    imagePicker.defaultAlbumName = @"123"; /** 指定默认显示相册 */
+//    imagePicker.displayImageFilename = YES; /** 显示文件名称 */
     [self presentViewController:imagePicker animated:YES completion:nil];
     
 }

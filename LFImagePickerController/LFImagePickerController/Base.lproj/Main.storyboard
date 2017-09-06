@@ -129,6 +129,7 @@
                     </view>
                     <connections>
                         <outlet property="imageView" destination="4Ng-7P-aKq" id="nJn-TI-BPT"/>
+                        <outlet property="shareButton" destination="PSi-kA-f8z" id="4Pe-jL-sbL"/>
                         <outlet property="thumbnailImageVIew" destination="lSx-DM-cfI" id="qlc-lk-d6t"/>
                     </connections>
                 </viewController>

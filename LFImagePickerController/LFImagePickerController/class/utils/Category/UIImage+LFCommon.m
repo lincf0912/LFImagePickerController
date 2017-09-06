@@ -153,6 +153,10 @@
 
 - (UIImage*)lf_scaleToSize:(CGSize)size
 {
+    if (CGSizeEqualToSize(self.size, size)) {
+        return self;
+    }
+    
     CGFloat width = CGImageGetWidth(self.CGImage);
     CGFloat height = CGImageGetHeight(self.CGImage);
     

@@ -20,6 +20,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *thumbnailImageVIew;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) AVPlayerLayer *playerLayer;
+@property (weak, nonatomic) IBOutlet UIButton *shareButton;
 
 @property (assign, nonatomic) BOOL isCreateGif;
 @property (assign, nonatomic) BOOL isCreateMP4;
@@ -110,6 +111,9 @@
 - (IBAction)buttonAction5_c_mp4:(id)sender {
     self.isCreateMP4 = YES;
     
+    LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
+    imagePicker.allowPickingVideo = NO;
+    [self presentViewController:imagePicker animated:YES completion:nil];
 }
 
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingResult:(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *)results;
@@ -140,7 +144,7 @@
     [self.imageView.layer addSublayer:playerLayer];
     _playerLayer = playerLayer;
     
-    NSMutableArray *images = [@[] mutableCopy];
+    NSMutableArray <UIImage *>*images = [@[] mutableCopy];
     
     for (NSInteger i = 0; i < results.count; i++) {
         LFResultObject *result = results[i];
@@ -187,7 +191,8 @@
     }
     
     if (self.isCreateGif) {
-        NSData *imageData = [[LFAssetManager manager] createGifDataWithImages:images duration:images.count loopCount:0 error:nil];
+#warning Create gif
+        NSData *imageData = [[LFAssetManager manager] createGifDataWithImages:images size:[UIScreen mainScreen].bounds.size duration:images.count loopCount:0 error:nil];
         NSString *path = [originalFilePath stringByAppendingPathComponent:@"newGif.gif"];
         if ([imageData writeToFile:path atomically:YES]) {
             self.sharePath = path;
@@ -197,7 +202,22 @@
             originalImage = gif;
         }
     } else if (self.isCreateMP4) {
+#warning Create mp4
+        [[LFAssetManager manager] createMP4WithImages:images size:[UIScreen mainScreen].bounds.size complete:^(NSData *data, NSError *error) {
+            if (error) {
+                NSLog(@"create MP4 error:%@", error);
+            } else {
+                NSString *path = [originalFilePath stringByAppendingPathComponent:@"newMP4.mp4"];
+                if ([data writeToFile:path atomically:YES]) {
+                    self.sharePath = path;
+                }
+                AVPlayer *player = [AVPlayer playerWithURL:[NSURL fileURLWithPath:path]];
+                [playerLayer setPlayer:player];
+                [player play];
+            }
+        }];
         
+        return;
     }
     
     [self.thumbnailImageVIew setImage:thumbnailImage];
@@ -223,7 +243,7 @@
     if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
         _documentInConVC = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:self.sharePath]];
         _documentInConVC.delegate = self;
-        [_documentInConVC presentOptionsMenuFromRect:CGRectZero inView:self.view animated:YES];
+        [_documentInConVC presentOptionsMenuFromRect:self.shareButton.frame inView:self.view animated:YES];
     }
 }
 

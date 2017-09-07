@@ -205,6 +205,8 @@
         }
     } else if (self.isCreateMP4) {
 #warning Create mp4
+        thumbnailImage = images.firstObject;
+        originalImage = nil;
         [[LFAssetManager manager] createMP4WithImages:images size:[UIScreen mainScreen].bounds.size complete:^(NSData *data, NSError *error) {
             if (error) {
                 NSLog(@"create MP4 error:%@", error);
@@ -218,8 +220,6 @@
                 [player play];
             }
         }];
-        
-        return;
     }
     
     [self.thumbnailImageVIew setImage:thumbnailImage];

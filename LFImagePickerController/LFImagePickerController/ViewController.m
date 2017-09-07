@@ -179,7 +179,9 @@
             LFResultVideo *resultVideo = (LFResultVideo *)result;
             if (playerLayer.player == nil && originalImage == nil) {
                 /** 保存视频 */
-                [resultVideo.data writeToFile:[originalFilePath stringByAppendingPathComponent:resultVideo.info.name] atomically:YES];
+                if ([resultVideo.data writeToFile:[originalFilePath stringByAppendingPathComponent:resultVideo.info.name] atomically:YES]) {
+                    self.sharePath = [originalFilePath stringByAppendingPathComponent:resultVideo.info.name];
+                }
                 
                 thumbnailImage = resultVideo.coverImage;
                 

@@ -150,6 +150,10 @@ NSString *const CreateMediaFolder = @"LFAssetManager.CreateMedia";
     {
         buffer = [self newPixelBufferFromCGImage:[img CGImage]];
         
+        if (buffer == nil) {
+            continue;
+        }
+        
         BOOL append_ok = NO;
         int j = 0;
         while (!append_ok && j < fps)
@@ -246,30 +250,33 @@ NSString *const CreateMediaFolder = @"LFAssetManager.CreateMedia";
     
     NSParameterAssert(status == kCVReturnSuccess && pxbuffer != NULL);
     
-    CVPixelBufferLockBaseAddress(pxbuffer, 0);
-    void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
-    NSParameterAssert(pxdata != NULL);
-    
-    CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
-    
-    CGContextRef context = CGBitmapContextCreate(pxdata,
-                                                 frameWidth,
-                                                 frameHeight,
-                                                 8,
-                                                 CVPixelBufferGetBytesPerRow(pxbuffer),
-                                                 rgbColorSpace,
-                                                 (CGBitmapInfo)kCGImageAlphaNoneSkipFirst);
-    NSParameterAssert(context);
-    CGContextConcatCTM(context, CGAffineTransformIdentity);
-    CGContextDrawImage(context, CGRectMake(0,
-                                           0,
-                                           frameWidth,
-                                           frameHeight),
-                       image);
-    CGColorSpaceRelease(rgbColorSpace);
-    CGContextRelease(context);
-    
-    CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
+    if (status == kCVReturnSuccess && pxbuffer != NULL) {
+        
+        CVPixelBufferLockBaseAddress(pxbuffer, 0);
+        void *pxdata = CVPixelBufferGetBaseAddress(pxbuffer);
+        NSParameterAssert(pxdata != NULL);
+        
+        CGColorSpaceRef rgbColorSpace = CGColorSpaceCreateDeviceRGB();
+        
+        CGContextRef context = CGBitmapContextCreate(pxdata,
+                                                     frameWidth,
+                                                     frameHeight,
+                                                     8,
+                                                     CVPixelBufferGetBytesPerRow(pxbuffer),
+                                                     rgbColorSpace,
+                                                     (CGBitmapInfo)kCGImageAlphaNoneSkipFirst);
+        NSParameterAssert(context);
+        CGContextConcatCTM(context, CGAffineTransformIdentity);
+        CGContextDrawImage(context, CGRectMake(0,
+                                               0,
+                                               frameWidth,
+                                               frameHeight),
+                           image);
+        CGColorSpaceRelease(rgbColorSpace);
+        CGContextRelease(context);
+        
+        CVPixelBufferUnlockBaseAddress(pxbuffer, 0);
+    }
     
     return pxbuffer;
 }

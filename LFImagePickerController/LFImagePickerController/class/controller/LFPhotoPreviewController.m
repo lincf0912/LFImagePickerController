@@ -177,6 +177,8 @@ CGFloat const livePhotoSignMargin = 10.f;
         /** 取消 */
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = [UIFont systemFontOfSize:15];
+        CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
+        _backButton.width = editCancelWidth;
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
         [_backButton setImage:image forState:UIControlStateNormal];
@@ -541,9 +543,21 @@ CGFloat const livePhotoSignMargin = 10.f;
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         
         LFBaseEditingController *editingVC = nil;
-        
+        // kiosk_ edit photos/video horizontally.
+        UIInterfaceOrientation orientation = UIInterfaceOrientationPortrait;
+        UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
+        switch (deviceOrientation) {
+            case UIDeviceOrientationLandscapeLeft:
+                orientation = UIInterfaceOrientationLandscapeRight;
+                break;
+            case UIDeviceOrientationLandscapeRight:
+                orientation = UIInterfaceOrientationLandscapeLeft;
+                break;
+            default:
+                break;
+        }
         if (model.type == LFAssetMediaTypePhoto) {
-            LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
+            LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] initWithOrientation:orientation];
             editingVC = photoEditingVC;
             
             LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
@@ -556,9 +570,11 @@ CGFloat const livePhotoSignMargin = 10.f;
                 photoEditingVC.editImage = cell.previewImage;
             }
             photoEditingVC.delegate = self;
-            photoEditingVC.operationType = (LFPhotoEditOperationType)imagePickerVc.editPhotoOperation;
+            if (imagePickerVc.photoEditLabrary) {
+                imagePickerVc.photoEditLabrary(photoEditingVC);
+            }
         } else if (model.type == LFAssetMediaTypeVideo) {
-            LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
+            LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] initWithOrientation:orientation];
             editingVC = videoEditingVC;
             videoEditingVC.minClippingDuration = 3.f;
             
@@ -571,25 +587,12 @@ CGFloat const livePhotoSignMargin = 10.f;
                 [videoEditingVC setVideoAsset:cell.asset placeholderImage:cell.previewImage];
             }
             videoEditingVC.delegate = self;
-            videoEditingVC.operationType = (LFVideoEditOperationType)imagePickerVc.editVideoOperation;
+            if (imagePickerVc.videoEditLabrary) {
+                imagePickerVc.videoEditLabrary(videoEditingVC);
+            }
         }
         
         if (editingVC) {
-            if (imagePickerVc.edit_oKButtonTitleColorNormal) {
-                editingVC.oKButtonTitleColorNormal = imagePickerVc.edit_oKButtonTitleColorNormal;
-            }
-            if (imagePickerVc.edit_cancelButtonTitleColorNormal) {
-                editingVC.cancelButtonTitleColorNormal = imagePickerVc.edit_cancelButtonTitleColorNormal;
-            }
-            if (imagePickerVc.edit_oKButtonTitle) {
-                editingVC.oKButtonTitle = imagePickerVc.edit_oKButtonTitle;
-            }
-            if (imagePickerVc.edit_cancelButtonTitle) {
-                editingVC.cancelButtonTitle = imagePickerVc.edit_cancelButtonTitle;
-            }
-            if (imagePickerVc.edit_processHintStr) {
-                editingVC.processHintStr = imagePickerVc.edit_processHintStr;
-            }
             [imagePickerVc pushViewController:editingVC animated:NO];
         }
     }

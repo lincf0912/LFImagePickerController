@@ -34,7 +34,7 @@
                 }
             }
             if (haveHDRGroup) {
-                NSLog(@"已经存在了，不需要创建了");
+                NSLog(@"Already exists");
                 dispatch_main_async_safe(^{
                     if (complete) complete(createCollection);
                 });
@@ -59,14 +59,14 @@
                     createdCustomAssetCollectionIdentifier = collectionChangeRequest.placeholderForCreatedAssetCollection.localIdentifier;
                 } error:&error];
                 if (error) {
-                    NSLog(@"创建了%@相册失败",title);
+                    NSLog(@"Album Failed: %@",title);
                     dispatch_main_async_safe(^{
                         if (faile) faile(error);
                     });
                 }else{
                     /** 获取创建成功的相册 */
                     createCollection = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[createdCustomAssetCollectionIdentifier] options:nil].firstObject;
-                    NSLog(@"创建了%@相册成功",title);
+                    NSLog(@"Album Created: %@",title);
                     dispatch_main_async_safe(^{
                         if (complete) complete(createCollection);
                     });
@@ -78,21 +78,21 @@
 
 
 #pragma mark - 保存图片到自定义相册
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)image complete:(void (^)(id ,NSError *))complete
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title images:(NSArray <UIImage *>*)images complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets,NSError *error))complete
 {
-    [self baseSaveImageToCustomPhotosAlbumWithTitle:title data:image complete:complete];
+    [self baseSaveImageToCustomPhotosAlbumWithTitle:title datas:images complete:complete];
 }
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageData:(NSData *)imageData complete:(void (^)(id ,NSError *))complete
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageDatas:(NSArray <NSData *>*)imageDatas complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets ,NSError *error))complete
 {
-    [self baseSaveImageToCustomPhotosAlbumWithTitle:title data:imageData complete:complete];
+    [self baseSaveImageToCustomPhotosAlbumWithTitle:title datas:imageDatas complete:complete];
 }
-- (void)baseSaveImageToCustomPhotosAlbumWithTitle:(NSString *)title data:(id /* NSData/UIImage */)data complete:(void (^)(id ,NSError *))complete
+- (void)baseSaveImageToCustomPhotosAlbumWithTitle:(NSString *)title datas:(NSArray <id /* NSData/UIImage */>*)datas complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets ,NSError *error))complete
 {
     if ([self authorizationStatusAuthorized]) {
         if (iOS8Later) {
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
-                [self saveToAlbumIOS8LaterWithImage:data customAlbum:result completionBlock:^(PHAsset *asset) {
-                    if (complete) complete(asset, nil);
+                [self saveToAlbumIOS8LaterWithImages:datas customAlbum:result completionBlock:^(NSArray<PHAsset *> *assets) {
+                    if (complete) complete(assets, nil);
                 } failureBlock:^(NSError *error) {
                     if (complete) complete(nil, error);
                 }];
@@ -101,61 +101,63 @@
             }];
         }else{
             /** iOS7之前保存图片到自定义相册方法 */
-            [self saveToAlbumIOS7EarlyWithData:data customAlbumName:title completionBlock:^(ALAsset *asset) {
-                if (complete) complete(asset, nil);
+            [self saveToAlbumIOS7EarlyWithDatas:datas customAlbumName:title completionBlock:^(NSArray<ALAsset *> *assets) {
+                if (complete) complete(assets, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
             }];
         }
     } else {
-        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"没有权限访问相册"}];
+        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"Do not have permission to access the album"}];
         if (complete) complete(nil, error);
     }
 }
 
 #pragma mark - iOS8之后保存相片到自定义相册
-- (void)saveToAlbumIOS8LaterWithImage:(id /* NSData/UIImage */)data
-                          customAlbum:(PHAssetCollection *)customAlbum
-                      completionBlock:(void(^)(PHAsset *asset))completionBlock
-                         failureBlock:(void (^)(NSError *error))failureBlock
+- (void)saveToAlbumIOS8LaterWithImages:(NSArray <id /* NSData/UIImage */>*)datas
+                           customAlbum:(PHAssetCollection *)customAlbum
+                       completionBlock:(void(^)(NSArray <PHAsset *>*assets))completionBlock
+                          failureBlock:(void (^)(NSError *error))failureBlock
 {
     NSError *error = nil;
-    __block NSString *createdAssetId = nil;
+    __block NSMutableArray <NSString *>*createdAssetIds = [@[] mutableCopy];
     PHAssetCollection *assetCollection = (PHAssetCollection *)customAlbum;
     [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
         
-        PHAssetChangeRequest *req = nil;
-        if ([data isKindOfClass:[NSData class]]) {
-            if (iOS9Later) {
-                PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
-                req = [PHAssetCreationRequest creationRequestForAsset];
-                [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
-            } else {
-                UIImage *image = [UIImage LF_imageWithImageData:data];
-                req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+        for (id data in datas) {
+            PHAssetChangeRequest *req = nil;
+            if ([data isKindOfClass:[NSData class]]) {
+                if (iOS9Later) {
+                    PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
+                    req = [PHAssetCreationRequest creationRequestForAsset];
+                    [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
+                } else {
+                    UIImage *image = [UIImage LF_imageWithImageData:data];
+                    req = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+                }
+            } else if ([data isKindOfClass:[UIImage class]]) {
+                req = [PHAssetChangeRequest creationRequestForAssetFromImage:data];
             }
-        } else if ([data isKindOfClass:[UIImage class]]) {
-            req = [PHAssetChangeRequest creationRequestForAssetFromImage:data];
+            PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
+            //记录本地标识，等待完成后取到相册中的图片对象
+            NSString *createdAssetId = placeholder.localIdentifier;
+            if (createdAssetId) {
+                [createdAssetIds addObject:createdAssetId];
+            }
         }
-        
-        
-        PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
-        //记录本地标识，等待完成后取到相册中的图片对象
-        createdAssetId = placeholder.localIdentifier;
-        
     } error:&error];
     
     if (error) {
-        NSLog(@"保存失败");
+        NSLog(@"Save failed");
         dispatch_main_async_safe(^{
             if (failureBlock) failureBlock(error);
         });
     } else {
         NSError *nextError = nil;
         PHFetchResult <PHAsset *>*result = nil;
-        if (createdAssetId) {
+        if (createdAssetIds.count) {
             //成功后取相册中的图片对象
-            result = [PHAsset fetchAssetsWithLocalIdentifiers:@[createdAssetId] options:nil];
+            result = [PHAsset fetchAssetsWithLocalIdentifiers:createdAssetIds options:nil];
             
             /** 保存到指定相册 */
             if (assetCollection) {
@@ -172,15 +174,18 @@
         }
         
         if (nextError) {
-            NSLog(@"保存失败");
+            NSLog(@"Save failed");
             dispatch_main_async_safe(^{
                 if (failureBlock) failureBlock(nextError);
             });
         } else {
-            NSLog(@"保存成功");
-            PHAsset *imageAsset = [result firstObject];
+            NSLog(@"Saved successfully");
+            NSMutableArray <PHAsset *>*assets = [@[] mutableCopy];
+            [result enumerateObjectsUsingBlock:^(PHAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [assets addObject:obj];
+            }];
             dispatch_main_async_safe(^{
-                if (completionBlock) completionBlock(imageAsset);
+                if (completionBlock) completionBlock([assets copy]);
             });
         }
     }
@@ -189,32 +194,39 @@
 }
 
 #pragma mark - iOS7之前保存相片/视频到自定义相册
-- (void)saveToAlbumIOS7EarlyWithData:(id /* NSData/UIImage/NSURL */)data
-                     customAlbumName:(NSString *)customAlbumName
-                     completionBlock:(void (^)(ALAsset *asset))completionBlock
-                        failureBlock:(void (^)(NSError *error))failureBlock
+- (void)saveToAlbumIOS7EarlyWithDatas:(NSArray <id /* NSData/UIImage/NSURL */>*)datas
+                      customAlbumName:(NSString *)customAlbumName
+                      completionBlock:(void (^)(NSArray <ALAsset *>*assets))completionBlock
+                         failureBlock:(void (^)(NSError *error))failureBlock
 {
     
     ALAssetsLibrary *assetsLibrary = [self assetLibrary];
     /** 循环引用处理 */
     __weak ALAssetsLibrary *weakAssetsLibrary = assetsLibrary;
     
+    NSMutableArray <ALAsset *>*assets = [@[] mutableCopy];
+    
+    void (^completeAssets)(ALAsset *) = ^(ALAsset *asset) {
+        [assets addObject:asset];
+        if (assets.count == datas.count) {
+            if (completionBlock) {
+                completionBlock([assets copy]);
+            }
+        }
+    };
+    
     /** 查找自定义相册并保存 */
     void (^AddAsset)(ALAsset *) = ^(ALAsset *asset) {
         [weakAssetsLibrary enumerateGroupsWithTypes:ALAssetsGroupLibrary usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             if ([[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:customAlbumName]) {
-                NSLog(@"保存相片成功");
+                NSLog(@"Save photo successfully");
                 [group addAsset:asset];
-                if (completionBlock) {
-                    completionBlock(asset);
-                }
+                completeAssets(asset);
                 *stop = YES;
             }
             /** done */
             else if (group == nil) {
-                if (completionBlock) {
-                    completionBlock(asset);
-                }
+                completeAssets(asset);
             }
         } failureBlock:^(NSError *error) {
             if (failureBlock) {
@@ -235,10 +247,8 @@
                     [weakAssetsLibrary addAssetsGroupAlbumWithName:customAlbumName resultBlock:^(ALAssetsGroup *group) {
                         if (group) {
                             [group addAsset:asset];
-                            NSLog(@"保存相片成功");
-                            if (completionBlock) {
-                                completionBlock(asset);
-                            }
+                            NSLog(@"Save photo successfully");
+                            completeAssets(asset);
                         } else { /** 相册已存在 */
                             /** 找到已创建相册，保存图片 */
                             AddAsset(asset);
@@ -246,14 +256,10 @@
                     } failureBlock:^(NSError *error) {
                         NSLog(@"%@",error.localizedDescription);
                         /** 创建失败，直接回调图片 */
-                        if (completionBlock) {
-                            completionBlock(asset);
-                        }
+                        completeAssets(asset);
                     }];
                 } else {
-                    if (completionBlock) {
-                        completionBlock(asset);
-                    }
+                    completeAssets(asset);
                 }
             } failureBlock:^(NSError *error) {
                 NSLog(@"%@",error.localizedDescription);
@@ -264,30 +270,34 @@
         }
     };
     
-    if ([data isKindOfClass:[NSData class]]) { /** 图片 */
-        /** 保存图片到系统相册，因为系统的 album 相当于一个 music library, 而自己的相册相当于一个 playlist, 你的 album 所有的内容必须是链接到系统相册里的内容的. */
-        [assetsLibrary writeImageDataToSavedPhotosAlbum:data metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-            completeBlock(assetURL, error);
-        }];
-    } else if ([data isKindOfClass:[UIImage class]]) { /** 图片 */
-        [assetsLibrary writeImageToSavedPhotosAlbum:[(UIImage *)data CGImage] orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
-            completeBlock(assetURL, error);
-        }];
-    } else if ([data isKindOfClass:[NSURL class]]) { /** 视频 */
-        [assetsLibrary writeVideoAtPathToSavedPhotosAlbum:data completionBlock:^(NSURL *assetURL, NSError *error) {
-            completeBlock(assetURL, error);
-        }];
+    for (id data in datas) {
+        if ([data isKindOfClass:[NSData class]]) { /** 图片 */
+            /** 保存图片到系统相册，因为系统的 album 相当于一个 music library, 而自己的相册相当于一个 playlist, 你的 album 所有的内容必须是链接到系统相册里的内容的. */
+            [assetsLibrary writeImageDataToSavedPhotosAlbum:data metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+                completeBlock(assetURL, error);
+            }];
+        } else if ([data isKindOfClass:[UIImage class]]) { /** 图片 */
+            [assetsLibrary writeImageToSavedPhotosAlbum:[(UIImage *)data CGImage] orientation:ALAssetOrientationUp completionBlock:^(NSURL *assetURL, NSError *error) {
+                completeBlock(assetURL, error);
+            }];
+        } else if ([data isKindOfClass:[NSURL class]]) { /** 视频 */
+            [assetsLibrary writeVideoAtPathToSavedPhotosAlbum:data completionBlock:^(NSURL *assetURL, NSError *error) {
+                completeBlock(assetURL, error);
+            }];
+        }
     }
+    
 }
 
 
-#pragma mark - 保存视频到自定义相册
-- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURL:(NSURL *)videoURL complete:(void(^)(id asset, NSError *error))complete{
+#pragma mark - Save the video to a custom album
+- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURLs:(NSArray <NSURL *>*)videoURLs complete:(void(^)(id asset, NSError *error))complete
+{
     if ([self authorizationStatusAuthorized]) {
         if (iOS8Later) {
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
-                [self saveToAlbumIOS8LaterWithVideoUR:videoURL customAlbum:result completionBlock:^(PHAsset *asset) {
-                    if (complete) complete(asset, nil);
+                [self saveToAlbumIOS8LaterWithVideoURLs:videoURLs customAlbum:result completionBlock:^(NSArray<PHAsset *> *assets) {
+                    if (complete) complete(assets, nil);
                 } failureBlock:^(NSError *error) {
                     if (complete) complete(nil, error);
                 }];
@@ -296,47 +306,52 @@
             }];
         } else {
             //注意这个方法不能保存视频到自定义相册，只能保存到系统相册。
-            [self saveToAlbumIOS7EarlyWithData:videoURL customAlbumName:title completionBlock:^(ALAsset *asset) {
-                if (complete) complete(asset, nil);
+            [self saveToAlbumIOS7EarlyWithDatas:videoURLs customAlbumName:title completionBlock:^(NSArray<ALAsset *> *assets) {
+                if (complete) complete(assets, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
             }];
         }
     } else {
-        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"没有权限访问相册"}];
+        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"Do not have permission to access the album"}];
         if (complete) complete(nil, error);
     }
 }
 
-#pragma mark iOS8之后保存视频到自定义相册
-- (void)saveToAlbumIOS8LaterWithVideoUR:(NSURL *)videoURL
-                            customAlbum:(PHAssetCollection *)customAlbum
-                        completionBlock:(void(^)(PHAsset *asset))completionBlock
-                           failureBlock:(void (^)(NSError *error))failureBlock
+#pragma mark iOS8 After saving the video to a custom album
+- (void)saveToAlbumIOS8LaterWithVideoURLs:(NSArray <NSURL *>*)videoURLs
+                              customAlbum:(PHAssetCollection *)customAlbum
+                          completionBlock:(void(^)(NSArray <PHAsset *>*assets))completionBlock
+                             failureBlock:(void (^)(NSError *error))failureBlock
 {
     dispatch_globalQueue_async_safe(^{
         NSError *error = nil;
-        __block NSString *createdAssetId = nil;
+        __block NSMutableArray <NSString *>*createdAssetIds = [@[] mutableCopy];
         PHAssetCollection *assetCollection = (PHAssetCollection *)customAlbum;
         [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
-            PHAssetChangeRequest *req = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];
-            PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
-            //记录本地标识，等待完成后取到相册中的图片对象
-            createdAssetId = placeholder.localIdentifier;
+            for (NSURL *videoURL in videoURLs) {
+                PHAssetChangeRequest *req = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:videoURL];
+                PHObjectPlaceholder *placeholder = req.placeholderForCreatedAsset;
+                //记录本地标识，等待完成后取到相册中的图片对象
+                NSString *createdAssetId = placeholder.localIdentifier;
+                if (createdAssetId) {
+                    [createdAssetIds addObject:createdAssetId];
+                }
+            }
             
         } error:&error];
         
         if (error) {
-            NSLog(@"保存失败:%@", error.localizedDescription);
+            NSLog(@"Save failed:%@", error.localizedDescription);
             dispatch_main_async_safe(^{
                 if (failureBlock) failureBlock(error);
             });
         } else {
             NSError *nextError = nil;
             PHFetchResult <PHAsset *>*result = nil;
-            if (createdAssetId) {
+            if (createdAssetIds.count) {
                 //成功后取相册中的图片对象
-                result = [PHAsset fetchAssetsWithLocalIdentifiers:@[createdAssetId] options:nil];
+                result = [PHAsset fetchAssetsWithLocalIdentifiers:createdAssetIds options:nil];
                 
                 if (result && assetCollection) {
                     [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
@@ -351,15 +366,18 @@
                 nextError = [NSError errorWithDomain:@"SaveVideoError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveVideoError"}];
             }
             if (nextError) {
-                NSLog(@"保存失败");
+                NSLog(@"Save failed");
                 dispatch_main_async_safe(^{
                     if (failureBlock) failureBlock(nextError);
                 });
             } else {
-                NSLog(@"保存成功");
-                PHAsset *imageAsset = [result firstObject];
+                NSLog(@"Saved successfully");
+                NSMutableArray <PHAsset *>*assets = [@[] mutableCopy];
+                [result enumerateObjectsUsingBlock:^(PHAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    [assets addObject:obj];
+                }];
                 dispatch_main_async_safe(^{
-                    if (completionBlock) completionBlock(imageAsset);
+                    if (completionBlock) completionBlock([assets copy]);
                 });
             }
         }

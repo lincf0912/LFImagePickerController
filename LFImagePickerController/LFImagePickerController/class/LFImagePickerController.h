@@ -117,13 +117,8 @@
 /// 默认为NO，如果设置为YES，显示图片文件名称
 @property (nonatomic, assign) BOOL displayImageFilename;
 
-/// Default is LFEditPhotoOperation_All/LFEditVideoOperation_All, set edit photo/video options
-/// 默认为LFEditPhotoOperation_All/LFEditVideoOperation_All，设置编辑功能
-@property (nonatomic, assign) LFEditPhotoOperation editPhotoOperation;
-@property (nonatomic, assign) LFEditVideoOperation editVideoOperation;
-
-/// Set picture or video have selected
-/// 设置默认选中的图片或视频
+/// Set picture or video have selected，valid only when initialization
+/// 设置默认选中的图片或视频，仅初始化时有效
 @property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;
 
 #pragma mark - delegate & block

@@ -186,8 +186,6 @@
     self.maxVideoDuration = kMaxVideoDurationze;
     self.autoSavePhotoAlbum = YES;
     self.displayImageFilename = NO;
-    self.editPhotoOperation = LFEditPhotoOperation_All;
-    self.editVideoOperation = LFEditVideoOperation_All;
 }
 
 - (void)observeAuthrizationStatusChange {
@@ -232,34 +230,37 @@
 
 - (void)setSelectedAssets:(NSArray /**<PHAsset/ALAsset/UIImage *>*/*)selectedAssets {
     
-    _selectedModels = [NSMutableArray array];
-    
-    NSMutableArray *selected_Assets = [NSMutableArray array];
-    NSMutableArray *selected_Images = [NSMutableArray array];
-    for (LFAsset *model in _models) {
-        if (model.asset) {
-            [selected_Assets addObject:model.asset];
-        } else if (model.previewImage) {
-            [selected_Images addObject:@([model.previewImage hash])];
-        }
-    }
-    
-    for (id asset in selectedAssets) {
-        LFAsset *model = nil;
-        if ([asset isKindOfClass:[PHAsset class]] || [asset isKindOfClass:[ALAsset class]]) {
-            NSInteger index = [[LFAssetManager manager] isAssetsArray:selected_Assets containAsset:asset];
-            if (index != NSNotFound) {
-                model = [_models objectAtIndex:index];
-            }
-        } else if ([asset isKindOfClass:[UIImage class]]) {
-            NSInteger index = [selected_Images indexOfObject:@([asset hash])];
-            if (index != NSNotFound) {
-                model = [_models objectAtIndex:index];
+    _selectedAssets = selectedAssets;
+    if (selectedAssets && _models) {
+        _selectedModels = [NSMutableArray array];
+        
+        NSMutableArray *selected_Assets = [NSMutableArray array];
+        NSMutableArray *selected_Images = [NSMutableArray array];
+        for (LFAsset *model in _models) {
+            if (model.asset) {
+                [selected_Assets addObject:model.asset];
+            } else if (model.previewImage) {
+                [selected_Images addObject:@([model.previewImage hash])];
             }
         }
-        if (model && self.maxImagesCount > _selectedModels.count) {
-            model.isSelected = YES;
-            [_selectedModels addObject:model];
+        
+        for (id asset in selectedAssets) {
+            LFAsset *model = nil;
+            if ([asset isKindOfClass:[PHAsset class]] || [asset isKindOfClass:[ALAsset class]]) {
+                NSInteger index = [[LFAssetManager manager] isAssetsArray:selected_Assets containAsset:asset];
+                if (index != NSNotFound) {
+                    model = [_models objectAtIndex:index];
+                }
+            } else if ([asset isKindOfClass:[UIImage class]]) {
+                NSInteger index = [selected_Images indexOfObject:@([asset hash])];
+                if (index != NSNotFound) {
+                    model = [_models objectAtIndex:index];
+                }
+            }
+            if (model && self.maxImagesCount > _selectedModels.count) {
+                model.isSelected = YES;
+                [_selectedModels addObject:model];
+            }
         }
     }
 }

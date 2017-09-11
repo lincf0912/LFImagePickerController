@@ -110,10 +110,33 @@
         }
     } else if (self.model.type == LFAssetMediaTypeVideo) {
         self.videoImgView.hidden = NO;
-        self.timeLength.text = _model.timeLength;
+        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
+        if (videoEdit.editPosterImage) {
+            self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",videoEdit.duration] integerValue]];
+        } else {
+            self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",self.model.duration] integerValue]];
+        }
         self.timeLength.textAlignment = NSTextAlignmentRight;
         _bottomView.hidden = NO;
     }
+}
+
+- (NSString *)getNewTimeFromDurationSecond:(NSInteger)duration {
+    NSString *newTime;
+    if (duration < 10) {
+        newTime = [NSString stringWithFormat:@"0:0%zd",duration];
+    } else if (duration < 60) {
+        newTime = [NSString stringWithFormat:@"0:%zd",duration];
+    } else {
+        NSInteger min = duration / 60;
+        NSInteger sec = duration - (min * 60);
+        if (sec < 10) {
+            newTime = [NSString stringWithFormat:@"%zd:0%zd",min,sec];
+        } else {
+            newTime = [NSString stringWithFormat:@"%zd:%zd",min,sec];
+        }
+    }
+    return newTime;
 }
 
 - (void)setOnlySelected:(BOOL)onlySelected

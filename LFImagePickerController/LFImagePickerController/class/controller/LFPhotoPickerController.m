@@ -47,9 +47,7 @@
 @end
 
 @interface LFPhotoPickerController ()<UICollectionViewDataSource,UICollectionViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
-{
-    NSMutableArray *_models;
-    
+{    
     UIButton *_editButton;
     UIButton *_previewButton;
     UIButton *_doneButton;
@@ -60,6 +58,8 @@
     BOOL _shouldScrollToBottom;
     BOOL _showTakePhotoBtn;
 }
+@property (nonatomic, strong) NSMutableArray *models;
+
 @property (nonatomic, strong) LFCollectionView *collectionView;
 
 @end
@@ -84,15 +84,16 @@
         self.navigationItem.title = _model.name;
         [imagePickerVc showProgressHUD];
         
+        __weak typeof(self) weakSelf = self;
         dispatch_globalQueue_async_safe(^{
             
             long long start = [[NSDate date] timeIntervalSince1970] * 1000;
             void (^initDataHandle)() = ^{
-                if (self.model) {
-                    if (self.model.models.count) { /** 使用缓存数据 */
-                        _models = [NSMutableArray arrayWithArray:_model.models];
+                if (weakSelf.model) {
+                    if (weakSelf.model.models.count) { /** 使用缓存数据 */
+                        weakSelf.models = [NSMutableArray arrayWithArray:weakSelf.model.models];
                         dispatch_main_async_safe(^{
-                            [self initSubviews];
+                            [weakSelf initSubviews];
                         });
                     } else {
                         /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
@@ -100,20 +101,21 @@
                         if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
                             ascending = !imagePickerVc.sortAscendingByCreateDate;
                         }
-                        [[LFAssetManager manager] getAssetsFromFetchResult:_model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                        [[LFAssetManager manager] getAssetsFromFetchResult:weakSelf.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                             /** 缓存数据 */
-                            _model.models = models;
-                            _models = [NSMutableArray arrayWithArray:models];
+                            weakSelf.model.models = models;
+                            weakSelf.models = [NSMutableArray arrayWithArray:models];
+                            [weakSelf checkDefaultSelectedModels];
                             dispatch_main_async_safe(^{
                                 long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                                NSLog(@"%lu张图片加载耗时：%lld毫秒", (unsigned long)models.count, end - start);
-                                [self initSubviews];
+                                NSLog(@"%luPhoto loading time-consuming: %lld milliseconds", (unsigned long)models.count, end - start);
+                                [weakSelf initSubviews];
                             });
                         }];
                     }
                 } else {
                     dispatch_main_async_safe(^{
-                        [self initSubviews];
+                        [weakSelf initSubviews];
                     });
                 }
             };
@@ -123,19 +125,19 @@
                     [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
                         for (LFAlbum *album in models) {
                             if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
-                                self.model = album;
+                                weakSelf.model = album;
                                 break;
                             }
                         }
                         long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                        NSLog(@"加载相册耗时：%lld毫秒", end - start);
+                        NSLog(@"Loading album time-consuming: %lld milliseconds", end - start);
                         initDataHandle();
                     }];
                 } else {
                     [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-                        self.model = model;
+                        weakSelf.model = model;
                         long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                        NSLog(@"加载相册耗时：%lld毫秒", end - start);
+                        NSLog(@"Loading album time-consuming: %lld milliseconds", end - start);
                         initDataHandle();
                     }];
                 }
@@ -366,6 +368,8 @@
     [bottomToolBar addSubview:_doneButton];
     [bottomToolBar addSubview:divide];
     [self.view addSubview:bottomToolBar];
+    
+    [self refreshBottomToolBarStatus];
 }
 
 #pragma mark - Click Event
@@ -467,7 +471,7 @@
                                                                  
                                                                  if (imagePickerVc.autoSavePhotoAlbum) {
                                                                      /** 编辑图片保存到相册 */
-                                                                     [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:resultImage.originalImage complete:nil];
+                                                                     [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil images:@[resultImage.originalImage] complete:nil];
                                                                  }
                                                                  photosComplete(resultImage, i);
                                                              }];
@@ -497,7 +501,7 @@
                         [[LFVideoEditManager manager] getVideoWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
                             if (imagePickerVc.autoSavePhotoAlbum) {
                                 /** 编辑视频保存到相册 */
-                                [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURL:resultVideo.url complete:nil];
+                                [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURLs:@[resultVideo.url] complete:nil];
                             }
                             photosComplete(resultVideo, i);
                         }];
@@ -668,9 +672,10 @@
     NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
     if (picker.sourceType==UIImagePickerControllerSourceTypeCamera && [mediaType isEqualToString:@"public.image"]){
         UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
-        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil image:chosenImage complete:^(id asset, NSError *error) {
-            if (asset && !error) {
-                [[LFAssetManager manager] getPhotoWithAsset:asset isOriginal:YES completion:^(LFResultImage *resultImage) {
+        [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil images:@[chosenImage] complete:^(NSArray<id> *assets, NSError *error) {
+            
+            if (assets && !error) {
+                [[LFAssetManager manager] getPhotoWithAsset:assets.lastObject isOriginal:YES completion:^(LFResultImage *resultImage) {
                     [imagePickerVc hideProgressHUD];
                     [picker.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:^{
                         [self callDelegateMethodWithResults:@[resultImage]];
@@ -863,9 +868,9 @@
         }
     }
     [imagePickerVc.selectedModels removeAllObjects];
-    if (selectedAssets.count) {        
-        for (LFAsset *model in _models) {
-            model.isSelected = NO;
+    for (LFAsset *model in _models) {
+        model.isSelected = NO;
+        if (selectedAssets.count) {
             NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
             if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
                 model.isSelected = YES;
@@ -873,6 +878,23 @@
             }
         }
     }
+}
+
+- (void)checkDefaultSelectedModels {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [imagePickerVc.selectedModels removeAllObjects];
+    if (imagePickerVc.selectedAssets.count) {
+        for (LFAsset *model in _models) {
+            model.isSelected = NO;
+            NSInteger index = [[LFAssetManager manager] isAssetsArray:imagePickerVc.selectedAssets containAsset:model.asset];
+            if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
+                model.isSelected = YES;
+                [imagePickerVc.selectedModels addObject:model];
+            }
+        }
+    }
+    /** 只执行一次 */
+    imagePickerVc.selectedAssets = nil;
 }
 
 - (void)didReceiveMemoryWarning {

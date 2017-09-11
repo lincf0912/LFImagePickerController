@@ -22,7 +22,7 @@
     if (self) {
         _asset = asset;
         _type = LFAssetMediaTypePhoto;
-        _timeLength = nil;
+        _duration = 0;
         _name = nil;
         
         if ([asset isKindOfClass:[PHAsset class]]) {
@@ -31,7 +31,6 @@
             if (phAsset.mediaType == PHAssetMediaTypeVideo) {
                 _type = LFAssetMediaTypeVideo;
                 _duration = phAsset.duration;
-                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",_duration] integerValue]];
             } else if (phAsset.mediaType == PHAssetMediaTypeImage) {
                 if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
                     _subType = LFAssetSubMediaTypeLivePhoto;
@@ -74,7 +73,6 @@
             if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
                 _type = LFAssetMediaTypeVideo;
                 _duration = [[alAsset valueForProperty:ALAssetPropertyDuration] integerValue];
-                _timeLength = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",_duration] integerValue]];
             } else {
                 ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
                 if (re) _subType = LFAssetSubMediaTypeGIF;
@@ -93,23 +91,5 @@
         _subType = image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
     }
     return self;
-}
-    
-- (NSString *)getNewTimeFromDurationSecond:(NSInteger)duration {
-    NSString *newTime;
-    if (duration < 10) {
-        newTime = [NSString stringWithFormat:@"0:0%zd",duration];
-    } else if (duration < 60) {
-        newTime = [NSString stringWithFormat:@"0:%zd",duration];
-    } else {
-        NSInteger min = duration / 60;
-        NSInteger sec = duration - (min * 60);
-        if (sec < 10) {
-            newTime = [NSString stringWithFormat:@"%zd:0%zd",min,sec];
-        } else {
-            newTime = [NSString stringWithFormat:@"%zd:%zd",min,sec];
-        }
-    }
-    return newTime;
 }
 @end

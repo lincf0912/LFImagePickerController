@@ -11,10 +11,10 @@
 @interface LFAssetManager (SaveAlbum)
 
 /** 保存图片到自定义相册 */
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title image:(UIImage *)image complete:(void (^)(id ,NSError *))complete;
-- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageData:(NSData *)imageData complete:(void (^)(id ,NSError *))complete;
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title images:(NSArray <UIImage *>*)images complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets,NSError *error))complete;
+- (void)saveImageToCustomPhotosAlbumWithTitle:(NSString *)title imageDatas:(NSArray <NSData *>*)imageDatas complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets ,NSError *error))complete;
 
 /** 保存视频到自定义相册 */
-- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURL:(NSURL *)videoURL complete:(void(^)(id asset, NSError *error))complete;
+- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURLs:(NSArray <NSURL *>*)videoURLs complete:(void(^)(id asset, NSError *error))complete;
 
 @end

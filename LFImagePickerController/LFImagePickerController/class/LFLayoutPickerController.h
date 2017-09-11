@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class LFPhotoEditingController, LFVideoEditingController;
+
 @interface LFLayoutPickerController : UINavigationController
 
 /// 自定义图片
@@ -42,13 +44,8 @@
 @property (nonatomic, copy) NSString *processHintStr;
 
 #pragma mark - 编辑模式
-/// 自定义外观颜色
-@property (nonatomic, strong) UIColor *edit_oKButtonTitleColorNormal;
-@property (nonatomic, strong) UIColor *edit_cancelButtonTitleColorNormal;
-/// 自定义文字
-@property (nonatomic, copy) NSString *edit_oKButtonTitle;
-@property (nonatomic, copy) NSString *edit_cancelButtonTitle;
-@property (nonatomic, copy) NSString *edit_processHintStr;
+@property (nonatomic, copy) void (^photoEditLabrary)(LFPhotoEditingController *lf_photoEditingVC);
+@property (nonatomic, copy) void (^videoEditLabrary)(LFVideoEditingController *lf_videoEditingVC);
 
 
 - (void)showAlertWithTitle:(NSString *)title;

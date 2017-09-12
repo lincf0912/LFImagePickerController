@@ -76,7 +76,7 @@
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
             }
-            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:6 excludeVideo:YES];
+            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:6];
             imagePicker.pickerDelegate = self;
 //            imagePicker.allowPickingGif = YES; /** 支持GIF */
             /** 全选 */

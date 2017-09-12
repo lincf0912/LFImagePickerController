@@ -19,6 +19,8 @@
 @property (nonatomic, strong) UIButton *playButton;
 @property (nonatomic, weak) AVPlayerLayer *playerLayer;
 
+@property (nonatomic, assign) BOOL waitForReadyToPlay;
+
 @end
 
 @implementation LFPhotoPreviewVideoCell
@@ -45,10 +47,12 @@
 - (void)subViewReset
 {
     [super subViewReset];
+    _waitForReadyToPlay = NO;
     self.imageView.hidden = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_playButton removeFromSuperview];
     _playButton = nil;
+    [_player.currentItem removeObserver:self forKeyPath:@"status"];
     [_playerLayer removeFromSuperlayer];
     _playerLayer.player = nil;
     _playerLayer = nil;
@@ -75,8 +79,13 @@
 
 - (void)readyToPlay:(AVPlayerItem *)playerItem
 {
+    [playerItem addObserver:self
+                 forKeyPath:@"status"
+                    options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+                    context:NULL];
     _player = [AVPlayer playerWithPlayerItem:playerItem];
     AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
+    playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     playerLayer.frame = self.contentView.bounds;
     [self.contentView.layer addSublayer:playerLayer];
     [_playerLayer removeFromSuperlayer];
@@ -113,11 +122,28 @@
     }
 }
 
+- (void)didPlayCell
+{
+    if (self.model.type == LFAssetMediaTypeVideo && _player.rate == 0.0f) { /** 视频处理 */
+        if (_player.currentItem.status == AVPlayerStatusReadyToPlay) {
+            CMTime currentTime = _player.currentItem.currentTime;
+            CMTime durationTime = _player.currentItem.duration;
+            if (currentTime.value == durationTime.value) [_player.currentItem seekToTime:CMTimeMake(0, 1)];
+            [_player play];
+            [_playButton setImage:nil forState:UIControlStateNormal];
+            _isPlaying = YES;
+        } else {
+            _waitForReadyToPlay = YES;
+        }
+    }
+}
+
 - (void)didPauseCell
 {
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         [_player pause];
         [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
+        _isPlaying = NO;
     }
 }
 
@@ -128,19 +154,15 @@
     [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
     [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL.png") forState:UIControlStateHighlighted];
     [_playButton addTarget:self action:@selector(playButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    _playButton.hidden = YES;
     [self.contentView addSubview:_playButton];
 }
 
 #pragma mark - Click Event
 
 - (void)playButtonClick {
-    CMTime currentTime = _player.currentItem.currentTime;
-    CMTime durationTime = _player.currentItem.duration;
     if (_player.rate == 0.0f) {
-        if (currentTime.value == durationTime.value) [_player.currentItem seekToTime:CMTimeMake(0, 1)];
-        [_player play];
-        [_playButton setImage:nil forState:UIControlStateNormal];
-        _isPlaying = YES;
+        [self didPlayCell];
         if ([self.delegate respondsToSelector:@selector(lf_photoPreviewCellSingleTapHandler:)]) {
             [self.delegate lf_photoPreviewCellSingleTapHandler:self];
         }
@@ -150,9 +172,7 @@
 }
 
 - (void)pausePlayerAndShowNaviBar {
-    [_player pause];
-    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
-    _isPlaying = NO;
+    [self didPauseCell];
     if ([self.delegate respondsToSelector:@selector(lf_photoPreviewCellSingleTapHandler:)]) {
         [self.delegate lf_photoPreviewCellSingleTapHandler:self];
     }
@@ -167,12 +187,34 @@
 
 
 - (void)dealloc {
+    [_player.currentItem removeObserver:self forKeyPath:@"status"];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (AVAsset *)asset
 {
     return self.player.currentItem.asset;
+}
+
+- (void)observeValueForKeyPath:(NSString*) path
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context
+{
+    AVPlayerItemStatus status = [[change objectForKey:NSKeyValueChangeNewKey] integerValue];
+    switch (status)
+    {
+        case AVPlayerItemStatusReadyToPlay:
+        {
+            _playButton.hidden = NO;
+            if (_waitForReadyToPlay) {
+                [self didPlayCell];
+            }
+        }
+            break;
+        default:
+            break;
+    }
 }
 
 

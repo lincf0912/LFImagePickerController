@@ -61,7 +61,7 @@
 
 - (void)willDisplayCell
 {
-    if (self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
+    if (self.model.subType == LFAssetSubMediaTypeLivePhoto && self.model.closeLivePhoto == NO) { /** live photo */
         _livePhotoView.delegate = self;
         [_livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
     }

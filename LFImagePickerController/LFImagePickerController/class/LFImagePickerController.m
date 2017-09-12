@@ -101,7 +101,11 @@
 }
 
 /// This init method just for previewing photos / 用这个初始化方法以预览图片
-- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
+- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo __deprecated_msg("Property deprecated. Use `initWithSelectedAssets:index`")
+{
+    return [self initWithSelectedAssets:selectedAssets index:index];
+}
+- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index
 {
     self = [super init];
     if (self) {
@@ -113,7 +117,7 @@
             [_models addObject:model];
         }
         LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index excludeVideo:excludeVideo];
+        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index];
         
         [self setViewControllers:@[photoPickerVc] animated:NO];
         [photoPickerVc pushPhotoPrevireViewController:previewVc];

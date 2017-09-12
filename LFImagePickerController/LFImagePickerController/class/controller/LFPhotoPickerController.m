@@ -64,6 +64,10 @@
 
 @end
 
+@interface LFPhotoPickerController () <UIViewControllerPreviewingDelegate>
+
+@end
+
 @implementation LFPhotoPickerController
 
 - (void)viewDidLoad {
@@ -399,7 +403,7 @@
 - (void)previewButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     NSArray *models = [imagePickerVc.selectedModels copy];
-    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:0 excludeVideo:NO];
+    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:0];
     photoPreviewVc.alwaysShowPreviewBar = YES;
     [self pushPhotoPrevireViewController:photoPreviewVc];
 }
@@ -577,6 +581,15 @@
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetVideoCell" forIndexPath:indexPath];
     }
     
+    if (iOS9Later) {
+        /** 给cell注册 3DTouch的peek（预览）和pop功能 */
+        if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
+            //给cell注册3DTouch的peek（预览）和pop功能
+            [self registerForPreviewingWithDelegate:self sourceView:cell];
+        }
+    }
+
+    
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
     cell.photoSelImageName = imagePickerVc.photoNumberIconImageName;
     cell.displayGif = imagePickerVc.allowPickingGif;
@@ -658,7 +671,7 @@
     if (!imagePickerVc.sortAscendingByCreateDate && _showTakePhotoBtn) {
         index = indexPath.row - 1;
     }
-    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index excludeVideo:NO];
+    LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index];
     [self pushPhotoPrevireViewController:photoPreviewVc];
 }
 
@@ -699,6 +712,46 @@
 {
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
+
+#pragma mark - UIViewControllerPreviewingDelegate
+/** peek(预览) */
+- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location
+{
+    //获取按压的cell所在行，[previewingContext sourceView]就是按压的那个视图
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    
+    LFAssetCell *cell = (LFAssetCell* )[previewingContext sourceView];
+    NSIndexPath *indexPath = [self.collectionView indexPathForCell:cell];
+    if (indexPath) {
+        // preview phote or video / 预览照片或视频
+        NSInteger index = indexPath.row;
+        if (!imagePickerVc.sortAscendingByCreateDate && _showTakePhotoBtn) {
+            index = indexPath.row - 1;
+        }
+        LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index];
+        [photoPreviewVc beginPreviewing:imagePickerVc];
+        
+        PHAsset *phAsset = cell.model.asset;
+        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+        CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * 2.0f;
+        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
+        
+        CGSize contentSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height) isBoth:NO];
+        photoPreviewVc.preferredContentSize = CGSizeMake(contentSize.width, contentSize.height);
+        return photoPreviewVc;
+    }
+    return nil;
+}
+
+/** pop（按用点力进入） */
+- (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit
+{
+    LFPhotoPreviewController *photoPreviewVc = (LFPhotoPreviewController *)viewControllerToCommit;
+    [self pushPhotoPrevireViewController:photoPreviewVc];
+    [photoPreviewVc endPreviewing];
+}
+
 
 #pragma mark - Private Method
 

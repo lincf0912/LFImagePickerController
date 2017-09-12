@@ -61,6 +61,10 @@ CGFloat const livePhotoSignMargin = 10.f;
 /** 手动滑动标记 */
 @property (nonatomic, assign) BOOL isMTScroll;
 
+/** 3DTouch预览状态 */
+@property (nonatomic, assign) BOOL isPreviewing;
+@property (nonatomic, weak) LFImagePickerController *previewNavi;
+
 /** 临时编辑图片(仅用于在夸页面编辑时使用，目前已移除此需求) */
 @property (nonatomic, strong) UIImage *tempEditImage;
 @end
@@ -77,29 +81,13 @@ CGFloat const livePhotoSignMargin = 10.f;
     return self;
 }
 
-- (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index excludeVideo:(BOOL)excludeVideo
+- (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index
 {
     self = [self init];
     if (self) {
         if (models) {
             _models = [NSMutableArray arrayWithArray:models];
             _currentIndex = index;
-            if (excludeVideo) {
-                NSMutableArray *models = [_models mutableCopy];
-                /** 移除视频对象 */
-                for (NSInteger i = 0; i<models.count; i++) {
-                    LFAsset *model = models[i];
-                    if (model.type == LFAssetMediaTypeVideo) {
-                        [models removeObjectAtIndex:i];
-                        if (index > i) {
-                            index--;
-                        }
-                        i--;
-                    }
-                }
-                _currentIndex = index;
-                _models = models;
-            }
         }
     }
     return self;
@@ -117,14 +105,40 @@ CGFloat const livePhotoSignMargin = 10.f;
     return self;
 }
 
+/** 3DTouch */
+- (void)beginPreviewing:(UINavigationController *)navi
+{
+    _previewNavi = (LFImagePickerController *)navi;
+    _isPreviewing = YES;
+}
+- (void)endPreviewing
+{
+    _previewNavi = nil;
+    _isPreviewing = NO;
+    if (_naviBar == nil) {
+        [self configCustomNaviBar];
+        [self configBottomToolBar];
+        [self configPreviewBar];
+        [self configLivePhotoSign];
+        [self refreshNaviBarAndBottomBarState];
+    }
+}
+
+- (LFImagePickerController *)navi
+{
+    return _isPreviewing ? _previewNavi : (LFImagePickerController *)self.navigationController;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     [self configCollectionView];
-    [self configCustomNaviBar];
-    [self configBottomToolBar];
-    [self configPreviewBar];
-    [self configLivePhotoSign];
+    if (self.isPreviewing == NO) {
+        [self configCustomNaviBar];
+        [self configBottomToolBar];
+        [self configPreviewBar];
+        [self configLivePhotoSign];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -132,7 +146,9 @@ CGFloat const livePhotoSignMargin = 10.f;
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
     
-    [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
+    if (self.isPreviewing == NO) {
+        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -142,7 +158,9 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didEndDisplayCell)];
+    if (self.isPreviewing == NO) {
+        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didEndDisplayCell)];
+    }
 }
 
 - (void)viewWillLayoutSubviews
@@ -163,7 +181,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 - (void)configCustomNaviBar {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     
     CGFloat naviBarHeight = [self navigationHeight];
     
@@ -215,7 +233,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 
 - (void)configBottomToolBar {
     
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     UIColor *toolbarBGColor = imagePickerVc.toolbarBgColor;
     UIColor *toolbarTitleColorNormal = imagePickerVc.toolbarTitleColorNormal;
     UIColor *toolbarTitleColorDisabled = imagePickerVc.toolbarTitleColorDisabled;
@@ -278,7 +296,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         if (_originalPhotoButton.selected) [self showPhotoBytes];
     }
     
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingString:@"(10)" ] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolBar.frame)), 30);
     doneSize.width += 4;
     
@@ -310,7 +328,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 
 - (void)configPreviewBar {
     
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     
     _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, self.view.height - _toolBar.height - 64, self.view.width, 64)];
     _previewBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
@@ -408,6 +426,8 @@ CGFloat const livePhotoSignMargin = 10.f;
     [_livePhotoSignView addSubview:badgeImageButton];
     _livePhotobadgeImageButton = badgeImageButton;
     
+    _livePhotoSignView.alpha = 0.f;
+    
     [self selectedLivePhotobadgeImageButton:YES];
 }
 
@@ -439,7 +459,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 #pragma mark - Click Event
 
 - (void)select:(UIButton *)selectButton {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     LFAsset *model = _models[_currentIndex];
     if (!selectButton.isSelected) {
         // 1. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
@@ -504,7 +524,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 - (void)backButtonClick {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
         [self.navigationController dismissViewControllerAnimated:YES completion:nil];
@@ -517,7 +537,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 }
 
 - (void)doneButtonClick {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     
     // 如果没有选中过照片 点击确定时选中当前预览的照片
     if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
@@ -538,7 +558,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 
 - (void)editButtonClick {
     if (self.models.count > self.currentIndex) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        LFImagePickerController *imagePickerVc = [self navi];
         /** 获取缓存编辑对象 */
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         
@@ -600,14 +620,14 @@ CGFloat const livePhotoSignMargin = 10.f;
 
 - (void)originalPhotoButtonClick {
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
     if (_originalPhotoButton.selected) {
         [self showPhotoBytes];
         if (!_selectButton.isSelected) {
             // 如果当前已选择照片张数 < 最大可选张数 && 最大可选张数大于1，就选中该张图
-            LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+            LFImagePickerController *imagePickerVc = [self navi];
             if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
                 [self select:_selectButton];
             }
@@ -672,7 +692,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     LFPhotoPreviewCell *cell = nil;
     LFAsset *model = _models[indexPath.row];
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     if (model.type == LFAssetMediaTypeVideo) {
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell" forIndexPath:indexPath];
     } else {
@@ -691,6 +711,11 @@ CGFloat const livePhotoSignMargin = 10.f;
         self.tempEditImage = nil;
     }
     cell.model = model;
+    
+    /** 视频自动播放 */
+    if (self.isPreviewing && model.type == LFAssetMediaTypeVideo) {
+        [(LFPhotoPreviewVideoCell *)cell didPlayCell];
+    }
     
     return cell;
 }
@@ -718,7 +743,7 @@ CGFloat const livePhotoSignMargin = 10.f;
             return;
         }
     }
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     // show or hide naviBar / 显示或隐藏导航栏
     self.isHideMyNaviBar = !self.isHideMyNaviBar;
     CGFloat alpha = self.isHideMyNaviBar ? 0.f : 1.f;
@@ -819,7 +844,7 @@ CGFloat const livePhotoSignMargin = 10.f;
 #pragma mark - Private Method
 
 - (void)refreshNaviBarAndBottomBarState {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     LFAsset *model = _models[_currentIndex];
     _selectButton.selected = model.isSelected;
     if (_selectButton.selected) {

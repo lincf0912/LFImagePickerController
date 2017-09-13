@@ -47,7 +47,7 @@
 @end
 
 @interface LFPhotoPickerController ()<UICollectionViewDataSource,UICollectionViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
-{    
+{
     UIButton *_editButton;
     UIButton *_previewButton;
     UIButton *_doneButton;
@@ -96,6 +96,8 @@
                 if (weakSelf.model) {
                     if (weakSelf.model.models.count) { /** 使用缓存数据 */
                         weakSelf.models = [NSMutableArray arrayWithArray:weakSelf.model.models];
+                        /** check selected data */
+                        [weakSelf checkSelectedModels];
                         dispatch_main_async_safe(^{
                             [weakSelf initSubviews];
                         });
@@ -193,7 +195,6 @@
     if (_models.count == 0) {
         [self configNonePhotoView];
     } else {
-        [self checkSelectedModels];
         [self configCollectionView];
         [self configBottomToolBar];
         [self scrollCollectionViewToBottom];
@@ -295,9 +296,10 @@
     
     
     if (imagePickerVc.allowPreview) {
-        CGFloat previewWidth = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
+        CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+        previewSize.width += 2.f;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _previewButton.frame = CGRectMake(buttonX+10, 3, previewWidth, 44);
+        _previewButton.frame = CGRectMake(buttonX+10, (height-previewSize.height)/2, previewSize.width, previewSize.height);
         _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = toolbarTitleFont;
@@ -343,7 +345,7 @@
         if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
     }
     
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingString:@"(10)" ] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, height), 30);
     doneSize.width += 4;
     
@@ -762,21 +764,8 @@
         NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
         if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
         NSString *message = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-相机\"中允许%@访问相机",appName];
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"无法使用相机" message:message cancelButtonTitle:@"取消" otherButtonTitles:@"设置" block:^(UIAlertView *alertView, NSInteger buttonIndex) {
-            if (buttonIndex == 1) { // 去设置界面，开启相机访问权限
-                if (iOS8Later) {
-                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-                } else {
-                    NSURL *privacyUrl = [NSURL URLWithString:@"prefs:root=Privacy&path=CAMERA"];
-                    if ([[UIApplication sharedApplication] canOpenURL:privacyUrl]) {
-                        [[UIApplication sharedApplication] openURL:privacyUrl];
-                    } else {
-                        NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
-                        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"抱歉" message:message delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
-                        [alert show];
-                    }
-                }
-            }
+        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"无法使用相机" message:message cancelButtonTitle:@"取消" otherButtonTitles:@"确定" block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+            
         }];
         
         
@@ -914,23 +903,28 @@
 
 - (void)checkSelectedModels {
     NSMutableArray *selectedAssets = [NSMutableArray array];
+    NSMutableArray *selectedModels = [NSMutableArray array];
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     for (LFAsset *model in imagePickerVc.selectedModels) {
         if (model.asset) {
             [selectedAssets addObject:model.asset];
         }
+        [selectedModels addObject:@1];
     }
     [imagePickerVc.selectedModels removeAllObjects];
+    
     for (LFAsset *model in _models) {
         model.isSelected = NO;
         if (selectedAssets.count) {
             NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
             if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
                 model.isSelected = YES;
-                [imagePickerVc.selectedModels addObject:model];
+                [selectedModels replaceObjectAtIndex:index withObject:model];
             }
         }
     }
+    [selectedModels removeObject:@1];
+    [imagePickerVc.selectedModels addObjectsFromArray:selectedModels];
 }
 
 - (void)checkDefaultSelectedModels {

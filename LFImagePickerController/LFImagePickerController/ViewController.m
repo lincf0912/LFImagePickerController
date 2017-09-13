@@ -76,8 +76,9 @@
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
             }
-            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:6];
+            LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedAssets:array index:0];
             imagePicker.pickerDelegate = self;
+            imagePicker.supportAutorotate = YES;
 //            imagePicker.allowPickingGif = YES; /** 支持GIF */
             /** 全选 */
 //            imagePicker.selectedAssets = array;
@@ -99,6 +100,7 @@
     imagePicker.selectedAssets = array;
     /** 关闭自动选中 */
     imagePicker.autoSelectCurrentImage = NO;
+    imagePicker.supportAutorotate = YES;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 - (IBAction)buttonAction4_c_gif:(id)sender {

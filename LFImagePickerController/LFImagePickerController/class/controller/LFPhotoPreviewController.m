@@ -563,7 +563,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         
         LFBaseEditingController *editingVC = nil;
-        // kiosk_ edit photos/video horizontally.
+// kiosk_ edit photos/video horizontally.
         UIInterfaceOrientation orientation = UIInterfaceOrientationPortrait;
         UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
         switch (deviceOrientation) {
@@ -627,7 +627,6 @@ CGFloat const livePhotoSignMargin = 10.f;
         [self showPhotoBytes];
         if (!_selectButton.isSelected) {
             // 如果当前已选择照片张数 < 最大可选张数 && 最大可选张数大于1，就选中该张图
-            LFImagePickerController *imagePickerVc = [self navi];
             if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
                 [self select:_selectButton];
             }

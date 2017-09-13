@@ -24,7 +24,6 @@
 {
     NSTimer *_timer;
     UILabel *_tipLabel;
-    UIButton *_settingBtn;
     BOOL _pushPhotoPickerVc;
     BOOL _didPushPhotoPickerVc;
 }
@@ -55,19 +54,20 @@
             _tipLabel.text = tipText;
             [self.view addSubview:_tipLabel];
             
-            _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
-            _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
-            _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
-            [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
-            [self.view addSubview:_settingBtn];
-            
             _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
         } else {
             [self pushPhotoPickerVc];
         }
     }
 }
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [_models removeAllObjects];
+    _models = nil;
+}
+
 
 - (void)dealloc
 {
@@ -195,7 +195,6 @@
 - (void)observeAuthrizationStatusChange {
     if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
         [_tipLabel removeFromSuperview];
-        [_settingBtn removeFromSuperview];
         [_timer invalidate];
         _timer = nil;
         [self pushPhotoPickerVc];
@@ -265,21 +264,6 @@
                 model.isSelected = YES;
                 [_selectedModels addObject:model];
             }
-        }
-    }
-}
-
-- (void)settingBtnClick {
-    if (iOS8Later) {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-    } else {
-        NSURL *privacyUrl = [NSURL URLWithString:@"prefs:root=Privacy&path=PHOTOS"];
-        if ([[UIApplication sharedApplication] canOpenURL:privacyUrl]) {
-            [[UIApplication sharedApplication] openURL:privacyUrl];
-        } else {
-            NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"抱歉" message:message delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
-            [alert show];
         }
     }
 }

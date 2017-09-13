@@ -175,7 +175,6 @@
     self.previewBtnTitleStr = @"预览";
     self.editBtnTitleStr = @"编辑";
     self.fullImageBtnTitleStr = @"原图";
-    self.settingBtnTitleStr = @"设置";
     self.processHintStr = @"正在处理...";
 }
 

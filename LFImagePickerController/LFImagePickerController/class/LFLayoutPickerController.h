@@ -40,7 +40,6 @@
 @property (nonatomic, copy) NSString *previewBtnTitleStr;
 @property (nonatomic, copy) NSString *editBtnTitleStr;
 @property (nonatomic, copy) NSString *fullImageBtnTitleStr;
-@property (nonatomic, copy) NSString *settingBtnTitleStr;
 @property (nonatomic, copy) NSString *processHintStr;
 
 #pragma mark - 编辑模式

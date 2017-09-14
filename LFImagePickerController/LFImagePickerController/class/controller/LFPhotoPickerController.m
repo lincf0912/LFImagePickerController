@@ -64,7 +64,7 @@
 
 @end
 
-@interface LFPhotoPickerController () <UIViewControllerPreviewingDelegate>
+@interface LFPhotoPickerController () <UIViewControllerPreviewingDelegate, PHPhotoLibraryChangeObserver>
 
 @end
 
@@ -151,7 +151,13 @@
                 initDataHandle();
             }
         });
+        
+        if (imagePickerVc.syncAlbum) {
+            [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];    //创建监听者
+        }
     }
+    
+    
 }
 
 - (void)viewWillLayoutSubviews
@@ -177,7 +183,10 @@
 
 - (void)dealloc
 {
-
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (imagePickerVc.syncAlbum) {
+        [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];    //移除监听者
+    }
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -318,7 +327,7 @@
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat originalButtonW = fullImageWidth + 56;
         _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, CGRectGetHeight(bottomToolBar.frame));
-        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
@@ -958,5 +967,107 @@
     // Pass the selected object to the new view controller.
 }
 */
+
+#pragma mark - PHPhotoLibraryChangeObserver
+//相册变化回调
+- (void)photoLibraryDidChange:(PHChange *)changeInfo {
+    
+    
+    // Photos may call this method on a background queue;
+    // switch to the main queue to update the UI.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        // Check for changes to the displayed album itself
+        // (its existence and metadata, not its member assets).
+        PHObjectChangeDetails *albumChanges = [changeInfo changeDetailsForObject:self.model.album];
+        if (albumChanges) {
+            // Fetch the new album and update the UI accordingly.
+            [self.model changedAlbum:[albumChanges objectAfterChanges]];
+            self.navigationItem.title = _model.name;
+            if (albumChanges.objectWasDeleted) {
+                [[[UIAlertView alloc] initWithTitle:nil message:@"Album was deleted!" cancelButtonTitle:@"ok" otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+                    
+                    if (imagePickerVc.viewControllers.count > 1) {
+                        [imagePickerVc popToRootViewControllerAnimated:YES];
+                    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+                        [imagePickerVc performSelector:@selector(cancelButtonClick)];
+#pragma clang diagnostic pop
+                    }
+                    
+                }] show];
+                
+                return ;
+            }
+        }
+        
+        // Check for changes to the list of assets (insertions, deletions, moves, or updates).
+        PHFetchResultChangeDetails *collectionChanges = [changeInfo changeDetailsForFetchResult:self.model.result];
+        if (collectionChanges) {
+            // Get the new fetch result for future change tracking.
+            [self.model changedResult:collectionChanges.fetchResultAfterChanges];
+            
+            if (collectionChanges.hasIncrementalChanges)  {
+                // Tell the collection view to animate insertions/deletions/moves
+                // and to refresh any cells that have changed content.
+                
+                BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
+                if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
+                    ascending = !imagePickerVc.sortAscendingByCreateDate;
+                }
+                [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                    self.model.models = models;
+                    self.models = [NSMutableArray arrayWithArray:models];
+                    [self checkSelectedModels];
+                }];
+                [self.collectionView reloadData];
+                
+                /** 刷新后返回当前UI */
+                if (imagePickerVc.viewControllers.lastObject != self) {
+                    [imagePickerVc popToViewController:self animated:NO];
+                }
+                
+//                [self.collectionView performBatchUpdates:^{
+//                    NSIndexSet *removed = collectionChanges.removedIndexes;
+//                    if (removed.count) {
+//                        [self.collectionView deleteItemsAtIndexPaths:[self indexPathsFromIndexSet:removed]];
+//                    }
+//                    NSIndexSet *inserted = collectionChanges.insertedIndexes;
+//                    if (inserted.count) {
+//                        [self.collectionView insertItemsAtIndexPaths:[self indexPathsFromIndexSet:inserted]];
+//                    }
+//                    NSIndexSet *changed = collectionChanges.changedIndexes;
+//                    if (changed.count) {
+//                        [self.collectionView reloadItemsAtIndexPaths:[self indexPathsFromIndexSet:changed]];
+//                    }
+//                    if (collectionChanges.hasMoves) {
+//                        [collectionChanges enumerateMovesWithBlock:^(NSUInteger fromIndex, NSUInteger toIndex) {
+//                            NSIndexPath *fromIndexPath = [NSIndexPath indexPathForItem:fromIndex inSection:0];
+//                            NSIndexPath *toIndexPath = [NSIndexPath indexPathForItem:toIndex inSection:0];
+//                            [self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+//                        }];
+//                    }
+//                } completion:nil];
+            } else {
+                // Detailed change information is not available;
+                // repopulate the UI from the current fetch result.
+//                [self.collectionView reloadData];
+            }
+        }
+    });
+}
+
+- (NSArray <NSIndexPath *>*)indexPathsFromIndexSet:(NSIndexSet *)indexSet
+{
+    NSMutableArray <NSIndexPath *>*arr = @[].mutableCopy;
+    
+    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:idx inSection:0];
+        [arr addObject:indexPath];
+    }];
+    
+    return [arr copy];
+}
 
 @end

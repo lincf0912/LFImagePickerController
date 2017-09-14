@@ -38,6 +38,69 @@
 
 @implementation LFAssetCell
 
+- (instancetype)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self initUI];
+    }
+    return self;
+}
+
+- (void)initUI {
+    
+    /** 背景图片 */
+    UIImageView *imageView = [[UIImageView alloc] init];
+    imageView.frame = CGRectMake(0, 0, self.width, self.height);
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
+    imageView.clipsToBounds = YES;
+    [self.contentView addSubview:imageView];
+    _imageView = imageView;
+    
+    /** 底部状态栏 */
+    UIView *bottomView = [[UIView alloc] init];
+    bottomView.frame = CGRectMake(0, self.height - kVideoBoomHeight, self.width, kVideoBoomHeight);
+    [self.contentView addSubview:bottomView];
+    CAGradientLayer* gradientLayer = [CAGradientLayer layer];
+    gradientLayer.frame = bottomView.bounds;
+    gradientLayer.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithWhite:0.0f alpha:.0f] CGColor], (id)[[UIColor colorWithWhite:0.0f alpha:0.8f] CGColor], nil];
+    [bottomView.layer insertSublayer:gradientLayer atIndex:0];
+    bottomView.hidden = YES;
+    _bottomView = bottomView;
+    
+    /** 状态栏 子控件 懒加载 */
+    
+    /** 编辑标记 */
+    UIImageView *editMaskImageView = [[UIImageView alloc] init];
+    CGRect frame = CGRectMake(5, 5, 13.5 + kAdditionalSize, 11 + kAdditionalSize);
+    editMaskImageView.frame = frame;
+    [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
+    editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.contentView addSubview:editMaskImageView];
+    _editMaskImageView = editMaskImageView;
+    
+    /** 选择按钮 */
+    UIButton *selectPhotoButton = [[UIButton alloc] init];
+    selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
+    [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView addSubview:selectPhotoButton];
+    _selectPhotoButton = selectPhotoButton;
+    
+    UIImageView *selectImageView = [[UIImageView alloc] init];
+    selectImageView.frame = CGRectMake(self.width - 28 - kAdditionalSize, 2, 26 + kAdditionalSize, 26 + kAdditionalSize);
+    [self.contentView addSubview:selectImageView];
+    _selectImageView = selectImageView;
+    
+    /** 蒙蔽层 */
+    UIView *view = [[UIButton alloc] init];
+    view.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.5f];
+    view.frame = self.bounds;
+    view.hidden = YES;
+    [self.contentView addSubview:view];
+    _maskHitView = view;
+    
+}
+
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
@@ -179,73 +242,6 @@
 }
 
 #pragma mark - Lazy load
-
-- (UIButton *)selectPhotoButton {
-    if (_selectPhotoButton == nil) {
-        UIButton *selectPhotoButton = [[UIButton alloc] init];
-        selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
-        [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-        [self.contentView addSubview:selectPhotoButton];
-        _selectPhotoButton = selectPhotoButton;
-    }
-    return _selectPhotoButton;
-}
-
-- (UIImageView *)imageView {
-    if (_imageView == nil) {
-        UIImageView *imageView = [[UIImageView alloc] init];
-        imageView.frame = CGRectMake(0, 0, self.width, self.height);
-        imageView.contentMode = UIViewContentModeScaleAspectFill;
-        imageView.clipsToBounds = YES;
-        [self.contentView addSubview:imageView];
-        _imageView = imageView;
-        
-        [self.contentView bringSubviewToFront:_selectImageView];
-        [self.contentView bringSubviewToFront:_bottomView];
-        [self.contentView bringSubviewToFront:_editMaskImageView];
-        [self.contentView bringSubviewToFront:_maskHitView];
-    }
-    return _imageView;
-}
-
-- (UIImageView *)selectImageView {
-    if (_selectImageView == nil) {
-        UIImageView *selectImageView = [[UIImageView alloc] init];
-        selectImageView.frame = CGRectMake(self.width - 28 - kAdditionalSize, 2, 26 + kAdditionalSize, 26 + kAdditionalSize);
-        [self.contentView addSubview:selectImageView];
-        _selectImageView = selectImageView;
-    }
-    return _selectImageView;
-}
-
-- (UIImageView *)editMaskImageView
-{
-    if (_editMaskImageView == nil) {
-        UIImageView *editMaskImageView = [[UIImageView alloc] init];
-        CGRect frame = CGRectMake(5, 5, 13.5 + kAdditionalSize, 11 + kAdditionalSize);
-        editMaskImageView.frame = frame;
-        [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
-        editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
-        [self.contentView addSubview:editMaskImageView];
-        _editMaskImageView = editMaskImageView;
-    }
-    return _editMaskImageView;
-}
-
-- (UIView *)bottomView {
-    if (_bottomView == nil) {
-        UIView *bottomView = [[UIView alloc] init];
-        bottomView.frame = CGRectMake(0, self.height - kVideoBoomHeight, self.width, kVideoBoomHeight);
-        [self.contentView addSubview:bottomView];
-        CAGradientLayer* gradientLayer = [CAGradientLayer layer];
-        gradientLayer.frame = bottomView.bounds;
-        gradientLayer.colors = [NSArray arrayWithObjects:(id)[[UIColor colorWithWhite:0.0f alpha:.0f] CGColor], (id)[[UIColor colorWithWhite:0.0f alpha:0.8f] CGColor], nil];
-        [bottomView.layer insertSublayer:gradientLayer atIndex:0];
-        _bottomView = bottomView;
-    }
-    return _bottomView;
-}
-
 - (UIImageView *)videoImgView {
     if (_videoImgView == nil) {
         UIImageView *videoImgView = [[UIImageView alloc] init];
@@ -274,20 +270,6 @@
         _timeLength = timeLength;
     }
     return _timeLength;
-}
-
-- (UIView *)maskHitView
-{
-    if (_maskHitView == nil) {
-        UIView *view = [[UIButton alloc] init];
-        view.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.5f];
-        view.frame = self.bounds;
-        view.hidden = YES;
-        [self.contentView addSubview:view];
-        _maskHitView = view;
-    }
-    [self.contentView bringSubviewToFront:_maskHitView];
-    return _maskHitView;
 }
 
 @end

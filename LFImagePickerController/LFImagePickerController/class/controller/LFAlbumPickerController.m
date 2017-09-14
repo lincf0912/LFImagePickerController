@@ -16,7 +16,7 @@
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 
-@interface LFAlbumPickerController ()<UITableViewDataSource,UITableViewDelegate> {
+@interface LFAlbumPickerController ()<UITableViewDataSource,UITableViewDelegate,PHPhotoLibraryChangeObserver> {
     UITableView *_tableView;
 }
 @property (nonatomic, strong) NSMutableArray *albumArr;
@@ -40,6 +40,11 @@
     self.view.backgroundColor = [UIColor whiteColor];
     
     [self configTableView];
+    
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (imagePickerVc.syncAlbum) {
+        [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];    //创建监听者
+    }
 }
 
 - (void)viewWillLayoutSubviews
@@ -57,8 +62,16 @@
     /** 恢复原图 */
     imagePickerVc.isSelectOriginalPhoto = NO;
     
-    if (imagePickerVc.allowEditing) {
+    if (imagePickerVc.allowEditing || imagePickerVc.syncAlbum) {
         [_tableView reloadData];
+    }
+}
+
+- (void)dealloc
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (imagePickerVc.syncAlbum) {
+        [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];    //移除监听者
     }
 }
 
@@ -162,4 +175,28 @@
     }
 }
 
+#pragma mark - PHPhotoLibraryChangeObserver
+//相册变化回调
+- (void)photoLibraryDidChange:(PHChange *)changeInfo {
+    // Photos may call this method on a background queue;
+    // switch to the main queue to update the UI.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Check for changes to the displayed album itself
+        // (its existence and metadata, not its member assets).
+        
+        for (NSInteger i=0; i<self.albumArr.count; i++) {
+            LFAlbum *album = self.albumArr[i];
+            PHObjectChangeDetails *albumChanges = [changeInfo changeDetailsForObject:album.album];
+            if (albumChanges) {
+                // Fetch the new album and update the UI accordingly.
+                [album changedAlbum:[albumChanges objectAfterChanges]];
+                if (albumChanges.objectWasDeleted) {
+                    [self.albumArr removeObjectAtIndex:i];
+                    i--;
+                }
+            }
+        }
+        [_tableView reloadData];
+    });
+}
 @end

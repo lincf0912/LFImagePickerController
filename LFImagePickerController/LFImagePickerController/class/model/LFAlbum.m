@@ -13,22 +13,38 @@
 
 @implementation LFAlbum
 
-- (instancetype)initWithName:(NSString *)name result:(id)result
+- (instancetype)initWithAlbum:(id)album result:(id)result
 {
     self = [super init];
     if (self) {
-        _name = name;
-        _result = result;
-        
-        if ([result isKindOfClass:[PHFetchResult class]]) {
-            PHFetchResult *fetchResult = (PHFetchResult *)result;
-            _count = fetchResult.count;
-        } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
-            ALAssetsGroup *group = (ALAssetsGroup *)result;
-            _count = [group numberOfAssets];
-        }
+        [self changedAlbum:album];
+        [self changedResult:result];
     }
     return self;
+}
+
+- (void)changedResult:(id)result
+{
+    if ([result isKindOfClass:[PHFetchResult class]]) {
+        PHFetchResult *fetchResult = (PHFetchResult *)result;
+        _result = result;
+        _count = fetchResult.count;
+    } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
+        ALAssetsGroup *group = (ALAssetsGroup *)result;
+        _result = result;
+        _count = [group numberOfAssets];
+        _name = [group valueForProperty:ALAssetsGroupPropertyName];
+    }
+}
+
+- (void)changedAlbum:(id)album
+{
+    if ([album isKindOfClass:[PHAssetCollection class]]) {
+        PHAssetCollection *collection = (PHAssetCollection *)album;
+        _album = album;
+        _name = collection.localizedTitle;
+        
+    }
 }
 
 @end

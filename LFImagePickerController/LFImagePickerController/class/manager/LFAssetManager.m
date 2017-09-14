@@ -80,7 +80,7 @@ static LFAssetManager *manager;
             if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
             if ([self isCameraRollAlbum:collection.localizedTitle]) {
                 PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-                model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+                model = [self modelWithResult:fetchResult album:collection];
                 if (completion) completion(model);
                 break;
             }
@@ -90,7 +90,7 @@ static LFAssetManager *manager;
             if ([group numberOfAssets] < 1) return;
             NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
             if ([self isCameraRollAlbum:name]) {
-                model = [self modelWithResult:group name:name];
+                model = [self modelWithResult:group album:nil];
                 if (completion) completion(model);
                 *stop = YES;
             }
@@ -122,9 +122,9 @@ static LFAssetManager *manager;
                 if (fetchResult.count < 1) continue;
                 if ([collection.localizedTitle containsString:@"Deleted"] || [collection.localizedTitle isEqualToString:@"最近删除"]) continue;
                 if ([self isCameraRollAlbum:collection.localizedTitle]) {
-                    [albumArr insertObject:[self modelWithResult:fetchResult name:collection.localizedTitle] atIndex:0];
+                    [albumArr insertObject:[self modelWithResult:fetchResult album:collection] atIndex:0];
                 } else {
-                    [albumArr addObject:[self modelWithResult:fetchResult name:collection.localizedTitle]];
+                    [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
                 }
             }
         }
@@ -137,15 +137,15 @@ static LFAssetManager *manager;
             if ([group numberOfAssets] < 1) return;
             NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
             if ([self isCameraRollAlbum:name]) {
-                [albumArr insertObject:[self modelWithResult:group name:name] atIndex:0];
+                [albumArr insertObject:[self modelWithResult:group album:nil] atIndex:0];
             } else if ([name isEqualToString:@"My Photo Stream"] || [name isEqualToString:@"我的照片流"]) {
                 if (albumArr.count) {
-                    [albumArr insertObject:[self modelWithResult:group name:name] atIndex:1];
+                    [albumArr insertObject:[self modelWithResult:group album:nil] atIndex:1];
                 } else {
-                    [albumArr addObject:[self modelWithResult:group name:name]];
+                    [albumArr addObject:[self modelWithResult:group album:nil]];
                 }
             } else {
-                [albumArr addObject:[self modelWithResult:group name:name]];
+                [albumArr addObject:[self modelWithResult:group album:nil]];
             }
         } failureBlock:^(NSError *error) {
             if (completion) completion(albumArr);
@@ -1081,8 +1081,8 @@ static LFAssetManager *manager;
 
 #pragma mark - Private Method
 
-- (LFAlbum *)modelWithResult:(id)result name:(NSString *)name{
-    LFAlbum *model = [[LFAlbum alloc] initWithName:name result:result];
+- (LFAlbum *)modelWithResult:(id)result album:(id)album{
+    LFAlbum *model = [[LFAlbum alloc] initWithAlbum:album result:result];
     return model;
 }
 

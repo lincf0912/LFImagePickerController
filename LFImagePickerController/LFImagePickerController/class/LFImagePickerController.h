@@ -118,6 +118,10 @@
 /// 默认为NO，如果设置为YES，显示图片文件名称
 @property (nonatomic, assign) BOOL displayImageFilename;
 
+/// Default is NO, if set YES，The image picker will sync the system's album
+/// 同步系统相册 默认为NO
+@property (nonatomic, assign) BOOL syncAlbum;
+
 /// Set picture or video have selected，valid only when initialization
 /// 设置默认选中的图片或视频，仅初始化时有效
 @property (nonatomic, setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;

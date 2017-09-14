@@ -190,6 +190,7 @@
     self.maxVideoDuration = kMaxVideoDurationze;
     self.autoSavePhotoAlbum = YES;
     self.displayImageFilename = NO;
+    self.syncAlbum = NO;
 }
 
 - (void)observeAuthrizationStatusChange {
@@ -314,7 +315,10 @@
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return self.supportAutorotate ? [self.visibleViewController supportedInterfaceOrientations] : UIInterfaceOrientationMaskPortrait;
+    if ([self.visibleViewController isKindOfClass:[LFBaseViewController class]]) {
+        return self.supportAutorotate ? [self.visibleViewController supportedInterfaceOrientations] : UIInterfaceOrientationMaskPortrait;
+    }
+    return UIInterfaceOrientationMaskAll;
 }
 
 @end

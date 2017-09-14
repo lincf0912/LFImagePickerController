@@ -15,11 +15,16 @@
 @property (nonatomic, readonly) NSString *name;        ///< The album name
 @property (nonatomic, readonly) NSInteger count;       ///< Count of photos the album contain
 @property (nonatomic, readonly) id result;             ///< PHFetchResult<PHAsset> or ALAssetsGroup<ALAsset>
+@property (nonatomic, readonly) id album NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;             /// PHAssetCollection
 @property (nonatomic, strong) LFAsset *posterAsset;    /** 封面对象 */
 
 /** 缓存数据 */
 @property (nonatomic, strong) NSArray <LFAsset *>*models;
 
-- (instancetype)initWithName:(NSString *)name result:(id)result;
+- (instancetype)initWithAlbum:(id)album result:(id)result;
+
+
+- (void)changedAlbum:(id /*PHAssetCollection*/)album NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
+- (void)changedResult:(id /*PHFetchResult*/)result NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
 
 @end

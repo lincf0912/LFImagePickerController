@@ -264,8 +264,8 @@ CGFloat const livePhotoSignMargin = 10.f;
             _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
             _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
-            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2-fullImageWidth/2, 0, width, 44);
-            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
+            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2, 0, width, CGRectGetHeight(_toolBar.frame));
+            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
         }
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
@@ -282,7 +282,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
         
         _originalPhotoLabel = [[UILabel alloc] init];
-        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, 44);
+        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, CGRectGetHeight(_toolBar.frame));
         if (!imagePickerVc.allowEditing) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
@@ -563,21 +563,9 @@ CGFloat const livePhotoSignMargin = 10.f;
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         
         LFBaseEditingController *editingVC = nil;
-// kiosk_ edit photos/video horizontally.
-        UIInterfaceOrientation orientation = UIInterfaceOrientationPortrait;
-        UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-        switch (deviceOrientation) {
-            case UIDeviceOrientationLandscapeLeft:
-                orientation = UIInterfaceOrientationLandscapeRight;
-                break;
-            case UIDeviceOrientationLandscapeRight:
-                orientation = UIInterfaceOrientationLandscapeLeft;
-                break;
-            default:
-                break;
-        }
+        
         if (model.type == LFAssetMediaTypePhoto) {
-            LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] initWithOrientation:orientation];
+            LFPhotoEditingController *photoEditingVC = [[LFPhotoEditingController alloc] init];
             editingVC = photoEditingVC;
             
             LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
@@ -594,7 +582,7 @@ CGFloat const livePhotoSignMargin = 10.f;
                 imagePickerVc.photoEditLabrary(photoEditingVC);
             }
         } else if (model.type == LFAssetMediaTypeVideo) {
-            LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] initWithOrientation:orientation];
+            LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
             editingVC = videoEditingVC;
             videoEditingVC.minClippingDuration = 3.f;
             

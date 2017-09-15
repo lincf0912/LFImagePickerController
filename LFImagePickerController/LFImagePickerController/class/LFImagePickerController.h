@@ -118,9 +118,9 @@
 /// 默认为NO，如果设置为YES，显示图片文件名称
 @property (nonatomic, assign) BOOL displayImageFilename;
 
-/// Default is NO, if set YES，The image picker will sync the system's album
-/// 同步系统相册 默认为NO
-@property (nonatomic, assign) BOOL syncAlbum;
+/// Default is NO, if set YES，The image picker will sync the system's album （The interface resets UI when the album changes）
+/// 默认为NO，如果设置为YES，同步系统相册 （相册发生变化时，界面会重置UI）
+@property (nonatomic, assign) BOOL syncAlbum NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
 
 /// Set picture or video have selected，valid only when initialization
 /// 设置默认选中的图片或视频，仅初始化时有效

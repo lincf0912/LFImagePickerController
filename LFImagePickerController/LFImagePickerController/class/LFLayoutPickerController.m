@@ -10,6 +10,7 @@
 #import "LFImagePickerHeader.h"
 #import "LFBaseViewController.h"
 #import "UIView+LFFrame.h"
+#import "UIAlertView+LF_Block.h"
 
 @interface LFLayoutPickerController () <UINavigationControllerDelegate>
 {
@@ -178,14 +179,31 @@
     self.processHintStr = @"正在处理...";
 }
 
-
 - (void)showAlertWithTitle:(NSString *)title {
+    [self showAlertWithTitle:title complete:nil];
+}
+
+- (void)showAlertWithTitle:(NSString *)title complete:(void (^)())complete
+{
+    [self showAlertWithTitle:title message:nil complete:complete];
+}
+
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message complete:(void (^)())complete
+{
     if (iOS8Later) {
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleAlert];
-        [alertController addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        [alertController addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            if (complete) {
+                complete();
+            }
+        }]];
         [self presentViewController:alertController animated:YES completion:nil];
     } else {
-        [[[UIAlertView alloc] initWithTitle:title message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil] show];
+        [[[UIAlertView alloc] initWithTitle:title message:message cancelButtonTitle:@"确定" otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+            if (complete) {
+                complete();
+            }
+        }] show];
     }
 }
 

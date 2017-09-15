@@ -48,6 +48,9 @@
 
 
 - (void)showAlertWithTitle:(NSString *)title;
+- (void)showAlertWithTitle:(NSString *)title complete:(void (^)())complete;
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message complete:(void (^)())complete;
+
 - (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop;
 - (void)showProgressHUDText:(NSString *)text;
 - (void)showProgressHUD;

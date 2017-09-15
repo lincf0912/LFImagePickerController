@@ -13,7 +13,6 @@
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
-#import "UIAlertView+LF_Block.h"
 #import "UIImage+LFCommon.h"
 #import "UIImage+LF_Format.h"
 
@@ -156,7 +155,6 @@
             [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];    //创建监听者
         }
     }
-    
     
 }
 
@@ -707,10 +705,9 @@
                 }];
             }else if (error) {
                 [imagePickerVc hideProgressHUD];
-                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"拍照错误" message:error.localizedDescription cancelButtonTitle:@"确定" otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+                [imagePickerVc showAlertWithTitle:@"拍照错误" message:error.localizedDescription complete:^{
                     [picker dismissViewControllerAnimated:YES completion:nil];
                 }];
-                [alertView show];
             }
         }];
     } else {
@@ -767,21 +764,16 @@
 #pragma mark - Private Method
 
 - (void)takePhoto {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
     if ((authStatus == AVAuthorizationStatusRestricted || authStatus ==AVAuthorizationStatusDenied) && iOS7Later) {
         // 无权限 做一个友好的提示
         NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
         if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
         NSString *message = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-相机\"中允许%@访问相机",appName];
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"无法使用相机" message:message cancelButtonTitle:@"取消" otherButtonTitles:@"确定" block:^(UIAlertView *alertView, NSInteger buttonIndex) {
-            
-        }];
-        
-        
-        [alert show];
+        [imagePickerVc showAlertWithTitle:@"无法使用相机" message:message complete:nil];
     } else { // 调用相机
         if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
-            LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
             if ([imagePickerVc.pickerDelegate respondsToSelector:@selector(lf_imagePickerControllerTakePhoto:)]) {
                 [imagePickerVc.pickerDelegate lf_imagePickerControllerTakePhoto:imagePickerVc];
             } else if (imagePickerVc.imagePickerControllerTakePhoto) {
@@ -985,19 +977,27 @@
             [self.model changedAlbum:[albumChanges objectAfterChanges]];
             self.navigationItem.title = _model.name;
             if (albumChanges.objectWasDeleted) {
-                [[[UIAlertView alloc] initWithTitle:nil message:@"Album was deleted!" cancelButtonTitle:@"ok" otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
-                    
-                    if (imagePickerVc.viewControllers.count > 1) {
-                        [imagePickerVc popToRootViewControllerAnimated:YES];
-                    } else {
+                
+                void (^showAlertView)() = ^{
+                    [imagePickerVc showAlertWithTitle:nil message:@"相册已被删除!" complete:^{
+                        if (imagePickerVc.viewControllers.count > 1) {
+                            [imagePickerVc popToRootViewControllerAnimated:YES];
+                        } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-                        [imagePickerVc performSelector:@selector(cancelButtonClick)];
+                            [imagePickerVc performSelector:@selector(cancelButtonClick)];
 #pragma clang diagnostic pop
-                    }
-                    
-                }] show];
+                        }
+                    }];
+                };
                 
+                if (self.presentedViewController) {
+                    [self.presentedViewController dismissViewControllerAnimated:YES completion:^{
+                        showAlertView();
+                    }];
+                } else {
+                    showAlertView();
+                }
                 return ;
             }
         }
@@ -1024,50 +1024,23 @@
                 [self.collectionView reloadData];
                 
                 /** 刷新后返回当前UI */
-                if (imagePickerVc.viewControllers.lastObject != self) {
-                    [imagePickerVc popToViewController:self animated:NO];
+                if (self.presentedViewController) {
+                    [self.presentedViewController dismissViewControllerAnimated:NO completion:^{
+                        if (imagePickerVc.viewControllers.lastObject != self) {
+                            [imagePickerVc popToViewController:self animated:NO];
+                        }
+                    }];
+                } else {
+                    if (imagePickerVc.viewControllers.lastObject != self) {
+                        [imagePickerVc popToViewController:self animated:NO];
+                    }
                 }
-                
-//                [self.collectionView performBatchUpdates:^{
-//                    NSIndexSet *removed = collectionChanges.removedIndexes;
-//                    if (removed.count) {
-//                        [self.collectionView deleteItemsAtIndexPaths:[self indexPathsFromIndexSet:removed]];
-//                    }
-//                    NSIndexSet *inserted = collectionChanges.insertedIndexes;
-//                    if (inserted.count) {
-//                        [self.collectionView insertItemsAtIndexPaths:[self indexPathsFromIndexSet:inserted]];
-//                    }
-//                    NSIndexSet *changed = collectionChanges.changedIndexes;
-//                    if (changed.count) {
-//                        [self.collectionView reloadItemsAtIndexPaths:[self indexPathsFromIndexSet:changed]];
-//                    }
-//                    if (collectionChanges.hasMoves) {
-//                        [collectionChanges enumerateMovesWithBlock:^(NSUInteger fromIndex, NSUInteger toIndex) {
-//                            NSIndexPath *fromIndexPath = [NSIndexPath indexPathForItem:fromIndex inSection:0];
-//                            NSIndexPath *toIndexPath = [NSIndexPath indexPathForItem:toIndex inSection:0];
-//                            [self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
-//                        }];
-//                    }
-//                } completion:nil];
             } else {
                 // Detailed change information is not available;
                 // repopulate the UI from the current fetch result.
-//                [self.collectionView reloadData];
             }
         }
     });
-}
-
-- (NSArray <NSIndexPath *>*)indexPathsFromIndexSet:(NSIndexSet *)indexSet
-{
-    NSMutableArray <NSIndexPath *>*arr = @[].mutableCopy;
-    
-    [indexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:idx inSection:0];
-        [arr addObject:indexPath];
-    }];
-    
-    return [arr copy];
 }
 
 @end

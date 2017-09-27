@@ -119,8 +119,7 @@ static LFAssetManager *manager;
                 // 有可能是PHCollectionList类的的对象，过滤掉
                 if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
                 PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-                if (fetchResult.count < 1) continue;
-                if ([collection.localizedTitle containsString:@"Deleted"] || [collection.localizedTitle isEqualToString:@"最近删除"]) continue;
+//                if ([collection.localizedTitle containsString:@"Deleted"] || [collection.localizedTitle isEqualToString:@"最近删除"]) continue;
                 if ([self isCameraRollAlbum:collection.localizedTitle]) {
                     [albumArr insertObject:[self modelWithResult:fetchResult album:collection] atIndex:0];
                 } else {

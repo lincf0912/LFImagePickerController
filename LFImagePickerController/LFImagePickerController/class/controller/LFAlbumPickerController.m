@@ -119,25 +119,29 @@
     cell.model = album;
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
-    if (album.posterAsset == nil) { /** 没有缓存数据 */
-        NSInteger index = 0;
-        if (imagePickerVc.sortAscendingByCreateDate) {
-            index = album.count-1;
-        }
-        [[LFAssetManager manager] getAssetFromFetchResult:album.result
-                                                  atIndex:index
-                                        allowPickingVideo:imagePickerVc.allowPickingVideo
-                                        allowPickingImage:imagePickerVc.allowPickingImage
-                                                ascending:imagePickerVc.sortAscendingByCreateDate
-                                               completion:^(LFAsset *model) {
-            
-            if ([cell.model isEqual:album]) {
-                cell.model.posterAsset = model;
-                [self setCellPosterImage:cell];
+    if (album.count) {
+        if (album.posterAsset == nil) { /** 没有缓存数据 */
+            NSInteger index = 0;
+            if (imagePickerVc.sortAscendingByCreateDate) {
+                index = album.count-1;
             }
-        }];
+            [[LFAssetManager manager] getAssetFromFetchResult:album.result
+                                                      atIndex:index
+                                            allowPickingVideo:imagePickerVc.allowPickingVideo
+                                            allowPickingImage:imagePickerVc.allowPickingImage
+                                                    ascending:imagePickerVc.sortAscendingByCreateDate
+                                                   completion:^(LFAsset *model) {
+                                                       
+                                                       if ([cell.model isEqual:album]) {
+                                                           cell.model.posterAsset = model;
+                                                           [self setCellPosterImage:cell];
+                                                       }
+                                                   }];
+        } else {
+            [self setCellPosterImage:cell];
+        }
     } else {
-        [self setCellPosterImage:cell];
+        cell.posterImage = bundleImageNamed(@"album_list_img_default");
     }
     
     return cell;

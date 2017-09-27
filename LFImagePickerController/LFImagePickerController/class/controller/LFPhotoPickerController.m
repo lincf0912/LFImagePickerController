@@ -129,9 +129,11 @@
                 if (imagePickerVc.defaultAlbumName) { /** 有指定相册 */
                     [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
                         for (LFAlbum *album in models) {
-                            if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
-                                weakSelf.model = album;
-                                break;
+                            if (album.count) {
+                                if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
+                                    weakSelf.model = album;
+                                    break;
+                                }
                             }
                         }
                         long long end = [[NSDate date] timeIntervalSince1970] * 1000;
@@ -210,11 +212,16 @@
 }
 
 - (void)configNonePhotoView {
-    
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     UIView *nonePhotoView = [[UIView alloc] initWithFrame:[self viewFrameWithoutNavigation]];
     nonePhotoView.backgroundColor = [UIColor clearColor];
     
     NSString *text = @"没有图片或视频";
+    if (!imagePickerVc.allowPickingImage && imagePickerVc.allowPickingVideo) {
+        text = @"没有视频";
+    } else if (imagePickerVc.allowPickingImage && !imagePickerVc.allowPickingVideo) {
+        text = @"没有图片";
+    }
     UIFont *font = [UIFont systemFontOfSize:18];
     CGSize textSize = [text boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size;
     

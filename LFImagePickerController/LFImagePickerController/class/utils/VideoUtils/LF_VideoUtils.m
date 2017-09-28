@@ -106,7 +106,11 @@
         //将视频方向旋转加入到视频处理中
         waterMarkVideoComposition.instructions = @[roateInstruction];
     }
-        
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:outPath]) {
+        [[NSFileManager defaultManager] removeItemAtPath:outPath error:nil];
+    }
+
     AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:AVAssetExportPresetMediumQuality];
     exportSession.outputURL = [NSURL fileURLWithPath:outPath];
     exportSession.videoComposition = waterMarkVideoComposition;

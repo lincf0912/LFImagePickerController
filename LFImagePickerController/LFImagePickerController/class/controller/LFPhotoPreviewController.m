@@ -802,16 +802,6 @@ CGFloat const livePhotoSignMargin = 10.f;
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         /** 缓存对象 */
         [[LFVideoEditManager manager] setVideoEdit:videoEdit forAsset:model];
-        /** 清空缓存 */
-        NSString *videoName = model.name;
-        if (![videoName hasPrefix:@".mp4"]) {
-            videoName = [videoName stringByDeletingPathExtension];
-            videoName = [videoName stringByAppendingPathExtension:@"mp4"];
-        }
-        NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:videoName];
-        if ([[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
-            [[NSFileManager defaultManager] removeItemAtPath:videoPath error:nil];
-        }
         LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
         if (videoEdit.editPreviewImage) { /** 编辑存在 */
             [cell changeVideoPlayer:[AVAsset assetWithURL:videoEdit.editFinalURL] image:videoEdit.editPreviewImage];

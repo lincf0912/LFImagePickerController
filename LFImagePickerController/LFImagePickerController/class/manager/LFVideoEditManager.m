@@ -100,23 +100,21 @@ static LFVideoEditManager *manager;
                 videoEdit = [weakSelf.videoEditDict objectForKey:name];
                 /** 图片文件名 */
                 videoName = name;
-                if (![videoName hasPrefix:@".mp4"]) {
-                    videoName = [videoName stringByDeletingPathExtension];
-                    videoName = [videoName stringByAppendingPathExtension:@"mp4"];
-                }
+                videoName = [videoName stringByDeletingPathExtension];
+                videoName = [[videoName stringByAppendingString:@"_Edit"] stringByAppendingPathExtension:@"mp4"];
             }
         }];
         
-        void(^VideoResultComplete)(NSString *videoPath) = ^(NSString *videoPath) {
+        void(^VideoResultComplete)(NSString *, NSString *) = ^(NSString *path, NSString *name) {
             
             LFResultVideo *result = [LFResultVideo new];
             result.asset = asset;
             result.coverImage = videoEdit.editPreviewImage;
-            if (videoPath.length) {
+            if (path.length) {
                 NSDictionary *opts = [NSDictionary dictionaryWithObject:@(NO)
                                                                  forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
-                AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:[NSURL fileURLWithPath:videoPath] options:opts];
-                NSData *data = [NSData dataWithContentsOfFile:videoPath];
+                AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:[NSURL fileURLWithPath:path] options:opts];
+                NSData *data = [NSData dataWithContentsOfFile:path];
                 NSTimeInterval duration = CMTimeGetSeconds(urlAsset.duration);
                 
                 NSArray *assetVideoTracks = [urlAsset tracksWithMediaType:AVMediaTypeVideo];
@@ -132,14 +130,14 @@ static LFVideoEditManager *manager;
                 
                 
                 result.data = data;
-                result.url = [NSURL fileURLWithPath:videoPath];
+                result.url = [NSURL fileURLWithPath:path];
                 result.duration = duration;
                 
                 LFResultInfo *info = [LFResultInfo new];
                 result.info = info;
                 
                 /** 文件名 */
-                info.name = videoName;
+                info.name = name;
                 /** 大小 */
                 info.byte = data.length;
                 /** 宽高 */
@@ -154,15 +152,10 @@ static LFVideoEditManager *manager;
         
         
         NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:videoName];
-        /** 判断视频是否存在 */
-        if ([[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
-            if (VideoResultComplete) VideoResultComplete(videoPath);
-        } else {
-            AVAsset *av_asset = [AVURLAsset assetWithURL:videoEdit.editFinalURL];
-            [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:videoPath complete:^(BOOL isSuccess, NSError *error) {
-                if (VideoResultComplete) VideoResultComplete(videoPath);
-            }];
-        }
+        AVAsset *av_asset = [AVURLAsset assetWithURL:videoEdit.editFinalURL];
+        [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:videoPath complete:^(BOOL isSuccess, NSError *error) {
+            if (VideoResultComplete) VideoResultComplete(videoPath, videoName);
+        }];
     });
 }
 @end

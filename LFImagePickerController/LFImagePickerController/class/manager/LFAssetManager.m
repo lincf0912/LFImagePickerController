@@ -860,7 +860,7 @@ static LFAssetManager *manager;
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
-    if (![name hasPrefix:@".mp4"]) {
+    if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
     }
@@ -943,7 +943,7 @@ static LFAssetManager *manager;
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
-    if (![name hasPrefix:@".mp4"]) {
+    if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
     }

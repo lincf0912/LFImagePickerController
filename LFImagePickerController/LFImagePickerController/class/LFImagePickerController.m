@@ -24,6 +24,7 @@
 {
     NSTimer *_timer;
     UILabel *_tipLabel;
+    UIButton *_settingBtn;
     BOOL _pushPhotoPickerVc;
     BOOL _didPushPhotoPickerVc;
 }
@@ -40,6 +41,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.view.backgroundColor = [UIColor whiteColor];
+    
     if (!_isPreview) { /** 非预览模式 */
         if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
             _tipLabel = [[UILabel alloc] init];
@@ -50,9 +53,17 @@
             _tipLabel.textColor = [UIColor blackColor];
             NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
             if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-            NSString *tipText = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-照片\"选项中，\r允许%@访问你的手机相册",appName];
-            _tipLabel.text = tipText;
+            NSString *tipText = [NSString stringWithFormat:@"请在\"设置-隐私-照片\"选项中，\r允许%@访问相册",appName];
+            _tipLabel.text = tipText; 
             [self.view addSubview:_tipLabel];
+            
+            _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
+            _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
+            _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+            [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
+            [self.view addSubview:_settingBtn];
+
             
             _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
         } else {
@@ -196,6 +207,7 @@
 - (void)observeAuthrizationStatusChange {
     if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
         [_tipLabel removeFromSuperview];
+        [_settingBtn removeFromSuperview];
         [_timer invalidate];
         _timer = nil;
         [self pushPhotoPickerVc];
@@ -268,6 +280,20 @@
         }
     }
 }
+
+- (void)settingBtnClick {
+    if (iOS8Later) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        [self cancelButtonClick];
+    } else {
+        NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
+        __weak typeof(self) weakSelf = self;
+        [self showAlertWithTitle:@"抱歉" message:message complete:^{
+            [weakSelf cancelButtonClick];
+        }];
+    }
+}
+
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (iOS7Later) {

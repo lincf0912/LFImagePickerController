@@ -777,8 +777,17 @@
         // 无权限 做一个友好的提示
         NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
         if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-        NSString *message = [NSString stringWithFormat:@"请在iPhone的\"设置-隐私-相机\"中允许%@访问相机",appName];
-        [imagePickerVc showAlertWithTitle:@"无法使用相机" message:message complete:nil];
+        NSString *message = [NSString stringWithFormat:@"请在\"设置-隐私-相机\"中允许%@访问相机",appName];
+        [imagePickerVc showAlertWithTitle:nil cancelTitle:@"设置" message:message complete:^{
+            if (iOS8Later) {
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+            } else {
+                NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
+                [imagePickerVc showAlertWithTitle:nil message:message complete:^{
+                }];
+            }
+        }];
+        
     } else { // 调用相机
         if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
             if ([imagePickerVc.pickerDelegate respondsToSelector:@selector(lf_imagePickerControllerTakePhoto:)]) {

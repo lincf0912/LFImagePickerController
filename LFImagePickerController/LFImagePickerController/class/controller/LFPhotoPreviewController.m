@@ -18,19 +18,26 @@
 #import "LFPreviewBar.h"
 #import <PhotosUI/PhotosUI.h>
 
-#import "LFPhotoEditingController.h"
-#import "LFVideoEditingController.h"
-
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
+
+#ifdef LF_MEDIAEDIT
+#import "LFPhotoEditingController.h"
+#import "LFVideoEditingController.h"
 #import "LFPhotoEditManager.h"
 #import "LFVideoEditManager.h"
+#endif
+
 #import "LFGifPlayerManager.h"
 
 CGFloat const cellMargin = 20.f;
 CGFloat const livePhotoSignMargin = 10.f;
 
+#ifdef LF_MEDIAEDIT
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
+#else
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate>
+#endif
 {
     UIView *_naviBar;
     UIButton *_backButton;
@@ -243,7 +250,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     _toolBar.backgroundColor = toolbarBGColor;
     
-    
+#ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
         CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -255,12 +262,18 @@ CGFloat const livePhotoSignMargin = 10.f;
         [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     }
+#endif
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
-        if (!imagePickerVc.allowEditing) { /** 非编辑模式 原图显示在左边 */
+#ifdef LF_MEDIAEDIT
+        BOOL allowEditing = imagePickerVc.allowEditing;
+#else
+        BOOL allowEditing = NO;
+#endif
+        if (!allowEditing) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
             _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
@@ -283,7 +296,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, CGRectGetHeight(_toolBar.frame));
-        if (!imagePickerVc.allowEditing) { /** 非编辑模式 原图显示在左边 */
+        if (!allowEditing) { /** 非编辑模式 原图显示在左边 */
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
@@ -556,6 +569,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
 }
 
+#ifdef LF_MEDIAEDIT
 - (void)editButtonClick {
     if (self.models.count > self.currentIndex) {
         LFImagePickerController *imagePickerVc = [self navi];
@@ -605,6 +619,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         }
     }
 }
+#endif
 
 - (void)originalPhotoButtonClick {
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
@@ -749,6 +764,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     }];
 }
 
+#ifdef LF_MEDIAEDIT
 #pragma mark - LFPhotoEditingControllerDelegate
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
 {
@@ -817,6 +833,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         [self.navigationController popViewControllerAnimated:NO];
     }
 }
+#endif
 
 #pragma mark - Private Method
 

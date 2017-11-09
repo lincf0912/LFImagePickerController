@@ -10,8 +10,11 @@
 #import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
+
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#endif
 
 @interface LFProgressView : UIView
 
@@ -152,11 +155,14 @@
 - (void)setModel:(LFAsset *)model
 {
     _model = model;
+#ifdef LF_MEDIAEDIT
     /** 优先显示编辑图片 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit.editPreviewImage) {
         self.previewImage = photoEdit.editPreviewImage;
-    } else if (model.previewImage) { /** 显示自定义图片 */
+    } else
+#endif
+        if (model.previewImage) { /** 显示自定义图片 */
         self.previewImage = model.previewImage;
     } else {
         

@@ -14,9 +14,11 @@
 #import "UIView+LFAnimate.h"
 #import "UIImage+LFCommon.h"
 #import "LFPhotoEditManager.h"
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEdit.h"
 #import "LFVideoEditManager.h"
 #import "LFVideoEdit.h"
+#endif
 
 #pragma mark - /// 宫格图片视图
 
@@ -104,26 +106,37 @@
 - (void)setModel:(LFAsset *)model {
     _model = model;
 
+    BOOL hiddenEditMask = YES;
     if (self.model.type == LFAssetMediaTypePhoto) {
+#ifdef LF_MEDIAEDIT
         /** 优先显示编辑图片 */
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
         if (photoEdit.editPosterImage) {
             self.imageView.image = photoEdit.editPosterImage;
+            hiddenEditMask = NO;
         } else {
+#endif
             [self getAssetImage:model];
+#ifdef LF_MEDIAEDIT
         }
+#endif
         /** 显示编辑标记 */
-        self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+        self.editMaskImageView.hidden = hiddenEditMask;
     } else if (self.model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
         /** 优先显示编辑图片 */
         LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
         if (videoEdit.editPosterImage) {
             self.imageView.image = videoEdit.editPosterImage;
+            hiddenEditMask = NO;
         } else {
+#endif
             [self getAssetImage:model];
+#ifdef LF_MEDIAEDIT
         }
+#endif
         /** 显示编辑标记 */
-        self.editMaskImageView.hidden = (videoEdit.editPosterImage == nil);
+        self.editMaskImageView.hidden = hiddenEditMask;
     }
     
     
@@ -173,12 +186,16 @@
         }
     } else if (self.model.type == LFAssetMediaTypeVideo) {
         self.videoImgView.hidden = NO;
+#ifdef LF_MEDIAEDIT
         LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
         if (videoEdit.editPosterImage) {
             self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",videoEdit.duration] integerValue]];
         } else {
+#endif
             self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",self.model.duration] integerValue]];
+#ifdef LF_MEDIAEDIT
         }
+#endif
         self.timeLength.textAlignment = NSTextAlignmentRight;
         _bottomView.hidden = NO;
     }

@@ -6,6 +6,7 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
+#ifdef LF_MEDIAEDIT
 #import "LFVideoEditManager.h"
 #import "LFImagePickerHeader.h"
 #import "LFVideoEdit.h"
@@ -159,3 +160,4 @@ static LFVideoEditManager *manager;
     });
 }
 @end
+#endif

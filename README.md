@@ -2,8 +2,8 @@
 
 * 项目UI与资源方面部分使用TZImagePickerController项目，感谢分享。
 * 兼容非系统相册的调用方式
-* 支持Gif(压缩)、视频（压缩）、图片（压缩）
-* 图片编辑、视频编辑（依赖LFMediaEditingController库）
+* 支持Gif（压缩）、视频（压缩）、图片（压缩）
+* 图片编辑、视频编辑（依赖LFMediaEditingController库，默认没有编辑功能）
 * 支持iPhone、iPad 横屏
 * 详细使用见LFImagePickerController.h 的初始化方法
 
@@ -11,6 +11,7 @@
 
 * CocoaPods：pod 'LFImagePickerController'
 * 手动导入：将LFImagePickerController\class文件夹拽入项目中，导入头文件：#import "LFImagePickerController.h"
+* 开启编辑功能：pod 'LFMediaEditingController'
 
 ## 调用代码
 

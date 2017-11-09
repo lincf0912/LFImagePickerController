@@ -18,7 +18,10 @@
 #import "LFAlbumPickerController.h"
 #import "LFPhotoPickerController.h"
 #import "LFPhotoPreviewController.h"
+
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEdit.h"
+#endif
 
 @interface LFImagePickerController ()
 {
@@ -84,8 +87,10 @@
 {
     /** 清空单例 */
     [LFAssetManager free];
+#ifdef LF_MEDIAEDIT
     [LFPhotoEditManager free];
     [LFVideoEditManager free];
+#endif
 }
 
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate {
@@ -157,11 +162,13 @@
         [previewVc setDoneButtonClickBlock:^{
             NSMutableArray *photos = [@[] mutableCopy];
             for (LFAsset *model in weakSelf.selectedModels) {
-                
+#ifdef LF_MEDIAEDIT
                 LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                 if (photoEdit.editPreviewImage) {
                     [photos addObject:photoEdit.editPreviewImage];
-                } else if (model.previewImage) {
+                } else
+#endif
+                    if (model.previewImage) {
                     [photos addObject:model.previewImage];
                 }
             }
@@ -192,7 +199,9 @@
     self.allowPickingLivePhoto = NO;
     self.allowTakePicture = YES;
     self.allowPreview = YES;
+#ifdef LF_MEDIAEDIT
     self.allowEditing = YES;
+#endif
     self.sortAscendingByCreateDate = YES;
     self.autoDismiss = YES;
     self.supportAutorotate = NO;

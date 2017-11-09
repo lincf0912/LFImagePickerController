@@ -13,8 +13,11 @@
 #import "UIView+LFFrame.h"
 #import "LFAssetManager+Authorization.h"
 #import "LFAlbumCell.h"
+
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
+#endif
 
 @interface LFAlbumPickerController ()<UITableViewDataSource,UITableViewDelegate,PHPhotoLibraryChangeObserver> {
     UITableView *_tableView;
@@ -61,10 +64,16 @@
     [imagePickerVc.selectedModels removeAllObjects];
     /** 恢复原图 */
     imagePickerVc.isSelectOriginalPhoto = NO;
-    
+
+#ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing || imagePickerVc.syncAlbum) {
         [_tableView reloadData];
     }
+#else
+    if (imagePickerVc.syncAlbum) {
+        [_tableView reloadData];
+    }
+#endif
 }
 
 - (void)dealloc
@@ -165,18 +174,22 @@
 - (void)setCellPosterImage:(LFAlbumCell *)cell
 {
     LFAsset *model = cell.model.posterAsset;
+#ifdef LF_MEDIAEDIT
     /** 优先显示编辑图片 */
     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
     if (photoEdit.editPosterImage) {
         cell.posterImage = photoEdit.editPosterImage;
     } else {
+#endif
         [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([cell.model.posterAsset isEqual:model]) {
                 cell.posterImage = photo;
             }
             
         } progressHandler:nil networkAccessAllowed:NO];
+#ifdef LF_MEDIAEDIT
     }
+#endif
 }
 
 #pragma mark - PHPhotoLibraryChangeObserver

@@ -9,7 +9,7 @@
 #import "LFPhotoPickerController.h"
 #import "LFImagePickerController.h"
 #import "LFPhotoPreviewController.h"
-#import "LFPhotoEditingController.h"
+
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
@@ -21,10 +21,13 @@
 #import "LFAssetCell.h"
 #import "LFAssetManager+Authorization.h"
 #import "LFAssetManager+SaveAlbum.h"
+
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 #import "LFVideoEditManager.h"
 #import "LFVideoEdit.h"
+#endif
 
 #import <MobileCoreServices/UTCoreTypes.h>
 
@@ -484,6 +487,7 @@
                 LFAsset *model = imagePickerVc.selectedModels[i];
                 
                 if (model.type == LFAssetMediaTypePhoto) {
+#ifdef LF_MEDIAEDIT
                     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                     if (photoEdit) {
                         [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset
@@ -499,6 +503,7 @@
                                                                  photosComplete(resultImage, i);
                                                              }];
                     } else {
+#endif
                         if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
                             [[LFAssetManager manager] getLivePhotoWithAsset:model.asset
                                                                  isOriginal:imagePickerVc.isSelectOriginalPhoto
@@ -517,8 +522,11 @@
                                                                  photosComplete(resultImage, i);
                                                              }];
                         }
+#ifdef LF_MEDIAEDIT
                     }
+#endif
                 } else if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
                     LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
                     if (videoEdit) {
                         [[LFVideoEditManager manager] getVideoWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
@@ -529,10 +537,13 @@
                             photosComplete(resultVideo, i);
                         }];
                     } else {
+#endif
                         [[LFAssetManager manager] getVideoResultWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
                             photosComplete(resultVideo, i);
                         }];
+#ifdef LF_MEDIAEDIT
                     }
+#endif
                 }
             }
         } else {
@@ -869,14 +880,6 @@
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
     
-    [self pushPhotoPrevireViewController:photoPreviewVc photoEditingViewController:nil];
-}
-
-- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEditingViewController:(LFPhotoEditingController *)photoEditingVC {
-    
-    /** 关联代理 */
-    photoEditingVC.delegate = (id)photoPreviewVc;
-    
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{
         [weakSelf.collectionView reloadData];
@@ -886,15 +889,32 @@
         [weakSelf doneButtonClick];
     }];
     
-    if (photoEditingVC) {
-        NSMutableArray *viewControllers = [self.navigationController.viewControllers mutableCopy];
-        [viewControllers addObject:photoPreviewVc];
-        [viewControllers addObject:photoEditingVC];
-        [self.navigationController setViewControllers:viewControllers animated:YES];
-    } else {
-        [self.navigationController pushViewController:photoPreviewVc animated:YES];
-    }
+    [self.navigationController pushViewController:photoPreviewVc animated:YES];
 }
+
+//- (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc photoEditingViewController:(LFPhotoEditingController *)photoEditingVC {
+//
+//    /** 关联代理 */
+//    photoEditingVC.delegate = (id)photoPreviewVc;
+//
+//    __weak typeof(self) weakSelf = self;
+//    [photoPreviewVc setBackButtonClickBlock:^{
+//        [weakSelf.collectionView reloadData];
+//        [weakSelf refreshBottomToolBarStatus];
+//    }];
+//    [photoPreviewVc setDoneButtonClickBlock:^{
+//        [weakSelf doneButtonClick];
+//    }];
+//
+//    if (photoEditingVC) {
+//        NSMutableArray *viewControllers = [self.navigationController.viewControllers mutableCopy];
+//        [viewControllers addObject:photoPreviewVc];
+//        [viewControllers addObject:photoEditingVC];
+//        [self.navigationController setViewControllers:viewControllers animated:YES];
+//    } else {
+//        [self.navigationController pushViewController:photoPreviewVc animated:YES];
+//    }
+//}
 
 
 - (void)getSelectedPhotoBytes {

@@ -184,17 +184,17 @@
     [self showAlertWithTitle:title complete:nil];
 }
 
-- (void)showAlertWithTitle:(NSString *)title complete:(void (^)())complete
+- (void)showAlertWithTitle:(NSString *)title complete:(void (^)(void))complete
 {
     [self showAlertWithTitle:title message:nil complete:complete];
 }
 
-- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message complete:(void (^)())complete
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message complete:(void (^)(void))complete
 {
     [self showAlertWithTitle:title cancelTitle:@"确定" message:message complete:complete];
 }
 
-- (void)showAlertWithTitle:(NSString *)title cancelTitle:(NSString *)cancelTitle message:(NSString *)message complete:(void (^)())complete
+- (void)showAlertWithTitle:(NSString *)title cancelTitle:(NSString *)cancelTitle message:(NSString *)message complete:(void (^)(void))complete
 {
     if (iOS8Later) {
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];

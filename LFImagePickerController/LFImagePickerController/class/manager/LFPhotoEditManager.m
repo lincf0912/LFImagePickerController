@@ -6,16 +6,18 @@
 //  Copyright © 2017年 LamTsanFeng. All rights reserved.
 //
 
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
 #import "LFImagePickerHeader.h"
 #import <Photos/Photos.h>
 #import <AssetsLibrary/AssetsLibrary.h>
-#import "LFPhotoEdit.h"
 #import "LFAsset.h"
 #import "UIImage+LF_ImageCompress.h"
 #import "UIImage+LFCommon.h"
 #import "LFResultObject_property.h"
 #import "LFAssetManager.h"
+#import "LFPhotoEdit.h"
+
 
 @interface LFPhotoEditManager ()
 
@@ -179,3 +181,4 @@ static LFPhotoEditManager *manager;
     });
 }
 @end
+#endif

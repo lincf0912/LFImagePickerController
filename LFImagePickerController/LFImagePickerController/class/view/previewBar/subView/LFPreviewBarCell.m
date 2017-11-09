@@ -11,10 +11,12 @@
 #import "LFImagePickerHeader.h"
 
 #import "LFAssetManager.h"
+#ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
 #import "LFPhotoEdit.h"
 #import "LFVideoEditManager.h"
 #import "LFVideoEdit.h"
+#endif
 
 @interface LFPreviewBarCell ()
 
@@ -100,26 +102,37 @@
 {
     _asset = asset;
     
+    BOOL hiddenEditMask = YES;
     if (self.asset.type == LFAssetMediaTypePhoto) {
+#ifdef LF_MEDIAEDIT
         /** 优先显示编辑图片 */
         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:asset];
         if (photoEdit.editPosterImage) {
             self.imageView.image = photoEdit.editPosterImage;
+            hiddenEditMask = NO;
         } else {
+#endif
             [self getAssetImage:asset];
+#ifdef LF_MEDIAEDIT
         }
+#endif
         /** 显示编辑标记 */
-        self.editMaskImageView.hidden = (photoEdit.editPosterImage == nil);
+        self.editMaskImageView.hidden = hiddenEditMask;
     } else if (self.asset.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
         /** 优先显示编辑图片 */
         LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:asset];
         if (videoEdit.editPosterImage) {
             self.imageView.image = videoEdit.editPosterImage;
+            hiddenEditMask = NO;
         } else {
+#endif
             [self getAssetImage:asset];
+#ifdef LF_MEDIAEDIT
         }
+#endif
         /** 显示编辑标记 */
-        self.editMaskImageView.hidden = (videoEdit.editPosterImage == nil);
+        self.editMaskImageView.hidden = hiddenEditMask;
     }
     /** 显示视频标记 */
     if (_asset.type == LFAssetMediaTypeVideo) {

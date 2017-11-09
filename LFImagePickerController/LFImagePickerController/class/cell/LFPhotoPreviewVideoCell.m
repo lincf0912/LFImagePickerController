@@ -10,8 +10,11 @@
 #import "LFImagePickerHeader.h"
 #import "LFPhotoPreviewCell_property.h"
 #import "LFAssetManager.h"
+
+#ifdef LF_MEDIAEDIT
 #import "LFVideoEditManager.h"
 #import "LFVideoEdit.h"
+#endif
 
 @interface LFPhotoPreviewVideoCell ()
 
@@ -61,6 +64,7 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
+#ifdef LF_MEDIAEDIT
     /** 优先显示编辑图片 */
     LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
     if (videoEdit.editPreviewImage) {
@@ -68,13 +72,16 @@
         AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoEdit.editFinalURL];
         [self readyToPlay:playerItem];
     } else {
+#endif
         [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
         if (model.type == LFAssetMediaTypeVideo) { /** video */
             [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
                 [self readyToPlay:playerItem];
             }];
         }
+#ifdef LF_MEDIAEDIT
     }
+#endif
 }
 
 - (void)readyToPlay:(AVPlayerItem *)playerItem

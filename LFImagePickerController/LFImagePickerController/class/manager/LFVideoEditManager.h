@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
+#ifdef LF_MEDIAEDIT
 @class LFVideoEdit, LFAsset, LFResultVideo;
 @interface LFVideoEditManager : NSObject
 
@@ -29,3 +30,4 @@
                completion:(void (^)(LFResultVideo *resultVideo))completion;
 
 @end
+#endif

@@ -76,9 +76,11 @@
 /// 默认为YES，如果设置为NO,预览按钮将隐藏,用户将不能去预览照片
 @property (nonatomic, assign) BOOL allowPreview;
 
+#ifdef LF_MEDIAEDIT
 /// Default is YES, if set NO, user can't editing photo.
 /// 默认为YES，如果设置为NO,编辑按钮将隐藏,用户将不能去编辑照片
 @property (nonatomic, assign) BOOL allowEditing;
+#endif
 
 /// Default is YES, if set NO, the picker don't dismiss itself.
 /// 默认为YES，如果设置为NO, 选择器将不会自己dismiss
@@ -134,8 +136,8 @@
 @property (nonatomic, weak) id<LFImagePickerControllerDelegate> pickerDelegate;
 
 /** block回调，具体使用见LFImagePickerControllerDelegate代理描述 */
-@property (nonatomic, copy) void (^imagePickerControllerTakePhoto)();
-@property (nonatomic, copy) void (^imagePickerControllerDidCancelHandle)();
+@property (nonatomic, copy) void (^imagePickerControllerTakePhoto)(void);
+@property (nonatomic, copy) void (^imagePickerControllerDidCancelHandle)(void);
 
 /**
  👍🎉1.2.6_取代所有旧接口，唯一回调，避免接口多样化

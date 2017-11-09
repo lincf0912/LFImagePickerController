@@ -57,6 +57,8 @@
     BOOL _shouldScrollToBottom;
     BOOL _showTakePhotoBtn;
 }
+@property (nonatomic, weak) UIView *nonePhotoView;
+
 @property (nonatomic, strong) NSMutableArray *models;
 
 @property (nonatomic, strong) LFCollectionView *collectionView;
@@ -234,6 +236,7 @@
     [nonePhotoView addSubview:label];
     nonePhotoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self.view addSubview:nonePhotoView];
+    self.nonePhotoView = nonePhotoView;
 }
 
 - (void)configCollectionView {
@@ -1037,6 +1040,15 @@
                     self.models = [NSMutableArray arrayWithArray:models];
                     [self checkSelectedModels];
                 }];
+                
+                if (self.nonePhotoView) {
+                    [self.nonePhotoView removeFromSuperview];
+                    self.nonePhotoView = nil;
+                    [self configCollectionView];
+                    [self configBottomToolBar];
+                    [self scrollCollectionViewToBottom];
+                }
+                
                 [self.collectionView reloadData];
                 
                 /** 刷新后返回当前UI */

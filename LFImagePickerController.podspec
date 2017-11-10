@@ -9,9 +9,15 @@ s.platform     = :ios
 s.ios.deployment_target = '7.0'
 s.source       = { :git => 'https://github.com/lincf0912/LFImagePickerController.git', :tag => s.version, :submodules => true }
 s.requires_arc = true
-s.resources    = 'LFImagePickerController/LFImagePickerController/class/*.bundle'
-s.source_files = 'LFImagePickerController/LFImagePickerController/class/*.{h,m}','LFImagePickerController/LFImagePickerController/class/**/*.{h,m}'
-s.public_header_files = 'LFImagePickerController/LFImagePickerController/class/*.h','LFImagePickerController/LFImagePickerController/class/manager/*.h','LFImagePickerController/LFImagePickerController/class/model/*.h','LFImagePickerController/LFImagePickerController/class/model/**/*.h','LFImagePickerController/LFImagePickerController/class/define/LFImagePickerPublicHeader.h'
+s.default_subspec = 'Core'
+
+s.subspec 'Core' do |ss|
+ss.resources    = 'LFImagePickerController/LFImagePickerController/class/*.bundle'
+ss.source_files = 'LFImagePickerController/LFImagePickerController/class/*.{h,m}','LFImagePickerController/LFImagePickerController/class/**/*.{h,m}'
+ss.public_header_files = 'LFImagePickerController/LFImagePickerController/class/*.h','LFImagePickerController/LFImagePickerController/class/manager/*.h','LFImagePickerController/LFImagePickerController/class/model/*.h','LFImagePickerController/LFImagePickerController/class/model/**/*.h','LFImagePickerController/LFImagePickerController/class/define/LFImagePickerPublicHeader.h'
+ss.dependency 'LFImagePickerController/LFGifPlayer'
+ss.dependency 'LFImagePickerController/LFToGIF'
+end
 
 # LFGifPlayer模块
 s.subspec 'LFGifPlayer' do |ss|
@@ -23,6 +29,15 @@ end
 s.subspec 'LFToGIF' do |ss|
 ss.source_files = 'LFImagePickerController/LFImagePickerController/vendors/LFToGIF/*.{h,m}'
 ss.public_header_files = 'LFImagePickerController/LFImagePickerController/vendors/LFToGIF/LFToGIF.h'
+end
+
+# LFMediaEdit模块
+s.subspec 'LFMediaEdit' do |ss|
+ss.xcconfig = {
+    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) LF_MEDIAEDIT=1'
+}
+ss.dependency 'LFImagePickerController/Core'
+ss.dependency 'LFMediaEditingController'
 end
 
 end

@@ -7,6 +7,10 @@
 * 支持iPhone、iPad 横屏
 * 详细使用见LFImagePickerController.h 的初始化方法
 
+## Demo配置编辑功能（不用编辑功能可以忽略）
+* 使用pod install安装LFMediaEditingController库
+* 在LFImagePickerController的project --> Build Settings --> 搜索Preprocessor Macros --> 在Debug与Release添加LF_MEDIAEDIT=1
+
 ## Installation 安装
 
 * CocoaPods：pod 'LFImagePickerController'

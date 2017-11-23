@@ -1,0 +1,27 @@
+
+/* Class = "UIButton"; normalTitle = "创建MP4"; ObjectID = "8l5-II-Kef"; */
+"8l5-II-Kef.normalTitle" = "创建MP4";
+
+/* Class = "UIButton"; normalTitle = "创建Gif"; ObjectID = "CMM-tq-JIW"; */
+"CMM-tq-JIW.normalTitle" = "创建Gif";
+
+/* Class = "UILabel"; text = "标清图/原图"; ObjectID = "Ncq-LH-1SV"; */
+"Ncq-LH-1SV.text" = "标清图/原图";
+
+/* Class = "UIButton"; normalTitle = "分享"; ObjectID = "PSi-kA-f8z"; */
+"PSi-kA-f8z.normalTitle" = "分享";
+
+/* Class = "UIButton"; normalTitle = "预览模式（Asset对象）"; ObjectID = "Qz3-IN-YXo"; */
+"Qz3-IN-YXo.normalTitle" = "预览模式（Asset对象）";
+
+/* Class = "UIButton"; normalTitle = "正常模式"; ObjectID = "WLJ-xD-c6B"; */
+"WLJ-xD-c6B.normalTitle" = "正常模式";
+
+/* Class = "UIButton"; normalTitle = "预览模式（image对象）"; ObjectID = "eK1-5M-jrM"; */
+"eK1-5M-jrM.normalTitle" = "预览模式（image对象）";
+
+/* Class = "UILabel"; text = "简单测试：显示选择的第一张图片"; ObjectID = "fw7-UJ-OEf"; */
+"fw7-UJ-OEf.text" = "简单测试：显示选择的第一张图片";
+
+/* Class = "UILabel"; text = "缩略图"; ObjectID = "nHD-Ui-OIe"; */
+"nHD-Ui-OIe.text" = "缩略图";

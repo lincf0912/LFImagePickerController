@@ -63,8 +63,7 @@
 
 - (CGFloat)navigationHeight
 {
-    CGFloat top = CGRectGetHeight(self.navigationController.navigationBar.frame);
-    if (iOS7Later) top += 20;
+    CGFloat top = CGRectGetMaxY(self.navigationController.navigationBar.frame);
     return top;
 }
 

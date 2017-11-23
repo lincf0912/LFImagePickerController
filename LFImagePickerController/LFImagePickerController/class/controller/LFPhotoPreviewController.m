@@ -32,6 +32,8 @@
 
 CGFloat const cellMargin = 20.f;
 CGFloat const livePhotoSignMargin = 10.f;
+CGFloat const toolbarDefaultHeight = 44.f;
+CGFloat const previewBarDefaultHeight = 64.f;
 
 #ifdef LF_MEDIAEDIT
 @interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
@@ -40,11 +42,13 @@ CGFloat const livePhotoSignMargin = 10.f;
 #endif
 {
     UIView *_naviBar;
+    UIView *_naviSubBar;
     UIButton *_backButton;
     UILabel *_titleLabel;
     UIButton *_selectButton;
     
     UIView *_toolBar;
+    UIView *_toolSubBar;
     UIButton *_doneButton;
     
     UIButton *_originalPhotoButton;
@@ -54,6 +58,7 @@ CGFloat const livePhotoSignMargin = 10.f;
     UIView *_livePhotoSignView;
     UIButton *_livePhotobadgeImageButton;
     
+    UIView *_previewMainBar;
     LFPreviewBar *_previewBar;
 }
 
@@ -173,13 +178,57 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
-    _naviBar.height = [self navigationHeight];
-    _livePhotoSignView.y = [self navigationHeight] + livePhotoSignMargin;
+    
+    /* 适配导航栏 */
+    CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
+    naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
+    if (@available(iOS 11.0, *)) {
+        naviBarHeight += self.view.safeAreaInsets.top;
+    }
+    
+    _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);
+    CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight);
+    if (@available(iOS 11.0, *)) {
+        naviSubBarRect.origin.x += self.view.safeAreaInsets.left;
+        naviSubBarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+    }
+    _naviSubBar.frame = naviSubBarRect;
+    _backButton.height = CGRectGetHeight(_naviSubBar.frame);
+    _selectButton.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_selectButton.frame))/2;
+    _titleLabel.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_titleLabel.frame))/2;
+    
+    /* 适配标记图标 */
+    _livePhotoSignView.x = CGRectGetMinX(_naviSubBar.frame) + livePhotoSignMargin;
+    _livePhotoSignView.y = naviBarHeight + livePhotoSignMargin;
+    
+    /* 适配底部栏 */
+    CGFloat toolbarHeight = toolbarDefaultHeight;
+    if (@available(iOS 11.0, *)) {
+        toolbarHeight += self.view.safeAreaInsets.bottom;
+    }
+    _toolBar.frame = CGRectMake(0, self.view.height - toolbarHeight, self.view.width, toolbarHeight);
+    CGRect toolbarRect = _toolBar.bounds;
+    if (@available(iOS 11.0, *)) {
+        toolbarRect.origin.x += self.view.safeAreaInsets.left;
+        toolbarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+    }
+    _toolSubBar.frame = toolbarRect;
+    
+    /* 适配预览栏 */
+    _previewMainBar.frame = CGRectMake(0, _toolBar.y - previewBarDefaultHeight, self.view.width, previewBarDefaultHeight);;
+    CGRect previewBarRect = _previewMainBar.bounds;
+    if (@available(iOS 11.0, *)) {
+        previewBarRect.origin.x += self.view.safeAreaInsets.left;
+        previewBarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+    }
+    _previewBar.frame = previewBarRect;
+    
+    /* 适配宫格视图 */
+    _collectionView.frame = CGRectMake(0, 0, self.view.width+ cellMargin, self.view.height);;
+    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
-    _collectionView.frame = CGRectMake(0, 0, self.view.width + cellMargin, self.view.height);
-    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
-    if (_currentIndex) [_collectionView setContentOffset:CGPointMake((_collectionView.width) * _currentIndex, 0) animated:NO];
+    if (_models.count) [_collectionView setContentOffset:CGPointMake((_collectionView.width) * _currentIndex, 0) animated:NO];
 }
 
 - (void)dealloc
@@ -190,13 +239,20 @@ CGFloat const livePhotoSignMargin = 10.f;
 - (void)configCustomNaviBar {
     LFImagePickerController *imagePickerVc = [self navi];
     
-    CGFloat naviBarHeight = [self navigationHeight];
+    CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
+    naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
+    if (@available(iOS 11.0, *)) {
+        naviBarHeight += self.view.safeAreaInsets.top;
+    }
     
     _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
     _naviBar.backgroundColor = imagePickerVc.previewNaviBgColor;
-    _naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(8, 0, 50, naviBarHeight)];
-    _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    
+    _naviSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight)];
+    [_naviBar addSubview:_naviSubBar];
+    
+    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(8, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
+    _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
         /** 取消 */
@@ -211,28 +267,28 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
     [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_naviBar addSubview:_backButton];
+    [_naviSubBar addSubview:_backButton];
     
-    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width - 30 - 8, (naviBarHeight-30)/2, 30, 30)];
-    _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(_naviSubBar.frame) - 30 - 8, (CGRectGetHeight(_naviSubBar.frame)-30)/2, 30, 30)];
+    _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
     [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
-    [_naviBar addSubview:_selectButton];
+    [_naviSubBar addSubview:_selectButton];
     
     if (imagePickerVc.displayImageFilename) {        
         _titleLabel = [[UILabel alloc] init];
         _titleLabel.font = [UIFont boldSystemFontOfSize:17];
-        CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, naviBarHeight) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
+        CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(_naviSubBar.frame)) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
         
         CGFloat titleMargin = MAX(_backButton.width, _selectButton.width) + 8;
         
-        _titleLabel.frame = CGRectMake(titleMargin, (naviBarHeight-height)/2, CGRectGetMaxX(_naviBar.frame) - titleMargin * 2, height);
-        _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _titleLabel.frame = CGRectMake(titleMargin, (CGRectGetHeight(_naviSubBar.frame)-height)/2, CGRectGetWidth(_naviSubBar.frame) - titleMargin * 2, height);
+        _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _titleLabel.textColor = [UIColor whiteColor];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-        [_naviBar addSubview:_titleLabel];
+        [_naviSubBar addSubview:_titleLabel];
     }
     
     [self.view addSubview:_naviBar];
@@ -246,16 +302,25 @@ CGFloat const livePhotoSignMargin = 10.f;
     UIColor *toolbarTitleColorDisabled = imagePickerVc.toolbarTitleColorDisabled;
     UIFont *toolbarTitleFont = imagePickerVc.toolbarTitleFont;
     
-    _toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - 44, self.view.width, 44)];
-    _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    CGFloat toolbarHeight = toolbarDefaultHeight;
+    if (@available(iOS 11.0, *)) {
+        toolbarHeight += self.view.safeAreaInsets.bottom;
+    }
+    
+    _toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - toolbarHeight, self.view.width, toolbarHeight)];
+    _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     _toolBar.backgroundColor = toolbarBGColor;
+    
+    UIView *toolSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, toolbarDefaultHeight)];
+    toolSubBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+    _toolSubBar = toolSubBar;
     
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
         CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _editButton.frame = CGRectMake(10, 0, editWidth, 44);
-        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _editButton.frame = CGRectMake(10, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
+        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _editButton.titleLabel.font = toolbarTitleFont;
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
         [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
@@ -274,10 +339,10 @@ CGFloat const livePhotoSignMargin = 10.f;
         BOOL allowEditing = NO;
 #endif
         if (!allowEditing) { /** 非编辑模式 原图显示在左边 */
-            _originalPhotoButton.frame = CGRectMake(0, 0, width, 44);
-            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            _originalPhotoButton.frame = CGRectMake(0, 0, width, CGRectGetHeight(_toolSubBar.frame));
+            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
-            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolBar.frame)-width)/2, 0, width, CGRectGetHeight(_toolBar.frame));
+            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(_toolSubBar.frame)-width)/2, 0, width, CGRectGetHeight(_toolSubBar.frame));
             _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
         }
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
@@ -295,9 +360,9 @@ CGFloat const livePhotoSignMargin = 10.f;
         _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
         
         _originalPhotoLabel = [[UILabel alloc] init];
-        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, CGRectGetHeight(_toolBar.frame));
+        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, CGRectGetHeight(_toolSubBar.frame));
         if (!allowEditing) { /** 非编辑模式 原图显示在左边 */
-            _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+            _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         } else {
             _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
         }
@@ -310,12 +375,12 @@ CGFloat const livePhotoSignMargin = 10.f;
     }
     
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
-    doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolBar.frame)), 30);
+    doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
     doneSize.width += 4;
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (CGRectGetHeight(_toolBar.frame)-doneSize.height)/2, doneSize.width, doneSize.height);
-    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _doneButton.frame = CGRectMake(CGRectGetWidth(_toolSubBar.frame) - doneSize.width - 12, (CGRectGetHeight(_toolSubBar.frame)-doneSize.height)/2, doneSize.width, doneSize.height);
+    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
@@ -330,12 +395,13 @@ CGFloat const livePhotoSignMargin = 10.f;
     UIView *divide = [[UIView alloc] init];
     divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
-    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     
-    [_toolBar addSubview:_editButton];
-    [_toolBar addSubview:_originalPhotoButton];
-    [_toolBar addSubview:_doneButton];
-    [_toolBar addSubview:divide];
+    [toolSubBar addSubview:_editButton];
+    [toolSubBar addSubview:_originalPhotoButton];
+    [toolSubBar addSubview:_doneButton];
+    [toolSubBar addSubview:divide];
+    [_toolBar addSubview:toolSubBar];
     [self.view addSubview:_toolBar];
 }
 
@@ -343,9 +409,13 @@ CGFloat const livePhotoSignMargin = 10.f;
     
     LFImagePickerController *imagePickerVc = [self navi];
     
-    _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, self.view.height - _toolBar.height - 64, self.view.width, 64)];
+    UIView *previewMainBar = [[UIView alloc] initWithFrame:CGRectMake(0, _toolBar.y - previewBarDefaultHeight, self.view.width, previewBarDefaultHeight)];
+    previewMainBar.backgroundColor = imagePickerVc.toolbarBgColor;
+    _previewMainBar = previewMainBar;
+    
+    _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, 0, self.view.width, previewBarDefaultHeight)];
     _previewBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    _previewBar.backgroundColor = imagePickerVc.toolbarBgColor;
+    _previewBar.backgroundColor = [UIColor clearColor];
     _previewBar.borderWidth = 2.f;
     _previewBar.borderColor = imagePickerVc.oKButtonTitleColorNormal;
     _previewBar.dataSource = [imagePickerVc.selectedModels copy];
@@ -403,14 +473,14 @@ CGFloat const livePhotoSignMargin = 10.f;
         
         [weakSelf refreshNaviBarAndBottomBarState];
     };
+    [_previewMainBar addSubview:_previewBar];
     
-    [self.view addSubview:_previewBar];
+    [self.view addSubview:_previewMainBar];
 }
 
 - (void)configLivePhotoSign
 {
-    CGFloat naviHeight = [self navigationHeight];
-    _livePhotoSignView = [[UIView alloc] initWithFrame:CGRectMake(livePhotoSignMargin, livePhotoSignMargin + naviHeight, 30, 30)];
+    _livePhotoSignView = [[UIView alloc] initWithFrame:CGRectMake(livePhotoSignMargin, livePhotoSignMargin + CGRectGetHeight(_naviBar.frame), 30, 30)];
     _livePhotoSignView.backgroundColor = [UIColor colorWithWhite:.8f alpha:.8f];
 //    _livePhotoSignView.alpha = 0.8f;
     _livePhotoSignView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
@@ -754,7 +824,7 @@ CGFloat const livePhotoSignMargin = 10.f;
         _toolBar.alpha = alpha;
         /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
         if (!(!self.alwaysShowPreviewBar && _previewBar.dataSource.count == 0)) {
-            _previewBar.alpha = alpha;
+            _previewMainBar.alpha = alpha;
         }
         
         /** live photo 标记 */

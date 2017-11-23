@@ -50,6 +50,8 @@
 
 @interface LFPhotoPickerController ()<UICollectionViewDataSource,UICollectionViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 {
+    UIView *_bottomToolBar;
+    UIView *_bottomSubToolBar;
     UIButton *_editButton;
     UIButton *_previewButton;
     UIButton *_doneButton;
@@ -168,9 +170,29 @@
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
+    CGFloat toolbarHeight = kBottomToolBarHeight;
+    if (@available(iOS 11.0, *)) {
+        toolbarHeight += self.view.safeAreaInsets.bottom;
+    }
+    
     CGRect collectionViewRect = [self viewFrameWithoutNavigation];
-    collectionViewRect.size.height -= kBottomToolBarHeight;
+    collectionViewRect.size.height -= toolbarHeight;
+    if (@available(iOS 11.0, *)) {
+        collectionViewRect.origin.x += self.view.safeAreaInsets.left;
+        collectionViewRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+    }
     _collectionView.frame = collectionViewRect;
+    
+    /* 适配底部栏 */
+    CGFloat yOffset = self.view.height - toolbarHeight;
+    _bottomToolBar.frame = CGRectMake(0, yOffset, self.view.width, toolbarHeight);
+    
+    CGRect bottomToolbarRect = _bottomToolBar.bounds;
+    if (@available(iOS 11.0, *)) {
+        bottomToolbarRect.origin.x += self.view.safeAreaInsets.left;
+        bottomToolbarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+    }
+    _bottomSubToolBar.frame = bottomToolbarRect;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -228,10 +250,10 @@
         text = @"没有图片";
     }
     UIFont *font = [UIFont systemFontOfSize:18];
-    CGSize textSize = [text boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size;
     
-    UILabel *label = [[UILabel alloc] initWithFrame:(CGRect){{(CGRectGetWidth(nonePhotoView.frame)-textSize.width)/2, (CGRectGetHeight(nonePhotoView.frame)-textSize.height)/2}, textSize}];
-    label.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    UILabel *label = [[UILabel alloc] initWithFrame:nonePhotoView.bounds];
+    label.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    label.textAlignment = NSTextAlignmentCenter;
     label.font = font;
     label.text = text;
     label.textColor = [UIColor lightGrayColor];
@@ -254,7 +276,11 @@
     layout.minimumLineSpacing = margin;
     
     CGRect collectionViewRect = [self viewFrameWithoutNavigation];
-    collectionViewRect.size.height -= kBottomToolBarHeight;
+    CGFloat toolbarHeight = kBottomToolBarHeight;
+    if (@available(iOS 11.0, *)) {
+        toolbarHeight += self.view.safeAreaInsets.bottom;
+    }
+    collectionViewRect.size.height -= toolbarHeight;
     
     _collectionView = [[LFCollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
     _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -278,14 +304,11 @@
 - (void)configBottomToolBar {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    CGFloat yOffset = 0, height = kBottomToolBarHeight;;
-    if (self.navigationController.navigationBar.isTranslucent) {
-        yOffset = self.view.height - height;
-    } else {
-        CGFloat navigationHeight = 44;
-        if (iOS7Later) navigationHeight += 20;
-        yOffset = self.view.height - height - navigationHeight;
+    CGFloat height = kBottomToolBarHeight;
+    if (@available(iOS 11.0, *)) {
+        height += self.view.safeAreaInsets.bottom;
     }
+    CGFloat yOffset = self.view.height - height;
     
     UIColor *toolbarBGColor = imagePickerVc.toolbarBgColor;
     UIColor *toolbarTitleColorNormal = imagePickerVc.toolbarTitleColorNormal;
@@ -295,6 +318,11 @@
     UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
     bottomToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     bottomToolBar.backgroundColor = toolbarBGColor;
+    
+    UIView *bottomSubToolBar = [[UIView alloc] initWithFrame:bottomToolBar.bounds];
+    bottomSubToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [bottomToolBar addSubview:bottomSubToolBar];
+    _bottomSubToolBar = bottomSubToolBar;
     
     CGFloat buttonX = 0;
     
@@ -319,8 +347,8 @@
         CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
         previewSize.width += 2.f;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _previewButton.frame = CGRectMake(buttonX+10, (height-previewSize.height)/2, previewSize.width, previewSize.height);
-        _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _previewButton.frame = CGRectMake(buttonX+10, (kBottomToolBarHeight-previewSize.height)/2, previewSize.width, previewSize.height);
+        _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = toolbarTitleFont;
         [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
@@ -337,8 +365,8 @@
         CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat originalButtonW = fullImageWidth + 56;
-        _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, CGRectGetHeight(bottomToolBar.frame));
-        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, kBottomToolBarHeight);
+        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
@@ -355,8 +383,8 @@
 //        _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
         
         _originalPhotoLabel = [[UILabel alloc] init];
-        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, 50);
-        _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, kBottomToolBarHeight);
+        _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
         _originalPhotoLabel.font = toolbarTitleFont;
         _originalPhotoLabel.textColor = toolbarTitleColorNormal;
@@ -370,8 +398,8 @@
     doneSize.width += 4;
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (height-doneSize.height)/2, doneSize.width, doneSize.height);
-    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (kBottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
+    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
@@ -386,14 +414,15 @@
     UIView *divide = [[UIView alloc] init];
     divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
     divide.frame = CGRectMake(0, 0, self.view.width, 1);
-    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     
-    [bottomToolBar addSubview:_editButton];
-    [bottomToolBar addSubview:_previewButton];
-    [bottomToolBar addSubview:_originalPhotoButton];
-    [bottomToolBar addSubview:_doneButton];
-    [bottomToolBar addSubview:divide];
+    [bottomSubToolBar addSubview:_editButton];
+    [bottomSubToolBar addSubview:_previewButton];
+    [bottomSubToolBar addSubview:_originalPhotoButton];
+    [bottomSubToolBar addSubview:_doneButton];
+    [bottomSubToolBar addSubview:divide];
     [self.view addSubview:bottomToolBar];
+    _bottomToolBar = bottomToolBar;
     
     [self refreshBottomToolBarStatus];
 }

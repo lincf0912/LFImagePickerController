@@ -158,6 +158,8 @@
 		6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFImagePickerHeader.m; sourceTree = "<group>"; };
 		8D6AFC7E26577C89E24C904A /* libPods-LFImagePickerController.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LFImagePickerController.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A29AB11219062E6A4B810545 /* Pods-LFImagePickerController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.release.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.release.xcconfig"; sourceTree = "<group>"; };
+		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		DA7F571BE722254777162CD5 /* Pods-LFImagePickerController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -657,6 +659,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				6F1201811E513D1B00EA2198 /* Base */,
+				C78B9C571FC69FA500D82F1F /* zh-Hans */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -665,6 +668,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				6F1201861E513D1B00EA2198 /* Base */,
+				C78B9C581FC69FA500D82F1F /* zh-Hans */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -676,6 +680,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -723,6 +728,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";

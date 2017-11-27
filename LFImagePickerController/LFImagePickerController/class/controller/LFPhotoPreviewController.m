@@ -183,8 +183,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
     naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
     if (@available(iOS 11.0, *)) {
-        naviBarHeight += self.view.safeAreaInsets.top;
+        naviBarHeight += (self.view.safeAreaInsets.top > 0 ?: (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0));
     }
+
     
     _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);
     CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight);
@@ -940,11 +941,11 @@ CGFloat const previewBarDefaultHeight = 64.f;
     if (!self.alwaysShowPreviewBar) {
         if (imagePickerVc.selectedModels.count) {
             [UIView animateWithDuration:0.25f animations:^{
-                _previewBar.alpha = 1.f;
+                _previewMainBar.alpha = 1.f;
             }];
         } else {
             [UIView animateWithDuration:0.25f animations:^{
-                _previewBar.alpha = 0.f;
+                _previewMainBar.alpha = 0.f;
             }];
         }
     }

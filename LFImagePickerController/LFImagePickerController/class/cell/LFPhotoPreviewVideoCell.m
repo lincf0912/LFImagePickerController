@@ -92,7 +92,7 @@
                     context:NULL];
     _player = [AVPlayer playerWithPlayerItem:playerItem];
     AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-    playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
     playerLayer.frame = self.contentView.bounds;
     [self.contentView.layer addSublayer:playerLayer];
     [_playerLayer removeFromSuperlayer];

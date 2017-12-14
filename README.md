@@ -4,6 +4,7 @@
 * 兼容非系统相册的调用方式
 * 支持Gif（压缩）、视频（压缩）、图片（压缩）
 * 图片编辑、视频编辑（依赖LFMediaEditingController库，默认没有编辑功能）
+* 视频编辑 需要访问音乐库 需要在info.plist 添加 NSAppleMusicUsageDescription
 * 支持iPhone、iPad 横屏
 * 详细使用见LFImagePickerController.h 的初始化方法
 

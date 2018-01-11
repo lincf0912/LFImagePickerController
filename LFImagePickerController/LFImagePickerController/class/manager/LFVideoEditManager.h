@@ -23,10 +23,10 @@
 /**
  通过asset解析视频
  
- @param asset PHAsset／ALAsset
+ @param asset LFAsset
  @param completion 回调
  */
-- (void)getVideoWithAsset:(id)asset
+- (void)getVideoWithAsset:(LFAsset *)asset
                completion:(void (^)(LFResultVideo *resultVideo))completion;
 
 @end

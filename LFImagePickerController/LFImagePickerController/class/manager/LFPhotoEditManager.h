@@ -24,11 +24,11 @@
 /**
  *  通过asset解析缩略图、标清图/原图、图片数据字典
  *
- *  @param asset      PHAsset／ALAsset
+ *  @param asset      LFAsset
  *  @param isOriginal 是否原图
  *  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
  */
-- (void)getPhotoWithAsset:(id)asset
+- (void)getPhotoWithAsset:(LFAsset *)asset
                isOriginal:(BOOL)isOriginal
                completion:(void (^)(LFResultImage *resultImage))completion;
 
@@ -36,13 +36,13 @@
 /**
  通过asset解析缩略图、标清图/原图、图片数据字典
 
- @param asset PHAsset／ALAsset
+ @param asset LFAsset
  @param isOriginal 是否原图
  @param compressSize 非原图的压缩大小
  @param thumbnailCompressSize 缩略图压缩大小
  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
  */
-- (void)getPhotoWithAsset:(id)asset
+- (void)getPhotoWithAsset:(LFAsset *)asset
                isOriginal:(BOOL)isOriginal
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize

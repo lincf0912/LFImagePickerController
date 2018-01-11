@@ -84,32 +84,24 @@ static LFVideoEditManager *manager;
 /**
  通过asset解析视频
 
- @param asset PHAsset／ALAsset
+ @param asset LFAsset
  @param completion 回调
  */
-- (void)getVideoWithAsset:(id)asset
+- (void)getVideoWithAsset:(LFAsset *)asset
                completion:(void (^)(LFResultVideo *resultVideo))completion
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-        __block NSString *videoName = nil;
-        
-        __weak typeof(self) weakSelf = self;
-        __block LFVideoEdit *videoEdit = nil;
-        [[LFAssetManager manager] requestForAsset:asset complete:^(NSString *name) {
-            if (name.length) {
-                videoEdit = [weakSelf.videoEditDict objectForKey:name];
-                /** 图片文件名 */
-                videoName = name;
-                videoName = [videoName stringByDeletingPathExtension];
-                videoName = [[videoName stringByAppendingString:@"_Edit"] stringByAppendingPathExtension:@"mp4"];
-            }
-        }];
+        LFVideoEdit *videoEdit = [self videoEditForAsset:asset];
+        /** 图片文件名 */
+        NSString *videoName = asset.name;
+        videoName = [videoName stringByDeletingPathExtension];
+        videoName = [[videoName stringByAppendingString:@"_Edit"] stringByAppendingPathExtension:@"mp4"];
         
         void(^VideoResultComplete)(NSString *, NSString *) = ^(NSString *path, NSString *name) {
             
             LFResultVideo *result = [LFResultVideo new];
-            result.asset = asset;
+            result.asset = asset.asset;
             result.coverImage = videoEdit.editPreviewImage;
             if (path.length) {
                 NSDictionary *opts = [NSDictionary dictionaryWithObject:@(NO)

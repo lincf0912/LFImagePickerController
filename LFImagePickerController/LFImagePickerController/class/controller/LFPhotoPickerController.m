@@ -535,7 +535,7 @@
 #ifdef LF_MEDIAEDIT
                     LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                     if (photoEdit) {
-                        [[LFPhotoEditManager manager] getPhotoWithAsset:model.asset
+                        [[LFPhotoEditManager manager] getPhotoWithAsset:model
                                                              isOriginal:imagePickerVc.isSelectOriginalPhoto
                                                            compressSize:imagePickerVc.imageCompressSize
                                                   thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
@@ -574,7 +574,7 @@
 #ifdef LF_MEDIAEDIT
                     LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
                     if (videoEdit) {
-                        [[LFVideoEditManager manager] getVideoWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
+                        [[LFVideoEditManager manager] getVideoWithAsset:model completion:^(LFResultVideo *resultVideo) {
                             if (imagePickerVc.autoSavePhotoAlbum) {
                                 /** 编辑视频保存到相册 */
                                 [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURLs:@[resultVideo.url] complete:nil];

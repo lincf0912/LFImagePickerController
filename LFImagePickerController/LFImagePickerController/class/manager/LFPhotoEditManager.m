@@ -96,11 +96,11 @@ static LFPhotoEditManager *manager;
 /**
  通过asset解析缩略图、标清图/原图、图片数据字典
  
- @param asset PHAsset／ALAsset
+ @param asset LFAsset
  @param isOriginal 是否原图
  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
  */
-- (void)getPhotoWithAsset:(id)asset
+- (void)getPhotoWithAsset:(LFAsset *)asset
                isOriginal:(BOOL)isOriginal
                completion:(void (^)(LFResultImage *resultImage))completion
 {
@@ -110,13 +110,13 @@ static LFPhotoEditManager *manager;
 /**
  通过asset解析缩略图、标清图/原图、图片数据字典
  
- @param asset PHAsset／ALAsset
+ @param asset LFAsset
  @param isOriginal 是否原图
  @param compressSize 非原图的压缩大小
  @param thumbnailCompressSize 缩略图压缩大小
  @param completion 返回block 顺序：缩略图、标清图、图片数据字典
  */
-- (void)getPhotoWithAsset:(id)asset
+- (void)getPhotoWithAsset:(LFAsset *)asset
                isOriginal:(BOOL)isOriginal
              compressSize:(CGFloat)compressSize
     thumbnailCompressSize:(CGFloat)thumbnailCompressSize
@@ -125,17 +125,9 @@ static LFPhotoEditManager *manager;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         UIImage *thumbnail = nil;
         UIImage *source = nil;
-        __block NSString *imageName = nil;
         
-        __weak typeof(self) weakSelf = self;
-        __block LFPhotoEdit *photoEdit = nil;
-        [[LFAssetManager manager] requestForAsset:asset complete:^(NSString *name) {
-            if (name.length) {
-                photoEdit = [weakSelf.photoEditDict objectForKey:name];
-                /** 图片文件名 */
-                imageName = name;
-            }
-        }];
+        LFPhotoEdit *photoEdit = [self photoEditForAsset:asset];
+        NSString *imageName = asset.name;
         
         /** 标清图/原图 */
         source = photoEdit.editPreviewImage;
@@ -159,7 +151,7 @@ static LFPhotoEditManager *manager;
         thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
         
         LFResultImage *result = [LFResultImage new];
-        result.asset = asset;
+        result.asset = asset.asset;
         result.thumbnailImage = thumbnail;
         result.thumbnailData = thumbnailData;
         result.originalImage = source;

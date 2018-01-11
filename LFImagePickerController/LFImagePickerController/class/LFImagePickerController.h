@@ -30,8 +30,8 @@
 
 #pragma mark - UI
 
-/** 每行的数量 */
-@property (nonatomic, readonly) NSInteger columnNumber;
+/** 每行的数量 默认4（2～6）  */
+@property (nonatomic, assign) NSInteger columnNumber;
 
 /// Default is 9 / 默认最大可选9张图片
 @property (nonatomic, assign) NSInteger maxImagesCount;

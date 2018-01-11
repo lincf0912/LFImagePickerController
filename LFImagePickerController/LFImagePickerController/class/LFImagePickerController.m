@@ -32,9 +32,6 @@
     BOOL _didPushPhotoPickerVc;
 }
 
-/** 多少列 默认4（2～6） */
-@property (nonatomic, assign) NSInteger columnNumber;
-
 @property (nonatomic, strong) NSMutableArray *models;
 
 @end
@@ -341,6 +338,21 @@
     } else if (self.imagePickerControllerDidCancelHandle) {
         self.imagePickerControllerDidCancelHandle();
     }
+}
+
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion
+{
+    for (UIViewController *childVC in self.childViewControllers) {
+        if ([childVC respondsToSelector:@selector(viewDidDealloc)]) {
+            [childVC performSelector:@selector(viewDidDealloc)];
+        }
+    }
+    [super dismissViewControllerAnimated:flag completion:completion];
+}
+
+- (void)viewDidDealloc
+{
+    
 }
 
 /** 横屏 */

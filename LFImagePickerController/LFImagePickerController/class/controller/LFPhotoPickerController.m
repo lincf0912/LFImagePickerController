@@ -208,12 +208,17 @@
     [super viewWillDisappear:animated];
 }
 
-- (void)dealloc
+- (void)viewDidDealloc
 {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     if (imagePickerVc.syncAlbum) {
         [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];    //移除监听者
     }
+}
+
+- (void)dealloc
+{
+    
 }
 
 - (BOOL)prefersStatusBarHidden {

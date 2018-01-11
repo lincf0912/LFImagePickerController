@@ -574,18 +574,23 @@ CGFloat const previewBarDefaultHeight = 64.f;
             }
         }
     } else {
-        NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
-        for (NSInteger i = 0; i < selectedModels.count; i++) {
-            LFAsset *model_item = selectedModels[i];
-            if (!_isPhotoPreview) {
-                if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
-                    [imagePickerVc.selectedModels removeObjectAtIndex:i];
-                    break;
-                }
-            } else { /** UIImage模式 */
-                if ([model_item isEqual:model]) {
-                    [imagePickerVc.selectedModels removeObjectAtIndex:i];
-                    break;
+        NSInteger index = [imagePickerVc.selectedModels indexOfObject:model];
+        if (index != NSNotFound) {
+            [imagePickerVc.selectedModels removeObjectAtIndex:index];
+        } else {
+            NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
+            for (NSInteger i = 0; i < selectedModels.count; i++) {
+                LFAsset *model_item = selectedModels[i];
+                if (!_isPhotoPreview) {
+                    if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
+                        [imagePickerVc.selectedModels removeObjectAtIndex:i];
+                        break;
+                    }
+                } else { /** UIImage模式 */
+                    if ([model_item isEqual:model]) {
+                        [imagePickerVc.selectedModels removeObjectAtIndex:i];
+                        break;
+                    }
                 }
             }
         }

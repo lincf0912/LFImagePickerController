@@ -244,190 +244,201 @@
 }
 
 - (void)configNonePhotoView {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    UIView *nonePhotoView = [[UIView alloc] initWithFrame:[self viewFrameWithoutNavigation]];
-    nonePhotoView.backgroundColor = [UIColor clearColor];
     
-    NSString *text = @"没有图片或视频";
-    if (!imagePickerVc.allowPickingImage && imagePickerVc.allowPickingVideo) {
-        text = @"没有视频";
-    } else if (imagePickerVc.allowPickingImage && !imagePickerVc.allowPickingVideo) {
-        text = @"没有图片";
+    if (self.nonePhotoView == nil) {
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        UIView *nonePhotoView = [[UIView alloc] initWithFrame:[self viewFrameWithoutNavigation]];
+        nonePhotoView.backgroundColor = [UIColor clearColor];
+        
+        NSString *text = @"没有图片或视频";
+        if (!imagePickerVc.allowPickingImage && imagePickerVc.allowPickingVideo) {
+            text = @"没有视频";
+        } else if (imagePickerVc.allowPickingImage && !imagePickerVc.allowPickingVideo) {
+            text = @"没有图片";
+        }
+        UIFont *font = [UIFont systemFontOfSize:18];
+        
+        UILabel *label = [[UILabel alloc] initWithFrame:nonePhotoView.bounds];
+        label.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        label.textAlignment = NSTextAlignmentCenter;
+        label.font = font;
+        label.text = text;
+        label.textColor = [UIColor lightGrayColor];
+        
+        [nonePhotoView addSubview:label];
+        nonePhotoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.nonePhotoView = nonePhotoView;
     }
-    UIFont *font = [UIFont systemFontOfSize:18];
-    
-    UILabel *label = [[UILabel alloc] initWithFrame:nonePhotoView.bounds];
-    label.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    label.textAlignment = NSTextAlignmentCenter;
-    label.font = font;
-    label.text = text;
-    label.textColor = [UIColor lightGrayColor];
-    
-    [nonePhotoView addSubview:label];
-    nonePhotoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:nonePhotoView];
-    self.nonePhotoView = nonePhotoView;
+    [self.view addSubview:self.nonePhotoView];
 }
 
 - (void)configCollectionView {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
-    CGFloat margin = isiPad ? 15 : 8;
-    CGFloat screenWidth = MIN(self.view.width, self.view.height);
-    CGFloat itemWH = (screenWidth - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
-    layout.itemSize = CGSizeMake(itemWH, itemWH);
-    layout.minimumInteritemSpacing = margin;
-    layout.minimumLineSpacing = margin;
-    
-    CGRect collectionViewRect = [self viewFrameWithoutNavigation];
-    CGFloat toolbarHeight = kBottomToolBarHeight;
-    if (@available(iOS 11.0, *)) {
-        toolbarHeight += self.view.safeAreaInsets.bottom;
-    }
-    collectionViewRect.size.height -= toolbarHeight;
-    
-    _collectionView = [[LFCollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
-    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _collectionView.backgroundColor = [UIColor whiteColor];
-    _collectionView.dataSource = self;
-    _collectionView.delegate = self;
-    _collectionView.alwaysBounceHorizontal = NO;
-    _collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
-    
-    if (_showTakePhotoBtn && imagePickerVc.allowTakePicture ) {
-        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
-    } else {
-        _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
+    if (_collectionView == nil) {
+        
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        
+        UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+        CGFloat margin = isiPad ? 15 : 8;
+        CGFloat screenWidth = MIN(self.view.width, self.view.height);
+        CGFloat itemWH = (screenWidth - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
+        layout.itemSize = CGSizeMake(itemWH, itemWH);
+        layout.minimumInteritemSpacing = margin;
+        layout.minimumLineSpacing = margin;
+        
+        CGRect collectionViewRect = [self viewFrameWithoutNavigation];
+        CGFloat toolbarHeight = kBottomToolBarHeight;
+        if (@available(iOS 11.0, *)) {
+            toolbarHeight += self.view.safeAreaInsets.bottom;
+        }
+        collectionViewRect.size.height -= toolbarHeight;
+        
+        _collectionView = [[LFCollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
+        _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _collectionView.backgroundColor = [UIColor whiteColor];
+        _collectionView.dataSource = self;
+        _collectionView.delegate = self;
+        _collectionView.alwaysBounceHorizontal = NO;
+        _collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
+        
+        if (_showTakePhotoBtn && imagePickerVc.allowTakePicture ) {
+            _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
+        } else {
+            _collectionView.contentSize = CGSizeMake(self.view.width, ((_model.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
+        }
+        [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
+        [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
+        [_collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
     }
     [self.view addSubview:_collectionView];
-    [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
-    [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
-    [_collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
 }
 
 - (void)configBottomToolBar {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
-    CGFloat height = kBottomToolBarHeight;
-    if (@available(iOS 11.0, *)) {
-        height += self.view.safeAreaInsets.bottom;
-    }
-    CGFloat yOffset = self.view.height - height;
-    
-    UIColor *toolbarBGColor = imagePickerVc.toolbarBgColor;
-    UIColor *toolbarTitleColorNormal = imagePickerVc.toolbarTitleColorNormal;
-    UIColor *toolbarTitleColorDisabled = imagePickerVc.toolbarTitleColorDisabled;
-    UIFont *toolbarTitleFont = imagePickerVc.toolbarTitleFont;
-    
-    UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
-    bottomToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    bottomToolBar.backgroundColor = toolbarBGColor;
-    
-    UIView *bottomSubToolBar = [[UIView alloc] initWithFrame:bottomToolBar.bounds];
-    bottomSubToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [bottomToolBar addSubview:bottomSubToolBar];
-    _bottomSubToolBar = bottomSubToolBar;
-    
-    CGFloat buttonX = 0;
-    
-//    if (imagePickerVc.allowEditing) {
-//        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
-//        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
-//        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-//        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-//        _editButton.titleLabel.font = toolbarTitleFont;
-//        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
-//        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
-//        [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
-//        [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-//        _editButton.enabled = imagePickerVc.selectedModels.count==1;
-//        
-//        buttonX = CGRectGetMaxX(_editButton.frame);
-//    }
-    
-    
-    if (imagePickerVc.allowPreview) {
-        CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
-        previewSize.width += 2.f;
-        _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _previewButton.frame = CGRectMake(buttonX+10, (kBottomToolBarHeight-previewSize.height)/2, previewSize.width, previewSize.height);
-        _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
-        [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        _previewButton.titleLabel.font = toolbarTitleFont;
-        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
-        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
-        [_previewButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
-        [_previewButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-        _previewButton.enabled = imagePickerVc.selectedModels.count;
+    if (_bottomToolBar == nil) {
         
-        buttonX = CGRectGetMaxX(_previewButton.frame);
-    }
-    
-    
-    if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
-        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
-        _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        CGFloat originalButtonW = fullImageWidth + 56;
-        _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, kBottomToolBarHeight);
-        _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
-        _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
-        [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        _originalPhotoButton.titleLabel.font = toolbarTitleFont;
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateDisabled];
-        [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
-        [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
-        [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
-        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
-        [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateDisabled];
-        _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
-//        _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
         
-        _originalPhotoLabel = [[UILabel alloc] init];
-        _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, kBottomToolBarHeight);
-        _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
-        _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
-        _originalPhotoLabel.font = toolbarTitleFont;
-        _originalPhotoLabel.textColor = toolbarTitleColorNormal;
+        CGFloat height = kBottomToolBarHeight;
+        if (@available(iOS 11.0, *)) {
+            height += self.view.safeAreaInsets.bottom;
+        }
+        CGFloat yOffset = self.view.height - height;
         
-        [_originalPhotoButton addSubview:_originalPhotoLabel];
-        if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
+        UIColor *toolbarBGColor = imagePickerVc.toolbarBgColor;
+        UIColor *toolbarTitleColorNormal = imagePickerVc.toolbarTitleColorNormal;
+        UIColor *toolbarTitleColorDisabled = imagePickerVc.toolbarTitleColorDisabled;
+        UIFont *toolbarTitleFont = imagePickerVc.toolbarTitleFont;
+        
+        UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
+        bottomToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        bottomToolBar.backgroundColor = toolbarBGColor;
+        
+        UIView *bottomSubToolBar = [[UIView alloc] initWithFrame:bottomToolBar.bounds];
+        bottomSubToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [bottomToolBar addSubview:bottomSubToolBar];
+        _bottomSubToolBar = bottomSubToolBar;
+        
+        CGFloat buttonX = 0;
+        
+        //    if (imagePickerVc.allowEditing) {
+        //        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
+        //        _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        //        _editButton.frame = CGRectMake(10, 3, editWidth, 44);
+        //        _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        //        [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        //        _editButton.titleLabel.font = toolbarTitleFont;
+        //        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+        //        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateDisabled];
+        //        [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
+        //        [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
+        //        _editButton.enabled = imagePickerVc.selectedModels.count==1;
+        //
+        //        buttonX = CGRectGetMaxX(_editButton.frame);
+        //    }
+        
+        
+        if (imagePickerVc.allowPreview) {
+            CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+            previewSize.width += 2.f;
+            _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
+            _previewButton.frame = CGRectMake(buttonX+10, (kBottomToolBarHeight-previewSize.height)/2, previewSize.width, previewSize.height);
+            _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+            [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
+            _previewButton.titleLabel.font = toolbarTitleFont;
+            [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
+            [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
+            [_previewButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
+            [_previewButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
+            _previewButton.enabled = imagePickerVc.selectedModels.count;
+            
+            buttonX = CGRectGetMaxX(_previewButton.frame);
+        }
+        
+        
+        if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
+            CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+            _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+            CGFloat originalButtonW = fullImageWidth + 56;
+            _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, kBottomToolBarHeight);
+            _originalPhotoButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+            _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
+            [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
+            _originalPhotoButton.titleLabel.font = toolbarTitleFont;
+            [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
+            [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
+            [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateDisabled];
+            [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
+            [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
+            [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
+            [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
+            [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
+            [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateDisabled];
+            _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
+            //        _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
+            
+            _originalPhotoLabel = [[UILabel alloc] init];
+            _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, kBottomToolBarHeight);
+            _originalPhotoLabel.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+            _originalPhotoLabel.textAlignment = NSTextAlignmentLeft;
+            _originalPhotoLabel.font = toolbarTitleFont;
+            _originalPhotoLabel.textColor = toolbarTitleColorNormal;
+            
+            [_originalPhotoButton addSubview:_originalPhotoLabel];
+            if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
+        }
+        
+        CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+        doneSize.height = MIN(MAX(doneSize.height, height), 30);
+        doneSize.width += 4;
+        
+        _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (kBottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
+        _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _doneButton.titleLabel.font = toolbarTitleFont;
+        [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
+        [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
+        [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
+        [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
+        _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
+        _doneButton.layer.masksToBounds = YES;
+        _doneButton.enabled = imagePickerVc.selectedModels.count;
+        _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
+        
+        UIView *divide = [[UIView alloc] init];
+        divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
+        divide.frame = CGRectMake(0, 0, self.view.width, 1);
+        divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+        
+        [bottomSubToolBar addSubview:_editButton];
+        [bottomSubToolBar addSubview:_previewButton];
+        [bottomSubToolBar addSubview:_originalPhotoButton];
+        [bottomSubToolBar addSubview:_doneButton];
+        [bottomSubToolBar addSubview:divide];
+        _bottomToolBar = bottomToolBar;
     }
-    
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
-    doneSize.height = MIN(MAX(doneSize.height, height), 30);
-    doneSize.width += 4;
-    
-    _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (kBottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
-    _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
-    _doneButton.titleLabel.font = toolbarTitleFont;
-    [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
-    [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
-    [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
-    _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
-    _doneButton.layer.masksToBounds = YES;
-    _doneButton.enabled = imagePickerVc.selectedModels.count;
-    _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
-    
-    UIView *divide = [[UIView alloc] init];
-    divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
-    divide.frame = CGRectMake(0, 0, self.view.width, 1);
-    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-    
-    [bottomSubToolBar addSubview:_editButton];
-    [bottomSubToolBar addSubview:_previewButton];
-    [bottomSubToolBar addSubview:_originalPhotoButton];
-    [bottomSubToolBar addSubview:_doneButton];
-    [bottomSubToolBar addSubview:divide];
-    [self.view addSubview:bottomToolBar];
-    _bottomToolBar = bottomToolBar;
+    [self.view addSubview:_bottomToolBar];
     
     [self refreshBottomToolBarStatus];
 }
@@ -667,21 +678,26 @@
     [cell selectPhoto:model.isSelected index:[imagePickerVc.selectedModels indexOfObject:model]+1 animated:NO];
     
     __weak typeof(self) weakSelf = self;
+    __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
     cell.didSelectPhotoBlock = ^(BOOL isSelected, LFAsset *cellModel, LFAssetCell *weakCell) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)weakSelf.navigationController;
         // 1. cancel select / 取消选择
         if (!isSelected) {
             cellModel.isSelected = NO;
-            NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
-            for (LFAsset *model_item in selectedModels) {
-                if ([[[LFAssetManager manager] getAssetIdentifier:cellModel.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
-                    [imagePickerVc.selectedModels removeObject:model_item];
-                    break;
+            NSInteger index = [weakImagePickerVc.selectedModels indexOfObject:cellModel];
+            if (index != NSNotFound) {
+                [weakImagePickerVc.selectedModels removeObjectAtIndex:index];
+            } else {
+                NSArray *selectedModels = [NSArray arrayWithArray:weakImagePickerVc.selectedModels];
+                for (LFAsset *model_item in selectedModels) {
+                    if ([[[LFAssetManager manager] getAssetIdentifier:cellModel.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
+                        [weakImagePickerVc.selectedModels removeObject:model_item];
+                        break;
+                    }
                 }
             }
             [weakSelf refreshBottomToolBarStatus];
             
-            if (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount-1) {
+            if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount-1) {
                 /** 取消选择为最大数量-1时，显示其他可选 */
                 NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
                 NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
@@ -697,27 +713,27 @@
             
         } else {
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
-            if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
+            if (weakImagePickerVc.selectedModels.count < weakImagePickerVc.maxImagesCount) {
                 
                 /** 检测是否超过视频最大时长 */
-                if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > imagePickerVc.maxVideoDuration) {
-                    [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
+                if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > weakImagePickerVc.maxVideoDuration) {
+                    [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)weakImagePickerVc.maxVideoDuration/60]];
                     return;
                 }
                 cellModel.isSelected = YES;
-                [imagePickerVc.selectedModels addObject:cellModel];
+                [weakImagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
                 
-                if (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount) {
+                if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount) {
                     /** 选择到最大数量，禁止其他的可选显示 */
                     [weakSelf refreshNoSelectedCell];
                 }
                 
-                [weakCell selectPhoto:YES index:imagePickerVc.selectedModels.count animated:YES];
+                [weakCell selectPhoto:YES index:weakImagePickerVc.selectedModels.count animated:YES];
                 
             } else {
-                NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", imagePickerVc.maxImagesCount];
-                [imagePickerVc showAlertWithTitle:title];
+                NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", weakImagePickerVc.maxImagesCount];
+                [weakImagePickerVc showAlertWithTitle:title];
             }
         }
     };
@@ -1085,6 +1101,8 @@
                 // Tell the collection view to animate insertions/deletions/moves
                 // and to refresh any cells that have changed content.
                 
+                BOOL hasData1 = self.models.count;
+                
                 BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
                 if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
                     ascending = !imagePickerVc.sortAscendingByCreateDate;
@@ -1093,28 +1111,30 @@
                     self.model.models = models;
                     self.models = [NSMutableArray arrayWithArray:models];
                     [self checkSelectedModels];
+                    [self.collectionView reloadData];
                 }];
                 
-                if (self.nonePhotoView) {
-                    [self.nonePhotoView removeFromSuperview];
-                    self.nonePhotoView = nil;
-                    [self configCollectionView];
-                    [self configBottomToolBar];
-                    [self scrollCollectionViewToBottom];
+                BOOL hasData2 = self.models.count;
+                
+                if (hasData1 != hasData2) {
+                    [self.view.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+                    _shouldScrollToBottom = YES;
+                    [self initSubviews];
                 }
                 
-                [self.collectionView reloadData];
                 
-                /** 刷新后返回当前UI */
-                if (self.presentedViewController) {
-                    [self.presentedViewController dismissViewControllerAnimated:NO completion:^{
+                if (collectionChanges.removedObjects.count) {
+                    /** 刷新后返回当前UI */
+                    if (self.presentedViewController) {
+                        [self.presentedViewController dismissViewControllerAnimated:NO completion:^{
+                            if (imagePickerVc.viewControllers.lastObject != self) {
+                                [imagePickerVc popToViewController:self animated:NO];
+                            }
+                        }];
+                    } else {
                         if (imagePickerVc.viewControllers.lastObject != self) {
                             [imagePickerVc popToViewController:self animated:NO];
                         }
-                    }];
-                } else {
-                    if (imagePickerVc.viewControllers.lastObject != self) {
-                        [imagePickerVc popToViewController:self animated:NO];
                     }
                 }
             } else {

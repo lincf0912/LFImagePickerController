@@ -510,7 +510,14 @@
         
         if (imagePickerVc.selectedModels.count) {
             void (^photosComplete)(LFResultObject *, NSInteger) = ^(LFResultObject *result, NSInteger index) {
-                if (result) [resultArray replaceObjectAtIndex:index withObject:result];
+                
+                if (result) {
+                    [resultArray replaceObjectAtIndex:index withObject:result];
+                } else {
+                    LFAsset *model = [imagePickerVc.selectedModels objectAtIndex:index];
+                    LFResultObject *object = [LFResultObject errorResultObject:model.asset];
+                    [resultArray replaceObjectAtIndex:index withObject:object];
+                }
                 
                 if ([resultArray containsObject:@1]) return;
                 

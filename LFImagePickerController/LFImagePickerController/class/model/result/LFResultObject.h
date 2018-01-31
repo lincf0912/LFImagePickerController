@@ -15,4 +15,8 @@
 @property (nonatomic, readonly) id asset;
 /** 详情 */
 @property (nonatomic, readonly) LFResultInfo *info;
+/** 错误 */
+@property (nonatomic, readonly) NSError *error;
+
++ (LFResultObject *)errorResultObject:(id)asset;
 @end

@@ -20,4 +20,17 @@
     _info = info;
 }
 
+- (void)setError:(NSError *)error
+{
+    _error = error;
+}
+
++ (LFResultObject *)errorResultObject:(id)asset
+{
+    LFResultObject *object = [[LFResultObject alloc] init];
+    object.asset = asset;
+    object.error = [NSError errorWithDomain:@"asset error" code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"Asset:%@ cannot extract data", asset]}];
+    return object;
+}
+
 @end

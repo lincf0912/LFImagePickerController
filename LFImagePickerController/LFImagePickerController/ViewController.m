@@ -194,6 +194,9 @@
                 [playerLayer setPlayer:player];
                 [player play];
             }
+        } else {
+            /** 无法处理的数据 */
+            NSLog(@"%@", result.error);
         }
     }
     

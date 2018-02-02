@@ -423,6 +423,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     _previewBar.selectAsset = [self.models objectAtIndex:self.currentIndex];
     
     __weak typeof(self) weakSelf = self;
+    __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
     _previewBar.didSelectItem = ^(LFAsset *asset) {
         NSInteger index = [weakSelf.models indexOfObject:asset];
         if (index != NSNotFound) {            
@@ -442,10 +443,10 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [weakSelf.models insertObject:asset atIndex:destinationIndex];
             
             /** 重新创建选择数组内容 */
-            [imagePickerVc.selectedModels removeAllObjects];
+            [weakImagePickerVc.selectedModels removeAllObjects];
             for (LFAsset *asset in weakSelf.models) {
                 if (asset.isSelected) {
-                    [imagePickerVc.selectedModels addObject:asset];
+                    [weakImagePickerVc.selectedModels addObject:asset];
                 }
             }
             
@@ -465,11 +466,11 @@ CGFloat const previewBarDefaultHeight = 64.f;
             }
         } else {
             //取出移动row数据
-            LFAsset *asset = imagePickerVc.selectedModels[sourceIndex];
+            LFAsset *asset = weakImagePickerVc.selectedModels[sourceIndex];
             //从数据源中移除该数据
-            [imagePickerVc.selectedModels removeObject:asset];
+            [weakImagePickerVc.selectedModels removeObject:asset];
             //将数据插入到数据源中的目标位置
-            [imagePickerVc.selectedModels insertObject:asset atIndex:destinationIndex];
+            [weakImagePickerVc.selectedModels insertObject:asset atIndex:destinationIndex];
         }
         
         [weakSelf refreshNaviBarAndBottomBarState];

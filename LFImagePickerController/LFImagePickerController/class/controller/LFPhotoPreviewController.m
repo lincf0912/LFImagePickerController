@@ -617,7 +617,14 @@ CGFloat const previewBarDefaultHeight = 64.f;
     LFImagePickerController *imagePickerVc = [self navi];
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
-        [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+        if ([self.navigationController respondsToSelector:@selector(cancelButtonClick)]) {
+            [self.navigationController performSelector:@selector(cancelButtonClick)];
+        } else {
+            [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+        }
+#pragma clang diagnostic pop
     } else {
         [self.navigationController popViewControllerAnimated:YES];
     }

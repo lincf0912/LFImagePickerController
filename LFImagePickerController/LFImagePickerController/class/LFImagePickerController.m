@@ -32,7 +32,8 @@
     BOOL _didPushPhotoPickerVc;
 }
 
-@property (nonatomic, strong) NSMutableArray *models;
+/** 预览模式，临时存储 */
+@property (nonatomic, strong) LFPhotoPreviewController *previewVc;
 
 @end
 
@@ -69,14 +70,9 @@
         } else {
             [self pushPhotoPickerVc];
         }
+    } else {
+        [self pushPreviewPickerVc];
     }
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    [_models removeAllObjects];
-    _models = nil;
 }
 
 
@@ -125,15 +121,12 @@
         [self defaultConfig];
         _isPreview = YES;
 
+        NSMutableArray *models = [NSMutableArray array];
         for (id asset in selectedAssets) {
             LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
-            [_models addObject:model];
+            [models addObject:model];
         }
-        LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index];
-        
-        [self setViewControllers:@[photoPickerVc] animated:NO];
-        [photoPickerVc pushPhotoPrevireViewController:previewVc];
+        _previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index];
     }
     return self;
 }
@@ -147,16 +140,16 @@
         /** 关闭原图选项 */
         _allowPickingOriginalPhoto = NO;
         
+        NSMutableArray *models = [NSMutableArray array];
         for (UIImage *image in selectedPhotos) {
             LFAsset *model = [[LFAsset alloc] initWithImage:image];
-            [_models addObject:model];
+            [models addObject:model];
         }
 
         __weak typeof(self) weakSelf = self;
-        LFPhotoPreviewController *previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:[_models copy] index:index];
-        [self setViewControllers:@[previewVc] animated:YES];
+        _previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:models index:index];
         
-        [previewVc setDoneButtonClickBlock:^{
+        [_previewVc setDoneButtonClickBlock:^{
             NSMutableArray *photos = [@[] mutableCopy];
             for (LFAsset *model in weakSelf.selectedModels) {
 #ifdef LF_MEDIAEDIT
@@ -185,7 +178,6 @@
 - (void)defaultConfig
 {
     _selectedModels = [NSMutableArray array];
-    _models = [NSMutableArray array];
     self.maxImagesCount = 9;
     self.minImagesCount = 0;
     self.autoSelectCurrentImage = YES;
@@ -241,6 +233,19 @@
     }
 }
 
+- (void)pushPreviewPickerVc {
+    if (self.previewVc) {
+        if (self.previewVc.isPhotoPreview) {
+            [self setViewControllers:@[self.previewVc] animated:YES];
+        } else {
+            LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
+            [self setViewControllers:@[photoPickerVc] animated:NO];
+            [photoPickerVc pushPhotoPrevireViewController:self.previewVc];
+        }
+    }
+    self.previewVc = nil;
+}
+
 - (void)setColumnNumber:(NSInteger)columnNumber {
     _columnNumber = columnNumber;
     if (columnNumber <= 2) {
@@ -252,38 +257,9 @@
 
 - (void)setSelectedAssets:(NSArray /**<PHAsset/ALAsset/UIImage *>*/*)selectedAssets {
     
-    _selectedAssets = selectedAssets;
-    if (selectedAssets && _models) {
-        _selectedModels = [NSMutableArray array];
-        
-        NSMutableArray *selected_Assets = [NSMutableArray array];
-        NSMutableArray *selected_Images = [NSMutableArray array];
-        for (LFAsset *model in _models) {
-            if (model.asset) {
-                [selected_Assets addObject:model.asset];
-            } else if (model.previewImage) {
-                [selected_Images addObject:@([model.previewImage hash])];
-            }
-        }
-        
-        for (id asset in selectedAssets) {
-            LFAsset *model = nil;
-            if ([asset isKindOfClass:[PHAsset class]] || [asset isKindOfClass:[ALAsset class]]) {
-                NSInteger index = [[LFAssetManager manager] isAssetsArray:selected_Assets containAsset:asset];
-                if (index != NSNotFound) {
-                    model = [_models objectAtIndex:index];
-                }
-            } else if ([asset isKindOfClass:[UIImage class]]) {
-                NSInteger index = [selected_Images indexOfObject:@([asset hash])];
-                if (index != NSNotFound) {
-                    model = [_models objectAtIndex:index];
-                }
-            }
-            if (model && self.maxImagesCount > _selectedModels.count) {
-                model.isSelected = YES;
-                [_selectedModels addObject:model];
-            }
-        }
+    if (!self.viewControllers.count) {
+        /** 已经显示UI，不接受入参 */
+        _selectedAssets = selectedAssets;
     }
 }
 

@@ -68,8 +68,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
 @property (nonatomic, assign) NSInteger currentIndex;           ///< Index of the photo user click / 用户点击的图片的索引
 
 @property (nonatomic, assign) BOOL isHideMyNaviBar;
-
-@property (nonatomic, assign) BOOL isPhotoPreview;
 /** 手动滑动标记 */
 @property (nonatomic, assign) BOOL isMTScroll;
 
@@ -143,7 +141,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    
+    [self checkDefaultSelectedModels];
+    
     [self configCollectionView];
     if (self.isPreviewing == NO) {
         [self configCustomNaviBar];
@@ -151,6 +151,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
         [self configPreviewBar];
         [self configLivePhotoSign];
     }
+    
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -420,6 +422,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
     _previewBar.borderWidth = 2.f;
     _previewBar.borderColor = imagePickerVc.oKButtonTitleColorNormal;
     _previewBar.dataSource = [imagePickerVc.selectedModels copy];
+    /** 预览栏默认全选 */
+    _previewBar.selectedDataSource = imagePickerVc.selectedModels;
     _previewBar.selectAsset = [self.models objectAtIndex:self.currentIndex];
     
     __weak typeof(self) weakSelf = self;
@@ -433,7 +437,17 @@ CGFloat const previewBarDefaultHeight = 64.f;
         }
     };
     
-    _previewBar.didMoveItem = ^(NSInteger sourceIndex, NSInteger destinationIndex) {
+    _previewBar.didMoveItem = ^(LFAsset *asset, NSInteger sourceIndex, NSInteger destinationIndex) {
+        
+        if ([weakImagePickerVc.selectedModels containsObject:asset]) {
+            //取出移动row数据
+            LFAsset *asset = weakImagePickerVc.selectedModels[sourceIndex];
+            //从数据源中移除该数据
+            [weakImagePickerVc.selectedModels removeObject:asset];
+            //将数据插入到数据源中的目标位置
+            [weakImagePickerVc.selectedModels insertObject:asset atIndex:destinationIndex];
+        }
+        
         if (weakSelf.alwaysShowPreviewBar) {
             //取出移动row数据
             LFAsset *asset = weakSelf.models[sourceIndex];
@@ -441,14 +455,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [weakSelf.models removeObject:asset];
             //将数据插入到数据源中的目标位置
             [weakSelf.models insertObject:asset atIndex:destinationIndex];
-            
-            /** 重新创建选择数组内容 */
-            [weakImagePickerVc.selectedModels removeAllObjects];
-            for (LFAsset *asset in weakSelf.models) {
-                if (asset.isSelected) {
-                    [weakImagePickerVc.selectedModels addObject:asset];
-                }
-            }
             
             NSInteger index = weakSelf.currentIndex;
             if (weakSelf.currentIndex == sourceIndex) {
@@ -464,13 +470,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
                 weakSelf.isMTScroll = YES;
                 [weakSelf.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
             }
-        } else {
-            //取出移动row数据
-            LFAsset *asset = weakImagePickerVc.selectedModels[sourceIndex];
-            //从数据源中移除该数据
-            [weakImagePickerVc.selectedModels removeObject:asset];
-            //将数据插入到数据源中的目标位置
-            [weakImagePickerVc.selectedModels insertObject:asset atIndex:destinationIndex];
         }
         
         [weakSelf refreshNaviBarAndBottomBarState];
@@ -560,47 +559,24 @@ CGFloat const previewBarDefaultHeight = 64.f;
                 return;
             }
             if (self.alwaysShowPreviewBar) {
-                NSInteger index = 0;
-                for (LFAsset *asset in self.models) {
-                    if (asset.isSelected) {
-                        index ++;
-                    }
-                    if (asset == model) {
-                        break;
-                    }
+                NSInteger index = [_previewBar.dataSource indexOfObject:model];
+                if (index != NSNotFound) {
+                    [imagePickerVc.selectedModels insertObject:model atIndex:index];
+                } else {
+                    [imagePickerVc.selectedModels addObject:model];
                 }
-                [imagePickerVc.selectedModels insertObject:model atIndex:index];
             } else {
                 [imagePickerVc.selectedModels addObject:model];
             }
         }
     } else {
-        NSInteger index = [imagePickerVc.selectedModels indexOfObject:model];
-        if (index != NSNotFound) {
-            [imagePickerVc.selectedModels removeObjectAtIndex:index];
-        } else {
-            NSArray *selectedModels = [NSArray arrayWithArray:imagePickerVc.selectedModels];
-            for (NSInteger i = 0; i < selectedModels.count; i++) {
-                LFAsset *model_item = selectedModels[i];
-                if (!_isPhotoPreview) {
-                    if ([[[LFAssetManager manager] getAssetIdentifier:model.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
-                        [imagePickerVc.selectedModels removeObjectAtIndex:i];
-                        break;
-                    }
-                } else { /** UIImage模式 */
-                    if ([model_item isEqual:model]) {
-                        [imagePickerVc.selectedModels removeObjectAtIndex:i];
-                        break;
-                    }
-                }
-            }
-        }
+        
+        [imagePickerVc.selectedModels removeObject:model];
     }
-    model.isSelected = !selectButton.isSelected;
     
     /** 非总是显示模式，添加对象 */
     if (!self.alwaysShowPreviewBar) {
-        if (model.isSelected) {
+        if ([imagePickerVc.selectedModels containsObject:model]) {
             [_previewBar addAssetInDataSource:model];
         } else {
             [_previewBar removeAssetInDataSource:model];
@@ -608,7 +584,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     }
     
     [self refreshNaviBarAndBottomBarState];
-    if (model.isSelected) {
+    if ([imagePickerVc.selectedModels containsObject:model]) {
         [UIView showOscillatoryAnimationWithLayer:selectButton.imageView.layer type:OscillatoryAnimationToBigger];
     }
 }
@@ -924,7 +900,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
 - (void)refreshNaviBarAndBottomBarState {
     LFImagePickerController *imagePickerVc = [self navi];
     LFAsset *model = _models[_currentIndex];
-    _selectButton.selected = model.isSelected;
+    _selectButton.selected = [imagePickerVc.selectedModels containsObject:model];
     if (_selectButton.selected) {
         NSString *text = [NSString stringWithFormat:@"%zd", [imagePickerVc.selectedModels indexOfObject:model]+1];
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
@@ -948,7 +924,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     if (_originalPhotoButton.selected) [self showPhotoBytes];
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
-    _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || model.isSelected);
+    _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
     
     /** 预览栏动画 */
     if (!self.alwaysShowPreviewBar) {
@@ -994,6 +970,34 @@ CGFloat const previewBarDefaultHeight = 64.f;
         _livePhotobadgeImageButton.backgroundColor = [UIColor yellowColor];
     } else {
         _livePhotobadgeImageButton.backgroundColor = [UIColor whiteColor];
+    }
+}
+
+- (void)checkDefaultSelectedModels {
+    
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (imagePickerVc.isPreview) {
+        if (imagePickerVc.selectedAssets.count) {
+            [imagePickerVc.selectedModels removeAllObjects];
+            for (id object in imagePickerVc.selectedAssets) {
+                LFAsset *asset = nil;
+                if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
+                    asset = [[LFAsset alloc] initWithAsset:object];
+                }
+                else if ([object isKindOfClass:[UIImage class]]) {
+                    asset = [[LFAsset alloc] initWithImage:object];
+                }
+                NSUInteger index = [self.models indexOfObject:asset];
+                if (index != NSNotFound) {
+                    [imagePickerVc.selectedModels addObject:self.models[index]];
+                }
+                if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
+                    break;
+                }
+            }
+        }
+        /** 只执行一次 */
+        imagePickerVc.selectedAssets = nil;
     }
 }
 @end

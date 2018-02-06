@@ -19,10 +19,12 @@
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate;
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate;
 - (instancetype)initWithMaxImagesCount:(NSInteger)maxImagesCount columnNumber:(NSInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc;
+
+#pragma mark - preview model, self.isPreview = YES.
 /// This init method just for previewing photos,pickerDelegate = self; / 用这个初始化方法以预览图片,pickerDelegate = self;
 - (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index excludeVideo:(BOOL)excludeVideo __deprecated_msg("Property deprecated. Use `initWithSelectedAssets:index`");
 - (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSInteger)index;
-/// This init method just for previewing photos, complete block call back  (invalid delegate)/ 用这个初始化方法以预览图片 complete => 完成后返回全新数组 （代理无效）
+/// This init method just for previewing photos, complete block call back  (The delegate didCancelHandle only valid)/ 用这个初始化方法以预览图片 complete => 完成后返回全新数组 （代理仅返回有效）
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete;
 
 /** 预览模式 */
@@ -39,6 +41,10 @@
 /// The minimum count photos user must pick, Default is 0
 /// 最小照片必选张数,默认是0
 @property (nonatomic, assign) NSInteger minImagesCount;
+
+/// Select original
+/** 是否选择原图 */
+@property (nonatomic, assign) BOOL isSelectOriginalPhoto;
 
 /// If not selected, the current image is automatically selected, Default is YES
 /// 没有选中的情况下,自动选中当前张，默认是YES
@@ -146,15 +152,11 @@
 
 #pragma mark - private
 
-/// Select original
-/** 是否选择原图 */
-@property (nonatomic, assign) BOOL isSelectOriginalPhoto;
-
 /// The photos selected
 /// 用户选中过的图片数组(正常情况无需操作)
 @property (nonatomic, readonly) NSMutableArray<LFAsset *> *selectedModels;
 
-#pragma mark - Deprecated
+#pragma mark - ========================Deprecated========================
 /** 图片 */
 @property (nonatomic, copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 @property (nonatomic, copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey, id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
@@ -163,6 +165,7 @@
 /** 视频 */
 @property (nonatomic, copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 @property (nonatomic, copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage, NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+#pragma mark - ========================Deprecated========================
 
 @end
 
@@ -198,7 +201,7 @@
 
 
 
-#pragma mark - Deprecated
+#pragma mark - ========================Deprecated========================
 /// ======== 图片回调 ========
 
 /**
@@ -257,5 +260,5 @@
  @param path 视频路径mp4
  */
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage path:(NSString *)path __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-
+#pragma mark - ========================Deprecated========================
 @end

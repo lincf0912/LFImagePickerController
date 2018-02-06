@@ -103,7 +103,6 @@
                     if (weakSelf.model.models.count) { /** 使用缓存数据 */
                         weakSelf.models = [NSMutableArray arrayWithArray:weakSelf.model.models];
                         /** check selected data */
-                        [weakSelf checkSelectedModels];
                         dispatch_main_async_safe(^{
                             [weakSelf initSubviews];
                         });
@@ -268,8 +267,8 @@
         [nonePhotoView addSubview:label];
         nonePhotoView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.nonePhotoView = nonePhotoView;
+        [self.view addSubview:self.nonePhotoView];
     }
-    [self.view addSubview:self.nonePhotoView];
 }
 
 - (void)configCollectionView {
@@ -309,8 +308,8 @@
         [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
         [_collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
         [_collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
+        [self.view addSubview:_collectionView];
     }
-    [self.view addSubview:_collectionView];
 }
 
 - (void)configBottomToolBar {
@@ -437,8 +436,8 @@
         [bottomSubToolBar addSubview:_doneButton];
         [bottomSubToolBar addSubview:divide];
         _bottomToolBar = bottomToolBar;
+        [self.view addSubview:_bottomToolBar];
     }
-    [self.view addSubview:_bottomToolBar];
     
     [self refreshBottomToolBarStatus];
 }
@@ -682,26 +681,17 @@
     cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
     
     cell.model = model;
-    [cell selectPhoto:model.isSelected index:[imagePickerVc.selectedModels indexOfObject:model]+1 animated:NO];
+    [cell selectPhoto:[imagePickerVc.selectedModels containsObject:model]
+                index:[imagePickerVc.selectedModels indexOfObject:model]+1
+             animated:NO];
     
     __weak typeof(self) weakSelf = self;
     __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
     cell.didSelectPhotoBlock = ^(BOOL isSelected, LFAsset *cellModel, LFAssetCell *weakCell) {
         // 1. cancel select / 取消选择
         if (!isSelected) {
-            cellModel.isSelected = NO;
-            NSInteger index = [weakImagePickerVc.selectedModels indexOfObject:cellModel];
-            if (index != NSNotFound) {
-                [weakImagePickerVc.selectedModels removeObjectAtIndex:index];
-            } else {
-                NSArray *selectedModels = [NSArray arrayWithArray:weakImagePickerVc.selectedModels];
-                for (LFAsset *model_item in selectedModels) {
-                    if ([[[LFAssetManager manager] getAssetIdentifier:cellModel.asset] isEqualToString:[[LFAssetManager manager] getAssetIdentifier:model_item.asset]]) {
-                        [weakImagePickerVc.selectedModels removeObject:model_item];
-                        break;
-                    }
-                }
-            }
+            [weakImagePickerVc.selectedModels removeObject:cellModel];
+            
             [weakSelf refreshBottomToolBarStatus];
             
             if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount-1) {
@@ -727,7 +717,6 @@
                     [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)weakImagePickerVc.maxVideoDuration/60]];
                     return;
                 }
-                cellModel.isSelected = YES;
                 [weakImagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
                 
@@ -998,42 +987,25 @@
     }
 }
 
-- (void)checkSelectedModels {
-    NSMutableArray *selectedAssets = [NSMutableArray array];
-    NSMutableArray *selectedModels = [NSMutableArray array];
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    for (LFAsset *model in imagePickerVc.selectedModels) {
-        if (model.asset) {
-            [selectedAssets addObject:model.asset];
-        }
-        [selectedModels addObject:@1];
-    }
-    [imagePickerVc.selectedModels removeAllObjects];
-    
-    for (LFAsset *model in _models) {
-        model.isSelected = NO;
-        if (selectedAssets.count) {
-            NSInteger index = [[LFAssetManager manager] isAssetsArray:selectedAssets containAsset:model.asset];
-            if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
-                model.isSelected = YES;
-                [selectedModels replaceObjectAtIndex:index withObject:model];
-            }
-        }
-    }
-    [selectedModels removeObject:@1];
-    [imagePickerVc.selectedModels addObjectsFromArray:selectedModels];
-}
-
 - (void)checkDefaultSelectedModels {
+    
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    [imagePickerVc.selectedModels removeAllObjects];
     if (imagePickerVc.selectedAssets.count) {
-        for (LFAsset *model in _models) {
-            model.isSelected = NO;
-            NSInteger index = [[LFAssetManager manager] isAssetsArray:imagePickerVc.selectedAssets containAsset:model.asset];
-            if (index != NSNotFound && imagePickerVc.maxImagesCount > imagePickerVc.selectedModels.count) {
-                model.isSelected = YES;
-                [imagePickerVc.selectedModels addObject:model];
+        [imagePickerVc.selectedModels removeAllObjects];
+        for (id object in imagePickerVc.selectedAssets) {
+            LFAsset *asset = nil;
+            if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
+                asset = [[LFAsset alloc] initWithAsset:object];
+            }
+//            else if ([object isKindOfClass:[UIImage class]]) {
+//                asset = [[LFAsset alloc] initWithImage:object];
+//            }
+            NSUInteger index = [self.models indexOfObject:asset];
+            if (index != NSNotFound) {
+                [imagePickerVc.selectedModels addObject:self.models[index]];
+            }
+            if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
+                break;
             }
         }
     }
@@ -1117,7 +1089,6 @@
                 [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                     self.model.models = models;
                     self.models = [NSMutableArray arrayWithArray:models];
-                    [self checkSelectedModels];
                     [self.collectionView reloadData];
                 }];
                 

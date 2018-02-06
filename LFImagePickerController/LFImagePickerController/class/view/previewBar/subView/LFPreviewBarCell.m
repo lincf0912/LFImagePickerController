@@ -140,8 +140,13 @@
     } else {
         self.videoMaskImageView.hidden = YES;
     }
+}
+
+- (void)setIsSelectedAsset:(BOOL)isSelectedAsset
+{
+    _isSelectedAsset = isSelectedAsset;
     /** 显示遮罩 */
-    self.maskHitView.hidden = asset.isSelected;
+    self.maskHitView.hidden = isSelectedAsset;
 }
 
 

@@ -23,7 +23,6 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 @interface LFAsset : NSObject
 
 @property (nonatomic, readonly) id asset;             ///< PHAsset or ALAsset
-@property (nonatomic, assign) BOOL isSelected;      ///< The select status of a photo, default is No
 @property (nonatomic, readonly) LFAssetMediaType type;
 @property (nonatomic, readonly) LFAssetSubMediaType subType;
 @property (nonatomic, readonly) NSTimeInterval duration;

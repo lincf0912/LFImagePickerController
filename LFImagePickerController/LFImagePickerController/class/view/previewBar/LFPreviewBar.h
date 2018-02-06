@@ -13,7 +13,10 @@
 @interface LFPreviewBar : UIView
 
 @property (nonatomic, strong) NSArray <LFAsset *>*dataSource;
-/** 选择下标 */
+/** 选择数据源 */
+@property (nonatomic, strong) NSMutableArray <LFAsset *>*selectedDataSource;
+
+/** 显示与刷新游标 */
 @property (nonatomic, strong) LFAsset *selectAsset;
 
 /** 选择框大小 2.f */
@@ -27,6 +30,6 @@
 - (void)removeAssetInDataSource:(LFAsset *)asset;
 
 @property (nonatomic, copy) void(^didSelectItem)(LFAsset *asset);
-@property (nonatomic, copy) void(^didMoveItem)(NSInteger sourceIndex, NSInteger destinationIndex);
+@property (nonatomic, copy) void(^didMoveItem)(LFAsset *asset, NSInteger sourceIndex, NSInteger destinationIndex);
 
 @end

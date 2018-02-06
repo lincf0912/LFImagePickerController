@@ -14,5 +14,6 @@
 + (NSString *)identifier;
 
 @property (nonatomic, strong) LFAsset *asset;
+@property (nonatomic, assign) BOOL isSelectedAsset;
 
 @end

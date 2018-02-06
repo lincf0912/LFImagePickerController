@@ -47,6 +47,7 @@
 
 - (void)customInit
 {
+    _selectedDataSource = [NSMutableArray array];
     _borderWidth = 2.f;
     _borderColor = [UIColor blackColor];
     
@@ -99,25 +100,29 @@
 /** 添加数据源 */
 - (void)addAssetInDataSource:(LFAsset *)asset
 {
-    __weak typeof(self) weakSelf = self;
-    [self.collectionView performBatchUpdates:^{
-        [weakSelf.myDataSource addObject:asset];
-        [weakSelf.collectionView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:weakSelf.myDataSource.count-1 inSection:0]]];
-        
-    } completion:nil];
+    if (asset) {
+        __weak typeof(self) weakSelf = self;
+        [self.collectionView performBatchUpdates:^{
+            [weakSelf.myDataSource addObject:asset];
+            [weakSelf.collectionView insertItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:weakSelf.myDataSource.count-1 inSection:0]]];
+            
+        } completion:nil];
+    }
 }
 /** 删除数据源 */
 - (void)removeAssetInDataSource:(LFAsset *)asset
 {
-    __weak typeof(self) weakSelf = self;
-    [self.collectionView performBatchUpdates:^{
-        NSInteger index = [weakSelf.myDataSource indexOfObject:asset];
-        [weakSelf.myDataSource removeObject:asset];
-        if (index != NSNotFound) {
-            [weakSelf.collectionView deleteItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]];
-        }
-        
-    } completion:nil];
+    if (asset) {
+        __weak typeof(self) weakSelf = self;
+        [self.collectionView performBatchUpdates:^{
+            NSInteger index = [weakSelf.myDataSource indexOfObject:asset];
+            [weakSelf.myDataSource removeObject:asset];
+            if (index != NSNotFound) {
+                [weakSelf.collectionView deleteItemsAtIndexPaths:@[[NSIndexPath indexPathForRow:index inSection:0]]];
+            }
+            
+        } completion:nil];
+    }
 }
 
 - (void)setSelectAsset:(LFAsset *)selectAsset
@@ -169,6 +174,7 @@
     LFAsset *asset = self.myDataSource[indexPath.row];
     
     cell.asset = asset;
+    cell.isSelectedAsset = [self.selectedDataSource containsObject:asset];
     
     if (asset == self.selectAsset) {
         cell.layer.borderColor = self.borderColor.CGColor;
@@ -196,7 +202,7 @@
     [self.myDataSource insertObject:asset atIndex:destinationIndexPath.row];
     
     if (self.didMoveItem) {
-        self.didMoveItem(sourceIndexPath.row, destinationIndexPath.row);
+        self.didMoveItem(asset, sourceIndexPath.row, destinationIndexPath.row);
     }
 }
 

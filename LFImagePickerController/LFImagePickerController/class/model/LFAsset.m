@@ -14,6 +14,12 @@
 
 #import "LFImagePickerHeader.h"
 
+@interface LFAsset ()
+
+@property (nonatomic, strong) NSString *identifier;
+
+@end
+
 @implementation LFAsset
 
 - (instancetype)initWithAsset:(id)asset
@@ -27,6 +33,7 @@
         
         if ([asset isKindOfClass:[PHAsset class]]) {
             PHAsset *phAsset = (PHAsset *)asset;
+            _identifier = phAsset.localIdentifier;
             _name = [asset valueForKey:@"filename"];
             if (phAsset.mediaType == PHAssetMediaTypeVideo) {
                 _type = LFAssetMediaTypeVideo;
@@ -68,6 +75,8 @@
         } else if ([asset isKindOfClass:[ALAsset class]]) {
             ALAsset *alAsset = (ALAsset *)asset;
             ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
+            NSURL *url = [asset valueForProperty:ALAssetPropertyURLs];
+            _identifier = url.absoluteString;
             _name = assetRep.filename;
             /// Allow picking video
             if ([[alAsset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
@@ -92,4 +101,47 @@
     }
     return self;
 }
+
+
+#pragma mark - private
+- (BOOL)isEqual:(id)object
+{
+    if([self class] == [object class])
+    {
+        if (self == object) {
+            return YES;
+        }
+        LFAsset *objAsset = (LFAsset *)object;
+        if ([self.asset isEqual: objAsset.asset]) {
+            return YES;
+        }
+        if (!self.identifier && !objAsset.identifier && [self.identifier isEqualToString: objAsset.identifier]) {
+            return YES;
+        }
+        if ([self.previewImage isEqual:objAsset.previewImage]) {
+            return YES;
+        }
+        return NO;
+    }
+    else
+    {
+        return [super isEqual:object];
+    }
+}
+
+- (NSUInteger)hash
+{
+    NSUInteger assetHash = 0;
+    if (self.asset) {
+        assetHash ^= [self.asset hash];
+    }
+    if (self.identifier) {
+        assetHash ^= [self.identifier hash];
+    }
+    if (self.previewImage) {
+        assetHash ^= [self.previewImage hash];
+    }
+    return assetHash;
+}
+
 @end

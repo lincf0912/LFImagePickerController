@@ -11,13 +11,15 @@
 @class LFAsset;
 @interface LFPhotoPreviewController : LFBaseViewController
 
+@property (nonatomic, readonly) BOOL isPhotoPreview;
+
 /// Return the new selected photos / 返回最新的选中图片数组
 @property (nonatomic, copy) void (^backButtonClickBlock)();
 @property (nonatomic, copy) void (^doneButtonClickBlock)();
 
 /** 初始化 */
 - (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index;
-/** 图片预览模式 没有asset对象 只有previewImage */
+/** 图片预览模式 没有asset对象 只有previewImage, self.isPhotoPreview=YES */
 - (instancetype)initWithPhotos:(NSArray <LFAsset *>*)photos index:(NSInteger)index;
 
 /** 总是显示预览框 */

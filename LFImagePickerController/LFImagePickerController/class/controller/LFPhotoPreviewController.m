@@ -262,7 +262,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     if (imagePickerVc.isPreview) {
         /** 取消 */
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
-        _backButton.titleLabel.font = [UIFont systemFontOfSize:15];
+        _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
         CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
         _backButton.width = editCancelWidth;
     } else {
@@ -270,7 +270,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
         [_backButton setImage:image forState:UIControlStateNormal];
         _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50, 0, 0);
     }
-    [_backButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_backButton setTitleColor:imagePickerVc.barItemTextColor forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [_naviSubBar addSubview:_backButton];
     
@@ -283,7 +283,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     
     if (imagePickerVc.displayImageFilename) {        
         _titleLabel = [[UILabel alloc] init];
-        _titleLabel.font = [UIFont boldSystemFontOfSize:17];
+        _titleLabel.font = imagePickerVc.naviTitleFont;
         CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(_naviSubBar.frame)) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
         
         CGFloat titleMargin = MAX(_backButton.width, _selectButton.width) + 8;
@@ -582,6 +582,19 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [_previewBar addAssetInDataSource:model];
         } else {
             [_previewBar removeAssetInDataSource:model];
+        }
+    }
+    
+    /** 预览栏动画 */
+    if (!self.alwaysShowPreviewBar) {
+        if (imagePickerVc.selectedModels.count) {
+            [UIView animateWithDuration:0.25f animations:^{
+                _previewMainBar.alpha = 1.f;
+            }];
+        } else {
+            [UIView animateWithDuration:0.25f animations:^{
+                _previewMainBar.alpha = 0.f;
+            }];
         }
     }
     
@@ -928,18 +941,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
     
-    /** 预览栏动画 */
-    if (!self.alwaysShowPreviewBar) {
-        if (imagePickerVc.selectedModels.count) {
-            [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = 1.f;
-            }];
-        } else {
-            [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = 0.f;
-            }];
-        }
-    }
     /** 预览栏选中与刷新 */
     _previewBar.selectAsset = model;
     

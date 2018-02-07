@@ -25,12 +25,11 @@
 
 @interface LFImagePickerController ()
 {
-    NSTimer *_timer;
-    UILabel *_tipLabel;
-    UIButton *_settingBtn;
     BOOL _pushPhotoPickerVc;
     BOOL _didPushPhotoPickerVc;
 }
+
+@property (nonatomic, weak) UIView *tipView;
 
 /** 预览模式，临时存储 */
 @property (nonatomic, strong) LFPhotoPreviewController *previewVc;
@@ -46,7 +45,10 @@
     
     if (!_isPreview) { /** 非预览模式 */
         if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
-            _tipLabel = [[UILabel alloc] init];
+            
+            UIView *tipView = [[UIView alloc] initWithFrame:self.view.bounds];
+            
+            UILabel *_tipLabel = [[UILabel alloc] init];
             _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
             _tipLabel.textAlignment = NSTextAlignmentCenter;
             _tipLabel.numberOfLines = 0;
@@ -56,17 +58,33 @@
             if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
             NSString *tipText = [NSString stringWithFormat:@"请在\"设置-隐私-照片\"选项中，\r允许%@访问相册",appName];
             _tipLabel.text = tipText; 
-            [self.view addSubview:_tipLabel];
+            [tipView addSubview:_tipLabel];
             
-            _settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+            UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
             [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
             _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
             _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
             [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
-            [self.view addSubview:_settingBtn];
-
+            [tipView addSubview:_settingBtn];
             
-            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
+            CGFloat naviBarHeight = 0, naviSubBarHeight = 0;;
+            naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationBar.frame);
+            if (@available(iOS 11.0, *)) {
+                naviBarHeight += (self.view.safeAreaInsets.top > 0 ?: (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0));
+            } else {
+                naviBarHeight += (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0);
+            }
+            
+            UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, naviBarHeight-naviSubBarHeight, 50, naviSubBarHeight)];
+            [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
+            _cancelBtn.titleLabel.font = self.barItemTextFont;
+            _cancelBtn.titleLabel.textColor = self.barItemTextColor;
+            [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
+            [tipView addSubview:_cancelBtn];
+            
+            [self.view addSubview:tipView];
+            _tipView = tipView;
+            
         } else {
             [self pushPhotoPickerVc];
         }
@@ -202,16 +220,6 @@
     self.syncAlbum = NO;
 }
 
-- (void)observeAuthrizationStatusChange {
-    if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
-        [_tipLabel removeFromSuperview];
-        [_settingBtn removeFromSuperview];
-        [_timer invalidate];
-        _timer = nil;
-        [self pushPhotoPickerVc];
-    }
-}
-
 - (void)pushPhotoPickerVc {
     if (!_didPushPhotoPickerVc) {
         _didPushPhotoPickerVc = NO;
@@ -281,7 +289,6 @@
     if (iOS7Later) {
         viewController.automaticallyAdjustsScrollViewInsets = NO;
     }
-    if (_timer) { [_timer invalidate]; _timer = nil;}
     [super pushViewController:viewController animated:animated];
 }
 
@@ -292,7 +299,6 @@
             controller.automaticallyAdjustsScrollViewInsets = NO;
         }
     }
-    if (_timer) { [_timer invalidate]; _timer = nil;}
     [super setViewControllers:viewControllers animated:animated];
 }
 

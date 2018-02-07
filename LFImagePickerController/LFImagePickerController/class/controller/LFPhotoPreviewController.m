@@ -186,6 +186,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
     naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
     if (@available(iOS 11.0, *)) {
         naviBarHeight += (self.view.safeAreaInsets.top > 0 ?: (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0));
+    } else {
+        naviBarHeight += (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0);
     }
 
     

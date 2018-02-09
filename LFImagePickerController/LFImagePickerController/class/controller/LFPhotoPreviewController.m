@@ -585,19 +585,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
         }
     }
     
-    /** 预览栏动画 */
-    if (!self.alwaysShowPreviewBar) {
-        if (imagePickerVc.selectedModels.count) {
-            [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = 1.f;
-            }];
-        } else {
-            [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = 0.f;
-            }];
-        }
-    }
-    
     [self refreshNaviBarAndBottomBarState];
     if ([imagePickerVc.selectedModels containsObject:model]) {
         [UIView showOscillatoryAnimationWithLayer:selectButton.imageView.layer type:OscillatoryAnimationToBigger];
@@ -940,6 +927,19 @@ CGFloat const previewBarDefaultHeight = 64.f;
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
+    
+    /** 预览栏动画 */
+    if (!self.alwaysShowPreviewBar) {
+        if (imagePickerVc.selectedModels.count) {
+            [UIView animateWithDuration:0.25f animations:^{
+                _previewMainBar.alpha = (self.isHideMyNaviBar ? 0.f : 1.f);
+            }];
+        } else {
+            [UIView animateWithDuration:0.25f animations:^{
+                _previewMainBar.alpha = 0.f;
+            }];
+        }
+    }
     
     /** 预览栏选中与刷新 */
     _previewBar.selectAsset = model;

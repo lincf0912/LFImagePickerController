@@ -478,6 +478,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
     };
     [_previewMainBar addSubview:_previewBar];
     
+    _previewMainBar.alpha = imagePickerVc.selectedModels.count;
+    
     [self.view addSubview:_previewMainBar];
 }
 

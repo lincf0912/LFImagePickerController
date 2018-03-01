@@ -25,11 +25,13 @@
 
 @interface LFImagePickerController ()
 {
+    NSTimer *_timer;
     BOOL _pushPhotoPickerVc;
     BOOL _didPushPhotoPickerVc;
 }
 
 @property (nonatomic, weak) UIView *tipView;
+@property (nonatomic, weak) UIButton *tip_cancelBtn;
 
 /** 预览模式，临时存储 */
 @property (nonatomic, strong) LFPhotoPreviewController *previewVc;
@@ -67,23 +69,20 @@
             [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
             [tipView addSubview:_settingBtn];
             
-            CGFloat naviBarHeight = 0, naviSubBarHeight = 0;;
-            naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationBar.frame);
-            if (@available(iOS 11.0, *)) {
-                naviBarHeight += (self.view.safeAreaInsets.top > 0 ?: (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0));
-            } else {
-                naviBarHeight += (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0);
-            }
+            CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
             
-            UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, naviBarHeight-naviSubBarHeight, 50, naviSubBarHeight)];
+            UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
             [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
             _cancelBtn.titleLabel.font = self.barItemTextFont;
             _cancelBtn.titleLabel.textColor = self.barItemTextColor;
             [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
             [tipView addSubview:_cancelBtn];
+            _tip_cancelBtn = _cancelBtn;
             
             [self.view addSubview:tipView];
             _tipView = tipView;
+            
+            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
             
         } else {
             [self pushPhotoPickerVc];
@@ -93,6 +92,29 @@
     }
 }
 
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    if (_timer) { [_timer invalidate]; _timer = nil;}
+}
+
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    if (_tip_cancelBtn) {
+        CGFloat naviBarHeight = 0, naviSubBarHeight = 0;;
+        naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationBar.frame);
+        if (@available(iOS 11.0, *)) {
+            naviBarHeight += LF_StatusBarHeight_iOS11;
+        } else {
+            naviBarHeight += LF_StatusBarHeight;
+        }
+        CGRect frame = _tip_cancelBtn.frame;
+        frame.origin.y = naviBarHeight-naviSubBarHeight;
+        frame.size.height = naviSubBarHeight;
+        _tip_cancelBtn.frame = frame;
+    }
+}
 
 - (void)dealloc
 {
@@ -220,6 +242,15 @@
     self.syncAlbum = NO;
 }
 
+- (void)observeAuthrizationStatusChange {
+    if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
+        [_tipView removeFromSuperview];
+        [_timer invalidate];
+        _timer = nil;
+        [self pushPhotoPickerVc];
+    }
+}
+
 - (void)pushPhotoPickerVc {
     if (!_didPushPhotoPickerVc) {
         _didPushPhotoPickerVc = NO;
@@ -289,6 +320,7 @@
     if (iOS7Later) {
         viewController.automaticallyAdjustsScrollViewInsets = NO;
     }
+    if (_timer) { [_timer invalidate]; _timer = nil;}
     [super pushViewController:viewController animated:animated];
 }
 
@@ -299,6 +331,7 @@
             controller.automaticallyAdjustsScrollViewInsets = NO;
         }
     }
+    if (_timer) { [_timer invalidate]; _timer = nil;}
     [super setViewControllers:viewControllers animated:animated];
 }
 

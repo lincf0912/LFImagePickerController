@@ -158,6 +158,8 @@
         [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([asset.asset isEqual:self.asset.asset]) {
                 self.imageView.image = photo;
+            } else {
+                self.imageView.image = nil;
             }
             
         } progressHandler:nil networkAccessAllowed:NO];

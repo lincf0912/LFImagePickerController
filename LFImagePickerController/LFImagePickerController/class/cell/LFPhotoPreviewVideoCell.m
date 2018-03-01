@@ -76,7 +76,9 @@
         [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
         if (model.type == LFAssetMediaTypeVideo) { /** video */
             [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
-                [self readyToPlay:playerItem];
+                if ([model isEqual:self.model]) {
+                    [self readyToPlay:playerItem];
+                }
             }];
         }
 #ifdef LF_MEDIAEDIT

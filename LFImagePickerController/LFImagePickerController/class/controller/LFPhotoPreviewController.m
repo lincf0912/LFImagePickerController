@@ -185,12 +185,11 @@ CGFloat const previewBarDefaultHeight = 64.f;
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
     naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
     if (@available(iOS 11.0, *)) {
-        naviBarHeight += (self.view.safeAreaInsets.top > 0 ?: (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0));
+        naviBarHeight += LF_StatusBarHeight_iOS11;
     } else {
-        naviBarHeight += (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0);
+        naviBarHeight += LF_StatusBarHeight;
     }
 
-    
     _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);
     CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight);
     if (@available(iOS 11.0, *)) {

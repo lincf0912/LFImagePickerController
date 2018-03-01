@@ -32,6 +32,9 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), bl
 
 #define bundleImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kBundlePath, name]]
 
+#define LF_StatusBarHeight (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0)
+#define LF_StatusBarHeight_iOS11 (self.view.safeAreaInsets.top > 0 ? self.view.safeAreaInsets.top : (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0))
+
 extern NSString *const kBundlePath;
 
 /** 标清图压缩大小 */

@@ -398,8 +398,6 @@
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateDisabled];
-        _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
-        //        _originalPhotoButton.enabled = imagePickerVc.selectedModels.count > 0;
         
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 46, 0, 80, kBottomToolBarHeight);
@@ -409,7 +407,6 @@
         _originalPhotoLabel.textColor = toolbarTitleColorNormal;
         
         [_originalPhotoButton addSubview:_originalPhotoLabel];
-        if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
     }
     
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
@@ -944,9 +941,9 @@
     
     [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)",imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     
-//    _originalPhotoButton.selected = (imagePickerVc.isSelectOriginalPhoto && imagePickerVc.selectedModels.count > 0);
+    _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
-    if (_originalPhotoButton.selected) [self getSelectedPhotoBytes];
+    if (!_originalPhotoLabel.hidden) [self getSelectedPhotoBytes];
 }
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {

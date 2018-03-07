@@ -183,7 +183,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     
     /* 适配导航栏 */
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
-    naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
+    naviBarHeight = naviSubBarHeight = CGRectGetHeight([self navi].navigationBar.frame);
     if (@available(iOS 11.0, *)) {
         naviBarHeight += LF_StatusBarHeight_iOS11;
     } else {
@@ -244,7 +244,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     LFImagePickerController *imagePickerVc = [self navi];
     
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
-    naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
+    naviBarHeight = naviSubBarHeight = CGRectGetHeight([self navi].navigationBar.frame);
     if (@available(iOS 11.0, *)) {
         naviBarHeight += self.view.safeAreaInsets.top;
     }
@@ -361,8 +361,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginDefImageName) forState:UIControlStateNormal];
         [_originalPhotoButton setImage:bundleImageNamed(imagePickerVc.photoOriginSelImageName) forState:UIControlStateSelected];
         
-        _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
-        
         _originalPhotoLabel = [[UILabel alloc] init];
         _originalPhotoLabel.frame = CGRectMake(fullImageWidth + 42, 0, 80, CGRectGetHeight(_toolSubBar.frame));
         if (!allowEditing) { /** 非编辑模式 原图显示在左边 */
@@ -375,7 +373,6 @@ CGFloat const previewBarDefaultHeight = 64.f;
         _originalPhotoLabel.textColor = toolbarTitleColorNormal;
         _originalPhotoLabel.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addSubview:_originalPhotoLabel];
-        if (_originalPhotoButton.selected) [self showPhotoBytes];
     }
     
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
@@ -606,14 +603,14 @@ CGFloat const previewBarDefaultHeight = 64.f;
     if (imagePickerVc.isPreview) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if ([self.navigationController respondsToSelector:@selector(cancelButtonClick)]) {
-            [self.navigationController performSelector:@selector(cancelButtonClick)];
+        if ([[self navi] respondsToSelector:@selector(cancelButtonClick)]) {
+            [[self navi] performSelector:@selector(cancelButtonClick)];
         } else {
-            [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+            [[self navi] dismissViewControllerAnimated:YES completion:nil];
         }
 #pragma clang diagnostic pop
     } else {
-        [self.navigationController popViewControllerAnimated:YES];
+        [[self navi] popViewControllerAnimated:YES];
     }
     if (self.backButtonClickBlock) {
         self.backButtonClickBlock();
@@ -856,7 +853,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
         self.tempEditImage = photoEditingVC.editImage;
     }
     
-    [self.navigationController popViewControllerAnimated:NO];
+    [[self navi] popViewControllerAnimated:NO];
 }
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
 {
@@ -924,7 +921,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [self select:_selectButton];
         }
         
-        [self.navigationController popViewControllerAnimated:NO];
+        [[self navi] popViewControllerAnimated:NO];
     }
 }
 #endif
@@ -954,8 +951,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
     
     _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;
     
+    _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
-    if (_originalPhotoButton.selected) [self showPhotoBytes];
+    if (!_originalPhotoLabel.hidden) [self showPhotoBytes];
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
@@ -1010,7 +1008,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
 
 - (void)checkDefaultSelectedModels {
     
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)[self navi];
     if (imagePickerVc.isPreview) {
         if (imagePickerVc.selectedAssets.count) {
             [imagePickerVc.selectedModels removeAllObjects];

@@ -14,7 +14,12 @@
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片 */
 - (UIImage *)lf_fastestCompressImageWithSize:(CGFloat)size
 {
-    UIImage *compressedImage = [UIImage imageWithData:[self lf_fastestCompressImageSize:size] scale:[UIScreen mainScreen].scale];
+    return [self lf_fastestCompressImageWithSize:size imageSize:0];
+}
+
+- (UIImage *)lf_fastestCompressImageWithSize:(CGFloat)size imageSize:(NSUInteger)imageSize
+{
+    UIImage *compressedImage = [UIImage imageWithData:[self lf_fastestCompressImageSize:size imageSize:imageSize] scale:[UIScreen mainScreen].scale];
     if (!compressedImage) {
         return self;
     }
@@ -24,11 +29,16 @@
 /** 快速压缩 压缩到大约指定体积大小(kb) 返回data */
 - (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size
 {
-    return [self lf_fastestCompressImageSize:size];
+    return [self lf_fastestCompressImageDataWithSize:size imageSize:0];
+}
+
+- (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size imageSize:(NSUInteger)imageSize
+{
+    return [self lf_fastestCompressImageSize:size imageSize:imageSize];
 }
 
 #pragma mark - 压缩图片接口
-- (NSData *)lf_fastestCompressImageSize:(CGFloat)size
+- (NSData *)lf_fastestCompressImageSize:(CGFloat)size imageSize:(NSUInteger)imageSize
 {
     /** 临时图片 */
     UIImage *compressedImage = self;
@@ -52,10 +62,20 @@
     /** 当前图片尺寸 */
     float currentResolution = self.size.height * self.size.width;
     
-    NSData *imageData = UIImageJPEGRepresentation(self, 1);
+    /** 图片大小 */
+    long long imageLength = imageSize;
+    NSData *imageData = nil;
     
-    /** 没有需要压缩的必要，直接返回 */
-    if (imageData.length <= targetSize) return imageData;
+    if (imageLength == 0) {
+        imageData = UIImageJPEGRepresentation(self, 1);
+        imageLength = imageData.length;
+        /** 没有需要压缩的必要，直接返回 */
+        if (imageLength <= targetSize) return imageData;
+    } else {
+        /** 没有需要压缩的必要，直接返回 */
+        if (imageLength <= targetSize) return UIImageJPEGRepresentation(self, 1);
+    }
+    
     
     /** 缩放图片 */
     if (currentResolution > MIN_UPLOAD_RESOLUTION) {

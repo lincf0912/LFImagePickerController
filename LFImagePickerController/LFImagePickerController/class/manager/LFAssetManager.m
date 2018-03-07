@@ -621,14 +621,14 @@ static LFAssetManager *manager;
                 
                 /** 标清图 */
                 if (!isOriginal) {
-                    sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress];
+                    sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress imageSize:imageData.length];
                 } else {
                     if (isFixOrientation) { /** 更正方向，原图data需要更新 */
-                        sourceData = UIImageJPEGRepresentation(source, 1);
+                        sourceData = UIImageJPEGRepresentation(source, kimageCompressionFactor);
                     }
                 }
                 /** 缩略图 */
-                thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress];
+                thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:imageData.length];
             }
             
             /** 创建展示图片 */

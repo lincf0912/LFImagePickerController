@@ -137,7 +137,7 @@ static LFPhotoEditManager *manager;
             imageData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
             source = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
         } else {
-            imageData = UIImageJPEGRepresentation(source, 0.75);
+            imageData = UIImageJPEGRepresentation(source, kimageCompressionFactor);
         }
         /** 图片宽高 */
         CGSize imageSize = source.size;

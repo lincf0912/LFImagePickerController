@@ -194,8 +194,7 @@
              [CATransaction setDisableActions:YES];
              
              UIImage *img = [UIImage imageWithCGImage:image];
-//             NSString *path = [[GlobalConstants documentPath] stringByAppendingPathComponent:[NSString stringWithFormat:@"%f.jpg", CMTimeGetSeconds(actualTime)]];
-//             [UIImageJPEGRepresentation(img, 1.f) writeToFile:path atomically:YES];
+             
              [images addObject:img];
              
              [CATransaction commit];

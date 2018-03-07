@@ -46,6 +46,9 @@ extern float const kMaxPhotoBytes;
 /** 视频最大时长 */
 extern float const kMaxVideoDurationze;
 
+/** 图片压缩系数 */
+extern float const kimageCompressionFactor;
+
 
 @interface LFImagePickerHeader : NSObject
 

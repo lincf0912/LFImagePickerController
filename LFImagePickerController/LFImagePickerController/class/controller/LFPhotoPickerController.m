@@ -479,9 +479,22 @@
 }
 
 - (void)originalPhotoButtonClick {
+    
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (!imagePickerVc.isSelectOriginalPhoto) {
+        for (LFAsset *asset in imagePickerVc.selectedModels) {
+            if (asset.type == LFAssetMediaTypePhoto && asset.bytes >= imagePickerVc.maxPhotoBytes) {
+                /** 忽略图片被编辑的情况 */
+                if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
+                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    return;
+                }
+            }
+        }
+    }
+    
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;;
     if (_originalPhotoButton.selected) {
         [self getSelectedPhotoBytes];
@@ -716,6 +729,14 @@
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
             if (weakImagePickerVc.selectedModels.count < weakImagePickerVc.maxImagesCount) {
                 
+                /** 检测是否超过图片最大大小 */
+                if (cellModel.type == LFAssetMediaTypePhoto && weakImagePickerVc.isSelectOriginalPhoto && cellModel.bytes >= weakImagePickerVc.maxPhotoBytes) {
+                    /** 忽略图片被编辑的情况 */
+                    if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
+                        [weakSelf originalPhotoButtonClick];
+                        [weakImagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    }
+                } else
                 /** 检测是否超过视频最大时长 */
                 if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > weakImagePickerVc.maxVideoDuration) {
                     [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)weakImagePickerVc.maxVideoDuration/60]];
@@ -970,8 +991,8 @@
 - (void)getSelectedPhotoBytes {
     if (/* DISABLES CODE */ (1)==0) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        [[LFAssetManager manager] getPhotosBytesWithArray:imagePickerVc.selectedModels completion:^(NSString *totalBytes) {
-            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
+        [[LFAssetManager manager] getPhotosBytesWithArray:imagePickerVc.selectedModels completion:^(NSString *totalBytesStr, NSInteger totalBytes) {
+            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
         }];
     }
 }

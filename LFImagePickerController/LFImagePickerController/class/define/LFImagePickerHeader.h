@@ -41,6 +41,8 @@ extern NSString *const kBundlePath;
 extern float const kCompressSize;
 /** 缩略图压缩大小 */
 extern float const kThumbnailCompressSize;
+/** 图片最大大小 */
+extern float const kMaxPhotoBytes;
 /** 视频最大时长 */
 extern float const kMaxVideoDurationze;
 

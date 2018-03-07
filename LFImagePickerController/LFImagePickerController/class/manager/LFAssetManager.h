@@ -165,7 +165,7 @@
 
 
 /// Get photo bytes 获得一组照片的大小
-- (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytes))completion;
+- (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytesStr, NSInteger totalBytes))completion;
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
 - (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset;

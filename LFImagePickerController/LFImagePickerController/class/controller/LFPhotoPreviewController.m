@@ -556,6 +556,14 @@ CGFloat const previewBarDefaultHeight = 64.f;
             return;
             // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
         } else {
+            /** 检测是否超过图片最大大小 */
+            if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
+                /** 忽略图片被编辑的情况 */
+                if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
+                    [self originalPhotoButtonClick];
+                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                }
+            } else
             /** 检测是否超过视频最大时长 */
             if (model.type == LFAssetMediaTypeVideo && model.duration > imagePickerVc.maxVideoDuration) {
                 [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
@@ -685,18 +693,31 @@ CGFloat const previewBarDefaultHeight = 64.f;
 #endif
 
 - (void)originalPhotoButtonClick {
-    _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
+    
     LFImagePickerController *imagePickerVc = [self navi];
+    if (!imagePickerVc.isSelectOriginalPhoto) {
+        for (LFAsset *asset in imagePickerVc.selectedModels) {
+            if (asset.type == LFAssetMediaTypePhoto && asset.bytes >= imagePickerVc.maxPhotoBytes) {
+                /** 忽略图片被编辑的情况 */
+                if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
+                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    return;
+                }
+            }
+        }
+    }
+    
+    _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
     if (_originalPhotoButton.selected) {
-        [self showPhotoBytes];
         if (!_selectButton.isSelected) {
             // 如果当前已选择照片张数 < 最大可选张数 && 最大可选张数大于1，就选中该张图
             if (imagePickerVc.selectedModels.count < imagePickerVc.maxImagesCount) {
                 [self select:_selectButton];
             }
         }
+        [self showPhotoBytes];
     } else {
         _originalPhotoLabel.text = nil;
     }
@@ -865,14 +886,24 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [self select:_selectButton];
         }
         
-        [self.navigationController popViewControllerAnimated:NO];
+        LFImagePickerController *imagePickerVc = [self navi];
+        [imagePickerVc popViewControllerAnimated:NO];
+        
+        /** 检测是否超过图片最大大小 */
+        if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
+            /** 忽略图片被编辑的情况 */
+            if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
+                [self originalPhotoButtonClick];
+                [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+            }
+        }
     }
 }
 
 #pragma mark - LFVideoEditingControllerDelegate
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didCancelPhotoEdit:(LFVideoEdit *)videoEdit
 {
-    [self.navigationController popViewControllerAnimated:NO];
+    [[self navi] popViewControllerAnimated:NO];
     
 }
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didFinishPhotoEdit:(LFVideoEdit *)videoEdit
@@ -961,8 +992,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
 
 - (void)showPhotoBytes {
     if (/* DISABLES CODE */ (1)==0) {
-        [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytes) {
-            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytes];
+        [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytesStr, NSInteger totalBytes) {
+            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
         }];
     }
 }

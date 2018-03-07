@@ -236,6 +236,7 @@
     self.supportAutorotate = NO;
     self.imageCompressSize = kCompressSize;
     self.thumbnailCompressSize = kThumbnailCompressSize;
+    self.maxPhotoBytes = kMaxPhotoBytes;
     self.maxVideoDuration = kMaxVideoDurationze;
     self.autoSavePhotoAlbum = YES;
     self.displayImageFilename = NO;

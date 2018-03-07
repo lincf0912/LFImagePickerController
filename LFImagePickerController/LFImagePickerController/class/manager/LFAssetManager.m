@@ -304,7 +304,7 @@ static LFAssetManager *manager;
 }
 
 /// Get photo bytes 获得一组照片的大小
-- (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytes))completion {
+- (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytesStr, NSInteger totalBytes))completion {
     __block NSInteger dataLength = 0;
     __block NSInteger assetCount = 0;
     for (NSInteger i = 0; i < photos.count; i++) {
@@ -317,7 +317,7 @@ static LFAssetManager *manager;
                 assetCount ++;
                 if (assetCount >= photos.count) {
                     NSString *bytes = [self getBytesFromDataLength:dataLength];
-                    if (completion) completion(bytes);
+                    if (completion) completion(bytes, dataLength);
                 }
             }];
         } else if ([model.asset isKindOfClass:[ALAsset class]]) {
@@ -325,7 +325,7 @@ static LFAssetManager *manager;
             if (model.type != LFAssetMediaTypeVideo) dataLength += (NSInteger)representation.size;
             if (i >= photos.count - 1) {
                 NSString *bytes = [self getBytesFromDataLength:dataLength];
-                if (completion) completion(bytes);
+                if (completion) completion(bytes, dataLength);
             }
         }
     }

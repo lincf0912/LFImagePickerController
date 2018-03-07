@@ -102,10 +102,6 @@
 
 #pragma mark - option
 
-/// Limit video size, Default is 10*1024 in KB
-/// 限制视频大小发送，默认10MB（10*1024）单位KB
-@property (nonatomic, assign) float maxVideoSize __deprecated_msg("Property deprecated. Use `maxVideoDuration`");
-
 /// Compressed image size (allowPickingOriginalPhoto=YES, Invalid), Default is 100 in KB
 /// 压缩标清图的大小（没有勾选原图的情况有效），默认为100 单位KB （只能压缩到接近该值的大小）
 @property (nonatomic, assign) float imageCompressSize;
@@ -114,7 +110,11 @@
 /// 压缩缩略图的大小，默认为10 单位KB
 @property (nonatomic, assign) float thumbnailCompressSize;
 
-/// Select the maximum duration of the video, Default is 5 minutes (in seconds)
+/// Select the maximum size of the photo, Default is 6 MB (in B unit)
+/// 选择图片的最大大小，默认为6MB (6x1024*1024) 单位 B
+@property (nonatomic, assign) NSInteger maxPhotoBytes;
+
+/// Select the maximum duration of the video, Default is 5 minutes (in seconds unit)
 /// 选择视频的最大时长，默认为5分钟 (5x60) 单位 秒
 @property (nonatomic, assign) NSTimeInterval maxVideoDuration;
 

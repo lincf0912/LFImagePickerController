@@ -481,11 +481,15 @@
     if (!imagePickerVc.isSelectOriginalPhoto) {
         for (LFAsset *asset in imagePickerVc.selectedModels) {
             if (asset.type == LFAssetMediaTypePhoto && asset.bytes >= imagePickerVc.maxPhotoBytes) {
+#ifdef LF_MEDIAEDIT
                 /** 忽略图片被编辑的情况 */
                 if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
+#endif
                     [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
                     return;
+#ifdef LF_MEDIAEDIT
                 }
+#endif
             }
         }
     }
@@ -728,11 +732,15 @@
                 
                 /** 检测是否超过图片最大大小 */
                 if (cellModel.type == LFAssetMediaTypePhoto && weakImagePickerVc.isSelectOriginalPhoto && cellModel.bytes >= weakImagePickerVc.maxPhotoBytes) {
+#ifdef LF_MEDIAEDIT
                     /** 忽略图片被编辑的情况 */
                     if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
+#endif
                         [weakSelf originalPhotoButtonClick];
                         [weakImagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+#ifdef LF_MEDIAEDIT
                     }
+#endif
                 } else
                 /** 检测是否超过视频最大时长 */
                 if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > weakImagePickerVc.maxVideoDuration) {

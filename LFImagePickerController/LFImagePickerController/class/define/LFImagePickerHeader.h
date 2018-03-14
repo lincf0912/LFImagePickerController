@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LFImagePickerPublicHeader.h"
+#import "NSBundle+LFImagePicker.h"
 
 #define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
 #define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
@@ -29,13 +30,10 @@ dispatch_async(dispatch_get_main_queue(), block);\
 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), block);
 
 
-
-#define bundleImageNamed(name) [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kBundlePath, name]]
+#define bundleImageNamed(name) [NSBundle lf_imageNamed:name]
 
 #define LF_StatusBarHeight (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0)
 #define LF_StatusBarHeight_iOS11 (self.view.safeAreaInsets.top > 0 ? self.view.safeAreaInsets.top : (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0))
-
-extern NSString *const kBundlePath;
 
 /** 标清图压缩大小 */
 extern float const kCompressSize;

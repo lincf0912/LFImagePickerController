@@ -151,7 +151,7 @@
 {
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         [_player pause];
-        [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
+        [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay") forState:UIControlStateNormal];
         _isPlaying = NO;
     }
 }
@@ -160,8 +160,8 @@
     _playButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _playButton.frame = self.contentView.bounds;
     _playButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay.png") forState:UIControlStateNormal];
-    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL.png") forState:UIControlStateHighlighted];
+    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay") forState:UIControlStateNormal];
+    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL") forState:UIControlStateHighlighted];
     [_playButton addTarget:self action:@selector(playButtonClick) forControlEvents:UIControlEventTouchUpInside];
     _playButton.hidden = YES;
     [self.contentView addSubview:_playButton];

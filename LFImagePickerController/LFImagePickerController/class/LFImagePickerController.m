@@ -58,12 +58,12 @@
             _tipLabel.textColor = [UIColor blackColor];
             NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
             if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-            NSString *tipText = [NSString stringWithFormat:@"请在\"设置-隐私-照片\"选项中，\r允许%@访问相册",appName];
+            NSString *tipText = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_photoLibraryAuthorityTipText"],appName];
             _tipLabel.text = tipText; 
             [tipView addSubview:_tipLabel];
             
             UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
+            [_settingBtn setTitle:[NSBundle lf_localizedStringForKey:@"_settingBtnTitleStr"] forState:UIControlStateNormal];
             _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
             _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
             [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
@@ -72,7 +72,7 @@
             CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
             
             UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
-            [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
+            [_cancelBtn setTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] forState:UIControlStateNormal];
             _cancelBtn.titleLabel.font = self.barItemTextFont;
             _cancelBtn.titleLabel.textColor = self.barItemTextColor;
             [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -257,11 +257,11 @@
         _didPushPhotoPickerVc = NO;
         LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
         if (self.allowPickingImage) {
-            albumPickerVc.navigationItem.title = @"相册";
+            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_photo"];
         } else if (self.allowPickingVideo) {
-            albumPickerVc.navigationItem.title = @"视频";
+            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_video"];
         }
-        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
+        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"__cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
         if (_pushPhotoPickerVc) {
             LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
             [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
@@ -308,9 +308,9 @@
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
         [self cancelButtonClick];
     } else {
-        NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
+        NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
         __weak typeof(self) weakSelf = self;
-        [self showAlertWithTitle:@"抱歉" message:message complete:^{
+        [self showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpCancelTitle"] message:message complete:^{
             [weakSelf cancelButtonClick];
         }];
     }

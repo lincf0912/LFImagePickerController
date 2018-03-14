@@ -33,7 +33,7 @@
     self = [super init];
     if (self) {
         // 采用微信的方式，只在相册列表页定义backBarButtonItem为返回，其余的顺系统的做法
-        self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"返回" style:UIBarButtonItemStylePlain target:nil action:nil];
+        self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"_navigationBarBackTitle"] style:UIBarButtonItemStylePlain target:nil action:nil];
     }
     return self;
 }

@@ -260,9 +260,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
         /** 取消 */
-        [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
+        [_backButton setTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
-        CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
+        CGFloat editCancelWidth = [[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
         _backButton.width = editCancelWidth;
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
@@ -321,20 +321,20 @@ CGFloat const previewBarDefaultHeight = 64.f;
     
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
-        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
+        CGFloat editWidth = [[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(10, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _editButton.titleLabel.font = toolbarTitleFont;
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
+        [_editButton setTitle:[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] forState:UIControlStateNormal];
         [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     }
 #endif
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
-        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+        CGFloat fullImageWidth = [[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
 #ifdef LF_MEDIAEDIT
@@ -353,8 +353,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
+        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateNormal];
+        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
@@ -375,7 +375,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
     doneSize.width += 4;
     
@@ -384,8 +384,8 @@ CGFloat const previewBarDefaultHeight = 64.f;
     _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
+    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
+    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateDisabled];
     [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
     [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
@@ -548,7 +548,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     if (!selectButton.isSelected) {
         // 1. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
         if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
-            NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", imagePickerVc.maxImagesCount];
+            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], imagePickerVc.maxImagesCount];
             [imagePickerVc showAlertWithTitle:title];
             return;
             // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
@@ -560,14 +560,14 @@ CGFloat const previewBarDefaultHeight = 64.f;
                 if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
 #endif
                     [self originalPhotoButtonClick];
-                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
 #ifdef LF_MEDIAEDIT
                 }
 #endif
             } else
             /** 检测是否超过视频最大时长 */
             if (model.type == LFAssetMediaTypeVideo && model.duration > imagePickerVc.maxVideoDuration) {
-                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)imagePickerVc.maxVideoDuration/60]];
+                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
                 return;
             }
             if (self.alwaysShowPreviewBar) {
@@ -631,7 +631,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
     }
     
     if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
-        NSString *title = [NSString stringWithFormat:@"请至少选择%zd张照片", imagePickerVc.minImagesCount];
+        NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
         [imagePickerVc showAlertWithTitle:title];
         return;
     }
@@ -703,7 +703,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
                 /** 忽略图片被编辑的情况 */
                 if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
 #endif
-                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
                     return;
 #ifdef LF_MEDIAEDIT
                 }
@@ -899,7 +899,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
             /** 忽略图片被编辑的情况 */
             if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
                 [self originalPhotoButtonClick];
-                [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
             }
         }
     }
@@ -952,9 +952,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
     _titleLabel.text = [model.name stringByDeletingPathExtension];
     
     if (imagePickerVc.selectedModels.count) {
-        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)",imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     } else {
-        [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
+        [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
     }
     
     _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;

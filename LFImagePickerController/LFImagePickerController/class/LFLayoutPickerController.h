@@ -35,13 +35,13 @@
 @property (nonatomic, strong) UIColor *previewNaviBgColor;
 
 /// 自定义文字
-@property (nonatomic, copy) NSString *doneBtnTitleStr;
-@property (nonatomic, copy) NSString *cancelBtnTitleStr;
-@property (nonatomic, copy) NSString *previewBtnTitleStr;
-@property (nonatomic, copy) NSString *editBtnTitleStr;
-@property (nonatomic, copy) NSString *fullImageBtnTitleStr;
-@property (nonatomic, copy) NSString *settingBtnTitleStr;
-@property (nonatomic, copy) NSString *processHintStr;
+@property (nonatomic, copy) NSString *doneBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *cancelBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *previewBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *editBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *fullImageBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *settingBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+@property (nonatomic, copy) NSString *processHintStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
 
 #pragma mark - 编辑模式
 @property (nonatomic, copy) void (^photoEditLabrary)(LFPhotoEditingController *lf_photoEditingVC);

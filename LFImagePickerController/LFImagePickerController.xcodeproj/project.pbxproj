@@ -57,6 +57,8 @@
 		6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF286171E5EDA510008FB5B /* LFPhotoEditManager.m */; };
 		6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */; };
 		B9530F92260AF2E0D988FD0A /* libPods-LFImagePickerController.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6AFC7E26577C89E24C904A /* libPods-LFImagePickerController.a */; };
+		C70BABEF205904F0005B7894 /* NSBundle+LFImagePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */; };
+		C70BABF120591F39005B7894 /* LFImagePickerController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BABF020591F39005B7894 /* LFImagePickerController.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -158,6 +160,9 @@
 		6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFImagePickerHeader.m; sourceTree = "<group>"; };
 		8D6AFC7E26577C89E24C904A /* libPods-LFImagePickerController.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-LFImagePickerController.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A29AB11219062E6A4B810545 /* Pods-LFImagePickerController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.release.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.release.xcconfig"; sourceTree = "<group>"; };
+		C70BABED205904F0005B7894 /* NSBundle+LFImagePicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+LFImagePicker.h"; sourceTree = "<group>"; };
+		C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+LFImagePicker.m"; sourceTree = "<group>"; };
+		C70BABF020591F39005B7894 /* LFImagePickerController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFImagePickerController.strings; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		DA7F571BE722254777162CD5 /* Pods-LFImagePickerController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.debug.xcconfig"; sourceTree = "<group>"; };
@@ -240,6 +245,7 @@
 		6F1201771E513D1B00EA2198 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				C70BABF020591F39005B7894 /* LFImagePickerController.strings */,
 				6F552A801E961C8400AC362C /* 1.jpeg */,
 				6F552A811E961C8400AC362C /* 2.jpeg */,
 				6F8D07351ED7FC7800601BEA /* 3.gif */,
@@ -373,6 +379,8 @@
 				6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */,
 				6FA36E4F1EB9DC700009E2DE /* UIImage+LF_Format.h */,
 				6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */,
+				C70BABED205904F0005B7894 /* NSBundle+LFImagePicker.h */,
+				C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -542,6 +550,7 @@
 				6F8D07361ED7FC7800601BEA /* 3.gif in Resources */,
 				6F1201A61E51404400EA2198 /* LFImagePickerController.bundle in Resources */,
 				6F1201841E513D1B00EA2198 /* Assets.xcassets in Resources */,
+				C70BABF120591F39005B7894 /* LFImagePickerController.strings in Resources */,
 				6F1201821E513D1B00EA2198 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -631,6 +640,7 @@
 				6F1201791E513D1B00EA2198 /* main.m in Sources */,
 				6F3378E91EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m in Sources */,
 				6F1699271F15AEB9008B1818 /* LFResultObject.m in Sources */,
+				C70BABEF205904F0005B7894 /* NSBundle+LFImagePicker.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
 				6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */,

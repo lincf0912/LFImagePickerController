@@ -54,7 +54,6 @@
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
 //    imagePicker.sortAscendingByCreateDate = NO;
-    imagePicker.doneBtnTitleStr = @"发送";
 //    imagePicker.allowEditing = NO;
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */

@@ -76,7 +76,7 @@
     UIImageView *editMaskImageView = [[UIImageView alloc] init];
     CGRect frame = CGRectMake(5, 5, 13.5 + kAdditionalSize, 11 + kAdditionalSize);
     editMaskImageView.frame = frame;
-    [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum.png")];
+    [editMaskImageView setImage:bundleImageNamed(@"contacts_add_myablum")];
     editMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
     [self.contentView addSubview:editMaskImageView];
     _editMaskImageView = editMaskImageView;
@@ -264,7 +264,7 @@
         UIImageView *videoImgView = [[UIImageView alloc] init];
         videoImgView.frame = CGRectMake(8, 0, 18, 11);
         videoImgView.contentMode = UIViewContentModeScaleAspectFit;
-        [videoImgView setImage:bundleImageNamed(@"fileicon_video_wall.png")];
+        [videoImgView setImage:bundleImageNamed(@"fileicon_video_wall")];
         [self.bottomView addSubview:videoImgView];
         _videoImgView = videoImgView;
     }

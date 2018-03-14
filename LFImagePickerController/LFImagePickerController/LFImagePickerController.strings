@@ -1,0 +1,12 @@
+/* 
+  LFImagePickerController.strings
+  LFImagePickerController
+
+  Created by Mr.D on 2018/3/9.
+  Copyright © 2018年 LamTsanFeng. All rights reserved.
+*/
+
+/* -------- LFLayoutPickerController -------*/
+"_doneBtnTitleStr" = "Send";
+"_cancelBtnTitleStr" = "Cancel";
+"_previewBtnTitleStr" = "Preview";

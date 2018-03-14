@@ -8,8 +8,6 @@
 
 #import "LFImagePickerHeader.h"
 
-NSString *const kBundlePath = @"LFImagePickerController.bundle";
-
 /** 标清图压缩大小 */
 float const kCompressSize = 100.f;
 /** 缩略图压缩大小 */

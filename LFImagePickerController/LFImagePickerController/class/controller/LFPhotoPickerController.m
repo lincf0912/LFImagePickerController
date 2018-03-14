@@ -89,7 +89,7 @@
         
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
 #pragma clang diagnostic pop
         /** 优先赋值 */
         self.navigationItem.title = _model.name;
@@ -252,11 +252,11 @@
     UIView *nonePhotoView = [[UIView alloc] initWithFrame:[self viewFrameWithoutNavigation]];
     nonePhotoView.backgroundColor = [UIColor clearColor];
     
-    NSString *text = @"没有图片或视频";
+    NSString *text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noMediaTipText"];
     if (!imagePickerVc.allowPickingImage && imagePickerVc.allowPickingVideo) {
-        text = @"没有视频";
+        text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noVideoTipText"];
     } else if (imagePickerVc.allowPickingImage && !imagePickerVc.allowPickingVideo) {
-        text = @"没有图片";
+        text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noPhotoTipText"];
     }
     UIFont *font = [UIFont systemFontOfSize:18];
     
@@ -363,15 +363,15 @@
     
     
     if (imagePickerVc.allowPreview) {
-        CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+        CGSize previewSize = [[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
         previewSize.width += 2.f;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _previewButton.frame = CGRectMake(buttonX+10, (kBottomToolBarHeight-previewSize.height)/2, previewSize.width, previewSize.height);
         _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = toolbarTitleFont;
-        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
-        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
+        [_previewButton setTitle:[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] forState:UIControlStateNormal];
+        [_previewButton setTitle:[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] forState:UIControlStateDisabled];
         [_previewButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_previewButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
         _previewButton.enabled = imagePickerVc.selectedModels.count;
@@ -381,7 +381,7 @@
     
     
     if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
-        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+        CGFloat fullImageWidth = [[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat originalButtonW = fullImageWidth + 56;
         _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, kBottomToolBarHeight);
@@ -389,9 +389,9 @@
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
-        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateDisabled];
+        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateNormal];
+        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateSelected];
+        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateDisabled];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
@@ -409,7 +409,7 @@
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, height), 30);
     doneSize.width += 4;
     
@@ -418,8 +418,8 @@
     _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
-    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
+    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
+    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateDisabled];
     [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
     [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
@@ -485,7 +485,7 @@
                 /** 忽略图片被编辑的情况 */
                 if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
 #endif
-                    [imagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
                     return;
 #ifdef LF_MEDIAEDIT
                 }
@@ -509,7 +509,7 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     // 1.6.8 判断是否满足最小必选张数的限制
     if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
-        NSString *title = [NSString stringWithFormat:@"请至少选择%zd张照片", imagePickerVc.minImagesCount];
+        NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
         [imagePickerVc showAlertWithTitle:title];
         return;
     }
@@ -737,14 +737,14 @@
                     if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
 #endif
                         [weakSelf originalPhotoButtonClick];
-                        [weakImagePickerVc showAlertWithTitle:@"图片过大，无法发送原图"];
+                        [weakImagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
 #ifdef LF_MEDIAEDIT
                     }
 #endif
                 } else
                 /** 检测是否超过视频最大时长 */
                 if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > weakImagePickerVc.maxVideoDuration) {
-                    [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:@"不能选择超过%d分钟的视频", (int)weakImagePickerVc.maxVideoDuration/60]];
+                    [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)weakImagePickerVc.maxVideoDuration/60]];
                     return;
                 }
                 [weakImagePickerVc.selectedModels addObject:cellModel];
@@ -758,7 +758,7 @@
                 [weakCell selectPhoto:YES index:weakImagePickerVc.selectedModels.count animated:YES];
                 
             } else {
-                NSString *title = [NSString stringWithFormat:@"你最多只能选择%zd张照片", weakImagePickerVc.maxImagesCount];
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], weakImagePickerVc.maxImagesCount];
                 [weakImagePickerVc showAlertWithTitle:title];
             }
         }
@@ -802,7 +802,7 @@
                 }];
             }else if (error) {
                 [imagePickerVc hideProgressHUD];
-                [imagePickerVc showAlertWithTitle:@"拍照错误" message:error.localizedDescription complete:^{
+                [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_cameraTakePhotoError"] message:error.localizedDescription complete:^{
                     [picker dismissViewControllerAnimated:YES completion:nil];
                 }];
             }
@@ -867,12 +867,12 @@
         // 无权限 做一个友好的提示
         NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
         if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-        NSString *message = [NSString stringWithFormat:@"请在\"设置-隐私-相机\"中允许%@访问相机",appName];
-        [imagePickerVc showAlertWithTitle:nil cancelTitle:@"设置" message:message complete:^{
+        NSString *message = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityTipText"],appName];
+        [imagePickerVc showAlertWithTitle:nil cancelTitle:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityCancelTitle"] message:message complete:^{
             if (iOS8Later) {
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
             } else {
-                NSString *message = @"无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
+                NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
                 [imagePickerVc showAlertWithTitle:nil message:message complete:^{
                 }];
             }
@@ -947,7 +947,7 @@
     _doneButton.enabled = imagePickerVc.selectedModels.count;
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
     
-    [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)",imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+    [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
@@ -1079,7 +1079,7 @@
             if (albumChanges.objectWasDeleted) {
                 
                 void (^showAlertView)() = ^{
-                    [imagePickerVc showAlertWithTitle:nil message:@"相册已被删除!" complete:^{
+                    [imagePickerVc showAlertWithTitle:nil message:[NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_photoAlbunDeletedError"] complete:^{
                         if (imagePickerVc.viewControllers.count > 1) {
                             [imagePickerVc popToRootViewControllerAnimated:YES];
                         } else {

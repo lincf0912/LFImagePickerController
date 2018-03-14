@@ -108,7 +108,7 @@
             }];
         }
     } else {
-        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"Do not have permission to access the album"}];
+        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_notpermissionError"]}];
         if (complete) complete(nil, error);
     }
 }
@@ -170,7 +170,7 @@
             }
         }
         if (result == nil) {
-            nextError = [NSError errorWithDomain:@"SaveVideoError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveVideoError"}];
+            nextError = [NSError errorWithDomain:@"SaveToAlbumError" code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_saveVideoError"]}];
         }
         
         if (nextError) {
@@ -313,7 +313,7 @@
             }];
         }
     } else {
-        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:@"Do not have permission to access the album"}];
+        NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_notpermissionError"]}];
         if (complete) complete(nil, error);
     }
 }
@@ -363,7 +363,7 @@
                 }
             }
             if (result == nil) {
-                nextError = [NSError errorWithDomain:@"SaveVideoError" code:-1000 userInfo:@{NSLocalizedDescriptionKey:@"SaveVideoError"}];
+                nextError = [NSError errorWithDomain:@"SaveToAlbumError" code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_saveVideoError"]}];
             }
             if (nextError) {
                 NSLog(@"Save failed");

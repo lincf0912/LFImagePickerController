@@ -158,26 +158,15 @@
     
     
     [self configDefaultImageName];
-    [self configDefaultBtnTitle];
 }
 
 - (void)configDefaultImageName {
-    self.takePictureImageName = @"takePicture.png";
-    self.photoSelImageName = @"photo_sel_photoPickerVc.png";
-    self.photoDefImageName = @"photo_def_photoPickerVc.png";
-    self.photoNumberIconImageName = @"photo_number_icon.png";
-    self.photoOriginDefImageName = @"photo_original_def.png";
-    self.photoOriginSelImageName = @"photo_original_sel.png";
-}
-
-- (void)configDefaultBtnTitle {
-    self.doneBtnTitleStr = @"完成";
-    self.cancelBtnTitleStr = @"取消";
-    self.previewBtnTitleStr = @"预览";
-    self.editBtnTitleStr = @"编辑";
-    self.fullImageBtnTitleStr = @"原图";
-    self.settingBtnTitleStr = @"设置";
-    self.processHintStr = @"正在处理...";
+    self.takePictureImageName = @"takePicture";
+    self.photoSelImageName = @"photo_sel_photoPickerVc";
+    self.photoDefImageName = @"photo_def_photoPickerVc";
+    self.photoNumberIconImageName = @"photo_number_icon";
+    self.photoOriginDefImageName = @"photo_original_def";
+    self.photoOriginSelImageName = @"photo_original_sel";
 }
 
 - (void)showAlertWithTitle:(NSString *)title {
@@ -191,7 +180,7 @@
 
 - (void)showAlertWithTitle:(NSString *)title message:(NSString *)message complete:(void (^)(void))complete
 {
-    [self showAlertWithTitle:title cancelTitle:@"确定" message:message complete:complete];
+    [self showAlertWithTitle:title cancelTitle:[NSBundle lf_localizedStringForKey:@"_alertViewCancelTitle"] message:message complete:complete];
 }
 
 - (void)showAlertWithTitle:(NSString *)title cancelTitle:(NSString *)cancelTitle message:(NSString *)message complete:(void (^)(void))complete
@@ -243,7 +232,7 @@
         [_progressHUD addSubview:_HUDContainer];
     }
     
-    _HUDLabel.text = text ? text : self.processHintStr;
+    _HUDLabel.text = text ? text : [NSBundle lf_localizedStringForKey:@"_processHintStr"];
     
     [_HUDIndicatorView startAnimating];
     UIView *view = isTop ? [[UIApplication sharedApplication] keyWindow] : self.view;

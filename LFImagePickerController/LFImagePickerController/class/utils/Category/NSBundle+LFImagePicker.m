@@ -27,7 +27,8 @@ NSString *const LFImagePickerStrings = @"LFImagePickerController";
 {
 //  [UIImage imageNamed:[NSString stringWithFormat:@"%@/%@", kBundlePath, name]]
     NSString *extension = name.pathExtension.length ? name.pathExtension : @"png";
-    NSString *bundleName = [[name stringByDeletingPathExtension] stringByAppendingString:@"@2x"];
+    NSString *defaultName = [name stringByDeletingPathExtension];
+    NSString *bundleName = [defaultName stringByAppendingString:@"@2x"];
 //    CGFloat scale = [UIScreen mainScreen].scale;
 //    if (scale == 3) {
 //        bundleName = [name stringByAppendingString:@"@3x"];
@@ -35,6 +36,9 @@ NSString *const LFImagePickerStrings = @"LFImagePickerController";
 //        bundleName = [name stringByAppendingString:@"@2x"];
 //    }
     UIImage *image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:bundleName ofType:extension]];
+    if (image == nil) {
+        image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:defaultName ofType:extension]];
+    }
     if (image == nil) {
         image = [UIImage imageNamed:name];
     }

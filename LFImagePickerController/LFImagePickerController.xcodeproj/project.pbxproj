@@ -59,6 +59,7 @@
 		B9530F92260AF2E0D988FD0A /* libPods-LFImagePickerController.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D6AFC7E26577C89E24C904A /* libPods-LFImagePickerController.a */; };
 		C70BABEF205904F0005B7894 /* NSBundle+LFImagePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */; };
 		C70BABF120591F39005B7894 /* LFImagePickerController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BABF020591F39005B7894 /* LFImagePickerController.strings */; };
+		C70BAD3F205A6635005B7894 /* LFMediaEditingController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -163,6 +164,7 @@
 		C70BABED205904F0005B7894 /* NSBundle+LFImagePicker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSBundle+LFImagePicker.h"; sourceTree = "<group>"; };
 		C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+LFImagePicker.m"; sourceTree = "<group>"; };
 		C70BABF020591F39005B7894 /* LFImagePickerController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFImagePickerController.strings; sourceTree = "<group>"; };
+		C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFMediaEditingController.strings; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		DA7F571BE722254777162CD5 /* Pods-LFImagePickerController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.debug.xcconfig"; sourceTree = "<group>"; };
@@ -246,6 +248,7 @@
 			isa = PBXGroup;
 			children = (
 				C70BABF020591F39005B7894 /* LFImagePickerController.strings */,
+				C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */,
 				6F552A801E961C8400AC362C /* 1.jpeg */,
 				6F552A811E961C8400AC362C /* 2.jpeg */,
 				6F8D07351ED7FC7800601BEA /* 3.gif */,
@@ -545,6 +548,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F552A821E961C8400AC362C /* 1.jpeg in Resources */,
+				C70BAD3F205A6635005B7894 /* LFMediaEditingController.strings in Resources */,
 				6F1201871E513D1B00EA2198 /* LaunchScreen.storyboard in Resources */,
 				6F552A831E961C8400AC362C /* 2.jpeg in Resources */,
 				6F8D07361ED7FC7800601BEA /* 3.gif in Resources */,

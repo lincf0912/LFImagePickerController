@@ -6,7 +6,7 @@
 * 图片编辑、视频编辑（依赖LFMediaEditingController库，默认没有编辑功能）
 * 视频编辑 需要访问音乐库 需要在info.plist 添加 NSAppleMusicUsageDescription
 * 支持iPhone、iPad 横屏
-* 支持国际化配置（复制LFImagePickerController.bundle\LFImagePickerController.strings到项目中，修改对应的值即可；详情见DEMO；并不适合多种语言切换显示，如有需求请提issue）
+* 支持国际化配置（复制LFImagePickerController.bundle\LFImagePickerController.strings到项目中，修改对应的值即可；详情见DEMO；注意：不跟随系统语言切换显示）
 * 详细使用见LFImagePickerController.h 的初始化方法
 
 ## Installation 安装

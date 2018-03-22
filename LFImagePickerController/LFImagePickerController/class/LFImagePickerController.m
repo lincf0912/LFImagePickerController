@@ -261,7 +261,7 @@
         } else if (self.allowPickingVideo) {
             albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_video"];
         }
-        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"__cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
+        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
         if (_pushPhotoPickerVc) {
             LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
             [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];

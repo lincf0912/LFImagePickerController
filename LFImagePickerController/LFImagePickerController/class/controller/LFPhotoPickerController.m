@@ -120,7 +120,7 @@
                             [weakSelf checkDefaultSelectedModels];
                             dispatch_main_async_safe(^{
                                 long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                                NSLog(@"%luPhoto loading time-consuming: %lld milliseconds", (unsigned long)models.count, end - start);
+                                NSLog(@"%lu Photo loading time-consuming: %lld milliseconds", (unsigned long)models.count, end - start);
                                 [weakSelf initSubviews];
                             });
                         }];
@@ -697,6 +697,12 @@
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 最大数量时，非选择部分显示不可选 */
     cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
+    /** 不能混合选择的情况 */
+    if (!cell.noSelected && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && imagePickerVc.selectedModels.count) {
+        if (model.type != imagePickerVc.selectedModels.firstObject.type) {
+            cell.noSelected = YES;
+        }
+    }
     
     cell.model = model;
     [cell selectPhoto:[imagePickerVc.selectedModels containsObject:model]
@@ -719,6 +725,13 @@
                 [visibleIPs removeObject:cellIndexPath];
                 if (visibleIPs.count) {
                     [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
+                }
+            } if (weakImagePickerVc.selectedModels.count == 0 && weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount) {
+                
+                if (cellModel.type == LFAssetMediaTypePhoto) {
+                    [weakSelf refreshVideoCell];
+                } else {
+                    [weakSelf refreshImageCell];
                 }
             } else {
                 [weakSelf refreshSelectedCell];
@@ -743,16 +756,35 @@
 #endif
                 } else
                 /** 检测是否超过视频最大时长 */
-                if (cellModel.type == LFAssetMediaTypeVideo && cellModel.duration > weakImagePickerVc.maxVideoDuration) {
-                    [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)weakImagePickerVc.maxVideoDuration/60]];
-                    return;
-                }
+                    if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
+                        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                        NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+#else
+                        NSTimeInterval duration = model.duration;
+#endif
+                        if (duration > imagePickerVc.maxVideoDuration) {
+                            if (imagePickerVc.maxVideoDuration < 60) {
+                                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
+                            } else {
+                                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                            }
+                            return;
+                        }
+                    }
                 [weakImagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
                 
                 if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount) {
                     /** 选择到最大数量，禁止其他的可选显示 */
                     [weakSelf refreshNoSelectedCell];
+                } else if (weakImagePickerVc.selectedModels.count == 1 && weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount) {
+                    
+                    if (weakImagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                        [weakSelf refreshVideoCell];
+                    } else {
+                        [weakSelf refreshImageCell];
+                    }
                 }
                 
                 [weakCell selectPhoto:YES index:weakImagePickerVc.selectedModels.count animated:YES];
@@ -926,6 +958,41 @@
     NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
     [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([cell isKindOfClass:[LFAssetCell class]] && ![imagePickerVc.selectedModels containsObject:cell.model]) {
+            NSInteger index = [_models indexOfObject:cell.model];
+            if (_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
+                index += 1;
+            }
+            [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+        }
+    }];
+    if (indexPaths.count) {
+        [self.collectionView reloadItemsAtIndexPaths:indexPaths];
+    }
+}
+
+- (void)refreshImageCell
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([cell isKindOfClass:[LFAssetCell class]] && cell.model.type == LFAssetMediaTypePhoto) {
+            NSInteger index = [_models indexOfObject:cell.model];
+            if (_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
+                index += 1;
+            }
+            [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+        }
+    }];
+    if (indexPaths.count) {
+        [self.collectionView reloadItemsAtIndexPaths:indexPaths];
+    }
+}
+- (void)refreshVideoCell
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    NSMutableArray <NSIndexPath *>*indexPaths = [NSMutableArray array];
+    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([cell isKindOfClass:[LFAssetCell class]] && cell.model.type == LFAssetMediaTypeVideo) {
             NSInteger index = [_models indexOfObject:cell.model];
             if (_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
                 index += 1;

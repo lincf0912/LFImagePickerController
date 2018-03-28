@@ -18,6 +18,7 @@
 
 "_alertViewCancelTitle" = "确定";
 "_maxSelectVideoTipText" = "不能选择超过%d分钟的视频";
+"_maxSelectVideoTipText_second" = "不能选择超过%d秒的视频";
 "_maxSelectPhotoTipText" = "你最多只能选择%zd张照片";
 "_mixSelectPhotoTipText" = "请至少选择%zd张照片";
 "_selectPhotoSizeLimitTipText" = "图片过大，无法发送原图";

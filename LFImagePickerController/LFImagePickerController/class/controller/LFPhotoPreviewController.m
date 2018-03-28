@@ -565,11 +565,23 @@ CGFloat const previewBarDefaultHeight = 64.f;
                 }
 #endif
             } else
-            /** 检测是否超过视频最大时长 */
-            if (model.type == LFAssetMediaTypeVideo && model.duration > imagePickerVc.maxVideoDuration) {
-                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
-                return;
-            }
+                /** 检测是否超过视频最大时长 */
+                if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
+                    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                    NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+#else
+                    NSTimeInterval duration = model.duration;
+#endif
+                    if (duration > imagePickerVc.maxVideoDuration) {
+                        if (imagePickerVc.maxVideoDuration < 60) {
+                            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
+                        } else {
+                            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                        }
+                        return;
+                    }
+                }
             if (self.alwaysShowPreviewBar) {
                 NSInteger index = [_previewBar.dataSource indexOfObject:model];
                 if (index != NSNotFound) {
@@ -625,8 +637,25 @@ CGFloat const previewBarDefaultHeight = 64.f;
     LFImagePickerController *imagePickerVc = [self navi];
     
     // 如果没有选中过照片 点击确定时选中当前预览的照片
-    if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount <= 0) {
+    if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount == 0) {
         LFAsset *model = _models[_currentIndex];
+        /** 检测是否超过视频最大时长 */
+        if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
+            LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+            NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+#else
+            NSTimeInterval duration = model.duration;
+#endif
+            if (duration > imagePickerVc.maxVideoDuration) {
+                if (imagePickerVc.maxVideoDuration < 60) {
+                    [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
+                } else {
+                    [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                }
+                return;
+            }
+        }
         [imagePickerVc.selectedModels addObject:model];
     }
     
@@ -886,18 +915,16 @@ CGFloat const previewBarDefaultHeight = 64.f;
             }
         }
         
-        /** 默认选中编辑后的图片 */
-        if (!_selectButton.isSelected) {
-            [self select:_selectButton];
-        }
         
         LFImagePickerController *imagePickerVc = [self navi];
         [imagePickerVc popViewControllerAnimated:NO];
         
-        /** 检测是否超过图片最大大小 */
-        if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
-            /** 忽略图片被编辑的情况 */
-            if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
+        /** 默认选中编辑后的图片 */
+        if (photoEdit && !_selectButton.isSelected) {
+            [self select:_selectButton];
+        } else if (!photoEdit && _selectButton.isSelected) {
+            /** 检测是否超过图片最大大小 */
+            if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
                 [self originalPhotoButtonClick];
                 [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
             }
@@ -913,6 +940,7 @@ CGFloat const previewBarDefaultHeight = 64.f;
 }
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didFinishPhotoEdit:(LFVideoEdit *)videoEdit
 {
+    LFImagePickerController *imagePickerVc = [self navi];
     if (self.models.count > self.currentIndex) {
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         /** 缓存对象 */
@@ -924,12 +952,18 @@ CGFloat const previewBarDefaultHeight = 64.f;
             [cell changeVideoPlayer:videoEditingVC.asset image:videoEditingVC.placeholderImage];
         }
         
-        /** 默认选中编辑后的视频 */
-        if (!_selectButton.isSelected) {
-            [self select:_selectButton];
-        }
+        [imagePickerVc popViewControllerAnimated:NO];
         
-        [[self navi] popViewControllerAnimated:NO];
+        NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+        
+        /** 默认选中编辑后的视频 */
+        if (duration > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
+            [self select:_selectButton];
+        } else if (videoEdit.editPreviewImage && !_selectButton.isSelected) {
+            if (duration <= imagePickerVc.maxVideoDuration) {
+                [self select:_selectButton];
+            }
+        }
     }
 }
 #endif
@@ -944,6 +978,11 @@ CGFloat const previewBarDefaultHeight = 64.f;
         NSString *text = [NSString stringWithFormat:@"%zd", [imagePickerVc.selectedModels indexOfObject:model]+1];
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
+    }
+    if (imagePickerVc.selectedModels.count && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+        _selectButton.hidden = (model.type != imagePickerVc.selectedModels.firstObject.type);
+    } else {
+        _selectButton.hidden = NO;
     }
     
     _doneButton.enabled = !self.alwaysShowPreviewBar || imagePickerVc.selectedModels.count;

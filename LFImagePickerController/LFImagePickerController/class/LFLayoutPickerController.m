@@ -148,6 +148,8 @@
     self.naviBgColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:1.0];
     self.naviTitleColor = [UIColor whiteColor];
     self.naviTitleFont = [UIFont systemFontOfSize:17];
+    self.naviTipsTextColor = [UIColor whiteColor];
+    self.naviTipsFont = [UIFont systemFontOfSize:12];
     self.barItemTextFont = [UIFont systemFontOfSize:15];
     self.barItemTextColor = [UIColor whiteColor];
     self.toolbarBgColor = [UIColor colorWithWhite:.1f alpha:0.9];

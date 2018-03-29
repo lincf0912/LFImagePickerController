@@ -8,7 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+#ifdef LF_MEDIAEDIT
 @class LFPhotoEditingController, LFVideoEditingController;
+#endif
 
 @interface LFLayoutPickerController : UINavigationController
 
@@ -26,6 +28,8 @@
 @property (nonatomic, strong) UIColor *naviBgColor;
 @property (nonatomic, strong) UIColor *naviTitleColor;
 @property (nonatomic, strong) UIFont *naviTitleFont;
+@property (nonatomic, strong) UIColor *naviTipsTextColor;
+@property (nonatomic, strong) UIFont *naviTipsFont;
 @property (nonatomic, strong) UIColor *barItemTextColor;
 @property (nonatomic, strong) UIFont *barItemTextFont;
 @property (nonatomic, strong) UIColor *toolbarBgColor;
@@ -43,10 +47,11 @@
 @property (nonatomic, copy) NSString *settingBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
 @property (nonatomic, copy) NSString *processHintStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
 
+#ifdef LF_MEDIAEDIT
 #pragma mark - 编辑模式
 @property (nonatomic, copy) void (^photoEditLabrary)(LFPhotoEditingController *lf_photoEditingVC);
 @property (nonatomic, copy) void (^videoEditLabrary)(LFVideoEditingController *lf_videoEditingVC);
-
+#endif
 
 - (void)showAlertWithTitle:(NSString *)title;
 - (void)showAlertWithTitle:(NSString *)title complete:(void (^)(void))complete;

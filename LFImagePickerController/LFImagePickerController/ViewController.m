@@ -53,6 +53,7 @@
 - (IBAction)buttonAction1:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
+//    imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
 //    imagePicker.sortAscendingByCreateDate = NO;
 //    imagePicker.allowEditing = NO;
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
@@ -72,8 +73,8 @@
 
 - (IBAction)buttonAction2:(id)sender {
     int limit = 10;
-    [[LFAssetManager manager] getCameraRollAlbum:NO allowPickingImage:YES fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
-        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
+    [[LFAssetManager manager] getCameraRollAlbum:YES allowPickingImage:YES fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
+        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:YES allowPickingImage:YES fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
             NSMutableArray *array = [@[] mutableCopy];
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
@@ -82,6 +83,7 @@
             imagePicker.pickerDelegate = self;
             imagePicker.supportAutorotate = YES;
 //            imagePicker.allowPickingGif = YES; /** 支持GIF */
+//            imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
             /** 全选 */
 //            imagePicker.selectedAssets = array;
             

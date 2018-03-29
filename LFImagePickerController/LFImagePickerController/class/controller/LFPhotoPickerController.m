@@ -1100,10 +1100,22 @@
             if (asset) {
                 NSUInteger index = [self.models indexOfObject:asset];
                 if (index != NSNotFound) {
-                    [imagePickerVc.selectedModels addObject:self.models[index]];
+                    if (imagePickerVc.selectedModels.count && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+                        if (asset.type == imagePickerVc.selectedModels.firstObject.type) {
+                            [imagePickerVc.selectedModels addObject:self.models[index]];
+                        }
+                    } else {
+                        [imagePickerVc.selectedModels addObject:self.models[index]];
+                    }
                 }
-                if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
-                    break;
+                if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                    if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
+                        break;
+                    }
+                } else if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo) {
+                    if (imagePickerVc.selectedModels.count >= imagePickerVc.maxVideosCount) {
+                        break;
+                    }
                 }
             }
         }

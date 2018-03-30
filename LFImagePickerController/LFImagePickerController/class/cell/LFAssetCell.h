@@ -19,6 +19,8 @@
 @property (nonatomic, copy) void (^didSelectPhotoBlock)(BOOL isSelected, LFAsset *model, LFAssetCell *weakCell);
 /** 只能选中 */
 @property (nonatomic, assign) BOOL onlySelected;
+/** 只能点击；但优先级低于只能选中onlySelected */
+@property (nonatomic, assign) BOOL onlyClick;
 /** 不能选中 */
 @property (nonatomic, assign) BOOL noSelected;
 

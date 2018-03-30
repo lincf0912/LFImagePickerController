@@ -223,9 +223,21 @@
 {
     _onlySelected = onlySelected;
     if (onlySelected) {
+        _onlyClick = NO;
+        _selectPhotoButton.hidden = NO;
+        _selectImageView.hidden = NO;
         _selectPhotoButton.frame = self.bounds;
     } else {
         _selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
+    }
+}
+
+- (void)setOnlyClick:(BOOL)onlyClick
+{
+    if (!self.onlySelected) {
+        _onlyClick = onlyClick;
+        _selectPhotoButton.hidden = onlyClick;
+        _selectImageView.hidden = onlyClick;
     }
 }
 

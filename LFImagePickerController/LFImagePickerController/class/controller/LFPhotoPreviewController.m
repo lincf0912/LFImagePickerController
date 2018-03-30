@@ -936,7 +936,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [UIView animateWithDuration:0.25f animations:^{
         _naviBar.alpha = alpha;
         _toolBar.alpha = alpha;
-        _naviTipsView.alpha = _selectButton.hidden ? alpha : 0.f;
+        _naviTipsView.alpha = (imagePickerVc.selectedModels.count && _selectButton.hidden) ? alpha : 0.f;
         CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
         _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
         /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
@@ -1048,21 +1048,29 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }
-    if (imagePickerVc.selectedModels.count && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
-        _selectButton.hidden = (model.type != imagePickerVc.selectedModels.firstObject.type);
-        if (_selectButton.hidden) {
-            if (model.type == LFAssetMediaTypePhoto) {
-                _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_photo"];
-            } else {
-                _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
+    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+        if (imagePickerVc.selectedModels.count && model.type != imagePickerVc.selectedModels.firstObject.type) {
+            _selectButton.hidden = YES;
+            if (_selectButton.hidden) {
+                if (model.type == LFAssetMediaTypePhoto) {
+                    _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_photo"];
+                } else {
+                    _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
+                }
+            }
+        } else {
+            if (model.type == LFAssetMediaTypeVideo) {
+                _selectButton.hidden = imagePickerVc.maxVideosCount == 1;
+            } else if (model.type == LFAssetMediaTypePhoto) {
+                _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
             }
         }
     } else {
-        _selectButton.hidden = NO;
+        _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
     }
     
     [UIView animateWithDuration:0.25f animations:^{
-        _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (_selectButton.hidden ? 1.f : 0.f);
+        _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : ((imagePickerVc.selectedModels.count && _selectButton.hidden) ? 1.f : 0.f);
         CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
         _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
     }];

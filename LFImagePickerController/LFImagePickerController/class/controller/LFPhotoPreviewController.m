@@ -386,7 +386,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
-    doneSize.width += 4;
+    doneSize.width += 10;
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _doneButton.frame = CGRectMake(CGRectGetWidth(_toolSubBar.frame) - doneSize.width - 12, (CGRectGetHeight(_toolSubBar.frame)-doneSize.height)/2, doneSize.width, doneSize.height);
@@ -581,13 +581,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     LFImagePickerController *imagePickerVc = [self navi];
     LFAsset *model = _models[_currentIndex];
     if (!selectButton.isSelected) {
-        // 1. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
-        if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
-            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], imagePickerVc.maxImagesCount];
-            [imagePickerVc showAlertWithTitle:title];
-            return;
-            // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
-        } else {
+        
+        void (^selectedItem)() = ^{
             /** 检测是否超过图片最大大小 */
             if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
 #ifdef LF_MEDIAEDIT
@@ -600,7 +595,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 }
 #endif
             } else
-                /** 检测是否超过视频最大时长 */
+            /** 检测是否超过视频最大时长 */
                 if (model.type == LFAssetMediaTypeVideo) {
 #ifdef LF_MEDIAEDIT
                     LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
@@ -627,7 +622,30 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             } else {
                 [imagePickerVc.selectedModels addObject:model];
             }
+        };
+        
+        if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && model.type == LFAssetMediaTypeVideo) {
+            // 1. select:check if over the maxVideosCount / 选择视频,检查是否超过了最大个数的限制
+            if (imagePickerVc.selectedModels.count >= imagePickerVc.maxVideosCount) {
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], imagePickerVc.maxVideosCount];
+                [imagePickerVc showAlertWithTitle:title];
+                return;
+            } else {
+                // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
+                selectedItem();
+            }
+        } else {
+            // 1. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
+            if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], imagePickerVc.maxImagesCount];
+                [imagePickerVc showAlertWithTitle:title];
+                return;
+            } else {
+                // 2. if not over the maxImagesCount / 如果没有超过最大个数限制
+                selectedItem();
+            }
         }
+        
     } else {
         
         [imagePickerVc.selectedModels removeObject:model];
@@ -672,32 +690,45 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     LFImagePickerController *imagePickerVc = [self navi];
     
     // 如果没有选中过照片 点击确定时选中当前预览的照片
-    if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0 && imagePickerVc.minImagesCount == 0) {
+    if (imagePickerVc.autoSelectCurrentImage && imagePickerVc.selectedModels.count == 0) {
+        
         LFAsset *model = _models[_currentIndex];
-        /** 检测是否超过视频最大时长 */
-        if (model.type == LFAssetMediaTypeVideo) {
+        NSUInteger selectedCount = imagePickerVc.minImagesCount;
+        if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && model.type == LFAssetMediaTypeVideo) {
+            selectedCount = imagePickerVc.minVideosCount;
+        }
+        if (selectedCount == 0) {
+            /** 检测是否超过视频最大时长 */
+            if (model.type == LFAssetMediaTypeVideo) {
 #ifdef LF_MEDIAEDIT
-            LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
-            NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+                LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
 #else
-            NSTimeInterval duration = model.duration;
+                NSTimeInterval duration = model.duration;
 #endif
-            if (duration > imagePickerVc.maxVideoDuration) {
-                if (imagePickerVc.maxVideoDuration < 60) {
-                    [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
-                } else {
-                    [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                if (duration > imagePickerVc.maxVideoDuration) {
+                    if (imagePickerVc.maxVideoDuration < 60) {
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
+                    } else {
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                    }
+                    return;
                 }
+            }
+            [imagePickerVc.selectedModels addObject:model];
+        } else {
+            // 判断是否满足最小必选张数的限制
+            if (model.type == LFAssetMediaTypeVideo) {
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectVideoTipText"], imagePickerVc.minVideosCount];
+                [imagePickerVc showAlertWithTitle:title];
+                
+                return;
+            } else if (model.type == LFAssetMediaTypePhoto) {
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
+                [imagePickerVc showAlertWithTitle:title];
                 return;
             }
         }
-        [imagePickerVc.selectedModels addObject:model];
-    }
-    
-    if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
-        NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
-        [imagePickerVc showAlertWithTitle:title];
-        return;
     }
 
     if (self.doneButtonClickBlock) {
@@ -1056,7 +1087,23 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (!_originalPhotoLabel.hidden) [self showPhotoBytes];
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
-    _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
+    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+        
+        if (imagePickerVc.selectedModels.count) {
+            if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
+            } else if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo){
+                _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxVideosCount || [imagePickerVc.selectedModels containsObject:model]);
+            }
+            if (model.type != imagePickerVc.selectedModels.firstObject.type) {
+                _editButton.enabled = NO;
+            }
+        } else {
+            _editButton.enabled = YES;
+        }
+    } else {
+        _editButton.enabled = (imagePickerVc.selectedModels.count != imagePickerVc.maxImagesCount || [imagePickerVc.selectedModels containsObject:model]);
+    }
     
     /** 预览栏动画 */
     if (!self.alwaysShowPreviewBar) {

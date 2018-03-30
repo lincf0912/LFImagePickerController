@@ -409,9 +409,10 @@
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
+    
     CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, height), 30);
-    doneSize.width += 4;
+    doneSize.width += 10;
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (kBottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
@@ -507,11 +508,22 @@
 
 - (void)doneButtonClick {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    // 1.6.8 判断是否满足最小必选张数的限制
-    if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
-        NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
-        [imagePickerVc showAlertWithTitle:title];
-        return;
+    
+    // 判断是否满足最小必选张数的限制
+    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo) {
+        
+        if (imagePickerVc.minVideosCount && imagePickerVc.selectedModels.count < imagePickerVc.minVideosCount) {
+            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectVideoTipText"], imagePickerVc.minVideosCount];
+            [imagePickerVc showAlertWithTitle:title];
+            return;
+        }
+        
+    } else {
+        if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
+            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
+            [imagePickerVc showAlertWithTitle:title];
+            return;
+        }
     }
     
     [imagePickerVc showProgressHUD];
@@ -696,12 +708,22 @@
     cell.displayPhotoName = imagePickerVc.displayImageFilename;
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 最大数量时，非选择部分显示不可选 */
-    cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
-    /** 不能混合选择的情况 */
-    if (!cell.noSelected && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && imagePickerVc.selectedModels.count) {
-        if (model.type != imagePickerVc.selectedModels.firstObject.type) {
-            cell.noSelected = YES;
+    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+        /** 不能混合选择的情况 */
+        if (imagePickerVc.selectedModels.count) {
+            if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
+            } else if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo){
+                cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxVideosCount && ![imagePickerVc.selectedModels containsObject:model]);
+            }
+            if (model.type != imagePickerVc.selectedModels.firstObject.type) {
+                cell.noSelected = YES;
+            }
+        } else {
+            cell.noSelected = NO;
         }
+    } else {
+        cell.noSelected = (imagePickerVc.selectedModels.count == imagePickerVc.maxImagesCount && ![imagePickerVc.selectedModels containsObject:model]);
     }
     
     cell.model = model;
@@ -717,6 +739,50 @@
             [weakImagePickerVc.selectedModels removeObject:cellModel];
             
             [weakSelf refreshBottomToolBarStatus];
+            
+            if (weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount) {
+                
+                BOOL refreshWithoutSelf = NO;
+                if (cellModel.type == LFAssetMediaTypePhoto) {
+                    if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount-1) {
+                        refreshWithoutSelf = YES;
+                    }
+                } else if (cellModel.type == LFAssetMediaTypeVideo) {
+                    if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxVideosCount-1) {
+                        refreshWithoutSelf = YES;
+                    }
+                }
+                
+                if (refreshWithoutSelf) {
+                    /** 刷新除自己所有的cell */
+                    NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
+                    NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
+                    [visibleIPs removeObject:cellIndexPath];
+                    if (visibleIPs.count) {
+                        [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
+                    }
+                } else if (weakImagePickerVc.selectedModels.count == 0) {
+                    if (cellModel.type == LFAssetMediaTypePhoto) {
+                        [weakSelf refreshVideoCell];
+                    } else {
+                        [weakSelf refreshImageCell];
+                    }
+                } else {
+                    [weakSelf refreshSelectedCell];
+                }
+            } else {
+                if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount-1) {
+                    /** 取消选择为最大数量-1时，显示其他可选 */
+                    NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
+                    NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
+                    [visibleIPs removeObject:cellIndexPath];
+                    if (visibleIPs.count) {
+                        [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
+                    }
+                } else {
+                    [weakSelf refreshSelectedCell];
+                }
+            }
             
             if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount-1) {
                 /** 取消选择为最大数量-1时，显示其他可选 */
@@ -741,8 +807,8 @@
             
         } else {
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
-            if (weakImagePickerVc.selectedModels.count < weakImagePickerVc.maxImagesCount) {
-                
+            
+            void (^selectedItem)() = ^{
                 /** 检测是否超过图片最大大小 */
                 if (cellModel.type == LFAssetMediaTypePhoto && weakImagePickerVc.isSelectOriginalPhoto && cellModel.bytes >= weakImagePickerVc.maxPhotoBytes) {
 #ifdef LF_MEDIAEDIT
@@ -775,24 +841,55 @@
                 [weakImagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
                 
-                if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount) {
+                if (weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount) {
+                    
+                    BOOL refreshNoSelected = NO;
+                    if (weakImagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                        if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount) {
+                            [weakSelf refreshNoSelectedCell];
+                            refreshNoSelected = YES;
+                        }
+                    } else {
+                        if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxVideosCount) {
+                            [weakSelf refreshNoSelectedCell];
+                            refreshNoSelected = YES;
+                        }
+                    }
+                    
+                    /** refreshNoSelected后没有必要再次刷新 */
+                    if (weakImagePickerVc.selectedModels.count == 1 && !refreshNoSelected) {
+                        if (weakImagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                            [weakSelf refreshVideoCell];
+                        } else {
+                            [weakSelf refreshImageCell];
+                        }
+                    }
+                    
+                } else if (weakImagePickerVc.selectedModels.count == weakImagePickerVc.maxImagesCount) {
                     /** 选择到最大数量，禁止其他的可选显示 */
                     [weakSelf refreshNoSelectedCell];
-                } else if (weakImagePickerVc.selectedModels.count == 1 && weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount) {
-                    
-                    if (weakImagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
-                        [weakSelf refreshVideoCell];
-                    } else {
-                        [weakSelf refreshImageCell];
-                    }
                 }
                 
                 [weakCell selectPhoto:YES index:weakImagePickerVc.selectedModels.count animated:YES];
+            };
+            
+            if (weakImagePickerVc.maxImagesCount != weakImagePickerVc.maxVideosCount && cellModel.type == LFAssetMediaTypeVideo) {
+                if (weakImagePickerVc.selectedModels.count < weakImagePickerVc.maxVideosCount) {
+                    selectedItem();
+                } else {
+                    NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], weakImagePickerVc.maxVideosCount];
+                    [weakImagePickerVc showAlertWithTitle:title];
+                }
                 
             } else {
-                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], weakImagePickerVc.maxImagesCount];
-                [weakImagePickerVc showAlertWithTitle:title];
+                if (weakImagePickerVc.selectedModels.count < weakImagePickerVc.maxImagesCount) {
+                    selectedItem();
+                } else {
+                    NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectPhotoTipText"], weakImagePickerVc.maxImagesCount];
+                    [weakImagePickerVc showAlertWithTitle:title];
+                }
             }
+            
         }
     };
     return cell;
@@ -1014,7 +1111,11 @@
     _doneButton.enabled = imagePickerVc.selectedModels.count;
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
     
-    [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+    if (imagePickerVc.selectedModels.count) {
+        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+    } else {
+        [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
+    }
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);

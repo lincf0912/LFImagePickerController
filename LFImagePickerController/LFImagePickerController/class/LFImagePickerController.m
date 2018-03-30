@@ -142,6 +142,7 @@
         // 默认准许用户选择原图和视频, 你也可以在这个方法后置为NO
         [self defaultConfig];
         if (maxImagesCount > 0) self.maxImagesCount = maxImagesCount; // Default is 9 / 默认最大可选9张图片
+        self.maxVideosCount = self.maxImagesCount;
         self.pickerDelegate = delegate;
         
         self.columnNumber = columnNumber;
@@ -221,6 +222,7 @@
     self.maxImagesCount = 9;
     self.maxVideosCount = self.maxImagesCount;
     self.minImagesCount = 0;
+    self.minVideosCount = self.minImagesCount;
     self.autoSelectCurrentImage = YES;
     self.allowPickingOriginalPhoto = YES;
     self.allowPickingVideo = YES;

@@ -37,13 +37,18 @@
 
 /// Default is 9 / 默认最大可选9张图片
 @property (nonatomic,assign) NSUInteger maxImagesCount;
-/// Default is 9 (equivalent to maxImagesCount).If maxVideosCount is not equal to maxImagesCount.Unable to mixed selection of images and videos
-/// 默认与maxImagesCount同值,如果不同值,不能混合选择图片与视频（类似微信朋友圈）
-@property (nonatomic,assign) NSUInteger maxVideosCount;
 
 /// The minimum count photos user must pick,Default is 0
 /// 最小照片必选张数,默认是0
 @property (nonatomic,assign) NSUInteger minImagesCount;
+
+/// Default is 9 (equivalent to maxImagesCount).If maxVideosCount is not equal to maxImagesCount.Unable to mixed selection of images and videos
+/// 默认与maxImagesCount同值,如果不同值,不能混合选择图片与视频（类似微信朋友圈）
+@property (nonatomic,assign) NSUInteger maxVideosCount;
+
+/// The minimum count videos user must pick,Default is 0 (equivalent to minImagesCount),Only maxVideosCount is not equal to maxImagesCount is work
+/// 最小视频必选张数,默认与minImagesCount同值,只有maxVideosCount不等于maxImagesCount才有效
+@property (nonatomic,assign) NSUInteger minVideosCount;
 
 /// Select original
 /** 是否选择原图 */

@@ -496,8 +496,6 @@
 				6F1201701E513D1B00EA2198 /* Sources */,
 				6F1201711E513D1B00EA2198 /* Frameworks */,
 				6F1201721E513D1B00EA2198 /* Resources */,
-				44C3EDE41A80D591127809E4 /* [CP] Embed Pods Frameworks */,
-				5634F691E6D0CFF3B5B4F842 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -562,39 +560,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		44C3EDE41A80D591127809E4 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		5634F691E6D0CFF3B5B4F842 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController-resources.sh",
-				"${PODS_ROOT}/LFMediaEditingController/LFMediaEditingController/class/common/LFMediaEditingController.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		967A95CE0222F248658F16BC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

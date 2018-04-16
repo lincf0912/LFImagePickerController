@@ -922,7 +922,7 @@ static LFAssetManager *manager;
     }
 }
 
-- (void)getVideoResultWithAsset:(id)asset completion:(void (^)(LFResultVideo *resultVideo))completion
+- (void)getVideoResultWithAsset:(id)asset presetName:(NSString *)presetName completion:(void (^)(LFResultVideo *resultVideo))completion
 {
     NSString *name = nil;
     if ([asset isKindOfClass:[PHAsset class]]) {
@@ -988,7 +988,7 @@ static LFAssetManager *manager;
     if ([[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
         if (VideoResultComplete) VideoResultComplete(videoPath);
     } else {
-        [self compressAndCacheVideoWithAsset:asset completion:^(NSString *path) {
+        [self compressAndCacheVideoWithAsset:asset presetName:presetName completion:^(NSString *path) {
             if (VideoResultComplete) VideoResultComplete(path);
         }];
     }
@@ -1001,11 +1001,19 @@ static LFAssetManager *manager;
  *  视频压缩并缓存压缩后视频 (将视频格式变为mp4)
  *
  *  @param asset      PHAsset／ALAsset
+ *  @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
  *  @param completion 回调压缩后视频路径，可以复制或剪切
  */
-- (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion
+- (void)compressAndCacheVideoWithAsset:(id)asset
+                            presetName:(NSString *)presetName
+                            completion:(void (^)(NSString *path))completion
 {
     if (completion == nil) return;
+    
+    if (presetName.length == 0) {
+        presetName = AVAssetExportPresetMediumQuality;
+    }
+    
     NSString *cache = [LFAssetManager CacheVideoPath];
     NSString *name = nil;
     if ([asset isKindOfClass:[PHAsset class]]) {
@@ -1026,7 +1034,7 @@ static LFAssetManager *manager;
         [[PHImageManager defaultManager] requestAVAssetForVideo:asset options:option resultHandler:^(AVAsset * _Nullable av_asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
             
             void (^compressAndCacheVideoFinish)(AVAsset *) = ^(AVAsset *av_asset){
-                [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:path complete:^(BOOL isSuccess, NSError *error) {
+                [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:path presetName:presetName complete:^(BOOL isSuccess, NSError *error) {
                     if (error) {
                         dispatch_main_async_safe(^{
                             completion(nil);
@@ -1064,7 +1072,7 @@ static LFAssetManager *manager;
     } else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *rep = [asset defaultRepresentation];
         NSURL *videoURL = [rep url];
-        [LF_VideoUtils encodeVideoWithURL:videoURL outPath:path complete:^(BOOL isSuccess, NSError *error) {
+        [LF_VideoUtils encodeVideoWithURL:videoURL outPath:path presetName:presetName complete:^(BOOL isSuccess, NSError *error) {
             if (error) {
                 dispatch_main_async_safe(^{
                     completion(nil);

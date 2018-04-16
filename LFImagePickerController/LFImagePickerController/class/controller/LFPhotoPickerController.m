@@ -619,7 +619,7 @@
                         }];
                     } else {
 #endif
-                        [[LFAssetManager manager] getVideoResultWithAsset:model.asset completion:^(LFResultVideo *resultVideo) {
+                        [[LFAssetManager manager] getVideoResultWithAsset:model.asset presetName:imagePickerVc.videoCompressPresetName completion:^(LFResultVideo *resultVideo) {
                             photosComplete(resultVideo, i);
                         }];
 #ifdef LF_MEDIAEDIT

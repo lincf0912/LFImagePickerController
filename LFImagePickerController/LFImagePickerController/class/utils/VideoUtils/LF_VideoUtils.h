@@ -15,9 +15,13 @@
 /** 将视频轨迹AVAssetTrack转换为UIImageOrientation */
 + (UIImageOrientation)orientationFromAVAssetTrack:(AVAssetTrack *)videoTrack;
 
-/** 视频压缩 */
+/** 视频压缩URL */
 + (void)encodeVideoWithURL:(NSURL *)videoURL outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete;
++ (void)encodeVideoWithURL:(NSURL *)videoURL outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete;
+
+/** 视频压缩Asset */
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete;
++ (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete;
 
 /*
  * 获取第N帧的图片

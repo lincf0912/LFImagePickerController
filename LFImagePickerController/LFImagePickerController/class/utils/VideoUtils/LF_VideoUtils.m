@@ -40,10 +40,21 @@
 /** 视频压缩 */
 + (void)encodeVideoWithURL:(NSURL *)videoURL outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete
 {
-    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
-    [self encodeVideoWithAsset:asset outPath:outPath complete:complete];
+    [self encodeVideoWithURL:videoURL outPath:outPath presetName:AVAssetExportPreset1280x720 complete:complete];
 }
+
++ (void)encodeVideoWithURL:(NSURL *)videoURL outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete
+{
+    AVURLAsset *asset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
+    [self encodeVideoWithAsset:asset outPath:outPath presetName:presetName complete:complete];
+}
+
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete
+{
+    [self encodeVideoWithAsset:asset outPath:outPath presetName:AVAssetExportPreset1280x720 complete:complete];
+}
+
++ (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete
 {
     if (complete == nil) return;
     if (asset == nil || outPath.length == 0) {
@@ -111,7 +122,7 @@
         [[NSFileManager defaultManager] removeItemAtPath:outPath error:nil];
     }
 
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:AVAssetExportPresetMediumQuality];
+    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:(presetName.length ? presetName : AVAssetExportPreset1280x720)];
     exportSession.outputURL = [NSURL fileURLWithPath:outPath];
     exportSession.videoComposition = waterMarkVideoComposition;
     exportSession.outputFileType = AVFileTypeQuickTimeMovie;

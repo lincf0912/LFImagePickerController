@@ -151,7 +151,7 @@
 
 /// Get video 获得视频
 - (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;
-- (void)getVideoResultWithAsset:(id)asset completion:(void (^)(LFResultVideo *resultVideo))completion;
+- (void)getVideoResultWithAsset:(id)asset presetName:(NSString *)presetName completion:(void (^)(LFResultVideo *resultVideo))completion;
 
 /**
  *  @author lincf, 16-06-15 13:06:26
@@ -159,9 +159,12 @@
  *  视频压缩并缓存压缩后视频 (将视频格式变为mp4)
  *
  *  @param asset      PHAsset／ALAsset
+ *  @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
  *  @param completion 回调压缩后视频路径，可以复制或剪切
  */
-- (void)compressAndCacheVideoWithAsset:(id)asset completion:(void (^)(NSString *path))completion;
+- (void)compressAndCacheVideoWithAsset:(id)asset
+                            presetName:(NSString *)presetName
+                            completion:(void (^)(NSString *path))completion;
 
 
 /// Get photo bytes 获得一组照片的大小

@@ -122,6 +122,10 @@
 /// 选择图片的最大大小,默认为6MB (6x1024*1024) 单位 B
 @property (nonatomic,assign) NSUInteger maxPhotoBytes;
 
+/// Compressed video size,Default is AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
+/// 压缩视频大小的参数,默认为AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
+@property (nonatomic,copy) NSString *videoCompressPresetName;
+
 /// Select the maximum duration of the video,Default is 5 minutes (in seconds unit)
 /// 选择视频的最大时长,默认为5分钟 (5x60) 单位 秒
 @property (nonatomic,assign) NSTimeInterval maxVideoDuration;

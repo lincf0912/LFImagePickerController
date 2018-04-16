@@ -240,6 +240,7 @@
     self.imageCompressSize = kCompressSize;
     self.thumbnailCompressSize = kThumbnailCompressSize;
     self.maxPhotoBytes = kMaxPhotoBytes;
+    self.videoCompressPresetName = AVAssetExportPresetMediumQuality;
     self.maxVideoDuration = kMaxVideoDurationze;
     self.autoSavePhotoAlbum = YES;
     self.displayImageFilename = NO;

@@ -175,7 +175,7 @@
                     self.sharePath = [originalFilePath stringByAppendingPathComponent:name];
                 }
                 
-                NSLog(@"⚠️Info name:%@ -- infoLength:%fK -- thumnailSize:%fK -- originalSize:%fK -- infoSize:%@", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0, NSStringFromCGSize(size));
+                NSLog(@"🎉🚀Info name:%@ -- infoLength:%fK -- thumnailLength:%fK -- originalLength:%fK -- infoSize:%@", name, byte/1000.0, thumnailData.length/1000.0, originalData.length/1000.0, NSStringFromCGSize(size));
                 
                 [images addObject:originalImage];
             }
@@ -195,6 +195,7 @@
                 [playerLayer setPlayer:player];
                 [player play];
             }
+            NSLog(@"🎉🚀Info name:%@ -- infoLength:%fK -- videoLength:%fK -- infoSize:%@", resultVideo.info.name, resultVideo.info.byte/1000.0, resultVideo.data.length/1000.0, NSStringFromCGSize(resultVideo.info.size));
         } else {
             /** 无法处理的数据 */
             NSLog(@"%@", result.error);

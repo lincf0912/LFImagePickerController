@@ -38,7 +38,10 @@
 @property (nonatomic, strong) UIFont *toolbarTitleFont;
 @property (nonatomic, strong) UIColor *previewNaviBgColor;
 
+
 /// 自定义文字
+/// Copy LFImagePickerController.strings to any location of your project and modify the corresponding value.
+/// 复制LFImagePickerController.strings到项目任意位置，修改对应的值。
 @property (nonatomic, copy) NSString *doneBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
 @property (nonatomic, copy) NSString *cancelBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
 @property (nonatomic, copy) NSString *previewBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");

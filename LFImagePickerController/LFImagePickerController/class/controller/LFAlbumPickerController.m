@@ -8,6 +8,7 @@
 
 #import "LFAlbumPickerController.h"
 #import "LFImagePickerController.h"
+#import "LFImagePickerController+property.h"
 #import "LFPhotoPickerController.h"
 #import "LFImagePickerHeader.h"
 #import "UIView+LFFrame.h"

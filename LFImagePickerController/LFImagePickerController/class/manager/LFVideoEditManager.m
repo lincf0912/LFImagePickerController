@@ -85,11 +85,16 @@ static LFVideoEditManager *manager;
  通过asset解析视频
 
  @param asset LFAsset
+ @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
  @param completion 回调
  */
 - (void)getVideoWithAsset:(LFAsset *)asset
+               presetName:(NSString *)presetName
                completion:(void (^)(LFResultVideo *resultVideo))completion
 {
+    if (presetName.length == 0) {
+        presetName = AVAssetExportPresetMediumQuality;
+    }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         LFVideoEdit *videoEdit = [self videoEditForAsset:asset];
@@ -146,7 +151,7 @@ static LFVideoEditManager *manager;
         
         NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:videoName];
         AVAsset *av_asset = [AVURLAsset assetWithURL:videoEdit.editFinalURL];
-        [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:videoPath complete:^(BOOL isSuccess, NSError *error) {
+        [LF_VideoUtils encodeVideoWithAsset:av_asset outPath:videoPath presetName:presetName complete:^(BOOL isSuccess, NSError *error) {
             if (VideoResultComplete) VideoResultComplete(videoPath, videoName);
         }];
     });

@@ -96,21 +96,18 @@
 @property (nonatomic,assign) BOOL allowEditing;
 #endif
 
-/// Default is YES,if set NO,the picker don't dismiss itself.
-/// 默认为YES,如果设置为NO,选择器将不会自己dismiss
-@property (nonatomic,assign) BOOL autoDismiss;
-
-/// Default is NO,if set YES,the picker support interface orientation.
-/// 默认为NO,如果设置为YES,选择器将会适配横屏
-@property (nonatomic,assign) BOOL supportAutorotate;
-
 /// The name of the album displayed,default SmartAlbumUserLibrary
 /// 显示的相册名称,默认为相机胶卷
 @property (nonatomic,copy) NSString *defaultAlbumName;
 
+/// Default is NO,if set YES,The image file name will be displayed
+/// 默认为NO,如果设置为YES,显示图片文件名称
+@property (nonatomic,assign) BOOL displayImageFilename;
+
 #pragma mark - option
 
-/// Compressed image size (allowPickingOriginalPhoto=YES,Invalid),Default is 100 in KB
+#pragma mark photo option
+/// Compressed image size (isSelectOriginalPhoto=YES,Invalid),Default is 100 in KB
 /// 压缩标清图的大小（没有勾选原图的情况有效）,默认为100 单位KB （只能压缩到接近该值的大小）
 @property (nonatomic,assign) float imageCompressSize;
 
@@ -122,6 +119,7 @@
 /// 选择图片的最大大小,默认为6MB (6x1024*1024) 单位 B
 @property (nonatomic,assign) NSUInteger maxPhotoBytes;
 
+#pragma mark video option
 /// Compressed video size,Default is AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
 /// 压缩视频大小的参数,默认为AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
 @property (nonatomic,copy) NSString *videoCompressPresetName;
@@ -130,13 +128,18 @@
 /// 选择视频的最大时长,默认为5分钟 (5x60) 单位 秒
 @property (nonatomic,assign) NSTimeInterval maxVideoDuration;
 
+#pragma mark other option
 /// Default is YES,if set NO,The edited photo is not saved to the photo album
 /// 默认为YES,如果设置为NO,编辑后的图片不会保存到系统相册
 @property (nonatomic,assign) BOOL autoSavePhotoAlbum;
 
-/// Default is NO,if set YES,The image file name will be displayed
-/// 默认为NO,如果设置为YES,显示图片文件名称
-@property (nonatomic,assign) BOOL displayImageFilename;
+/// Default is YES,if set NO,the picker don't dismiss itself.
+/// 默认为YES,如果设置为NO,选择器将不会自己dismiss
+@property (nonatomic,assign) BOOL autoDismiss;
+
+/// Default is NO,if set YES,the picker support interface orientation.
+/// 默认为NO,如果设置为YES,选择器将会适配横屏
+@property (nonatomic,assign) BOOL supportAutorotate;
 
 /// Default is NO,if set YES,The image picker will sync the system's album （The interface resets UI when the album changes）
 /// 默认为NO,如果设置为YES,同步系统相册 （相册发生变化时,界面会重置UI）
@@ -145,6 +148,10 @@
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效
 @property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;
+
+/// Currently selected object list.
+/// 用户选中的对象列表
+@property (nonatomic,readonly) NSArray<LFAsset *> *selectedObjects;
 
 #pragma mark - delegate & block
 
@@ -161,12 +168,6 @@
  👍🎉1.2.6_取代所有旧接口,唯一回调,避免接口多样化
  */
 @property (nonatomic,copy) void (^didFinishPickingResultHandle)(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *results);
-
-#pragma mark - private
-
-/// The photos selected
-/// 用户选中过的图片数组(正常情况无需操作)
-@property (nonatomic,readonly) NSMutableArray<LFAsset *> *selectedModels;
 
 #pragma mark - ========================Deprecated========================
 /** 图片 */

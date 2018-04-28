@@ -580,7 +580,7 @@ static LFAssetManager *manager;
         dispatch_globalQueue_async_safe(^{
             CGFloat thumbnailCompress = (thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize);
             CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
-            BOOL isGif = subMediaType == LFImagePickerSubMediaTypeGIF;
+            BOOL isGif = (subMediaType == LFImagePickerSubMediaTypeGIF);
             //        BOOL isLivePhoto = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeLivePhoto;
             NSData *sourceData = nil; NSData *thumbnailData = nil;
             UIImage *thumbnail = nil; UIImage *source = nil;

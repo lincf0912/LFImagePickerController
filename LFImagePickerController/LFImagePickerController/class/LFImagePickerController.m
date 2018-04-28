@@ -36,6 +36,8 @@
 /** 预览模式，临时存储 */
 @property (nonatomic, strong) LFPhotoPreviewController *previewVc;
 
+@property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
+
 @end
 
 @implementation LFImagePickerController

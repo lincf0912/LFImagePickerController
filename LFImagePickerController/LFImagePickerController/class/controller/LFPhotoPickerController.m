@@ -8,6 +8,7 @@
 
 #import "LFPhotoPickerController.h"
 #import "LFImagePickerController.h"
+#import "LFImagePickerController+property.h"
 #import "LFPhotoPreviewController.h"
 
 #import "LFImagePickerHeader.h"
@@ -610,7 +611,7 @@
 #ifdef LF_MEDIAEDIT
                     LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
                     if (videoEdit) {
-                        [[LFVideoEditManager manager] getVideoWithAsset:model completion:^(LFResultVideo *resultVideo) {
+                        [[LFVideoEditManager manager] getVideoWithAsset:model presetName:imagePickerVc.videoCompressPresetName completion:^(LFResultVideo *resultVideo) {
                             if (imagePickerVc.autoSavePhotoAlbum) {
                                 /** 编辑视频保存到相册 */
                                 [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURLs:@[resultVideo.url] complete:nil];

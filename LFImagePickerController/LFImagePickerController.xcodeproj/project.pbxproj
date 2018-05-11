@@ -166,6 +166,7 @@
 		C70BABF020591F39005B7894 /* LFImagePickerController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFImagePickerController.strings; sourceTree = "<group>"; };
 		C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFMediaEditingController.strings; sourceTree = "<group>"; };
 		C733DC9D209454D700FB7C50 /* LFImagePickerController+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFImagePickerController+property.h"; sourceTree = "<group>"; };
+		C75FE2EB20A5211900086649 /* LFAsset+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAsset+property.h"; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		DA7F571BE722254777162CD5 /* Pods-LFImagePickerController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.debug.xcconfig"; sourceTree = "<group>"; };
@@ -283,6 +284,7 @@
 			children = (
 				6F1201931E513E5500EA2198 /* LFAsset.h */,
 				6F1201941E513E5500EA2198 /* LFAsset.m */,
+				C75FE2EB20A5211900086649 /* LFAsset+property.h */,
 				6F1201AB1E514F9D00EA2198 /* LFAlbum.h */,
 				6F1201AC1E514F9D00EA2198 /* LFAlbum.m */,
 				6F1699241F15AEB9008B1818 /* result */,

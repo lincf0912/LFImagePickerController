@@ -584,35 +584,24 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (!selectButton.isSelected) {
         
         void (^selectedItem)() = ^{
-            /** 检测是否超过图片最大大小 */
-            if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
-#ifdef LF_MEDIAEDIT
-                /** 忽略图片被编辑的情况 */
-                if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
-#endif
-                    [self originalPhotoButtonClick];
-                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
-#ifdef LF_MEDIAEDIT
-                }
-#endif
-            } else
+
             /** 检测是否超过视频最大时长 */
-                if (model.type == LFAssetMediaTypeVideo) {
+            if (model.type == LFAssetMediaTypeVideo) {
 #ifdef LF_MEDIAEDIT
-                    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
-                    NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+                LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
 #else
-                    NSTimeInterval duration = model.duration;
+                NSTimeInterval duration = model.duration;
 #endif
-                    if (duration > imagePickerVc.maxVideoDuration) {
-                        if (imagePickerVc.maxVideoDuration < 60) {
-                            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
-                        } else {
-                            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
-                        }
-                        return;
+                if (duration > imagePickerVc.maxVideoDuration) {
+                    if (imagePickerVc.maxVideoDuration < 60) {
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
+                    } else {
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
                     }
+                    return;
                 }
+            }
             if (self.alwaysShowPreviewBar) {
                 NSInteger index = [_previewBar.dataSource indexOfObject:model];
                 if (index != NSNotFound) {
@@ -792,21 +781,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)originalPhotoButtonClick {
     
     LFImagePickerController *imagePickerVc = [self navi];
-    if (!imagePickerVc.isSelectOriginalPhoto) {
-        for (LFAsset *asset in imagePickerVc.selectedModels) {
-            if (asset.type == LFAssetMediaTypePhoto && asset.bytes >= imagePickerVc.maxPhotoBytes) {
-#ifdef LF_MEDIAEDIT
-                /** 忽略图片被编辑的情况 */
-                if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
-#endif
-                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
-                    return;
-#ifdef LF_MEDIAEDIT
-                }
-#endif
-            }
-        }
-    }
     
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;
@@ -819,6 +793,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             }
         }
         [self showPhotoBytes];
+        [self checkSelectedPhotoBytes];
     } else {
         _originalPhotoLabel.text = nil;
     }
@@ -994,10 +969,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             [self select:_selectButton];
         } else if (!photoEdit && _selectButton.isSelected) {
             /** 检测是否超过图片最大大小 */
-            if (model.type == LFAssetMediaTypePhoto && imagePickerVc.isSelectOriginalPhoto && model.bytes >= imagePickerVc.maxPhotoBytes) {
-                [self originalPhotoButtonClick];
-                [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
-            }
+            [self checkSelectedPhotoBytes];
         }
     }
 }
@@ -1093,7 +1065,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
-    if (!_originalPhotoLabel.hidden) [self showPhotoBytes];
+    if (!_originalPhotoLabel.hidden) {
+        [self showPhotoBytes];
+        [self checkSelectedPhotoBytes];
+    }
     
     /** 关闭编辑 已选数量达到最大限度 && 非选中图片  */
     if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
@@ -1142,6 +1117,37 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             _livePhotoSignView.alpha = 0.f;
         }];
     }
+}
+
+- (void)checkSelectedPhotoBytes {
+    __weak typeof(self) weakSelf = self;
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
+    
+    NSMutableArray *newSelectedModes = [NSMutableArray arrayWithCapacity:5];
+    for (LFAsset *asset in imagePickerVc.selectedModels) {
+        if (asset.type == LFAssetMediaTypePhoto) {
+#ifdef LF_MEDIAEDIT
+            /** 忽略图片被编辑的情况 */
+            if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
+#endif
+                [newSelectedModes addObject:asset];
+#ifdef LF_MEDIAEDIT
+            }
+#endif
+        }
+    }
+    
+    [[LFAssetManager manager] checkPhotosBytesMaxSize:newSelectedModes maxBytes:imagePickerVc.maxPhotoBytes completion:^(BOOL isPass) {
+        if (!isPass) {
+            /** 重新修改原图选项 */
+            __strong typeof(self) strongSelf = weakSelf;
+            if (strongSelf->_originalPhotoButton.selected) {
+                [strongSelf originalPhotoButtonClick];
+            }
+            [weakImagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
+        }
+    }];
 }
 
 - (void)showPhotoBytes {

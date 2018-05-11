@@ -18,9 +18,13 @@
 
 @property (nonatomic, strong) NSString *identifier;
 
+@property (nonatomic, assign) NSInteger bytes;
+
 @end
 
 @implementation LFAsset
+
+@synthesize bytes = _bytes;
 
 - (instancetype)initWithAsset:(id)asset
 {
@@ -72,11 +76,6 @@
                 //                                                                }];
                 //                }
             }
-            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-            option.resizeMode = PHImageRequestOptionsResizeModeFast;
-            [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                _bytes = imageData.length;
-            }];
         } else if ([asset isKindOfClass:[ALAsset class]]) {
             ALAsset *alAsset = (ALAsset *)asset;
             ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
@@ -91,10 +90,20 @@
                 ALAssetRepresentation *re = [alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
                 if (re) _subType = LFAssetSubMediaTypeGIF;
             }
-            _bytes = (NSInteger)assetRep.size;
+            
         }
     }
     return self;
+}
+
+- (NSInteger)bytes
+{
+    return _bytes;
+}
+
+- (void)setBytes:(NSInteger)bytes
+{
+    _bytes = bytes;
 }
 
 - (instancetype)initWithImage:(UIImage *)image

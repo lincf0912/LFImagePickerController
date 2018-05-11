@@ -166,7 +166,8 @@
                             presetName:(NSString *)presetName
                             completion:(void (^)(NSString *path))completion;
 
-
+/// 检查照片的大小是否超过最大值
+- (void)checkPhotosBytesMaxSize:(NSArray <LFAsset *>*)photos maxBytes:(NSInteger)maxBytes completion:(void (^)(BOOL isPass))completion;
 /// Get photo bytes 获得一组照片的大小
 - (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytesStr, NSInteger totalBytes))completion;
 

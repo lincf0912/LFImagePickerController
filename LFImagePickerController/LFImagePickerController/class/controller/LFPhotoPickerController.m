@@ -278,6 +278,7 @@
     
     if (_collectionView) {
         [_collectionView removeFromSuperview];
+        _collectionView = nil;
     }
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
@@ -480,27 +481,13 @@
 - (void)originalPhotoButtonClick {
     
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (!imagePickerVc.isSelectOriginalPhoto) {
-        for (LFAsset *asset in imagePickerVc.selectedModels) {
-            if (asset.type == LFAssetMediaTypePhoto && asset.bytes >= imagePickerVc.maxPhotoBytes) {
-#ifdef LF_MEDIAEDIT
-                /** 忽略图片被编辑的情况 */
-                if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
-#endif
-                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
-                    return;
-#ifdef LF_MEDIAEDIT
-                }
-#endif
-            }
-        }
-    }
     
     _originalPhotoButton.selected = !_originalPhotoButton.isSelected;
     _originalPhotoLabel.hidden = !_originalPhotoButton.isSelected;
     imagePickerVc.isSelectOriginalPhoto = _originalPhotoButton.isSelected;;
     if (_originalPhotoButton.selected) {
         [self getSelectedPhotoBytes];
+        [self checkSelectedPhotoBytes];
     } else {
         _originalPhotoLabel.text = nil;
     }
@@ -764,7 +751,9 @@
                     /** 刷新除自己所有的cell */
                     NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
                     NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
-                    [visibleIPs removeObject:cellIndexPath];
+                    if (cellIndexPath) {
+                        [visibleIPs removeObject:cellIndexPath];
+                    }
                     if (visibleIPs.count) {
                         [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
                     }
@@ -782,7 +771,9 @@
                     /** 取消选择为最大数量-1时，显示其他可选 */
                     NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
                     NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
-                    [visibleIPs removeObject:cellIndexPath];
+                    if (cellIndexPath) {
+                        [visibleIPs removeObject:cellIndexPath];
+                    }
                     if (visibleIPs.count) {
                         [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
                     }
@@ -795,7 +786,9 @@
                 /** 取消选择为最大数量-1时，显示其他可选 */
                 NSMutableArray<NSIndexPath *> *visibleIPs = [[weakSelf.collectionView indexPathsForVisibleItems] mutableCopy];
                 NSIndexPath *cellIndexPath = [weakSelf.collectionView indexPathForCell:weakCell];
-                [visibleIPs removeObject:cellIndexPath];
+                if (cellIndexPath) {
+                    [visibleIPs removeObject:cellIndexPath];
+                }
                 if (visibleIPs.count) {
                     [weakSelf.collectionView reloadItemsAtIndexPaths:visibleIPs];
                 }
@@ -816,35 +809,23 @@
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
             
             void (^selectedItem)() = ^{
-                /** 检测是否超过图片最大大小 */
-                if (cellModel.type == LFAssetMediaTypePhoto && weakImagePickerVc.isSelectOriginalPhoto && cellModel.bytes >= weakImagePickerVc.maxPhotoBytes) {
-#ifdef LF_MEDIAEDIT
-                    /** 忽略图片被编辑的情况 */
-                    if (![[LFPhotoEditManager manager] photoEditForAsset:model]) {
-#endif
-                        [weakSelf originalPhotoButtonClick];
-                        [weakImagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
-#ifdef LF_MEDIAEDIT
-                    }
-#endif
-                } else
                 /** 检测是否超过视频最大时长 */
-                    if (model.type == LFAssetMediaTypeVideo) {
+                if (cellModel.type == LFAssetMediaTypeVideo) {
 #ifdef LF_MEDIAEDIT
-                        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
-                        NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+                    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:cellModel];
+                    NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : cellModel.duration;
 #else
-                        NSTimeInterval duration = model.duration;
+                    NSTimeInterval duration = cellModel.duration;
 #endif
-                        if (duration > imagePickerVc.maxVideoDuration) {
-                            if (imagePickerVc.maxVideoDuration < 60) {
-                                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
-                            } else {
-                                [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
-                            }
-                            return;
+                    if (duration > weakImagePickerVc.maxVideoDuration) {
+                        if (weakImagePickerVc.maxVideoDuration < 60) {
+                            [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)weakImagePickerVc.maxVideoDuration]];
+                        } else {
+                            [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)weakImagePickerVc.maxVideoDuration/60]];
                         }
+                        return;
                     }
+                }
                 [weakImagePickerVc.selectedModels addObject:cellModel];
                 [weakSelf refreshBottomToolBarStatus];
                 
@@ -1126,7 +1107,10 @@
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
-    if (!_originalPhotoLabel.hidden) [self getSelectedPhotoBytes];
+    if (!_originalPhotoLabel.hidden) {
+        [self getSelectedPhotoBytes];
+        [self checkSelectedPhotoBytes];
+    }
 }
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc {
@@ -1167,6 +1151,36 @@
 //    }
 //}
 
+- (void)checkSelectedPhotoBytes {
+    __weak typeof(self) weakSelf = self;
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
+    
+    NSMutableArray *newSelectedModes = [NSMutableArray arrayWithCapacity:5];
+    for (LFAsset *asset in imagePickerVc.selectedModels) {
+        if (asset.type == LFAssetMediaTypePhoto) {
+#ifdef LF_MEDIAEDIT
+            /** 忽略图片被编辑的情况 */
+            if (![[LFPhotoEditManager manager] photoEditForAsset:asset]) {
+#endif
+                [newSelectedModes addObject:asset];
+#ifdef LF_MEDIAEDIT
+            }
+#endif
+        }
+    }
+    
+    [[LFAssetManager manager] checkPhotosBytesMaxSize:newSelectedModes maxBytes:imagePickerVc.maxPhotoBytes completion:^(BOOL isPass) {
+        if (!isPass) {
+            /** 重新修改原图选项 */
+            __strong typeof(self) strongSelf = weakSelf;
+            if (strongSelf->_originalPhotoButton.selected) {
+                [strongSelf originalPhotoButtonClick];
+            }
+            [weakImagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_selectPhotoSizeLimitTipText"]];
+        }
+    }];
+}
 
 - (void)getSelectedPhotoBytes {
     if (/* DISABLES CODE */ (1)==0) {

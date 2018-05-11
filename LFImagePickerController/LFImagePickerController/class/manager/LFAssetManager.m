@@ -15,6 +15,7 @@
 #import "LF_FileUtility.h"
 #import "LFToGIF.h"
 #import "LFResultObject_property.h"
+#import "LFAsset+property.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
 
@@ -303,29 +304,98 @@ static LFAssetManager *manager;
     return model;
 }
 
+/// 检查照片的大小是否超过最大值
+- (void)checkPhotosBytesMaxSize:(NSArray <LFAsset *>*)photos maxBytes:(NSInteger)maxBytes completion:(void (^)(BOOL isPass))completion
+{
+    __block NSInteger assetCount = 0;
+    __block BOOL isPass = YES;
+    void (^completeBlock)(LFAsset *) = ^(LFAsset *asset){
+        
+        assetCount ++;
+        if (isPass && asset.bytes > maxBytes) {
+            isPass = NO;
+        }
+        if (assetCount >= photos.count) {
+            if (completion) completion(isPass);
+        }
+    };
+    
+    for (NSInteger i = 0; i < photos.count; i++) {
+        LFAsset *model = photos[i];
+        if (model.type != LFAssetMediaTypeVideo) {
+            if ([model.asset isKindOfClass:[PHAsset class]]) {
+
+                if (model.bytes == 0) {
+                    PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
+                    option.resizeMode = PHImageRequestOptionsResizeModeFast;
+                    option.version = PHImageRequestOptionsVersionOriginal;
+                    [[PHImageManager defaultManager] requestImageDataForAsset:model.asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                        model.bytes = imageData.length;
+                        completeBlock(model);
+                    }];
+                } else {
+                    completeBlock(model);
+                }
+                
+            } else if ([model.asset isKindOfClass:[ALAsset class]]) {
+                
+                if (model.bytes == 0) {
+                    ALAssetRepresentation *representation = [model.asset defaultRepresentation];
+                    model.bytes = (NSInteger)representation.size;
+                    completeBlock(model);
+                } else {
+                    completeBlock(model);
+                }
+            }
+        } else {
+            completeBlock(model);
+        }
+    }
+}
+
 /// Get photo bytes 获得一组照片的大小
 - (void)getPhotosBytesWithArray:(NSArray <LFAsset *>*)photos completion:(void (^)(NSString *totalBytesStr, NSInteger totalBytes))completion {
     __block NSInteger dataLength = 0;
     __block NSInteger assetCount = 0;
+    
+    void (^completeBlock)(NSInteger sizebytes) = ^(NSInteger sizebytes){
+        dataLength += sizebytes;
+        assetCount ++;
+        if (assetCount >= photos.count) {
+            NSString *bytesStr = [self getBytesFromDataLength:dataLength];
+            if (completion) completion(bytesStr, dataLength);
+        }
+    };
+    
     for (NSInteger i = 0; i < photos.count; i++) {
         LFAsset *model = photos[i];
         if ([model.asset isKindOfClass:[PHAsset class]]) {
-            PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-            option.resizeMode = PHImageRequestOptionsResizeModeFast;
-            [[PHImageManager defaultManager] requestImageDataForAsset:model.asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                if (model.type != LFAssetMediaTypeVideo) dataLength += imageData.length;
-                assetCount ++;
-                if (assetCount >= photos.count) {
-                    NSString *bytes = [self getBytesFromDataLength:dataLength];
-                    if (completion) completion(bytes, dataLength);
+            
+            if (model.type != LFAssetMediaTypeVideo) {
+                
+                if (model.bytes == 0) {
+                    PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
+                    option.resizeMode = PHImageRequestOptionsResizeModeFast;
+                    option.version = PHImageRequestOptionsVersionOriginal;
+                    [[PHImageManager defaultManager] requestImageDataForAsset:model.asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+                        model.bytes = imageData.length;
+                        completeBlock(model.bytes);
+                    }];
+                } else {
+                    completeBlock(model.bytes);
                 }
-            }];
+            } else {
+                completeBlock(model.bytes);
+            }
+            
         } else if ([model.asset isKindOfClass:[ALAsset class]]) {
-            ALAssetRepresentation *representation = [model.asset defaultRepresentation];
-            if (model.type != LFAssetMediaTypeVideo) dataLength += (NSInteger)representation.size;
-            if (i >= photos.count - 1) {
-                NSString *bytes = [self getBytesFromDataLength:dataLength];
-                if (completion) completion(bytes, dataLength);
+            
+            if (model.bytes == 0) {
+                ALAssetRepresentation *representation = [model.asset defaultRepresentation];
+                model.bytes = (NSInteger)representation.size;
+                completeBlock(model.bytes);
+            } else {
+                completeBlock(model.bytes);
             }
         }
     }
@@ -386,6 +456,7 @@ static LFAssetManager *manager;
                     });
                 };
                 options.networkAccessAllowed = YES;
+                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     UIImage *resultImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
@@ -454,6 +525,7 @@ static LFAssetManager *manager;
                     });
                 };
                 options.networkAccessAllowed = YES;
+                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
@@ -708,6 +780,7 @@ static LFAssetManager *manager;
             if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
                 options.networkAccessAllowed = YES;
+                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     

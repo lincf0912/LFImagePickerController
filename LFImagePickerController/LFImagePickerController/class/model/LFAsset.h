@@ -25,7 +25,6 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 @property (nonatomic, readonly) id asset;             ///< PHAsset or ALAsset
 @property (nonatomic, readonly) LFAssetMediaType type;
 @property (nonatomic, readonly) LFAssetSubMediaType subType;
-@property (nonatomic, readonly) NSInteger bytes;
 @property (nonatomic, readonly) NSTimeInterval duration;
 @property (nonatomic, copy, readonly) NSString *name;
 /** 关闭livePhoto （ subType = LFAssetSubMediaTypeLivePhoto is work ）default is No */

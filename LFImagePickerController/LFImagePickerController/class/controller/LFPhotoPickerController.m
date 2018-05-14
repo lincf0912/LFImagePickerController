@@ -345,7 +345,7 @@
     [bottomToolBar addSubview:bottomSubToolBar];
     _bottomSubToolBar = bottomSubToolBar;
     
-    CGFloat buttonX = 0;
+    CGFloat buttonX = 12;
     
     //    if (imagePickerVc.allowEditing) {
     //        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
@@ -366,9 +366,9 @@
     
     if (imagePickerVc.allowPreview) {
         CGSize previewSize = [[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
-        previewSize.width += 2.f;
+        previewSize.width += 10.f;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _previewButton.frame = CGRectMake(buttonX+10, (kBottomToolBarHeight-previewSize.height)/2, previewSize.width, previewSize.height);
+        _previewButton.frame = CGRectMake(buttonX, 0, previewSize.width, kBottomToolBarHeight);
         _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = toolbarTitleFont;

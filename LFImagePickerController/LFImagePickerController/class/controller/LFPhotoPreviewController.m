@@ -331,9 +331,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
-        CGFloat editWidth = [[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 2;
+        CGFloat editWidth = [[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 10;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        _editButton.frame = CGRectMake(10, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
+        _editButton.frame = CGRectMake(12, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _editButton.titleLabel.font = toolbarTitleFont;
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];

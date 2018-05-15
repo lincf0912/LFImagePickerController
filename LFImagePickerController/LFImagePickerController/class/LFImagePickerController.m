@@ -65,7 +65,7 @@
             [tipView addSubview:_tipLabel];
             
             UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-            [_settingBtn setTitle:[NSBundle lf_localizedStringForKey:@"_settingBtnTitleStr"] forState:UIControlStateNormal];
+            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
             _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
             _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
             [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
@@ -74,7 +74,7 @@
             CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
             
             UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
-            [_cancelBtn setTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] forState:UIControlStateNormal];
+            [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
             _cancelBtn.titleLabel.font = self.barItemTextFont;
             _cancelBtn.titleLabel.textColor = self.barItemTextColor;
             [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -267,7 +267,7 @@
         } else if (self.allowPickingVideo) {
             albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_video"];
         }
-        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
+        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
         if (_pushPhotoPickerVc) {
             LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
             [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];

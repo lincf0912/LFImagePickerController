@@ -42,13 +42,15 @@
 /// 自定义文字
 /// Copy LFImagePickerController.strings to any location of your project and modify the corresponding value.
 /// 复制LFImagePickerController.strings到项目任意位置，修改对应的值。
-@property (nonatomic, copy) NSString *doneBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *cancelBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *previewBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *editBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *fullImageBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *settingBtnTitleStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
-@property (nonatomic, copy) NSString *processHintStr __deprecated_msg("Property deprecated. Use `LFImagePickerController.strings`");
+/// These property have the highest priority and use LFImagePickerController.strings as much as possible. Otherwise, some properties of LFImagePickerController.strings will be invalid.
+/// 这些属性拥有最高的优先级，尽可能使用LFImagePickerController.strings。否则会导致LFImagePickerController.strings某些属性失效。
+@property (nonatomic, copy) NSString *doneBtnTitleStr;
+@property (nonatomic, copy) NSString *cancelBtnTitleStr;
+@property (nonatomic, copy) NSString *previewBtnTitleStr;
+@property (nonatomic, copy) NSString *editBtnTitleStr;
+@property (nonatomic, copy) NSString *fullImageBtnTitleStr;
+@property (nonatomic, copy) NSString *settingBtnTitleStr;
+@property (nonatomic, copy) NSString *processHintStr;
 
 #ifdef LF_MEDIAEDIT
 #pragma mark - 编辑模式

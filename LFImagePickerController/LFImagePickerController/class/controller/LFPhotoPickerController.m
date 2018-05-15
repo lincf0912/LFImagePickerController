@@ -90,7 +90,7 @@
         
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
 #pragma clang diagnostic pop
         /** 优先赋值 */
         self.navigationItem.title = _model.name;
@@ -365,15 +365,15 @@
     
     
     if (imagePickerVc.allowPreview) {
-        CGSize previewSize = [[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+        CGSize previewSize = [imagePickerVc.previewBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
         previewSize.width += 10.f;
         _previewButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _previewButton.frame = CGRectMake(buttonX, 0, previewSize.width, kBottomToolBarHeight);
         _previewButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         [_previewButton addTarget:self action:@selector(previewButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _previewButton.titleLabel.font = toolbarTitleFont;
-        [_previewButton setTitle:[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] forState:UIControlStateNormal];
-        [_previewButton setTitle:[NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"] forState:UIControlStateDisabled];
+        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateNormal];
+        [_previewButton setTitle:imagePickerVc.previewBtnTitleStr forState:UIControlStateDisabled];
         [_previewButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_previewButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
         _previewButton.enabled = imagePickerVc.selectedModels.count;
@@ -383,7 +383,7 @@
     
     
     if (imagePickerVc.allowPickingOriginalPhoto && imagePickerVc.isPreview==NO) {
-        CGFloat fullImageWidth = [[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat originalButtonW = fullImageWidth + 56;
         _originalPhotoButton.frame = CGRectMake((CGRectGetWidth(bottomToolBar.frame)-originalButtonW)/2, 0, originalButtonW, kBottomToolBarHeight);
@@ -391,9 +391,9 @@
         _originalPhotoButton.imageEdgeInsets = UIEdgeInsetsMake(0, -10, 0, 0);
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
-        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateNormal];
-        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateSelected];
-        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateDisabled];
+        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
+        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
+        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateDisabled];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
@@ -412,7 +412,7 @@
     }
     
     
-    CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%ld)", (long)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, height), 30);
     doneSize.width += 10;
     
@@ -421,8 +421,8 @@
     _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
-    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateDisabled];
+    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
+    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
     [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
     [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
@@ -1100,9 +1100,9 @@
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
     
     if (imagePickerVc.selectedModels.count) {
-        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     } else {
-        [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
+        [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     }
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;

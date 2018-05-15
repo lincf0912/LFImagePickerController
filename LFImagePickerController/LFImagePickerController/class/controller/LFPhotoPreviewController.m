@@ -270,9 +270,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     /** 判断是否预览模式 */
     if (imagePickerVc.isPreview) {
         /** 取消 */
-        [_backButton setTitle:[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] forState:UIControlStateNormal];
+        [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
-        CGFloat editCancelWidth = [[NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
+        CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
         _backButton.width = editCancelWidth;
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
@@ -331,20 +331,20 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
-        CGFloat editWidth = [[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 10;
+        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 10;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(12, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _editButton.titleLabel.font = toolbarTitleFont;
         [_editButton addTarget:self action:@selector(editButtonClick) forControlEvents:UIControlEventTouchUpInside];
-        [_editButton setTitle:[NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"] forState:UIControlStateNormal];
+        [_editButton setTitle:imagePickerVc.editBtnTitleStr forState:UIControlStateNormal];
         [_editButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_editButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     }
 #endif
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
-        CGFloat fullImageWidth = [[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
 #ifdef LF_MEDIAEDIT
@@ -363,8 +363,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         _originalPhotoButton.backgroundColor = [UIColor clearColor];
         [_originalPhotoButton addTarget:self action:@selector(originalPhotoButtonClick) forControlEvents:UIControlEventTouchUpInside];
         _originalPhotoButton.titleLabel.font = toolbarTitleFont;
-        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateNormal];
-        [_originalPhotoButton setTitle:[NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"] forState:UIControlStateSelected];
+        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateNormal];
+        [_originalPhotoButton setTitle:imagePickerVc.fullImageBtnTitleStr forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
         [_originalPhotoButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateSelected];
         [_originalPhotoButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
@@ -385,7 +385,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
-    CGSize doneSize = [[[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
     doneSize.width += 10;
     
@@ -394,8 +394,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
-    [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateDisabled];
+    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
+    [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateDisabled];
     [_doneButton setTitleColor:toolbarTitleColorNormal forState:UIControlStateNormal];
     [_doneButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
     _doneButton.layer.cornerRadius = CGRectGetHeight(_doneButton.frame)*0.2;
@@ -1056,9 +1056,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _titleLabel.text = [model.name stringByDeletingPathExtension];
     
     if (imagePickerVc.selectedModels.count) {
-        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
+        [_doneButton setTitle:[NSString stringWithFormat:@"%@(%zd)", imagePickerVc.doneBtnTitleStr ,imagePickerVc.selectedModels.count] forState:UIControlStateNormal];
     } else {
-        [_doneButton setTitle:[NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"] forState:UIControlStateNormal];
+        [_doneButton setTitle:imagePickerVc.doneBtnTitleStr forState:UIControlStateNormal];
     }
     
     _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;

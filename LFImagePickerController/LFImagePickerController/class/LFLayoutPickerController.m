@@ -171,6 +171,64 @@
     self.photoOriginSelImageName = @"photo_original_sel";
 }
 
+#pragma mark - getter custom text
+- (NSString *)doneBtnTitleStr
+{
+    if (_doneBtnTitleStr) {
+        return _doneBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_doneBtnTitleStr"];
+}
+
+- (NSString *)cancelBtnTitleStr
+{
+    if (_cancelBtnTitleStr) {
+        return _cancelBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_cancelBtnTitleStr"];
+}
+
+- (NSString *)previewBtnTitleStr
+{
+    if (_previewBtnTitleStr) {
+        return _previewBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_previewBtnTitleStr"];
+}
+
+- (NSString *)editBtnTitleStr
+{
+    if (_editBtnTitleStr) {
+        return _editBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_editBtnTitleStr"];
+}
+
+- (NSString *)fullImageBtnTitleStr
+{
+    if (_fullImageBtnTitleStr) {
+        return _fullImageBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_fullImageBtnTitleStr"];
+}
+
+- (NSString *)settingBtnTitleStr
+{
+    if (_settingBtnTitleStr) {
+        return _settingBtnTitleStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_settingBtnTitleStr"];
+}
+
+- (NSString *)processHintStr
+{
+    if (_processHintStr) {
+        return _processHintStr;
+    }
+    return [NSBundle lf_localizedStringForKey:@"_processHintStr"];
+}
+
+
 - (void)showAlertWithTitle:(NSString *)title {
     [self showAlertWithTitle:title complete:nil];
 }
@@ -234,7 +292,7 @@
         [_progressHUD addSubview:_HUDContainer];
     }
     
-    _HUDLabel.text = text ? text : [NSBundle lf_localizedStringForKey:@"_processHintStr"];
+    _HUDLabel.text = text ? text : self.processHintStr;
     
     [_HUDIndicatorView startAnimating];
     UIView *view = isTop ? [[UIApplication sharedApplication] keyWindow] : self.view;

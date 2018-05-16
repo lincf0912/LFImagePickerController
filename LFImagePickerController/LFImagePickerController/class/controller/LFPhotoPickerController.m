@@ -567,7 +567,7 @@
                                                                  
                                                                  if (imagePickerVc.autoSavePhotoAlbum) {
                                                                      /** 编辑图片保存到相册 */
-                                                                     [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil images:@[resultImage.originalImage] complete:nil];
+                                                                     [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageDatas:@[resultImage.originalData] complete:nil];
                                                                  }
                                                                  photosComplete(resultImage, i);
                                                              }];

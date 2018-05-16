@@ -11,8 +11,35 @@
 #import "LFAssetManager.h"
 
 #import "LFGifPlayerManager.h"
+#import "UIImage+LF_Format.h"
+
+@interface LFPhotoPreviewGifCell ()
+
+@property (nonatomic, strong) NSData *imageData;
+
+@end
 
 @implementation LFPhotoPreviewGifCell
+
+- (void)prepareForReuse
+{
+    [super prepareForReuse];
+    self.imageData = nil;
+}
+
+- (UIImage *)previewImage
+{
+    if (self.imageData) {
+        return [UIImage LF_imageWithImageData:self.imageData];
+    }
+    return self.imageView.image;
+}
+
+- (void)setPreviewImage:(UIImage *)previewImage
+{
+    [super setPreviewImage:previewImage];
+    [self.imageView startAnimating];
+}
 
 /** 重置视图 */
 - (void)subViewReset
@@ -40,6 +67,7 @@
                 if (completeHandler) {
                     completeHandler(data, info, isDegraded);
                 }
+                self.imageData = data;
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];

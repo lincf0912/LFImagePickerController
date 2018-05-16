@@ -14,6 +14,7 @@
 #import "LFAsset.h"
 #import "UIImage+LF_ImageCompress.h"
 #import "UIImage+LFCommon.h"
+#import "UIImage+LF_Format.h"
 #import "LFResultObject_property.h"
 #import "LFAssetManager.h"
 #import "LFPhotoEdit.h"
@@ -123,39 +124,62 @@ static LFPhotoEditManager *manager;
                completion:(void (^)(LFResultImage *resultImage))completion
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        UIImage *thumbnail = nil;
-        UIImage *source = nil;
         
         LFPhotoEdit *photoEdit = [self photoEditForAsset:asset];
         NSString *imageName = asset.name;
         
-        /** 标清图/原图 */
-        source = photoEdit.editPreviewImage;
         /** 图片数据 */
-        NSData *imageData = nil;
-        if (!isOriginal) { /** 标清图 */
-            imageData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
-            source = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
+        NSData *sourceData = nil; NSData *thumbnailData = nil;
+        UIImage *thumbnail = nil; UIImage *source = nil;
+        
+        /** 原图 */
+        source = photoEdit.editPreviewImage;
+        sourceData = photoEdit.editPreviewData;
+        
+        BOOL isGif = source.images.count;
+        
+        if (isGif) { /** GIF图片处理方式 */
+            if (!isOriginal) {
+                CGFloat imageRatio = 0.7f;
+                /** 标清图 */
+                sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                source = [UIImage LF_imageWithImageData:sourceData];
+            }
         } else {
-            imageData = UIImageJPEGRepresentation(source, kimageCompressionFactor);
+            if (!isOriginal) { /** 标清图 */
+                sourceData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+                source = [UIImage LF_imageWithImageData:sourceData];
+            }
         }
         /** 图片宽高 */
         CGSize imageSize = source.size;
         
-        /** 缩略图 */
-        CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
-        CGFloat th_pixelWidth = 80 * 2.0; // scale
-        CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
-        thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-        NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
-        thumbnail = [UIImage imageWithData:thumbnailData scale:[UIScreen mainScreen].scale];
+        if (isGif) {
+            CGFloat minWidth = MIN(imageSize.width, imageSize.height);
+            /** 缩略图 */
+            CGFloat imageRatio = 0.5f;
+            if (minWidth > 100.f) {
+                imageRatio = 50.f/minWidth;
+            }
+            /** 缩略图 */
+            thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+            thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+        } else {
+            /** 缩略图 */
+            CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
+            CGFloat th_pixelWidth = 80 * 2.0; // scale
+            CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
+            thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
+            NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+            thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+        }
         
         LFResultImage *result = [LFResultImage new];
         result.asset = asset.asset;
         result.thumbnailImage = thumbnail;
         result.thumbnailData = thumbnailData;
         result.originalImage = source;
-        result.originalData = imageData;
+        result.originalData = sourceData;
         
         LFResultInfo *info = [LFResultInfo new];
         result.info = info;
@@ -163,7 +187,7 @@ static LFPhotoEditManager *manager;
         /** 图片文件名 */
         info.name = imageName;
         /** 图片大小 */
-        info.byte = imageData.length;
+        info.byte = sourceData.length;
         /** 图片宽高 */
         info.size = imageSize;
         

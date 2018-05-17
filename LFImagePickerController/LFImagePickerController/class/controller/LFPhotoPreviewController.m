@@ -964,12 +964,14 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         LFImagePickerController *imagePickerVc = [self navi];
         [imagePickerVc popViewControllerAnimated:NO];
         
-        /** 默认选中编辑后的图片 */
-        if (photoEdit && !_selectButton.isSelected) {
-            [self select:_selectButton];
-        } else if (!photoEdit && _selectButton.isSelected) {
-            /** 检测是否超过图片最大大小 */
-            [self checkSelectedPhotoBytes];
+        if (!_selectButton.hidden) {
+            /** 默认选中编辑后的图片 */
+            if (photoEdit && !_selectButton.isSelected) {
+                [self select:_selectButton];
+            } else if (!photoEdit && _selectButton.isSelected) {
+                /** 检测是否超过图片最大大小 */
+                [self checkSelectedPhotoBytes];
+            }
         }
     }
 }
@@ -998,12 +1000,14 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
         
-        /** 默认选中编辑后的视频 */
-        if (duration > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
-            [self select:_selectButton];
-        } else if (videoEdit.editPreviewImage && !_selectButton.isSelected) {
-            if (duration <= imagePickerVc.maxVideoDuration) {
+        if (!_selectButton.hidden) {
+            /** 默认选中编辑后的视频 */
+            if (duration > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
                 [self select:_selectButton];
+            } else if (videoEdit.editPreviewImage && !_selectButton.isSelected) {
+                if (duration <= imagePickerVc.maxVideoDuration) {
+                    [self select:_selectButton];
+                }
             }
         }
     }
@@ -1021,6 +1025,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }
+    BOOL showTip = NO;
     if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
         if (imagePickerVc.selectedModels.count && model.type != imagePickerVc.selectedModels.firstObject.type) {
             _selectButton.hidden = YES;
@@ -1031,6 +1036,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
                 }
             }
+            showTip = (imagePickerVc.selectedModels.count && _selectButton.hidden);
         } else {
             if (model.type == LFAssetMediaTypeVideo) {
                 _selectButton.hidden = imagePickerVc.maxVideosCount == 1;
@@ -1043,7 +1049,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
     
     [UIView animateWithDuration:0.25f animations:^{
-        _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : ((imagePickerVc.selectedModels.count && _selectButton.hidden) ? 1.f : 0.f);
+        _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (showTip ? 1.f : 0.f);
         CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
         _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
     }];

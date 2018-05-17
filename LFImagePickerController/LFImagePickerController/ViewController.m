@@ -50,7 +50,7 @@
 }
 
 
-- (IBAction)buttonAction1:(id)sender {
+- (IBAction)buttonActionNormal:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
 //    imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
@@ -70,8 +70,21 @@
     [self presentViewController:imagePicker animated:YES completion:nil];
     
 }
+- (IBAction)buttonActionFriendCircle:(id)sender {
+    LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
+    imagePicker.allowTakePicture = NO;
+    imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
+    imagePicker.supportAutorotate = YES; /** 适配横屏 */
+    imagePicker.allowPickingGif = YES; /** 支持GIF */
+    imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
+    imagePicker.maxVideoDuration = 10; /** 10秒视频 */
+    if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
+        imagePicker.syncAlbum = YES; /** 实时同步相册 */
+    }
+    [self presentViewController:imagePicker animated:YES completion:nil];
+}
 
-- (IBAction)buttonAction2:(id)sender {
+- (IBAction)buttonActionPreviewAsset:(id)sender {
     int limit = 10;
     [[LFAssetManager manager] getCameraRollAlbum:YES allowPickingImage:YES fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
         [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:YES allowPickingImage:YES fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
@@ -92,7 +105,7 @@
     }];
 }
 
-- (IBAction)buttonAction3:(id)sender {
+- (IBAction)buttonActionPreviewImage:(id)sender {
     NSString *gifPath = [[NSBundle mainBundle] pathForResource:@"3" ofType:@"gif"];
 //    [UIImage imageNamed:@"3.gif"] //这样加载是静态图片
     NSArray *array = @[[UIImage imageNamed:@"1.jpeg"], [UIImage imageNamed:@"2.jpeg"], [UIImage LF_imageWithImagePath:gifPath]];

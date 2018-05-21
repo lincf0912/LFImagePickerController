@@ -16,63 +16,72 @@
 
 #pragma mark - 创建相册
 - (void)createCustomAlbumWithTitle:(NSString *)title complete:(void (^)(PHAssetCollection *result))complete faile:(void (^)(NSError *error))faile{
-    if (title.length == 0) {
-        if (complete) complete(nil);
-    }else{
-        dispatch_globalQueue_async_safe(^{
-            // 是否存在相册 如果已经有了 就不再创建
-            PHFetchResult <PHAssetCollection *> *results = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
-            BOOL haveHDRGroup = NO;
-            NSError *error = nil;
-            PHAssetCollection *createCollection = nil;
-            for (PHAssetCollection *collection in results) {
-                if ([collection.localizedTitle isEqualToString:title]) {
-                    /** 已经存在了，不需要创建了 */
-                    haveHDRGroup = YES;
-                    createCollection = collection;
-                    break;
+    if ([self authorizationStatusAuthorized]) {
+        if (title.length == 0) {
+            if (complete) complete(nil);
+        }else{
+            dispatch_globalQueue_async_safe(^{
+                // 是否存在相册 如果已经有了 就不再创建
+                PHFetchResult <PHAssetCollection *> *results = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+                BOOL haveHDRGroup = NO;
+                NSError *error = nil;
+                PHAssetCollection *createCollection = nil;
+                for (PHAssetCollection *collection in results) {
+                    if ([collection.localizedTitle isEqualToString:title]) {
+                        /** 已经存在了，不需要创建了 */
+                        haveHDRGroup = YES;
+                        createCollection = collection;
+                        break;
+                    }
                 }
-            }
-            if (haveHDRGroup) {
-                NSLog(@"Already exists");
-                dispatch_main_async_safe(^{
-                    if (complete) complete(createCollection);
-                });
-            }else{
-                __block NSString *createdCustomAssetCollectionIdentifier = nil;
-                /**
-                 * 注意：这个方法只是告诉 photos 我要创建一个相册，并没有真的创建
-                 *      必须等到 performChangesAndWait block 执行完毕后才会
-                 *      真的创建相册。
-                 */
-                [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
-                    PHAssetCollectionChangeRequest *collectionChangeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:title];
-                    /**
-                     * collectionChangeRequest 即使我们告诉 photos 要创建相册，但是此时还没有
-                     * 创建相册，因此现在我们并不能拿到所创建的相册，我们的需求是：将图片保存到
-                     * 自定义的相册中，因此我们需要拿到自己创建的相册，从头文件可以看出，collectionChangeRequest
-                     * 中有一个占位相册，placeholderForCreatedAssetCollection ，这个占位相册
-                     * 虽然不是我们所创建的，但是其 identifier 和我们所创建的自定义相册的 identifier
-                     * 是相同的。所以想要拿到我们自定义的相册，必须保存这个 identifier，等 photos app
-                     * 创建完成后通过 identifier 来拿到我们自定义的相册
-                     */
-                    createdCustomAssetCollectionIdentifier = collectionChangeRequest.placeholderForCreatedAssetCollection.localIdentifier;
-                } error:&error];
-                if (error) {
-                    NSLog(@"Album Failed: %@",title);
-                    dispatch_main_async_safe(^{
-                        if (faile) faile(error);
-                    });
-                }else{
-                    /** 获取创建成功的相册 */
-                    createCollection = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[createdCustomAssetCollectionIdentifier] options:nil].firstObject;
-                    NSLog(@"Album Created: %@",title);
+                if (haveHDRGroup) {
+                    NSLog(@"Already exists");
                     dispatch_main_async_safe(^{
                         if (complete) complete(createCollection);
                     });
+                }else{
+                    __block NSString *createdCustomAssetCollectionIdentifier = nil;
+                    /**
+                     * 注意：这个方法只是告诉 photos 我要创建一个相册，并没有真的创建
+                     *      必须等到 performChangesAndWait block 执行完毕后才会
+                     *      真的创建相册。
+                     */
+                    [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
+                        PHAssetCollectionChangeRequest *collectionChangeRequest = [PHAssetCollectionChangeRequest creationRequestForAssetCollectionWithTitle:title];
+                        /**
+                         * collectionChangeRequest 即使我们告诉 photos 要创建相册，但是此时还没有
+                         * 创建相册，因此现在我们并不能拿到所创建的相册，我们的需求是：将图片保存到
+                         * 自定义的相册中，因此我们需要拿到自己创建的相册，从头文件可以看出，collectionChangeRequest
+                         * 中有一个占位相册，placeholderForCreatedAssetCollection ，这个占位相册
+                         * 虽然不是我们所创建的，但是其 identifier 和我们所创建的自定义相册的 identifier
+                         * 是相同的。所以想要拿到我们自定义的相册，必须保存这个 identifier，等 photos app
+                         * 创建完成后通过 identifier 来拿到我们自定义的相册
+                         */
+                        createdCustomAssetCollectionIdentifier = collectionChangeRequest.placeholderForCreatedAssetCollection.localIdentifier;
+                    } error:&error];
+                    if (error) {
+                        NSLog(@"Album Failed: %@",title);
+                        dispatch_main_async_safe(^{
+                            if (faile) faile(error);
+                        });
+                    }else{
+                        if (createdCustomAssetCollectionIdentifier) {
+                            /** 获取创建成功的相册 */
+                            createCollection = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:@[createdCustomAssetCollectionIdentifier] options:nil].firstObject;
+                            NSLog(@"Album Created: %@",title);
+                            dispatch_main_async_safe(^{
+                                if (complete) complete(createCollection);
+                            });
+                        } else {
+                            NSLog(@"Album Failed: %@",title);
+                            dispatch_main_async_safe(^{
+                                if (faile) faile(error);
+                            });
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }
 

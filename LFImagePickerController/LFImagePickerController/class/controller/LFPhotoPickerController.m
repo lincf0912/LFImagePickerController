@@ -227,9 +227,19 @@
 }
 
 - (void)initSubviews {
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (imagePickerVc.defaultAlbumName && !_model) {
+        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_noDefaultAlbumName"], imagePickerVc.defaultAlbumName] complete:^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+            if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+                [imagePickerVc performSelector:@selector(cancelButtonClick)];
+            }
+#pragma clang diagnostic pop
+        }];
+    }
     /** 可能没有model的情况，补充赋值 */
     self.navigationItem.title = _model.name;
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     [imagePickerVc hideProgressHUD];
     _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
     
@@ -1286,7 +1296,9 @@
                         } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-                            [imagePickerVc performSelector:@selector(cancelButtonClick)];
+                            if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+                                [imagePickerVc performSelector:@selector(cancelButtonClick)];
+                            }
 #pragma clang diagnostic pop
                         }
                     }];

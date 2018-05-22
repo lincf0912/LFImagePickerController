@@ -17,6 +17,7 @@
 
 
 "_alertViewCancelTitle" = "确定";
+"_noDefaultAlbumName" = "指定的相册\"%@\"不存在";
 "_maxSelectVideoTipText" = "不能选择超过%d分钟的视频";
 "_maxSelectVideoTipText_second" = "不能选择超过%d秒的视频";
 "_maxSelectPhotoTipText" = "你最多只能选择%zd张照片";

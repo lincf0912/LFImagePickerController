@@ -168,7 +168,7 @@ static LFGifPlayerManager *_sharedInstance = nil;
         });
         if (!self.displayLink) {
             self.displayLink = [CADisplayLink displayLinkWithTarget:[LFWeakProxy proxyWithTarget:self] selector:@selector(play)];
-            [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+            [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
         }
     }
 }

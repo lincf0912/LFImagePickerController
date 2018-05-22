@@ -884,8 +884,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    if ([cell isKindOfClass:[LFPhotoPreviewVideoCell class]]) {
-        [(LFPhotoPreviewVideoCell *)cell didEndDisplayCell];
+    if ([cell isKindOfClass:[LFPhotoPreviewCell class]]) {
+        [(LFPhotoPreviewCell *)cell didEndDisplayCell];
     }
 }
 

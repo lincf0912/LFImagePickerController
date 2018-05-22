@@ -21,11 +21,6 @@
 
 @implementation LFPhotoPreviewGifCell
 
-- (void)prepareForReuse
-{
-    [super prepareForReuse];
-    self.imageData = nil;
-}
 
 - (UIImage *)previewImage
 {
@@ -45,6 +40,7 @@
 - (void)subViewReset
 {
     [super subViewReset];
+    self.imageData = nil;
     [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
 }
 /** 设置数据 */
@@ -77,7 +73,15 @@
 - (void)willDisplayCell
 {
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
-        [self setModel:self.model];
+        if (self.imageData) {
+            NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
+            [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:self.imageData key:modelKey execution:^(CGImageRef imageData, NSString *key) {
+                if ([modelKey isEqualToString:key]) {
+                    self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                }
+            } fail:^(NSString *key) {
+            }];
+        }
     }
 }
 

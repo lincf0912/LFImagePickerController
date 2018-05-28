@@ -111,8 +111,8 @@
 /// 压缩标清图的大小（没有勾选原图的情况有效）,默认为100 单位KB （只能压缩到接近该值的大小）
 @property (nonatomic,assign) float imageCompressSize;
 
-/// Compressed thumbnail image size,Default is 10 in KB
-/// 压缩缩略图的大小,默认为10 单位KB
+/// Compressed thumbnail image size,Default is 10 in KB. If it is 0, no thumbnails are generated.
+/// 压缩缩略图的大小,默认为10 单位KB. 如果为0则不会生成缩略图
 @property (nonatomic,assign) float thumbnailCompressSize;
 
 /// Select the maximum size of the photo,Default is 6 MB (in B unit)

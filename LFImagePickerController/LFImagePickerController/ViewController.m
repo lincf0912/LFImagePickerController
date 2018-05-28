@@ -64,6 +64,7 @@
 //    imagePicker.autoSelectCurrentImage = NO; /** 关闭自动选中 */
 //    imagePicker.defaultAlbumName = @"123"; /** 指定默认显示相册 */
 //    imagePicker.displayImageFilename = YES; /** 显示文件名称 */
+//    imagePicker.thumbnailCompressSize = 0.f; /** 不需要缩略图 */
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
         imagePicker.syncAlbum = YES; /** 实时同步相册 */
     }

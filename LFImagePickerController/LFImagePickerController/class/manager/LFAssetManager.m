@@ -18,6 +18,7 @@
 #import "LFAsset+property.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
+#import "LFGIFImageSerialization.h"
 
 @interface LFAssetManager ()
 
@@ -671,13 +672,15 @@ static LFAssetManager *manager;
                     /** 标清图 */
                     sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
                 }
-                /** 缩略图 */
-                imageRatio = 0.5f;
-                if (minWidth > 100.f) {
-                    imageRatio = 50.f/minWidth;
+                if (thumbnailCompressSize > 0) {
+                    /** 缩略图 */
+                    imageRatio = 0.5f;
+                    if (minWidth > 100.f) {
+                        imageRatio = 50.f/minWidth;
+                    }
+                    /** 缩略图 */
+                    thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
                 }
-                /** 缩略图 */
-                thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
                 
             } else {
                 
@@ -696,11 +699,13 @@ static LFAssetManager *manager;
                     sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress imageSize:imageData.length];
                 } else {
                     if (isFixOrientation) { /** 更正方向，原图data需要更新 */
-                        sourceData = UIImageJPEGRepresentation(source, kimageCompressionFactor);
+                        sourceData = LF_UIImageJPEGRepresentation(source, 1.f);
                     }
                 }
-                /** 缩略图 */
-                thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:imageData.length];
+                if (thumbnailCompressSize > 0) {
+                    /** 缩略图 */
+                    thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:imageData.length];
+                }
             }
             
             /** 创建展示图片 */

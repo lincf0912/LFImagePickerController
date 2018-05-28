@@ -10,7 +10,7 @@
 #import <ImageIO/ImageIO.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 
-NSString * const AnimatedGIFImageErrorDomain = @"com.compuserve.gif.image.error";
+NSString * const LF_AnimatedGIFImageErrorDomain = @"com.compuserve.gif.image.error";
 
 __attribute__((overloadable)) NSData * LF_UIImageGIFRepresentation(UIImage *image) {
     return LF_UIImageGIFRepresentation(image, 0.0f, 0, nil);
@@ -59,7 +59,62 @@ __attribute__((overloadable)) NSData * LF_UIImageGIFRepresentation(UIImage *imag
     }
 _error: {
     if (error) {
-        *error = [[NSError alloc] initWithDomain:AnimatedGIFImageErrorDomain code:-1 userInfo:userInfo];
+        *error = [[NSError alloc] initWithDomain:LF_AnimatedGIFImageErrorDomain code:-1 userInfo:userInfo];
+    }
+    
+    return nil;
+}
+}
+
+__attribute__((overloadable)) NSData * LF_UIImagePNGRepresentation(UIImage *image, CGFloat compressionQuality) {
+    return LF_UIImageRepresentation(image, compressionQuality, kUTTypePNG, nil);
+}
+
+__attribute__((overloadable)) NSData * LF_UIImageJPEGRepresentation(UIImage *image, CGFloat compressionQuality) {
+    return LF_UIImageRepresentation(image, compressionQuality, kUTTypeJPEG, nil);
+}
+
+__attribute__((overloadable)) NSData * LF_UIImageRepresentation(UIImage *image, CGFloat compressionQuality, CFStringRef __nonnull type, NSError * __autoreleasing *error) {
+    
+    if (!image) {
+        return nil;
+    }
+    NSDictionary *userInfo = nil;
+    {
+        NSDictionary *frameProperties = nil;
+        
+        if (compressionQuality > 0) {
+            frameProperties = @{
+                                (__bridge NSString *)kCGImageDestinationLossyCompressionQuality: @(compressionQuality)
+                                };
+        }
+        
+        NSMutableData *mutableData = [NSMutableData data];
+        
+        CGImageDestinationRef destination = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)mutableData, type, 1, NULL);
+        
+        if (frameProperties) {
+            CGImageDestinationAddImage(destination, [image CGImage], (__bridge CFDictionaryRef)frameProperties);
+        } else {
+            CGImageDestinationAddImage(destination, [image CGImage], NULL);
+        }
+        
+        BOOL success = CGImageDestinationFinalize(destination);
+        CFRelease(destination);
+        
+        if (!success) {
+            userInfo = @{
+                         NSLocalizedDescriptionKey: NSLocalizedString(@"Could not finalize image destination", nil)
+                         };
+            
+            goto _error;
+        }
+        
+        return [NSData dataWithData:mutableData];
+    }
+_error: {
+    if (error) {
+        *error = [[NSError alloc] initWithDomain:LF_AnimatedGIFImageErrorDomain code:-1 userInfo:userInfo];
     }
     
     return nil;

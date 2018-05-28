@@ -67,13 +67,13 @@
     NSData *imageData = nil;
     
     if (imageLength == 0) {
-        imageData = UIImageJPEGRepresentation(self, 1);
+        imageData = LF_UIImageJPEGRepresentation(self, 1);
         imageLength = imageData.length;
         /** 没有需要压缩的必要，直接返回 */
         if (imageLength <= targetSize) return imageData;
     } else {
         /** 没有需要压缩的必要，直接返回 */
-        if (imageLength <= targetSize) return UIImageJPEGRepresentation(self, 1);
+        if (imageLength <= targetSize) return LF_UIImageJPEGRepresentation(self, 1);
     }
     
     
@@ -89,7 +89,7 @@
     /** 压缩核心方法 */
     do {
         
-        imageData = UIImageJPEGRepresentation(compressedImage, percent);
+        imageData = LF_UIImageJPEGRepresentation(compressedImage, percent);
         
         //        NSLog(@"压缩后大小:%ldk, 压缩频率:%ldk", imageData.length/1024, (imageDatalength - imageData.length)/1024);
         

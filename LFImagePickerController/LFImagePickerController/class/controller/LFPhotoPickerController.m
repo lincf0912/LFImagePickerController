@@ -921,12 +921,18 @@
         [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil images:@[chosenImage] complete:^(NSArray<id> *assets, NSError *error) {
             
             if (assets && !error) {
-                [[LFAssetManager manager] getPhotoWithAsset:assets.lastObject isOriginal:YES completion:^(LFResultImage *resultImage) {
-                    [imagePickerVc hideProgressHUD];
-                    [picker.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:^{
-                        [self callDelegateMethodWithResults:@[resultImage]];
-                    }];
-                }];
+                [[LFAssetManager manager] getPhotoWithAsset:assets.lastObject
+                                                 isOriginal:YES
+                                                 pickingGif:NO
+                                               compressSize:imagePickerVc.imageCompressSize
+                                      thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
+                                                 completion:^(LFResultImage *resultImage) {
+                                                     
+                                                     [imagePickerVc hideProgressHUD];
+                                                     [picker.presentingViewController.presentingViewController dismissViewControllerAnimated:YES completion:^{
+                                                         [self callDelegateMethodWithResults:@[resultImage]];
+                                                     }];
+                                                 }];
             }else if (error) {
                 [imagePickerVc hideProgressHUD];
                 [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_cameraTakePhotoError"] message:error.localizedDescription complete:^{

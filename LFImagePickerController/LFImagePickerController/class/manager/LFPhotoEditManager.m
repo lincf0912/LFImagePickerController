@@ -154,24 +154,26 @@ static LFPhotoEditManager *manager;
         /** 图片宽高 */
         CGSize imageSize = source.size;
         
-        if (isGif) {
-            CGFloat minWidth = MIN(imageSize.width, imageSize.height);
-            /** 缩略图 */
-            CGFloat imageRatio = 0.5f;
-            if (minWidth > 100.f) {
-                imageRatio = 50.f/minWidth;
+        if (thumbnailCompressSize > 0) {        
+            if (isGif) {
+                CGFloat minWidth = MIN(imageSize.width, imageSize.height);
+                /** 缩略图 */
+                CGFloat imageRatio = 0.5f;
+                if (minWidth > 100.f) {
+                    imageRatio = 50.f/minWidth;
+                }
+                /** 缩略图 */
+                thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+            } else {
+                /** 缩略图 */
+                CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
+                CGFloat th_pixelWidth = 80 * 2.0; // scale
+                CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
+                thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
+                NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+                thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
             }
-            /** 缩略图 */
-            thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-            thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
-        } else {
-            /** 缩略图 */
-            CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
-            CGFloat th_pixelWidth = 80 * 2.0; // scale
-            CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
-            thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-            NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
-            thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
         }
         
         LFResultImage *result = [LFResultImage new];

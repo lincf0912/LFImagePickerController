@@ -597,7 +597,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     if (imagePickerVc.maxVideoDuration < 60) {
                         [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
                     } else {
-                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_minute"], (int)imagePickerVc.maxVideoDuration/60]];
                     }
                     return;
                 }
@@ -700,7 +700,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     if (imagePickerVc.maxVideoDuration < 60) {
                         [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
                     } else {
-                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)imagePickerVc.maxVideoDuration/60]];
+                        [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_minute"], (int)imagePickerVc.maxVideoDuration/60]];
                     }
                     return;
                 }
@@ -709,12 +709,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         } else {
             // 判断是否满足最小必选张数的限制
             if (model.type == LFAssetMediaTypeVideo) {
-                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectVideoTipText"], imagePickerVc.minVideosCount];
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_minSelectVideoTipText"], imagePickerVc.minVideosCount];
                 [imagePickerVc showAlertWithTitle:title];
                 
                 return;
             } else if (model.type == LFAssetMediaTypePhoto) {
-                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
+                NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_minSelectPhotoTipText"], imagePickerVc.minImagesCount];
                 [imagePickerVc showAlertWithTitle:title];
                 return;
             }

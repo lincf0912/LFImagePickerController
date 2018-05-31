@@ -511,14 +511,14 @@
     if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo) {
         
         if (imagePickerVc.minVideosCount && imagePickerVc.selectedModels.count < imagePickerVc.minVideosCount) {
-            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectVideoTipText"], imagePickerVc.minVideosCount];
+            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_minSelectVideoTipText"], imagePickerVc.minVideosCount];
             [imagePickerVc showAlertWithTitle:title];
             return;
         }
         
     } else {
         if (imagePickerVc.minImagesCount && imagePickerVc.selectedModels.count < imagePickerVc.minImagesCount) {
-            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_mixSelectPhotoTipText"], imagePickerVc.minImagesCount];
+            NSString *title = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_minSelectPhotoTipText"], imagePickerVc.minImagesCount];
             [imagePickerVc showAlertWithTitle:title];
             return;
         }
@@ -831,7 +831,7 @@
                         if (weakImagePickerVc.maxVideoDuration < 60) {
                             [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)weakImagePickerVc.maxVideoDuration]];
                         } else {
-                            [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText"], (int)weakImagePickerVc.maxVideoDuration/60]];
+                            [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_minute"], (int)weakImagePickerVc.maxVideoDuration/60]];
                         }
                         return;
                     }

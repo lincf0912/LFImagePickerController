@@ -17,12 +17,12 @@
 
 
 "_alertViewCancelTitle" = "确定";
-"_maxSelectVideoTipText" = "不能选择超过%d分钟的视频";
+"_maxSelectVideoTipText_minute" = "不能选择超过%d分钟的视频";
 "_maxSelectVideoTipText_second" = "不能选择超过%d秒的视频";
 "_maxSelectPhotoTipText" = "你最多只能选择%zd张照片";
 "_maxSelectVideoTipText" = "你最多只能选择%zd个视频";
-"_mixSelectPhotoTipText" = "请至少选择%zd张照片";
-"_mixSelectVideoTipText" = "请至少选择%zd个视频";
+"_minSelectPhotoTipText" = "请至少选择%zd张照片";
+"_minSelectVideoTipText" = "请至少选择%zd个视频";
 "_selectPhotoSizeLimitTipText" = "图片过大，无法发送原图";
 "_mixedSelectionTipText_photo" = "选择视频时不能选择图片";
 "_mixedSelectionTipText_video" = "选择图片时不能选择视频";

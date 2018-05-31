@@ -168,7 +168,7 @@ static LFAssetManager *manager;
         }
         
         NSInteger end = count;
-        if (fetchLimit > 0 && ascending == NO) { /** 重置结束值 */
+        if (fetchLimit > 0) { /** 重置结束值 */
             end = count > fetchLimit ? fetchLimit : count;
         }
         NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, end)];
@@ -216,7 +216,7 @@ static LFAssetManager *manager;
         }
         
         NSInteger end = count;
-        if (fetchLimit > 0 && ascending == NO) { /** 重置结束值 */
+        if (fetchLimit > 0) { /** 重置结束值 */
             end = count > fetchLimit ? fetchLimit : count;
         }
         NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(start, end)];
@@ -773,7 +773,7 @@ static LFAssetManager *manager;
                 NSString *fileName = [phAsset valueForKey:@"filename"];
                 
                 LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
-                if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
+                if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                     mediaType = LFImagePickerSubMediaTypeLivePhoto;
                 } else if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
                     mediaType = LFImagePickerSubMediaTypeGIF;
@@ -792,7 +792,7 @@ static LFAssetManager *manager;
                     NSString *fileName = [phAsset valueForKey:@"filename"];
                     
                     LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
-                    if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
+                    if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                         mediaType = LFImagePickerSubMediaTypeLivePhoto;
                     } else if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
                         mediaType = LFImagePickerSubMediaTypeGIF;

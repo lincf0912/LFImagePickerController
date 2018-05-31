@@ -43,7 +43,7 @@
                 _type = LFAssetMediaTypeVideo;
                 _duration = phAsset.duration;
             } else if (phAsset.mediaType == PHAssetMediaTypeImage) {
-                if (iOS9_1Later && phAsset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) {
+                if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                     _subType = LFAssetSubMediaTypeLivePhoto;
                 } else
                 /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */

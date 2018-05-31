@@ -189,10 +189,10 @@
 #ifdef LF_MEDIAEDIT
         LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
         if (videoEdit.editPosterImage) {
-            self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",videoEdit.duration] integerValue]];
+            self.timeLength.text = [self getNewTimeFromDurationSecond:ceil(videoEdit.duration)];
         } else {
 #endif
-            self.timeLength.text = [self getNewTimeFromDurationSecond:[[NSString stringWithFormat:@"%0.0f",self.model.duration] integerValue]];
+            self.timeLength.text = [self getNewTimeFromDurationSecond:ceil(self.model.duration)];
 #ifdef LF_MEDIAEDIT
         }
 #endif

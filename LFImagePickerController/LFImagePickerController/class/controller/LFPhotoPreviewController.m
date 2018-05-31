@@ -528,27 +528,25 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)configNaviTipsView {
     
     LFImagePickerController *imagePickerVc = [self navi];
-    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
-        _naviTipsView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.width, naviTipsViewDefaultHeight)];
-        _naviTipsView.backgroundColor = imagePickerVc.previewNaviBgColor;
-        _naviTipsLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 0, self.view.width-20, naviTipsViewDefaultHeight)];
-        _naviTipsLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _naviTipsLabel.font = imagePickerVc.naviTipsFont;
-        _naviTipsLabel.textColor = imagePickerVc.naviTipsTextColor;
-        _naviTipsLabel.numberOfLines = 1.f;
-        _naviTipsLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-        [_naviTipsView addSubview:_naviTipsLabel];
-        
-        UIView *divide = [[UIView alloc] init];
-        divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
-        divide.frame = CGRectMake(0, 0, self.view.width, 1);
-        divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-        [_naviTipsView addSubview:divide];
-        
-        [self.view addSubview:_naviTipsView];
-        
-        _naviTipsView.alpha = 0.f;
-    }
+    _naviTipsView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.width, naviTipsViewDefaultHeight)];
+    _naviTipsView.backgroundColor = imagePickerVc.previewNaviBgColor;
+    _naviTipsLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 0, self.view.width-20, naviTipsViewDefaultHeight)];
+    _naviTipsLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _naviTipsLabel.font = imagePickerVc.naviTipsFont;
+    _naviTipsLabel.textColor = imagePickerVc.naviTipsTextColor;
+    _naviTipsLabel.numberOfLines = 1.f;
+    _naviTipsLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    [_naviTipsView addSubview:_naviTipsLabel];
+    
+    UIView *divide = [[UIView alloc] init];
+    divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
+    divide.frame = CGRectMake(0, 0, self.view.width, 1);
+    divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+    [_naviTipsView addSubview:divide];
+    
+    [self.view addSubview:_naviTipsView];
+    
+    _naviTipsView.alpha = 0.f;
 }
 
 - (void)configCollectionView {
@@ -912,7 +910,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [UIView animateWithDuration:0.25f animations:^{
         _naviBar.alpha = alpha;
         _toolBar.alpha = alpha;
-        _naviTipsView.alpha = (imagePickerVc.selectedModels.count && _selectButton.hidden) ? alpha : 0.f;
+        _naviTipsView.alpha = (_naviTipsLabel.text.length) ? alpha : 0.f;
         CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
         _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
         /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
@@ -964,7 +962,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         LFImagePickerController *imagePickerVc = [self navi];
         [imagePickerVc popViewControllerAnimated:NO];
         
-        if (!_selectButton.hidden) {
+        if (imagePickerVc.maxImagesCount > 1) {
             /** 默认选中编辑后的图片 */
             if (photoEdit && !_selectButton.isSelected) {
                 [self select:_selectButton];
@@ -1000,7 +998,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
         
-        if (!_selectButton.hidden) {
+        if (imagePickerVc.maxVideosCount > 1) {
             /** 默认选中编辑后的视频 */
             if (duration > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
                 [self select:_selectButton];
@@ -1025,18 +1023,33 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }
-    BOOL showTip = NO;
+    _naviTipsLabel.text = nil;
+    
+    /** 视频超过限制的提示 */
+    if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
+        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+        NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+#else
+        NSTimeInterval duration = model.duration;
+#endif
+        if (duration > imagePickerVc.maxVideoDuration) {
+            if (imagePickerVc.maxVideoDuration < 60) {
+                _naviTipsLabel.text = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration];
+            } else {
+                _naviTipsLabel.text = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_minute"], (int)imagePickerVc.maxVideoDuration/60];
+            }
+        }
+    }
+    
+    /** 朋友圈的提示 */
     if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
         if (imagePickerVc.selectedModels.count && model.type != imagePickerVc.selectedModels.firstObject.type) {
-            _selectButton.hidden = YES;
-            if (_selectButton.hidden) {
-                if (model.type == LFAssetMediaTypePhoto) {
-                    _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_photo"];
-                } else {
-                    _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
-                }
+            if (model.type == LFAssetMediaTypePhoto) {
+                _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_photo"];
+            } else {
+                _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
             }
-            showTip = (imagePickerVc.selectedModels.count && _selectButton.hidden);
         } else {
             if (model.type == LFAssetMediaTypeVideo) {
                 _selectButton.hidden = imagePickerVc.maxVideosCount == 1;
@@ -1048,6 +1061,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
     }
     
+    /** 有提示显示 */
+    BOOL showTip = _naviTipsLabel.text.length;
+    if (showTip) {
+        _selectButton.hidden = YES;
+    }
+    
     [UIView animateWithDuration:0.25f animations:^{
         _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (showTip ? 1.f : 0.f);
         CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
@@ -1055,8 +1074,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }];
     
     
-    
-    _doneButton.enabled = !self.alwaysShowPreviewBar || imagePickerVc.selectedModels.count;
+    if (self.alwaysShowPreviewBar) {
+        _doneButton.enabled = imagePickerVc.selectedModels.count;
+    } else if (_selectButton.hidden) {
+        _doneButton.enabled = imagePickerVc.selectedModels.count;
+    } else {
+        _doneButton.enabled = YES;
+    }
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
     
     _titleLabel.text = [model.name stringByDeletingPathExtension];

@@ -1077,7 +1077,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (self.alwaysShowPreviewBar) {
         _doneButton.enabled = imagePickerVc.selectedModels.count;
     } else if (_selectButton.hidden) {
-        _doneButton.enabled = imagePickerVc.selectedModels.count;
+        _doneButton.enabled = imagePickerVc.selectedModels.count || !showTip;
     } else {
         _doneButton.enabled = YES;
     }

@@ -309,6 +309,11 @@
     }
 }
 
+- (NSArray<LFAsset *> *)selectedObjects
+{
+    return [self.selectedModels copy];
+}
+
 - (void)settingBtnClick {
     if (iOS8Later) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];

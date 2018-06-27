@@ -19,7 +19,7 @@
 
 /** 初始化 */
 - (instancetype)initWithModels:(NSArray <LFAsset *>*)models index:(NSInteger)index;
-/** 图片预览模式 没有asset对象 只有previewImage, self.isPhotoPreview=YES */
+/** 图片预览模式 self.isPhotoPreview=YES */
 - (instancetype)initWithPhotos:(NSArray <LFAsset *>*)photos index:(NSInteger)index;
 
 /** 总是显示预览框 */

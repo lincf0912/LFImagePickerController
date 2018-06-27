@@ -174,7 +174,7 @@
     return self;
 }
 
-- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`")
 {
     self = [super init];
     if (self) {
@@ -186,6 +186,50 @@
         NSMutableArray *models = [NSMutableArray array];
         for (UIImage *image in selectedPhotos) {
             LFAsset *model = [[LFAsset alloc] initWithImage:image];
+            [models addObject:model];
+        }
+        
+        __weak typeof(self) weakSelf = self;
+        _previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:models index:index];
+        
+        [_previewVc setDoneButtonClickBlock:^{
+            NSMutableArray *photos = [@[] mutableCopy];
+            for (LFAsset *model in weakSelf.selectedModels) {
+#ifdef LF_MEDIAEDIT
+                LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                if (photoEdit.editPreviewImage) {
+                    [photos addObject:photoEdit.editPreviewImage];
+                } else
+#endif
+                    if (model.previewImage) {
+                        [photos addObject:model.previewImage];
+                    }
+            }
+            if (weakSelf.autoDismiss) {
+                [weakSelf dismissViewControllerAnimated:YES completion:^{
+                    if (complete) complete(photos);
+                }];
+            } else {
+                if (complete) complete(photos);
+            }
+        }];
+        
+    }
+    return self;
+}
+
+- (instancetype)initWithSelectedImageObjects:(NSArray <id<LFAssetImageProtocol>>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <id<LFAssetImageProtocol>>* photos))complete
+{
+    self = [super init];
+    if (self) {
+        [self defaultConfig];
+        _isPreview = YES;
+        /** 关闭原图选项 */
+        _allowPickingOriginalPhoto = NO;
+        
+        NSMutableArray *models = [NSMutableArray array];
+        for (id<LFAssetImageProtocol> asset in selectedPhotos) {
+            LFAsset *model = [[LFAsset alloc] initWithObject:asset];
             [models addObject:model];
         }
 

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LFAssetImageProtocol.h"
 
 typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
@@ -37,5 +38,6 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型
 - (instancetype)initWithAsset:(id)asset;
 
-- (instancetype)initWithImage:(UIImage *)image;
+- (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`");
+- (instancetype)initWithObject:(id<LFAssetImageProtocol>)asset;
 @end

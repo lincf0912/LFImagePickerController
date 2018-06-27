@@ -106,13 +106,22 @@
     _bytes = bytes;
 }
 
-- (instancetype)initWithImage:(UIImage *)image
+- (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`")
 {
     self = [self initWithAsset:nil];
     if (self) {
-        _type = LFAssetMediaTypePhoto;
         _previewImage = image;
         _subType = image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+    }
+    return self;
+}
+
+- (instancetype)initWithObject:(id<LFAssetImageProtocol>)asset
+{
+    self = [self initWithAsset:asset];
+    if (self) {
+        _previewImage = asset.assetImage;
+        _subType = asset.assetImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
     }
     return self;
 }

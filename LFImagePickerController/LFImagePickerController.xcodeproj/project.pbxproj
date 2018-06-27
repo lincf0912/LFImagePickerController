@@ -165,6 +165,7 @@
 		C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSBundle+LFImagePicker.m"; sourceTree = "<group>"; };
 		C70BABF020591F39005B7894 /* LFImagePickerController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFImagePickerController.strings; sourceTree = "<group>"; };
 		C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFMediaEditingController.strings; sourceTree = "<group>"; };
+		C70FDA9E20E31EFD0053A02C /* LFAssetImageProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAssetImageProtocol.h; sourceTree = "<group>"; };
 		C733DC9D209454D700FB7C50 /* LFImagePickerController+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFImagePickerController+property.h"; sourceTree = "<group>"; };
 		C75FE2EB20A5211900086649 /* LFAsset+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAsset+property.h"; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
@@ -287,6 +288,7 @@
 				C75FE2EB20A5211900086649 /* LFAsset+property.h */,
 				6F1201AB1E514F9D00EA2198 /* LFAlbum.h */,
 				6F1201AC1E514F9D00EA2198 /* LFAlbum.m */,
+				C70FDA9E20E31EFD0053A02C /* LFAssetImageProtocol.h */,
 				6F1699241F15AEB9008B1818 /* result */,
 			);
 			path = model;
@@ -500,6 +502,7 @@
 				6F1201701E513D1B00EA2198 /* Sources */,
 				6F1201711E513D1B00EA2198 /* Frameworks */,
 				6F1201721E513D1B00EA2198 /* Resources */,
+				4F0E033AB1649CE6350D49AA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -564,6 +567,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4F0E033AB1649CE6350D49AA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController-resources.sh",
+				"${PODS_ROOT}/LFMediaEditingController/LFMediaEditingController/class/common/LFMediaEditingController.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LFMediaEditingController.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		967A95CE0222F248658F16BC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -755,6 +776,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 3VDRUN62M8;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"LF_MEDIAEDIT=1",
+				);
 				INFOPLIST_FILE = LFImagePickerController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lincf0912.LFImagePickerController;
@@ -769,6 +795,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 3VDRUN62M8;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"LF_MEDIAEDIT=1",
+				);
 				INFOPLIST_FILE = LFImagePickerController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.lincf0912.LFImagePickerController;

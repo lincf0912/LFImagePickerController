@@ -199,11 +199,14 @@
                 LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                 if (photoEdit.editPreviewImage) {
                     [photos addObject:photoEdit.editPreviewImage];
-                } else
+                } else {
 #endif
                     if (model.previewImage) {
                         [photos addObject:model.previewImage];
                     }
+#ifdef LF_MEDIAEDIT
+                }
+#endif
             }
             if (weakSelf.autoDismiss) {
                 [weakSelf dismissViewControllerAnimated:YES completion:^{
@@ -242,12 +245,18 @@
 #ifdef LF_MEDIAEDIT
                 LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
                 if (photoEdit.editPreviewImage) {
-                    [photos addObject:photoEdit.editPreviewImage];
-                } else
+                    if ([model.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+                        ((id<LFAssetImageProtocol>)model.asset).assetImage = photoEdit.editPreviewImage;
+                    }
+                    [photos addObject:model.asset];
+                } else {
 #endif
                     if (model.previewImage) {
-                    [photos addObject:model.previewImage];
+                        [photos addObject:model.asset];
+                    }
+#ifdef LF_MEDIAEDIT
                 }
+#endif
             }
             if (weakSelf.autoDismiss) {
                 [weakSelf dismissViewControllerAnimated:YES completion:^{
@@ -345,7 +354,7 @@
     }
 }
 
-- (void)setSelectedAssets:(NSArray /**<PHAsset/ALAsset/UIImage *>*/*)selectedAssets {
+- (void)setSelectedAssets:(NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol> *>*/*)selectedAssets {
     
     if (!self.viewControllers.count) {
         /** 已经显示UI，不接受入参 */

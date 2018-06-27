@@ -149,7 +149,7 @@
 
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效
-@property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/UIImage> 任意一种 */*selectedAssets;
+@property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>> 任意一种 */*selectedAssets;
 
 /// Currently selected object list.
 /// 用户选中的对象列表

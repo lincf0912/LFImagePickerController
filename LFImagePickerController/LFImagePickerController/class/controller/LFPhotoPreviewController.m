@@ -21,6 +21,7 @@
 
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
+#import "LFAssetImageProtocol.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditingController.h"
@@ -1209,26 +1210,28 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
                     asset = [[LFAsset alloc] initWithAsset:object];
                 }
-                else if ([object isKindOfClass:[UIImage class]]) {
-                    asset = [[LFAsset alloc] initWithImage:object];
+                else if ([object conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+                    asset = [[LFAsset alloc] initWithObject:object];
                 }
-                NSUInteger index = [self.models indexOfObject:asset];
-                if (index != NSNotFound) {
-                    if (imagePickerVc.selectedModels.count && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
-                        if (asset.type == imagePickerVc.selectedModels.firstObject.type) {
+                if (asset) {
+                    NSUInteger index = [self.models indexOfObject:asset];
+                    if (index != NSNotFound) {
+                        if (imagePickerVc.selectedModels.count && imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
+                            if (asset.type == imagePickerVc.selectedModels.firstObject.type) {
+                                [imagePickerVc.selectedModels addObject:self.models[index]];
+                            }
+                        } else {
                             [imagePickerVc.selectedModels addObject:self.models[index]];
                         }
-                    } else {
-                        [imagePickerVc.selectedModels addObject:self.models[index]];
                     }
-                }
-                if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
-                    if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
-                        break;
-                    }
-                } else if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo) {
-                    if (imagePickerVc.selectedModels.count >= imagePickerVc.maxVideosCount) {
-                        break;
+                    if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypePhoto) {
+                        if (imagePickerVc.selectedModels.count >= imagePickerVc.maxImagesCount) {
+                            break;
+                        }
+                    } else if (imagePickerVc.selectedModels.firstObject.type == LFAssetMediaTypeVideo) {
+                        if (imagePickerVc.selectedModels.count >= imagePickerVc.maxVideosCount) {
+                            break;
+                        }
                     }
                 }
             }

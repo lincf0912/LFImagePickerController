@@ -10,6 +10,6 @@
 
 @protocol LFAssetImageProtocol <NSObject>
 
-@property (nonatomic, readonly) UIImage *assetImage;
+@property (nonatomic, strong) UIImage *assetImage;
 
 @end

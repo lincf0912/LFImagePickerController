@@ -83,11 +83,9 @@ __attribute__((overloadable)) NSData * LF_UIImageRepresentation(UIImage *image, 
     {
         NSDictionary *frameProperties = nil;
         
-        if (compressionQuality > 0) {
-            frameProperties = @{
-                                (__bridge NSString *)kCGImageDestinationLossyCompressionQuality: @(compressionQuality)
-                                };
-        }
+        frameProperties = @{
+                            (__bridge NSString *)kCGImageDestinationLossyCompressionQuality: @(MIN(MAX(compressionQuality, 0), 1))
+                            };
         
         NSMutableData *mutableData = [NSMutableData data];
         

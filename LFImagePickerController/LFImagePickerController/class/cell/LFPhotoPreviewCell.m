@@ -207,10 +207,17 @@
     
     if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
         
-        CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:self.scrollView.size isBoth:NO];
+        CGSize newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
         
         _imageContainerView.size = newSize;
-        _imageContainerView.center = self.scrollView.center;
+        if (newSize.height > self.scrollView.frame.size.height-(self.scrollView.contentInset.top+self.scrollView.contentInset.bottom)) {
+            _imageContainerView.origin = CGPointMake(0, self.scrollView.contentInset.top);
+            self.scrollView.showsVerticalScrollIndicator = YES;
+        } else {
+            _imageContainerView.center = self.scrollView.center;
+            self.scrollView.showsVerticalScrollIndicator = NO;
+        }
+        self.scrollView.contentSize = _imageContainerView.size;
         
         _imageView.frame = _imageContainerView.bounds;
         UIView *view = [self subViewInitDisplayView];
@@ -252,9 +259,11 @@
 #pragma mark - Private
 
 - (void)refreshImageContainerViewCenter {
-    CGFloat offsetX = (_scrollView.width > _scrollView.contentSize.width) ? ((_scrollView.width - _scrollView.contentSize.width) * 0.5) : 0.0;
-    CGFloat offsetY = (_scrollView.height > _scrollView.contentSize.height) ? ((_scrollView.height - _scrollView.contentSize.height) * 0.5) : 0.0;
-    self.imageContainerView.center = CGPointMake(_scrollView.contentSize.width * 0.5 + offsetX, _scrollView.contentSize.height * 0.5 + offsetY);
+    if (self.imageContainerView.frame.size.height < self.scrollView.frame.size.height-(self.scrollView.contentInset.top+self.scrollView.contentInset.bottom)) {
+        CGFloat offsetX = (_scrollView.width > _scrollView.contentSize.width) ? ((_scrollView.width - _scrollView.contentSize.width) * 0.5) : 0.0;
+        CGFloat offsetY = (_scrollView.height > _scrollView.contentSize.height) ? ((_scrollView.height - _scrollView.contentSize.height) * 0.5) : 0.0;
+        self.imageContainerView.center = CGPointMake(_scrollView.contentSize.width * 0.5 + offsetX, _scrollView.contentSize.height * 0.5 + offsetY);
+    }
 }
 
 /** 创建显示视图 */

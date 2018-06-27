@@ -13,6 +13,9 @@
 /** 修正图片方向 */
 - (UIImage *)lf_fixOrientation;
 
+/** 根据图片大小和设置的最大宽度，返回缩放后的大小 */
++ (CGSize)lf_imageSizeBySize:(CGSize)size maxWidth:(CGFloat)maxWidth;
+
 /** 计算图片的缩放大小 */
 + (CGSize)lf_scaleImageSizeBySize:(CGSize)imageSize targetSize:(CGSize)size isBoth:(BOOL)isBoth;
 

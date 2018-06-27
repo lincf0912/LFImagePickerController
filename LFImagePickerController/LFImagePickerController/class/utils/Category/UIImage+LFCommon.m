@@ -107,6 +107,16 @@
     return transform;
 }
 
++ (CGSize)lf_imageSizeBySize:(CGSize)size maxWidth:(CGFloat)maxWidth
+{
+    if (maxWidth == 0) return size;
+    CGFloat scaleFactor = maxWidth / size.width;
+    CGFloat width = maxWidth;
+    CGFloat height = size.height * scaleFactor;
+    
+    return CGSizeMake(ceilf(width), ceilf(height));
+}
+
 + (CGSize)lf_scaleImageSizeBySize:(CGSize)imageSize targetSize:(CGSize)size isBoth:(BOOL)isBoth {
     
     /** 原图片大小为0 不再往后处理 */

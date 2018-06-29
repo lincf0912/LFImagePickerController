@@ -188,6 +188,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 {
     [super viewWillLayoutSubviews];
     
+    UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        ios11Safeinsets = self.view.safeAreaInsets;
+    }
     /* 适配导航栏 */
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
     naviBarHeight = naviSubBarHeight = CGRectGetHeight([self navi].navigationBar.frame);
@@ -213,7 +217,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     /* 适配标记图标 */
     CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
-    _livePhotoSignView.x = CGRectGetMinX(_naviBar.frame) + livePhotoSignMargin;
+    _livePhotoSignView.x = CGRectGetMinX(_naviBar.frame) + livePhotoSignMargin + ios11Safeinsets.left;
     _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
     
     /* 适配底部栏 */
@@ -237,9 +241,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         previewBarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
     }
     _previewBar.frame = previewBarRect;
-    
+
     /* 适配宫格视图 */
-    _collectionView.frame = CGRectMake(0, 0, self.view.width+ cellMargin, self.view.height);;
+    _collectionView.frame = CGRectMake(0, 0, self.view.width+cellMargin, self.view.height);
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
@@ -555,10 +559,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
 //    layout.itemSize = CGSizeMake(self.view.width, self.view.height);
-    layout.minimumInteritemSpacing = 0;
-    layout.minimumLineSpacing = cellMargin;
-    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, cellMargin);
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width + cellMargin, self.view.height) collectionViewLayout:layout];
+//    layout.minimumInteritemSpacing = 0;
+//    layout.minimumLineSpacing = cellMargin;
+//    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, cellMargin);
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, self.view.height) collectionViewLayout:layout];
 //    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor blackColor];
     _collectionView.dataSource = self;
@@ -891,7 +895,34 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #pragma mark -  UICollectionViewDelegateFlowLayout
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    return CGSizeMake(self.view.width, self.view.height);
+    UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        ios11Safeinsets = self.view.safeAreaInsets;
+    }
+    return CGSizeMake(self.view.width-ios11Safeinsets.left-ios11Safeinsets.right, collectionView.height);
+}
+
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
+{
+    UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        ios11Safeinsets = self.view.safeAreaInsets;
+    }
+    return UIEdgeInsetsMake(0, ios11Safeinsets.left, 0, cellMargin+ios11Safeinsets.right);
+}
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
+{
+    UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        ios11Safeinsets = self.view.safeAreaInsets;
+    }
+    return cellMargin+ios11Safeinsets.left+ios11Safeinsets.right;
+}
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
+{
+    return 0;
 }
 
 #pragma mark - LFPhotoPreviewCellDelegate

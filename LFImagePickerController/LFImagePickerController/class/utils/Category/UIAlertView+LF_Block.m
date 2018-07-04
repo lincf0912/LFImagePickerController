@@ -9,52 +9,52 @@
 #import "UIAlertView+LF_Block.h"
 #import <objc/runtime.h>
 
-static char overAlertViewKey;
-static char overAlertViewKeyLeft;
-static char overAlertViewKeyDidShow;
+static char lf_overAlertViewKey;
+static char lf_overAlertViewKeyLeft;
+static char lf_overAlertViewKeyDidShow;
 
 @implementation UIAlertView (LF_Block)
 
 /** block回调代理 */
-- (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString*)otherButtonTitles block:(AlertViewBlock)block
+- (id)lf_initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString*)otherButtonTitles block:(lf_AlertViewBlock)block
 {
-    return [self initWithTitle:title message:message cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles block:block didShowBlock:nil];
+    return [self lf_initWithTitle:title message:message cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles block:block didShowBlock:nil];
 }
 
 /** block回调代理 弹出后回调 */
-- (id)initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString*)otherButtonTitles block:(AlertViewBlock)block didShowBlock:(AlertViewDidShowBlock)didShowBlock
+- (id)lf_initWithTitle:(NSString *)title message:(NSString *)message cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString*)otherButtonTitles block:(lf_AlertViewBlock)block didShowBlock:(lf_AlertViewDidShowBlock)didShowBlock
 {
-    objc_setAssociatedObject(self, &overAlertViewKey, block, OBJC_ASSOCIATION_COPY_NONATOMIC);
-    objc_setAssociatedObject(self, &overAlertViewKeyDidShow, didShowBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    objc_setAssociatedObject(self, &lf_overAlertViewKey, block, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    objc_setAssociatedObject(self, &lf_overAlertViewKeyDidShow, didShowBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
     return [self initWithTitle:title message:message delegate:self cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles, nil];//注意这里初始化父类的
 }
 
 /** block回调代理 文字左对齐 */
-- (id)initWithTitle:(NSString *)title
+- (id)lf_initWithTitle:(NSString *)title
         leftMessage:(NSString *)message
   cancelButtonTitle:(NSString *)cancelButtonTitle
   otherButtonTitles:(NSString*)otherButtonTitles
-              block:(AlertViewBlock)block
+              block:(lf_AlertViewBlock)block
 {
-    objc_setAssociatedObject(self, &overAlertViewKeyLeft, @(YES), OBJC_ASSOCIATION_ASSIGN);
-    return [self initWithTitle:title message:message cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles block:block];
+    objc_setAssociatedObject(self, &lf_overAlertViewKeyLeft, @(YES), OBJC_ASSOCIATION_ASSIGN);
+    return [self lf_initWithTitle:title message:message cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles block:block];
 }
 
 #pragma mark - AlertViewDelegate
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     //这里调用函数指针_block(要传进来的参数);
-    AlertViewBlock block = (AlertViewBlock)objc_getAssociatedObject(self, &overAlertViewKey);
+    lf_AlertViewBlock block = (lf_AlertViewBlock)objc_getAssociatedObject(self, &lf_overAlertViewKey);
     if (block) {
         block(alertView, buttonIndex);
-        objc_setAssociatedObject(self, &overAlertViewKey, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
-        objc_setAssociatedObject(self, &overAlertViewKeyLeft, nil, OBJC_ASSOCIATION_ASSIGN);
-        objc_setAssociatedObject(self, &overAlertViewKeyDidShow, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        objc_setAssociatedObject(self, &lf_overAlertViewKey, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        objc_setAssociatedObject(self, &lf_overAlertViewKeyLeft, nil, OBJC_ASSOCIATION_ASSIGN);
+        objc_setAssociatedObject(self, &lf_overAlertViewKeyDidShow, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
     }
 }
 
 - (void)willPresentAlertView:(UIAlertView *)alertView
 {
-    BOOL isCenter = [((NSNumber *)objc_getAssociatedObject(self, &overAlertViewKeyLeft)) boolValue];
+    BOOL isCenter = [((NSNumber *)objc_getAssociatedObject(self, &lf_overAlertViewKeyLeft)) boolValue];
     if (isCenter == NO) return;
     if (([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)) {
         
@@ -71,7 +71,7 @@ static char overAlertViewKeyDidShow;
 //        textLabel.text = message;
 //        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, -20, 240, size.height+margin)];
 //        [view addSubview:textLabel];
-        UIView *view = [self createView:message];
+        UIView *view = [self lf_createView:message];
         [alertView setValue:view forKey:@"accessoryView"];
         
         alertView.message = @"";
@@ -93,13 +93,13 @@ static char overAlertViewKeyDidShow;
 
 - (void)didPresentAlertView:(UIAlertView *)alertView
 {
-    AlertViewDidShowBlock block = (AlertViewDidShowBlock)objc_getAssociatedObject(self, &overAlertViewKeyDidShow);
+    lf_AlertViewDidShowBlock block = (lf_AlertViewDidShowBlock)objc_getAssociatedObject(self, &lf_overAlertViewKeyDidShow);
     if (block) {
         block();
     }
 }
 
-- (UIView *)createView:(NSString *)message
+- (UIView *)lf_createView:(NSString *)message
 {
     
     float textWidth = 260;

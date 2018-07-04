@@ -254,7 +254,7 @@
         }]];
         [self presentViewController:alertController animated:YES completion:nil];
     } else {
-        [[[UIAlertView alloc] initWithTitle:title message:message cancelButtonTitle:cancelTitle otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
+        [[[UIAlertView alloc] lf_initWithTitle:title message:message cancelButtonTitle:cancelTitle otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
             if (complete) {
                 complete();
             }

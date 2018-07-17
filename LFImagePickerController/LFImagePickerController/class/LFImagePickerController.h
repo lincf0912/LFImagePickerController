@@ -11,6 +11,7 @@
 #import "LFResultImage.h"
 #import "LFResultVideo.h"
 #import "LFAssetImageProtocol.h"
+#import "LFAssetPhotoProtocol.h"
 
 @class LFAsset;
 @protocol LFImagePickerControllerDelegate;
@@ -25,9 +26,12 @@
 /// This init method just for previewing photos,pickerDelegate = self; / 用这个初始化方法以预览图片,pickerDelegate = self;
 - (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSUInteger)index excludeVideo:(BOOL)excludeVideo __deprecated_msg("Method deprecated. Use `initWithSelectedAssets:index:`");
 - (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSUInteger)index;
-/// This init method just for previewing photos,complete block call back  (The delegate didCancelHandle only valid)/ 用这个初始化方法以预览图片 complete => 完成后返回全新数组 （代理仅返回有效）
+/// This init method just for previewing photos,complete block call back  (The delegate didCancelHandle only valid)/ 用这个初始化方法以预览图片 complete => 完成后返回全新数组 （代理仅lf_imagePickerControllerDidCancel有效）
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`");
 - (instancetype)initWithSelectedImageObjects:(NSArray <id<LFAssetImageProtocol>>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <id<LFAssetImageProtocol>>* photos))complete;
+/// New custom media selector (Speed Dial) / 全新自定义图片选择器(带宫格) complete => 完成后返回全新数组 （代理仅lf_imagePickerControllerDidCancel有效）
+- (instancetype)initWithSelectedPhotoObjects:(NSArray <id<LFAssetPhotoProtocol>>*)selectedPhotos complete:(void (^)(NSArray <id<LFAssetPhotoProtocol>>* photos))complete;
+
 
 /** 预览模式 */
 @property (nonatomic,readonly) BOOL isPreview;
@@ -149,7 +153,7 @@
 
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效
-@property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>> 任意一种 */*selectedAssets;
+@property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>/id<LFAssetPhotoProtocol>> 任意一种 */*selectedAssets;
 
 /// Currently selected object list.
 /// 用户选中的对象列表

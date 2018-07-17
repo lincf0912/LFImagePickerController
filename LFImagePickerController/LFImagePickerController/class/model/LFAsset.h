@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "LFAssetImageProtocol.h"
+#import "LFAssetPhotoProtocol.h"
 
 typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
@@ -31,13 +32,22 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 /** 关闭livePhoto （ subType = LFAssetSubMediaTypeLivePhoto is work ）default is No */
 @property (nonatomic, assign) BOOL closeLivePhoto;
 
-/** 自定义预览图 */
-@property (nonatomic, readonly) UIImage *previewImage;
 
 /// Init a photo dataModel With a asset
 /// 用一个PHAsset/ALAsset实例，初始化一个照片模型
 - (instancetype)initWithAsset:(id)asset;
 
+
+@end
+
+@interface LFAsset (preview)
+
+/** 自定义缩略图 */
+@property (nonatomic, readonly) UIImage *thumbnailImage;
+/** 自定义预览图 */
+@property (nonatomic, readonly) UIImage *previewImage;
+
 - (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`");
-- (instancetype)initWithObject:(id<LFAssetImageProtocol>)asset;
+- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol> */)asset;
+
 @end

@@ -14,4 +14,5 @@
 @property (nonatomic, strong) LFAlbum *model;
 
 - (void)pushPhotoPrevireViewController:(LFPhotoPreviewController *)photoPreviewVc;
+
 @end

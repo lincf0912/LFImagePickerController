@@ -106,27 +106,6 @@
     _bytes = bytes;
 }
 
-- (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`")
-{
-    self = [self initWithAsset:nil];
-    if (self) {
-        _previewImage = image;
-        _subType = image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
-    }
-    return self;
-}
-
-- (instancetype)initWithObject:(id<LFAssetImageProtocol>)asset
-{
-    self = [self initWithAsset:asset];
-    if (self) {
-        _previewImage = asset.assetImage;
-        _subType = asset.assetImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
-    }
-    return self;
-}
-
-
 #pragma mark - private
 - (BOOL)isEqual:(id)object
 {
@@ -140,9 +119,6 @@
             return YES;
         }
         if (!self.identifier && !objAsset.identifier && [self.identifier isEqualToString: objAsset.identifier]) {
-            return YES;
-        }
-        if ([self.previewImage isEqual:objAsset.previewImage]) {
             return YES;
         }
         return NO;
@@ -162,10 +138,59 @@
     if (self.identifier) {
         assetHash ^= [self.identifier hash];
     }
-    if (self.previewImage) {
-        assetHash ^= [self.previewImage hash];
-    }
     return assetHash;
+}
+
+@end
+
+@implementation LFAsset (preview)
+
+- (UIImage *)thumbnailImage
+{
+    if ([self.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+        id <LFAssetPhotoProtocol> photoAsset = self.asset;
+        return photoAsset.thumbnailImage;
+    }
+    return nil;
+}
+
+- (UIImage *)previewImage
+{
+    if ([self.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+        id <LFAssetImageProtocol> imageAsset = self.asset;
+        return imageAsset.assetImage;
+    }
+    else if ([self.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+        id <LFAssetPhotoProtocol> photoAsset = self.asset;
+        return photoAsset.originalImage;
+    }
+    return nil;
+}
+
+- (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`")
+{
+    self = [self initWithAsset:nil];
+    if (self) {
+        _subType = image.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+    }
+    return self;
+}
+
+- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol> */)asset
+{
+    self = [self initWithAsset:asset];
+    if (self) {
+        if ([asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+            id <LFAssetImageProtocol> imageAsset = asset;
+            _subType = imageAsset.assetImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+        }
+        else if ([asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+            id <LFAssetPhotoProtocol> photoAsset = asset;
+            _subType = photoAsset.originalImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+        }
+        
+    }
+    return self;
 }
 
 @end

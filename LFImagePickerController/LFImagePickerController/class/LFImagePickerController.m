@@ -17,6 +17,7 @@
 
 #import "LFAlbumPickerController.h"
 #import "LFPhotoPickerController.h"
+#import "LFPhotoPickerController+preview.h"
 #import "LFPhotoPreviewController.h"
 
 #ifdef LF_MEDIAEDIT
@@ -35,6 +36,7 @@
 
 /** 预览模式，临时存储 */
 @property (nonatomic, strong) LFPhotoPreviewController *previewVc;
+@property (nonatomic, strong) LFPhotoPickerController *photoPickerVc;
 
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
 
@@ -169,7 +171,7 @@
             LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
             [models addObject:model];
         }
-        _previewVc = [[LFPhotoPreviewController alloc] initWithModels:models index:index];
+        _previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:models index:index];
     }
     return self;
 }
@@ -240,33 +242,97 @@
         _previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:models index:index];
         
         [_previewVc setDoneButtonClickBlock:^{
-            NSMutableArray *photos = [@[] mutableCopy];
-            for (LFAsset *model in weakSelf.selectedModels) {
+            
+            [weakSelf showProgressHUD];
+            
+            dispatch_globalQueue_async_safe(^{
+                NSMutableArray *photos = [@[] mutableCopy];
+                for (LFAsset *model in weakSelf.selectedModels) {
 #ifdef LF_MEDIAEDIT
-                LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-                if (photoEdit.editPreviewImage) {
-                    if ([model.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
-                        ((id<LFAssetImageProtocol>)model.asset).assetImage = photoEdit.editPreviewImage;
-                    }
-                    [photos addObject:model.asset];
-                } else {
-#endif
-                    if (model.previewImage) {
+                    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                    if (photoEdit.editPreviewImage) {
+                        if ([model.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+                            ((id<LFAssetImageProtocol>)model.asset).assetImage = photoEdit.editPreviewImage;
+                        }
                         [photos addObject:model.asset];
-                    }
-#ifdef LF_MEDIAEDIT
-                }
+                    } else {
 #endif
-            }
-            if (weakSelf.autoDismiss) {
-                [weakSelf dismissViewControllerAnimated:YES completion:^{
-                    if (complete) complete(photos);
-                }];
-            } else {
-                if (complete) complete(photos);
-            }
+                        if (model.previewImage) {
+                            [photos addObject:model.asset];
+                        }
+#ifdef LF_MEDIAEDIT
+                    }
+#endif
+                }
+                dispatch_main_async_safe(^{
+                    [weakSelf hideProgressHUD];
+                    if (weakSelf.autoDismiss) {
+                        [weakSelf dismissViewControllerAnimated:YES completion:^{
+                            if (complete) complete(photos);
+                        }];
+                    } else {
+                        if (complete) complete(photos);
+                    }
+                });
+            });
         }];
 
+    }
+    return self;
+}
+
+- (instancetype)initWithSelectedPhotoObjects:(NSArray <id<LFAssetPhotoProtocol>>*)selectedPhotos complete:(void (^)(NSArray <id<LFAssetPhotoProtocol>>* photos))complete
+{
+    self = [super init];
+    if (self) {
+        [self defaultConfig];
+        _isPreview = YES;
+        /** 关闭原图选项 */
+        _allowPickingOriginalPhoto = NO;
+        
+        NSMutableArray *models = [NSMutableArray array];
+        for (id<LFAssetPhotoProtocol> asset in selectedPhotos) {
+            LFAsset *model = [[LFAsset alloc] initWithObject:asset];
+            [models addObject:model];
+        }
+        
+        __weak typeof(self) weakSelf = self;
+        _photoPickerVc = [[LFPhotoPickerController alloc] initWithPhotos:models completeBlock:^{
+            [weakSelf showProgressHUD];
+            
+            dispatch_globalQueue_async_safe(^{
+                NSMutableArray *photos = [@[] mutableCopy];
+                for (LFAsset *model in weakSelf.selectedModels) {
+#ifdef LF_MEDIAEDIT
+                    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                    if (photoEdit.editPreviewImage) {
+                        if ([model.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+                            ((id<LFAssetPhotoProtocol>)model.asset).thumbnailImage = photoEdit.editPosterImage;
+                            ((id<LFAssetPhotoProtocol>)model.asset).originalImage = photoEdit.editPreviewImage;
+                        }
+                        [photos addObject:model.asset];
+                    } else {
+#endif
+                        if (model.previewImage) {
+                            [photos addObject:model.asset];
+                        }
+#ifdef LF_MEDIAEDIT
+                    }
+#endif
+                }
+                dispatch_main_async_safe(^{
+                    [weakSelf hideProgressHUD];
+                    if (weakSelf.autoDismiss) {
+                        [weakSelf dismissViewControllerAnimated:YES completion:^{
+                            if (complete) complete(photos);
+                        }];
+                    } else {
+                        if (complete) complete(photos);
+                    }
+                });
+            });
+        }];
+        
     }
     return self;
 }
@@ -274,6 +340,7 @@
 - (void)defaultConfig
 {
     _selectedModels = [NSMutableArray array];
+    self.columnNumber = 4;
     self.maxImagesCount = 9;
     self.maxVideosCount = self.maxImagesCount;
     self.minImagesCount = 0;
@@ -333,6 +400,9 @@
 }
 
 - (void)pushPreviewPickerVc {
+    if (self.photoPickerVc) {
+        [self setViewControllers:@[self.photoPickerVc] animated:YES];
+    } else
     if (self.previewVc) {
         if (self.previewVc.isPhotoPreview) {
             [self setViewControllers:@[self.previewVc] animated:YES];
@@ -342,6 +412,7 @@
             [photoPickerVc pushPhotoPrevireViewController:self.previewVc];
         }
     }
+    self.photoPickerVc = nil;
     self.previewVc = nil;
 }
 

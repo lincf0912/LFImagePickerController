@@ -273,7 +273,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _backButton = [[UIButton alloc] initWithFrame:CGRectMake(8, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
     _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
-    if (imagePickerVc.isPreview) {
+    if (self.isPhotoPreview) {
         /** 取消 */
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
@@ -662,20 +662,18 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)backButtonClick {
     LFImagePickerController *imagePickerVc = [self navi];
     /** 判断是否预览模式 */
-    if (imagePickerVc.isPreview) {
+    if (self.isPhotoPreview) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        if ([[self navi] respondsToSelector:@selector(cancelButtonClick)]) {
-            [[self navi] performSelector:@selector(cancelButtonClick)];
-        } else {
-            [[self navi] dismissViewControllerAnimated:YES completion:nil];
+        if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+            [imagePickerVc performSelector:@selector(cancelButtonClick)];
         }
 #pragma clang diagnostic pop
     } else {
-        [[self navi] popViewControllerAnimated:YES];
-    }
-    if (self.backButtonClickBlock) {
-        self.backButtonClickBlock();
+        [imagePickerVc popViewControllerAnimated:YES];
+        if (self.backButtonClickBlock) {
+            self.backButtonClickBlock();
+        }
     }
 }
 
@@ -1242,6 +1240,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     asset = [[LFAsset alloc] initWithAsset:object];
                 }
                 else if ([object conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+                    asset = [[LFAsset alloc] initWithObject:object];
+                }
+                else if ([object conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
                     asset = [[LFAsset alloc] initWithObject:object];
                 }
                 if (asset) {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="nnj-VW-pzm">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -10,6 +10,22 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="W7s-q8-CBj">
+            <objects>
+                <navigationController id="nnj-VW-pzm" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="9sH-96-KI4">
+                        <rect key="frame" x="0.0" y="20" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="Qqc-Lu-NWY"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6ru-Cs-lFi" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1101" y="-83"/>
+        </scene>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
@@ -23,42 +39,49 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WLJ-xD-c6B">
-                                <rect key="frame" x="156" y="28" width="62" height="30"/>
+                                <rect key="frame" x="156" y="72" width="62" height="30"/>
                                 <state key="normal" title="正常模式"/>
                                 <connections>
                                     <action selector="buttonActionNormal:" destination="BYZ-38-t0r" eventType="touchUpInside" id="MzB-dc-pTA"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Qz3-IN-YXo">
-                                <rect key="frame" x="107" y="104" width="161" height="30"/>
+                                <rect key="frame" x="107" y="148" width="161" height="30"/>
                                 <state key="normal" title="预览模式（Asset对象）"/>
                                 <connections>
                                     <action selector="buttonActionPreviewAsset:" destination="BYZ-38-t0r" eventType="touchUpInside" id="krA-cH-I6W"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-5M-jrM">
-                                <rect key="frame" x="105" y="142" width="164" height="30"/>
-                                <state key="normal" title="预览模式（image对象）"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1nH-fo-Abo">
+                                <rect key="frame" x="40" y="186" width="295" height="30"/>
+                                <state key="normal" title="预览模式（&lt;LFAssetImageProtocol&gt;对象）"/>
                                 <connections>
-                                    <action selector="buttonActionPreviewImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="xRh-0G-LrA"/>
+                                    <action selector="buttonActionPreviewImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9Hj-9l-52R"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eK1-5M-jrM">
+                                <rect key="frame" x="33" y="224" width="309" height="30"/>
+                                <state key="normal" title="新预览模式（&lt;LFAssetPhotoProtocol&gt;对象）"/>
+                                <connections>
+                                    <action selector="buttonActionPreviewPhoto:" destination="BYZ-38-t0r" eventType="touchUpInside" id="KUb-Z8-8kv"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="CMM-tq-JIW">
-                                <rect key="frame" x="67" y="180" width="51" height="30"/>
+                                <rect key="frame" x="67" y="262" width="51" height="30"/>
                                 <state key="normal" title="创建Gif"/>
                                 <connections>
                                     <action selector="buttonAction4_c_gif:" destination="BYZ-38-t0r" eventType="touchUpInside" id="rnd-Ad-4xK"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8l5-II-Kef">
-                                <rect key="frame" x="251" y="180" width="62" height="30"/>
+                                <rect key="frame" x="251" y="262" width="62" height="30"/>
                                 <state key="normal" title="创建MP4"/>
                                 <connections>
                                     <action selector="buttonAction5_c_mp4:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Tdd-0q-oEV"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PSi-kA-f8z">
-                                <rect key="frame" x="172" y="180" width="31" height="30"/>
+                                <rect key="frame" x="172" y="262" width="31" height="30"/>
                                 <state key="normal" title="分享"/>
                                 <connections>
                                     <action selector="buttonAction6_share:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Byr-6t-GB4"/>
@@ -99,7 +122,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oL3-aq-rwt">
-                                <rect key="frame" x="164" y="66" width="46" height="30"/>
+                                <rect key="frame" x="164" y="110" width="46" height="30"/>
                                 <state key="normal" title="朋友圈"/>
                                 <connections>
                                     <action selector="buttonActionFriendCircle:" destination="BYZ-38-t0r" eventType="touchUpInside" id="zgc-q0-jUV"/>
@@ -111,9 +134,10 @@
                             <constraint firstItem="4Ng-7P-aKq" firstAttribute="leading" secondItem="lSx-DM-cfI" secondAttribute="trailing" priority="250" constant="5" id="24g-l0-rp5"/>
                             <constraint firstItem="WLJ-xD-c6B" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="2hR-xI-8rB"/>
                             <constraint firstItem="WLJ-xD-c6B" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="2tP-3q-OZK"/>
-                            <constraint firstItem="eK1-5M-jrM" firstAttribute="top" secondItem="Qz3-IN-YXo" secondAttribute="bottom" constant="8" id="3Kz-Ay-WPv"/>
+                            <constraint firstItem="eK1-5M-jrM" firstAttribute="top" secondItem="1nH-fo-Abo" secondAttribute="bottom" constant="8" id="3Kz-Ay-WPv"/>
                             <constraint firstItem="WLJ-xD-c6B" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="3Sp-U7-SJO"/>
                             <constraint firstItem="4Ng-7P-aKq" firstAttribute="centerY" secondItem="lSx-DM-cfI" secondAttribute="centerY" id="4pR-eo-m7F"/>
+                            <constraint firstItem="1nH-fo-Abo" firstAttribute="centerX" secondItem="Qz3-IN-YXo" secondAttribute="centerX" id="6Id-ah-5dC"/>
                             <constraint firstItem="lSx-DM-cfI" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="CpF-gr-pIS"/>
                             <constraint firstItem="8l5-II-Kef" firstAttribute="centerX" secondItem="eK1-5M-jrM" secondAttribute="centerX" constant="95" id="DmM-8Q-zhO"/>
                             <constraint firstItem="CMM-tq-JIW" firstAttribute="top" secondItem="eK1-5M-jrM" secondAttribute="bottom" constant="8" id="Gbd-5S-3UE"/>
@@ -133,10 +157,12 @@
                             <constraint firstItem="PSi-kA-f8z" firstAttribute="centerX" secondItem="eK1-5M-jrM" secondAttribute="centerX" id="g6o-CF-yUn"/>
                             <constraint firstItem="8l5-II-Kef" firstAttribute="top" secondItem="CMM-tq-JIW" secondAttribute="bottom" constant="-30" id="g9j-vn-744"/>
                             <constraint firstItem="CMM-tq-JIW" firstAttribute="centerX" secondItem="eK1-5M-jrM" secondAttribute="centerX" constant="-94.5" id="gF9-ck-QTO"/>
+                            <constraint firstItem="1nH-fo-Abo" firstAttribute="top" secondItem="Qz3-IN-YXo" secondAttribute="bottom" constant="8" id="hLz-sz-IHg"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="4Ng-7P-aKq" secondAttribute="bottom" constant="20" id="kfj-KP-sZa"/>
                             <constraint firstItem="fw7-UJ-OEf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="q7o-8V-gWM"/>
                         </constraints>
                     </view>
+                    <navigationItem key="navigationItem" id="kHa-cd-vaz"/>
                     <connections>
                         <outlet property="imageView" destination="4Ng-7P-aKq" id="nJn-TI-BPT"/>
                         <outlet property="shareButton" destination="PSi-kA-f8z" id="4Pe-jL-sbL"/>

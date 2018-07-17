@@ -15,9 +15,12 @@
 
 @interface LFCustomObject : NSObject <LFAssetImageProtocol>
 
+/// LFAssetImageProtocol
+
 @property (nonatomic, strong) UIImage *assetImage;
 
 + (instancetype)lf_CustomObjectWithImage:(UIImage *)image;
+
 @end
 
 @implementation LFCustomObject
@@ -26,6 +29,30 @@
 {
     LFCustomObject *object = [[[self class] alloc] init];
     object.assetImage = image;
+    return object;
+}
+
+@end
+
+@interface LFPhotoObject : NSObject <LFAssetPhotoProtocol>
+
+/// LFAssetPhotoProtocol
+
+@property (nonatomic, strong) UIImage *originalImage;
+
+@property (nonatomic, strong) UIImage *thumbnailImage;
+
++ (instancetype)lf_PhotoObjectWithImage:(UIImage *)image thumbnailImage:(UIImage *)thumbnailImage;
+
+@end
+
+@implementation LFPhotoObject
+
++ (instancetype)lf_PhotoObjectWithImage:(UIImage *)image thumbnailImage:(UIImage *)thumbnailImage
+{
+    LFPhotoObject *object = [[[self class] alloc] init];
+    object.originalImage = image;
+    object.thumbnailImage = thumbnailImage;
     return object;
 }
 
@@ -143,6 +170,30 @@
     imagePicker.supportAutorotate = YES;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
+
+- (IBAction)buttonActionPreviewPhoto:(id)sender {
+    NSString *gifPath = [[NSBundle mainBundle] pathForResource:@"3" ofType:@"gif"];
+    //    [UIImage imageNamed:@"3.gif"] //这样加载是静态图片
+    NSMutableArray *array = [NSMutableArray array];
+    // 这里测试代码，原图与缩略图为同一张图片，但为了运行流畅性，建议提供缩略图。
+    UIImage *image1 = [UIImage imageNamed:@"1.jpeg"];
+    [array addObject:[LFPhotoObject lf_PhotoObjectWithImage:image1 thumbnailImage:image1]];
+    UIImage *image2 = [UIImage imageNamed:@"2.jpeg"];
+    [array addObject:[LFPhotoObject lf_PhotoObjectWithImage:image2 thumbnailImage:image2]];
+    [array addObject:[LFPhotoObject lf_PhotoObjectWithImage:[UIImage LF_imageWithImagePath:gifPath] thumbnailImage:[UIImage imageNamed:@"3.gif"]]];
+    
+    LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithSelectedPhotoObjects:array complete:^(NSArray<id<LFAssetPhotoProtocol>> *photos) {
+        [self.thumbnailImageVIew setImage:photos.firstObject.thumbnailImage];
+        [self.imageView setImage:photos.firstObject.originalImage];
+    }];
+    /** 全选 */
+//    imagePicker.selectedAssets = array;
+    /** 关闭自动选中 */
+    imagePicker.autoSelectCurrentImage = NO;
+    imagePicker.supportAutorotate = YES;
+    [self presentViewController:imagePicker animated:YES completion:nil];
+}
+
 - (IBAction)buttonAction4_c_gif:(id)sender {
     self.isCreateGif = YES;
     

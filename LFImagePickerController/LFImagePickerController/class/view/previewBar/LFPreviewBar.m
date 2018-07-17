@@ -151,10 +151,17 @@
     }
     
     if (indexPaths.count) {
+        __weak typeof(self.selectAsset) weakSelectAsset = self.selectAsset;
         [self.collectionView performBatchUpdates:^{
             [self.collectionView reloadItemsAtIndexPaths:indexPaths];
         } completion:^(BOOL finished) {
-            [self.collectionView scrollToItemAtIndexPath:indexPaths.lastObject atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+            if (weakSelectAsset) {
+                NSInteger index = [self.myDataSource indexOfObject:weakSelectAsset];
+                if (index != NSNotFound) {
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                    [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+                }
+            }
         }];
     }
 }

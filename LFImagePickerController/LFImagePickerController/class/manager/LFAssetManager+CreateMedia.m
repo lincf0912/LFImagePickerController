@@ -102,6 +102,11 @@ NSString *const CreateMediaFolder = @"LFAssetManager.CreateMedia";
 
 - (void)createMP4WithImages:(NSArray <UIImage *>*)images size:(CGSize)size fps:(NSUInteger)fps duration:(NSTimeInterval)duration audioPath:(NSString *)audioPath complete:(void (^)(NSData *data, NSError *error))complete
 {
+    /** 视频的宽高都必须是16的整数倍,否则经过AVFoundation的API合成后系统会自动对尺寸进行校正，不足的地方会以绿边的形式进行填充 */
+    CGFloat v_w = round(size.width/16.f)*16.f;
+    CGFloat v_h = round(size.height/16.f)*16.f;
+    size = CGSizeMake(v_w, v_h);
+    
     NSMutableArray <UIImage *>*newImages = [@[] mutableCopy];
     for (UIImage *image in images) {
         UIImage *newImage = [image lf_scaleToSize:size];

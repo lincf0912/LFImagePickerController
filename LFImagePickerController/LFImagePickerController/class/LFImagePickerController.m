@@ -22,6 +22,7 @@
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEdit.h"
+#import "LFVideoEdit.h"
 #endif
 
 @interface LFImagePickerController ()
@@ -248,21 +249,23 @@
             dispatch_globalQueue_async_safe(^{
                 NSMutableArray *photos = [@[] mutableCopy];
                 for (LFAsset *model in weakSelf.selectedModels) {
+                    if (model.type == LFAssetMediaTypePhoto) {
 #ifdef LF_MEDIAEDIT
-                    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-                    if (photoEdit.editPreviewImage) {
-                        if ([model.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
-                            ((id<LFAssetImageProtocol>)model.asset).assetImage = photoEdit.editPreviewImage;
-                        }
-                        [photos addObject:model.asset];
-                    } else {
-#endif
-                        if (model.previewImage) {
+                        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                        if (photoEdit.editPreviewImage) {
+                            if ([model.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+                                ((id<LFAssetImageProtocol>)model.asset).assetImage = photoEdit.editPreviewImage;
+                            }
                             [photos addObject:model.asset];
-                        }
-#ifdef LF_MEDIAEDIT
-                    }
+                        } else {
 #endif
+                            if (model.previewImage) {
+                                [photos addObject:model.asset];
+                            }
+#ifdef LF_MEDIAEDIT
+                        }
+#endif
+                    }
                 }
                 dispatch_main_async_safe(^{
                     [weakSelf hideProgressHUD];
@@ -281,7 +284,7 @@
     return self;
 }
 
-- (instancetype)initWithSelectedPhotoObjects:(NSArray <id<LFAssetPhotoProtocol>>*)selectedPhotos complete:(void (^)(NSArray <id<LFAssetPhotoProtocol>>* photos))complete
+- (instancetype)initWithSelectedPhotoObjects:(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>*)selectedPhotos complete:(void (^)(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>* photos))complete
 {
     self = [super init];
     if (self) {
@@ -291,7 +294,7 @@
         _allowPickingOriginalPhoto = NO;
         
         NSMutableArray *models = [NSMutableArray array];
-        for (id<LFAssetPhotoProtocol> asset in selectedPhotos) {
+        for (id asset in selectedPhotos) {
             LFAsset *model = [[LFAsset alloc] initWithObject:asset];
             [models addObject:model];
         }
@@ -303,22 +306,41 @@
             dispatch_globalQueue_async_safe(^{
                 NSMutableArray *photos = [@[] mutableCopy];
                 for (LFAsset *model in weakSelf.selectedModels) {
+                    if (model.type == LFAssetMediaTypePhoto) {
 #ifdef LF_MEDIAEDIT
-                    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-                    if (photoEdit.editPreviewImage) {
-                        if ([model.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
-                            ((id<LFAssetPhotoProtocol>)model.asset).thumbnailImage = photoEdit.editPosterImage;
-                            ((id<LFAssetPhotoProtocol>)model.asset).originalImage = photoEdit.editPreviewImage;
-                        }
-                        [photos addObject:model.asset];
-                    } else {
-#endif
-                        if (model.previewImage) {
+                        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+                        if (photoEdit.editPreviewImage) {
+                            if ([model.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+                                ((id<LFAssetPhotoProtocol>)model.asset).thumbnailImage = photoEdit.editPosterImage;
+                                ((id<LFAssetPhotoProtocol>)model.asset).originalImage = photoEdit.editPreviewImage;
+                            }
                             [photos addObject:model.asset];
-                        }
-#ifdef LF_MEDIAEDIT
-                    }
+                        } else {
 #endif
+                            if (model.previewImage) {
+                                [photos addObject:model.asset];
+                            }
+#ifdef LF_MEDIAEDIT
+                        }
+#endif
+                    } else if (model.type == LFAssetMediaTypeVideo) {
+#ifdef LF_MEDIAEDIT
+                        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+                        if (videoEdit.editFinalURL) {
+                            if ([model.asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
+                                ((id<LFAssetVideoProtocol>)model.asset).thumbnailImage = videoEdit.editPosterImage;
+                                ((id<LFAssetVideoProtocol>)model.asset).videoUrl = videoEdit.editFinalURL;
+                            }
+                            [photos addObject:model.asset];
+                        } else {
+#endif
+                            if (model.previewVideoUrl) {
+                                [photos addObject:model.asset];
+                            }
+#ifdef LF_MEDIAEDIT
+                        }
+#endif
+                    }
                 }
                 dispatch_main_async_safe(^{
                     [weakSelf hideProgressHUD];

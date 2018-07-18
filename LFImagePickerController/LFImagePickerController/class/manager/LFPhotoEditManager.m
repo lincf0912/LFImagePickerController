@@ -52,13 +52,6 @@ static LFPhotoEditManager *manager;
             } else {
                 [weakSelf.photoEditDict removeObjectForKey:asset.name];
             }
-        } else if (asset.previewImage) {
-            NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
-            if (obj) {
-                [weakSelf.photoEditDict setObject:obj forKey:name];
-            } else {
-                [weakSelf.photoEditDict removeObjectForKey:name];
-            }
         } else {
             [[LFAssetManager manager] requestForAsset:asset.asset complete:^(NSString *name) {
                 if (name.length) {
@@ -80,9 +73,6 @@ static LFPhotoEditManager *manager;
     if (asset.asset) {
         if (asset.name.length) {
             photoEdit = [weakSelf.photoEditDict objectForKey:asset.name];
-        } else if (asset.previewImage) {
-            NSString *name = [NSString stringWithFormat:@"%zd", [asset.previewImage hash]];
-            photoEdit = [weakSelf.photoEditDict objectForKey:name];
         } else {
             [[LFAssetManager manager] requestForAsset:asset.asset complete:^(NSString *name) {
                 if (name.length) {

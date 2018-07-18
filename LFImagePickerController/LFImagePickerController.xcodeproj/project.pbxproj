@@ -172,6 +172,7 @@
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		C7EB651620FD7FDF00AC2367 /* LFAssetPhotoProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAssetPhotoProtocol.h; sourceTree = "<group>"; };
 		C7EB651720FD84E800AC2367 /* LFPhotoPickerController+preview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFPhotoPickerController+preview.h"; sourceTree = "<group>"; };
+		C7EB6B3A20FF13A100AC2367 /* LFAssetVideoProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAssetVideoProtocol.h; sourceTree = "<group>"; };
 		DA7F571BE722254777162CD5 /* Pods-LFImagePickerController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LFImagePickerController.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-LFImagePickerController/Pods-LFImagePickerController.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -292,6 +293,7 @@
 				6F1201AC1E514F9D00EA2198 /* LFAlbum.m */,
 				C70FDA9E20E31EFD0053A02C /* LFAssetImageProtocol.h */,
 				C7EB651620FD7FDF00AC2367 /* LFAssetPhotoProtocol.h */,
+				C7EB6B3A20FF13A100AC2367 /* LFAssetVideoProtocol.h */,
 				6F1699241F15AEB9008B1818 /* result */,
 			);
 			path = model;

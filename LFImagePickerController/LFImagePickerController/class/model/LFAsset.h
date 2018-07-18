@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LFAssetImageProtocol.h"
 #import "LFAssetPhotoProtocol.h"
+#import "LFAssetVideoProtocol.h"
 
 typedef NS_ENUM(NSUInteger, LFAssetMediaType) {
     LFAssetMediaTypePhoto = 0,
@@ -46,8 +47,11 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
 @property (nonatomic, readonly) UIImage *thumbnailImage;
 /** 自定义预览图 */
 @property (nonatomic, readonly) UIImage *previewImage;
+/** 自定义视频URL */
+@property (nonatomic, readonly) NSURL *previewVideoUrl;
+
 
 - (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`");
-- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol> */)asset;
+- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol/LFAssetVideoProtocol> */)asset;
 
 @end

@@ -151,6 +151,10 @@
         id <LFAssetPhotoProtocol> photoAsset = self.asset;
         return photoAsset.thumbnailImage;
     }
+    else if ([self.asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
+        id <LFAssetVideoProtocol> videoAsset = self.asset;
+        return videoAsset.thumbnailImage;
+    }
     return nil;
 }
 
@@ -167,6 +171,15 @@
     return nil;
 }
 
+- (NSURL *)previewVideoUrl
+{
+    if ([self.asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
+        id <LFAssetVideoProtocol> videoAsset = self.asset;
+        return videoAsset.videoUrl;
+    }
+    return nil;
+}
+
 - (instancetype)initWithImage:(UIImage *)image __deprecated_msg("Method deprecated. Use `initWithObject:`")
 {
     self = [self initWithAsset:nil];
@@ -176,17 +189,28 @@
     return self;
 }
 
-- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol> */)asset
+- (instancetype)initWithObject:(id/* <LFAssetImageProtocol/LFAssetPhotoProtocol/LFAssetVideoProtocol> */)asset
 {
     self = [self initWithAsset:asset];
     if (self) {
         if ([asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
             id <LFAssetImageProtocol> imageAsset = asset;
             _subType = imageAsset.assetImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+            _name = [NSString stringWithFormat:@"%zd", [imageAsset.assetImage hash]];
         }
         else if ([asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
             id <LFAssetPhotoProtocol> photoAsset = asset;
             _subType = photoAsset.originalImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
+            _name = [NSString stringWithFormat:@"%zd", [photoAsset.originalImage hash]];
+        }
+        else if ([asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
+            id <LFAssetVideoProtocol> videoAsset = asset;
+            _type = LFAssetMediaTypeVideo;
+            NSDictionary *opts = [NSDictionary dictionaryWithObject:@(NO)
+                                                             forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
+            AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videoAsset.videoUrl options:opts];
+            _duration = CMTimeGetSeconds(asset.duration);
+            _name = [NSString stringWithFormat:@"%zd", [videoAsset.videoUrl hash]];
         }
         
     }

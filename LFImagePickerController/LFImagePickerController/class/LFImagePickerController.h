@@ -12,6 +12,7 @@
 #import "LFResultVideo.h"
 #import "LFAssetImageProtocol.h"
 #import "LFAssetPhotoProtocol.h"
+#import "LFAssetVideoProtocol.h"
 
 @class LFAsset;
 @protocol LFImagePickerControllerDelegate;
@@ -30,7 +31,7 @@
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`");
 - (instancetype)initWithSelectedImageObjects:(NSArray <id<LFAssetImageProtocol>>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <id<LFAssetImageProtocol>>* photos))complete;
 /// New custom media selector (Speed Dial) / 全新自定义图片选择器(带宫格) complete => 完成后返回全新数组 （代理仅lf_imagePickerControllerDidCancel有效）
-- (instancetype)initWithSelectedPhotoObjects:(NSArray <id<LFAssetPhotoProtocol>>*)selectedPhotos complete:(void (^)(NSArray <id<LFAssetPhotoProtocol>>* photos))complete;
+- (instancetype)initWithSelectedPhotoObjects:(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>*)selectedPhotos complete:(void (^)(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>* photos))complete;
 
 
 /** 预览模式 */

@@ -71,15 +71,21 @@
         self.previewImage = videoEdit.editPreviewImage;
         AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoEdit.editFinalURL];
         [self readyToPlay:playerItem];
-    } else {
+    }
+    else {
 #endif
-        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
-        if (model.type == LFAssetMediaTypeVideo) { /** video */
-            [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
-                if ([model isEqual:self.model]) {
-                    [self readyToPlay:playerItem];
-                }
-            }];
+        if (model.previewVideoUrl) { /** 显示自定义图片 */
+            AVPlayerItem *playerItem = [AVPlayerItem playerItemWithURL:model.previewVideoUrl];
+            [self readyToPlay:playerItem];
+        } else {
+            [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
+            if (model.type == LFAssetMediaTypeVideo) { /** video */
+                [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
+                    if ([model isEqual:self.model]) {
+                        [self readyToPlay:playerItem];
+                    }
+                }];
+            }
         }
 #ifdef LF_MEDIAEDIT
     }

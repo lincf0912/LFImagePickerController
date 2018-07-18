@@ -199,6 +199,7 @@
     
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowPickingVideo = NO;
+    imagePicker.allowTakePicture = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 - (IBAction)buttonAction5_c_mp4:(id)sender {
@@ -206,6 +207,7 @@
     
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowPickingVideo = NO;
+    imagePicker.allowTakePicture = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
 

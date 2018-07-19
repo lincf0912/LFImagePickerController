@@ -393,4 +393,51 @@
     });
 }
 
+- (void)deleteAssets:(NSArray <id /* PHAsset/ALAsset */ > *)assets complete:(void (^)(NSError *error))complete
+{
+    if (iOS8Later) {
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+            [PHAssetChangeRequest deleteAssets:assets];
+        } completionHandler:^(BOOL success, NSError *error) {
+            NSLog(@"deleteAssets Error: %@", error);
+            if (complete) {
+                complete(error);
+            }
+        }];
+    } else {
+        for (ALAsset *result in assets) {
+            if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
+                [result setVideoAtPath:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+                    NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
+                    if (complete) {
+                        complete(error);
+                    }
+                }];
+            } else {
+                [result setImageData:nil metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
+                    NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
+                    if (complete) {
+                        complete(error);
+                    }
+                }];
+            }
+        }
+    }
+}
+
+- (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections complete:(void (^)(NSError *error))complete
+{
+    if (iOS8Later) {
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+            [PHAssetCollectionChangeRequest deleteAssetCollections:collections];
+        } completionHandler:^(BOOL success, NSError *error) {
+            NSLog(@"deleteAssetCollections Error: %@", error);
+            if (complete) {
+                complete(error);
+            }
+        }];
+    }
+}
+
+
 @end

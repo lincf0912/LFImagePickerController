@@ -399,26 +399,32 @@
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
             [PHAssetChangeRequest deleteAssets:assets];
         } completionHandler:^(BOOL success, NSError *error) {
-            NSLog(@"deleteAssets Error: %@", error);
-            if (complete) {
-                complete(error);
-            }
+            dispatch_main_async_safe(^{
+                NSLog(@"deleteAssets Error: %@", error);
+                if (complete) {
+                    complete(error);
+                }
+            });
         }];
     } else {
         for (ALAsset *result in assets) {
             if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
                 [result setVideoAtPath:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-                    NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
-                    if (complete) {
-                        complete(error);
-                    }
+                    dispatch_main_async_safe(^{
+                        NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
+                        if (complete) {
+                            complete(error);
+                        }
+                    });
                 }];
             } else {
                 [result setImageData:nil metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-                    NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
-                    if (complete) {
-                        complete(error);
-                    }
+                    dispatch_main_async_safe(^{
+                        NSLog(@"asset url(%@) should be delete . Error:%@ ", assetURL, error);
+                        if (complete) {
+                            complete(error);
+                        }
+                    });
                 }];
             }
         }
@@ -427,14 +433,30 @@
 
 - (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections complete:(void (^)(NSError *error))complete
 {
+    [self deleteAssetCollections:collections deleteAssets:NO complete:complete];
+}
+
+- (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections deleteAssets:(BOOL)deleteAssets complete:(void (^)(NSError *error))complete
+{
     if (iOS8Later) {
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+            if (deleteAssets) {
+                PHFetchOptions *option = [[PHFetchOptions alloc] init];
+                for (PHAssetCollection *collection in collections) {
+                    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
+                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, fetchResult.count)];
+                    NSArray *results = [fetchResult objectsAtIndexes:indexSet];
+                    [PHAssetChangeRequest deleteAssets:results];
+                }
+            }
             [PHAssetCollectionChangeRequest deleteAssetCollections:collections];
         } completionHandler:^(BOOL success, NSError *error) {
-            NSLog(@"deleteAssetCollections Error: %@", error);
-            if (complete) {
-                complete(error);
-            }
+            dispatch_main_async_safe(^{
+                NSLog(@"deleteAssetCollections Error: %@", error);
+                if (complete) {
+                    complete(error);
+                }
+            });
         }];
     }
 }

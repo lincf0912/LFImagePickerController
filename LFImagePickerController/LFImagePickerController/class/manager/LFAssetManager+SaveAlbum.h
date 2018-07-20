@@ -22,5 +22,6 @@
 
 /** 删除相册 */
 - (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections complete:(void (^)(NSError *error))complete NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
+- (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections deleteAssets:(BOOL)deleteAssets complete:(void (^)(NSError *error))complete NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
 
 @end

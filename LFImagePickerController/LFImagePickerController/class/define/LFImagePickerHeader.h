@@ -10,11 +10,6 @@
 #import "LFImagePickerPublicHeader.h"
 #import "NSBundle+LFImagePicker.h"
 
-#define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
-#define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
-#define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
-#define iOS9_1Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.1f)
-
 #define isiPhone (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 #define isiPad (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 

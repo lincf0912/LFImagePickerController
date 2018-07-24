@@ -25,7 +25,7 @@
 }
 
 - (NSInteger)authorizationStatus {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         return [PHPhotoLibrary authorizationStatus];
     } else {
         return [ALAssetsLibrary authorizationStatus];
@@ -35,7 +35,7 @@
 
 //AuthorizationStatus == AuthorizationStatusNotDetermined 时询问授权弹出系统授权alertView
 - (void)requestAuthorizationWhenNotDetermined {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
                 dispatch_async(dispatch_get_main_queue(), ^{

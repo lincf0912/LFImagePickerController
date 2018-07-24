@@ -43,9 +43,11 @@
                 _type = LFAssetMediaTypeVideo;
                 _duration = phAsset.duration;
             } else if (phAsset.mediaType == PHAssetMediaTypeImage) {
-                if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+#ifdef __IPHONE_9_1
+                if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                     _subType = LFAssetSubMediaTypeLivePhoto;
                 } else
+#endif
                 /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
                     if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
                         _subType = LFAssetSubMediaTypeGIF;

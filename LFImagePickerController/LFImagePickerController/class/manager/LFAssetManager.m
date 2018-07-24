@@ -67,13 +67,13 @@ static LFAssetManager *manager;
 - (void)getCameraRollAlbum:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(LFAlbum *model))completion
 {
     __block LFAlbum *model;
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
         if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
 //        option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:ascending]];
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
-        if (iOS9Later) {
+        if (@available(iOS 9.0, *)){
             option.fetchLimit = fetchLimit;
         }
         PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil];
@@ -101,7 +101,7 @@ static LFAssetManager *manager;
 
 - (void)getAllAlbums:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAlbum *> *))completion{
     NSMutableArray *albumArr = [NSMutableArray array];
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
         if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
@@ -293,6 +293,8 @@ static LFAssetManager *manager;
         @catch (NSException* e) {
             if (completion) completion(nil);
         }
+    } else {
+        if (completion) completion(nil);
     }
 }
 
@@ -323,7 +325,7 @@ static LFAssetManager *manager;
     
     for (NSInteger i = 0; i < photos.count; i++) {
         LFAsset *model = photos[i];
-        if (model.type != LFAssetMediaTypeVideo) {
+        if (model.type == LFAssetMediaTypePhoto) {
             if ([model.asset isKindOfClass:[PHAsset class]]) {
 
                 if (model.bytes == 0) {
@@ -370,10 +372,8 @@ static LFAssetManager *manager;
     
     for (NSInteger i = 0; i < photos.count; i++) {
         LFAsset *model = photos[i];
-        if ([model.asset isKindOfClass:[PHAsset class]]) {
-            
-            if (model.type != LFAssetMediaTypeVideo) {
-                
+        if (model.type == LFAssetMediaTypePhoto) {
+            if ([model.asset isKindOfClass:[PHAsset class]]) {
                 if (model.bytes == 0) {
                     PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
                     option.resizeMode = PHImageRequestOptionsResizeModeFast;
@@ -385,19 +385,19 @@ static LFAssetManager *manager;
                 } else {
                     completeBlock(model.bytes);
                 }
-            } else {
-                completeBlock(model.bytes);
+                
+            } else if ([model.asset isKindOfClass:[ALAsset class]]) {
+                
+                if (model.bytes == 0) {
+                    ALAssetRepresentation *representation = [model.asset defaultRepresentation];
+                    model.bytes = (NSInteger)representation.size;
+                    completeBlock(model.bytes);
+                } else {
+                    completeBlock(model.bytes);
+                }
             }
-            
-        } else if ([model.asset isKindOfClass:[ALAsset class]]) {
-            
-            if (model.bytes == 0) {
-                ALAssetRepresentation *representation = [model.asset defaultRepresentation];
-                model.bytes = (NSInteger)representation.size;
-                completeBlock(model.bytes);
-            } else {
-                completeBlock(model.bytes);
-            }
+        } else {
+            completeBlock(model.bytes);
         }
     }
 }
@@ -494,7 +494,8 @@ static LFAssetManager *manager;
                 });
             });
         }
-        
+    } else {
+        if (completion) completion(nil,nil,NO);
     }
     return 0;
 }
@@ -542,6 +543,8 @@ static LFAssetManager *manager;
         NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
         NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
         if (completion) completion(imageData,nil,NO);
+    } else {
+        if (completion) completion(nil,nil,NO);
     }
     return 0;
 }
@@ -558,8 +561,9 @@ static LFAssetManager *manager;
 }
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
-    
-    if (iOS9_1Later && [asset isKindOfClass:[PHAsset class]]) {
+
+#ifdef __IPHONE_9_1
+    if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
         CGFloat pixelWidth = photoWidth * LFAM_ScreenScale;
@@ -597,6 +601,9 @@ static LFAssetManager *manager;
         }];
         return imageRequestID;
     }
+#else
+    if (completion) completion(nil,nil,NO);
+#endif
     return 0;
 }
 
@@ -773,9 +780,12 @@ static LFAssetManager *manager;
                 NSString *fileName = [phAsset valueForKey:@"filename"];
                 
                 LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
-                if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+#ifdef __IPHONE_9_1
+                if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                     mediaType = LFImagePickerSubMediaTypeLivePhoto;
-                } else if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                } else
+#endif
+                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
                     mediaType = LFImagePickerSubMediaTypeGIF;
                 }
                 
@@ -792,9 +802,12 @@ static LFAssetManager *manager;
                     NSString *fileName = [phAsset valueForKey:@"filename"];
                     
                     LFImagePickerSubMediaType mediaType = LFImagePickerSubMediaTypeNone;
-                    if (iOS9_1Later && phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+#ifdef __IPHONE_9_1
+                    if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
                         mediaType = LFImagePickerSubMediaTypeLivePhoto;
-                    } else if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                    } else
+#endif
+                        if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
                         mediaType = LFImagePickerSubMediaTypeGIF;
                     }
                     
@@ -830,12 +843,15 @@ static LFAssetManager *manager;
                 if (completion) completion(imageData, fileName, mediaType);
             });
         });
+    } else {
+        if (completion) completion(nil, nil, LFImagePickerSubMediaTypeNone);
     }
 }
 
 - (void)getLivePhotoWithAsset:(id)asset isOriginal:(BOOL)isOriginal completion:(void (^)(LFResultImage *resultImage))completion
 {
-    if (iOS9_1Later && [asset isKindOfClass:[PHAsset class]]) {
+#ifdef __IPHONE_9_1
+    if ([asset isKindOfClass:[PHAsset class]]) {
         
         PHAsset *phAsset = (PHAsset *)asset;
         
@@ -945,8 +961,11 @@ static LFAssetManager *manager;
                 }
         }];
     } else {
+#endif
         if (completion) completion(nil);
+#ifdef __IPHONE_9_1
     }
+#endif
 }
 
 #pragma mark - Get Video
@@ -997,6 +1016,8 @@ static LFAssetManager *manager;
                 completion(playerItem,nil);
             });
         }
+    } else {
+        if (completion) completion(nil ,nil);
     }
 }
 
@@ -1170,7 +1191,7 @@ static LFAssetManager *manager;
 
 /// Get postImage / 获取封面图
 - (void)getPostImageWithAlbumModel:(LFAlbum *)model ascending:(BOOL)ascending completion:(void (^)(UIImage *))completion {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         id asset = [model.result lastObject];
         if (!ascending) {
             asset = [model.result firstObject];
@@ -1187,7 +1208,7 @@ static LFAssetManager *manager;
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
 - (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         return [assets indexOfObject:asset];
     } else {
         NSMutableArray *selectedAssetUrls = [NSMutableArray array];

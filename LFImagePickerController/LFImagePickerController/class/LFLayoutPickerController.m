@@ -57,13 +57,10 @@
 //    self.navigationBar.translucent = YES;
     self.delegate = self;
     
-    if (iOS7Later) {
-//        self.automaticallyAdjustsScrollViewInsets = NO;
-        
-        UIImage *backIndicatorImage = bundleImageNamed(@"navigationbar_back_arrow");
-        self.navigationBar.backIndicatorImage = backIndicatorImage;
-        self.navigationBar.backIndicatorTransitionMaskImage = backIndicatorImage;
-    }
+    //        self.automaticallyAdjustsScrollViewInsets = NO;
+    UIImage *backIndicatorImage = bundleImageNamed(@"navigationbar_back_arrow");
+    self.navigationBar.backIndicatorImage = backIndicatorImage;
+    self.navigationBar.backIndicatorTransitionMaskImage = backIndicatorImage;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -130,7 +127,7 @@
 
 - (void)configBarButtonItemAppearance {
     UIBarButtonItem *barItem;
-    if (iOS9Later) {
+    if (@available(iOS 9.0, *)){
         barItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[LFLayoutPickerController class]]];
     } else {
         barItem = [UIBarButtonItem appearanceWhenContainedIn:[LFLayoutPickerController class], nil];
@@ -245,7 +242,7 @@
 
 - (void)showAlertWithTitle:(NSString *)title cancelTitle:(NSString *)cancelTitle message:(NSString *)message complete:(void (^)(void))complete
 {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
         [alertController addAction:[UIAlertAction actionWithTitle:cancelTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             if (complete) {

@@ -98,7 +98,7 @@
 - (void)baseSaveImageToCustomPhotosAlbumWithTitle:(NSString *)title datas:(NSArray <id /* NSData/UIImage */>*)datas complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets ,NSError *error))complete
 {
     if ([self authorizationStatusAuthorized]) {
-        if (iOS8Later) {
+        if (@available(iOS 8.0, *)){
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
                 [self saveToAlbumIOS8LaterWithImages:datas customAlbum:result completionBlock:^(NSArray<PHAsset *> *assets) {
                     if (complete) complete(assets, nil);
@@ -136,7 +136,7 @@
         for (id data in datas) {
             PHAssetChangeRequest *req = nil;
             if ([data isKindOfClass:[NSData class]]) {
-                if (iOS9Later) {
+                if (@available(iOS 9.0, *)){
                     PHAssetResourceCreationOptions *options = [[PHAssetResourceCreationOptions alloc] init];
                     req = [PHAssetCreationRequest creationRequestForAsset];
                     [(PHAssetCreationRequest *)req addResourceWithType:PHAssetResourceTypePhoto data:data options:options];
@@ -303,7 +303,7 @@
 - (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURLs:(NSArray <NSURL *>*)videoURLs complete:(void(^)(id asset, NSError *error))complete
 {
     if ([self authorizationStatusAuthorized]) {
-        if (iOS8Later) {
+        if (@available(iOS 8.0, *)){
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
                 [self saveToAlbumIOS8LaterWithVideoURLs:videoURLs customAlbum:result completionBlock:^(NSArray<PHAsset *> *assets) {
                     if (complete) complete(assets, nil);
@@ -395,7 +395,7 @@
 
 - (void)deleteAssets:(NSArray <id /* PHAsset/ALAsset */ > *)assets complete:(void (^)(NSError *error))complete
 {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
             [PHAssetChangeRequest deleteAssets:assets];
         } completionHandler:^(BOOL success, NSError *error) {
@@ -438,7 +438,7 @@
 
 - (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections deleteAssets:(BOOL)deleteAssets complete:(void (^)(NSError *error))complete
 {
-    if (iOS8Later) {
+    if (@available(iOS 8.0, *)){
         [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
             if (deleteAssets) {
                 PHFetchOptions *option = [[PHFetchOptions alloc] init];

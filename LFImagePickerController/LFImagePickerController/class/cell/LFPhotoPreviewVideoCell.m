@@ -95,6 +95,11 @@
 
 - (void)readyToPlay:(AVPlayerItem *)playerItem
 {
+    if (_player) {
+        [_player pause];
+        [_player.currentItem removeObserver:self forKeyPath:@"status"];
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
     [playerItem addObserver:self
                  forKeyPath:@"status"
                     options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew

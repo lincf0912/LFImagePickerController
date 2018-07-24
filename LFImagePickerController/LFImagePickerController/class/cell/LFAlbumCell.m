@@ -47,7 +47,7 @@
 
 /// For fitting iOS6
 - (void)layoutSubviews {
-    if (iOS7Later) [super layoutSubviews];
+    [super layoutSubviews];
     
     /** 居中 */
     _posterImageView.centerY = self.contentView.height/2;

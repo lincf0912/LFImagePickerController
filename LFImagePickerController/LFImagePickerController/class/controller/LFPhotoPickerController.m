@@ -121,10 +121,12 @@
                             [weakSelf initSubviews];
                         });
                     } else {
-                        /** 倒序情况下。iOS9的result已支持倒序,这里的排序应该为顺序 */
+                        /** 倒序情况下。iOS8的result已支持倒序,这里的排序应该为顺序 */
                         BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                        if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-                            ascending = !imagePickerVc.sortAscendingByCreateDate;
+                        if (@available(iOS 8.0, *)){
+                            if (!imagePickerVc.sortAscendingByCreateDate) {
+                                ascending = !imagePickerVc.sortAscendingByCreateDate;
+                            }
                         }
                         [[LFAssetManager manager] getAssetsFromFetchResult:weakSelf.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                             /** 缓存数据 */
@@ -712,7 +714,7 @@
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetVideoCell" forIndexPath:indexPath];
     }
     
-    if (iOS9Later) {
+    if (@available(iOS 9.0, *)){
         /** 给cell注册 3DTouch的peek（预览）和pop功能 */
         if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
             //给cell注册3DTouch的peek（预览）和pop功能
@@ -1018,14 +1020,18 @@
 - (void)takePhoto {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-    if ((authStatus == AVAuthorizationStatusRestricted || authStatus ==AVAuthorizationStatusDenied) && iOS7Later) {
+    if ((authStatus == AVAuthorizationStatusRestricted || authStatus ==AVAuthorizationStatusDenied)) {
         // 无权限 做一个友好的提示
         NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
         if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
         NSString *message = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityTipText"],appName];
         [imagePickerVc showAlertWithTitle:nil cancelTitle:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityCancelTitle"] message:message complete:^{
-            if (iOS8Later) {
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+            if (@available(iOS 8.0, *)){
+                if (@available(iOS 10.0, *)){
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+                } else {
+                    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+                }
             } else {
                 NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
                 [imagePickerVc showAlertWithTitle:nil message:message complete:^{
@@ -1359,8 +1365,10 @@
                 BOOL hasData1 = self.models.count;
                 
                 BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                if (!imagePickerVc.sortAscendingByCreateDate && iOS8Later) {
-                    ascending = !imagePickerVc.sortAscendingByCreateDate;
+                if (@available(iOS 8.0, *)){
+                    if (!imagePickerVc.sortAscendingByCreateDate) {
+                        ascending = !imagePickerVc.sortAscendingByCreateDate;
+                    }
                 }
                 [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                     self.model.models = models;

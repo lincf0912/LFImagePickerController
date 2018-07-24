@@ -461,8 +461,12 @@
 }
 
 - (void)settingBtnClick {
-    if (iOS8Later) {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+    if (@available(iOS 8.0, *)){
+        if (@available(iOS 8.0, *)){
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+        } else {
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+        }
         [self cancelButtonClick];
     } else {
         NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
@@ -475,19 +479,15 @@
 
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (iOS7Later) {
-        viewController.automaticallyAdjustsScrollViewInsets = NO;
-    }
+    viewController.automaticallyAdjustsScrollViewInsets = NO;
     if (_timer) { [_timer invalidate]; _timer = nil;}
     [super pushViewController:viewController animated:animated];
 }
 
 - (void)setViewControllers:(NSArray<__kindof UIViewController *> *)viewControllers animated:(BOOL)animated
 {
-    if (iOS7Later) {
-        for (UIViewController *controller in viewControllers) {
-            controller.automaticallyAdjustsScrollViewInsets = NO;
-        }
+    for (UIViewController *controller in viewControllers) {
+        controller.automaticallyAdjustsScrollViewInsets = NO;
     }
     if (_timer) { [_timer invalidate]; _timer = nil;}
     [super setViewControllers:viewControllers animated:animated];

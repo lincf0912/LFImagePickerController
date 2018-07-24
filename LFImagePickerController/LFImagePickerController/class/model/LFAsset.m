@@ -147,7 +147,11 @@
 
 - (UIImage *)thumbnailImage
 {
-    if ([self.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
+    if ([self.asset conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
+        id <LFAssetImageProtocol> imageAsset = self.asset;
+        return imageAsset.assetImage;
+    }
+    else if ([self.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
         id <LFAssetPhotoProtocol> photoAsset = self.asset;
         return photoAsset.thumbnailImage;
     }
@@ -167,6 +171,10 @@
     else if ([self.asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
         id <LFAssetPhotoProtocol> photoAsset = self.asset;
         return photoAsset.originalImage;
+    }
+    else if ([self.asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
+        id <LFAssetVideoProtocol> videoAsset = self.asset;
+        return videoAsset.thumbnailImage;
     }
     return nil;
 }

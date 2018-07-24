@@ -152,8 +152,8 @@
 
 - (void)getAssetImage:(LFAsset *)asset
 {
-    if (asset.previewImage) { /** 显示自定义图片 */
-        self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.previewImage);
+    if (asset.thumbnailImage) { /** 显示自定义图片 */
+        self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.thumbnailImage);
     }  else {
         [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([asset.asset isEqual:self.asset.asset]) {

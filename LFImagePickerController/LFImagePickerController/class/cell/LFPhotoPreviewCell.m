@@ -155,35 +155,48 @@
 - (void)setModel:(LFAsset *)model
 {
     _model = model;
+    if (model.type == LFAssetMediaTypePhoto) {
 #ifdef LF_MEDIAEDIT
-    /** 优先显示编辑图片 */
-    LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
-    if (photoEdit.editPreviewImage) {
-        self.previewImage = photoEdit.editPreviewImage;
-    } else
+        /** 优先显示编辑图片 */
+        LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
+        if (photoEdit.editPreviewImage) {
+            self.previewImage = photoEdit.editPreviewImage;
+        } else
 #endif
-        if (model.previewImage) { /** 显示自定义图片 */
-        self.previewImage = model.previewImage;
+            if (model.previewImage) { /** 显示自定义图片 */
+                self.previewImage = model.previewImage;
+            } else {
+                
+                void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
+                    if ([model isEqual:self.model]) {
+                        if ([data isKindOfClass:[UIImage class]]) { /** image */
+                            self.previewImage = (UIImage *)data;
+                        }
+                        //                _progressView.hidden = YES;
+                    }
+                };
+                
+                //        void (^progressHandler)(double progress, NSError *error, BOOL *stop, NSDictionary *info) = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info){
+                //            if ([model isEqual:self.model]) {
+                //                _progressView.hidden = NO;
+                //                [self bringSubviewToFront:_progressView];
+                //                progress = progress > 0.02 ? progress : 0.02;;
+                //                _progressView.progress = progress;
+                //            }
+                //        };
+                
+                
+                [self subViewSetModel:model completeHandler:completion progressHandler:nil];
+            }
     } else {
-        
         void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
             if ([model isEqual:self.model]) {
                 if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
                 }
-//                _progressView.hidden = YES;
+                //                _progressView.hidden = YES;
             }
         };
-        
-//        void (^progressHandler)(double progress, NSError *error, BOOL *stop, NSDictionary *info) = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info){
-//            if ([model isEqual:self.model]) {
-//                _progressView.hidden = NO;
-//                [self bringSubviewToFront:_progressView];
-//                progress = progress > 0.02 ? progress : 0.02;;
-//                _progressView.progress = progress;
-//            }
-//        };
-        
         
         [self subViewSetModel:model completeHandler:completion progressHandler:nil];
     }

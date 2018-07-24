@@ -64,32 +64,33 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
+    if (model.type == LFAssetMediaTypeVideo) { /** video */
 #ifdef LF_MEDIAEDIT
-    /** 优先显示编辑图片 */
-    LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
-    if (videoEdit.editPreviewImage) {
-        self.previewImage = videoEdit.editPreviewImage;
-        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoEdit.editFinalURL];
-        [self readyToPlay:playerItem];
-    }
-    else {
-#endif
-        if (model.previewVideoUrl) { /** 显示自定义图片 */
-            AVPlayerItem *playerItem = [AVPlayerItem playerItemWithURL:model.previewVideoUrl];
+        /** 优先显示编辑图片 */
+        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
+        if (videoEdit.editPreviewImage) {
+            self.previewImage = videoEdit.editPreviewImage;
+            AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoEdit.editFinalURL];
             [self readyToPlay:playerItem];
-        } else {
-            [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
-            if (model.type == LFAssetMediaTypeVideo) { /** video */
+        }
+        else {
+#endif
+            if (model.previewVideoUrl) { /** 显示自定义图片 */
+                self.previewImage = model.thumbnailImage;
+                AVPlayerItem *playerItem = [AVPlayerItem playerItemWithURL:model.previewVideoUrl];
+                [self readyToPlay:playerItem];
+            } else {
+                [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
                 [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
                     if ([model isEqual:self.model]) {
                         [self readyToPlay:playerItem];
                     }
                 }];
             }
-        }
 #ifdef LF_MEDIAEDIT
-    }
+        }
 #endif
+    }
 }
 
 - (void)readyToPlay:(AVPlayerItem *)playerItem

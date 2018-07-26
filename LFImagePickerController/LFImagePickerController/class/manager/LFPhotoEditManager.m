@@ -137,7 +137,7 @@ static LFPhotoEditManager *manager;
             }
         } else {
             if (!isOriginal) { /** 标清图 */
-                sourceData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize)];
+                sourceData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize) imageSize:sourceData.length];
                 source = [UIImage LF_imageWithImageData:sourceData];
             }
         }
@@ -157,11 +157,11 @@ static LFPhotoEditManager *manager;
                 thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
             } else {
                 /** 缩略图 */
-                CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
-                CGFloat th_pixelWidth = 80 * 2.0; // scale
-                CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
-                thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-                NSData *thumbnailData = [thumbnail lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize)];
+//                CGFloat aspectRatio = imageSize.width / (CGFloat)imageSize.height;
+//                CGFloat th_pixelWidth = MIN(80, imageSize.width*0.5) * 2.0; // scale
+//                CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
+//                thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
+                thumbnailData = [source lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize) imageSize:sourceData.length];
                 thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
             }
         }

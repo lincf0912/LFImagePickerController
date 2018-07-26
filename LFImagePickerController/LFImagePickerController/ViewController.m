@@ -38,6 +38,8 @@
 
 /// LFAssetPhotoProtocol
 
+@property (nonatomic, copy) NSString *name;
+
 @property (nonatomic, strong) UIImage *originalImage;
 
 @property (nonatomic, strong) UIImage *thumbnailImage;
@@ -258,7 +260,7 @@
                 
                 
                 /** 缩略图保存到路径 */
-                //            [thumnailData writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
+                [thumnailData writeToFile:[thumbnailFilePath stringByAppendingPathComponent:name] atomically:YES];
                 /** 原图保存到路径 */
                 if ([originalData writeToFile:[originalFilePath stringByAppendingPathComponent:name] atomically:YES]) {
                     self.sharePath = [originalFilePath stringByAppendingPathComponent:name];

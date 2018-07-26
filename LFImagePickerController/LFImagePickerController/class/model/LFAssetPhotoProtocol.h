@@ -10,6 +10,8 @@
 
 @protocol LFAssetPhotoProtocol <NSObject>
 
+@property (nonatomic, copy) NSString *name;
+
 @property (nonatomic, strong) UIImage *originalImage;
 
 @property (nonatomic, strong) UIImage *thumbnailImage;

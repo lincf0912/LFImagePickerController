@@ -10,6 +10,8 @@
 
 @protocol LFAssetVideoProtocol <NSObject>
 
+@property (nonatomic, copy) NSString *name;
+
 @property (nonatomic, strong) NSURL *videoUrl;
 
 @property (nonatomic, strong) UIImage *thumbnailImage;

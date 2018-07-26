@@ -211,7 +211,7 @@
         else if ([asset conformsToProtocol:@protocol(LFAssetPhotoProtocol)]) {
             id <LFAssetPhotoProtocol> photoAsset = asset;
             _subType = photoAsset.originalImage.images.count ? LFAssetSubMediaTypeGIF : LFAssetSubMediaTypeNone;
-            _name = [NSString stringWithFormat:@"%zd", [photoAsset.originalImage hash]];
+            _name = photoAsset.name.length ? photoAsset.name : [NSString stringWithFormat:@"%zd", [photoAsset.originalImage hash]];
         }
         else if ([asset conformsToProtocol:@protocol(LFAssetVideoProtocol)]) {
             id <LFAssetVideoProtocol> videoAsset = asset;
@@ -220,7 +220,7 @@
                                                              forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
             AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videoAsset.videoUrl options:opts];
             _duration = CMTimeGetSeconds(asset.duration);
-            _name = [NSString stringWithFormat:@"%zd", [videoAsset.videoUrl hash]];
+            _name = videoAsset.name.length ? videoAsset.name : [NSString stringWithFormat:@"%zd", [videoAsset.videoUrl hash]];
         }
         
     }

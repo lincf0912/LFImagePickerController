@@ -1037,49 +1037,45 @@ static LFAssetManager *manager;
     
     void(^VideoResultComplete)(NSString *videoPath) = ^(NSString *videoPath) {
         
-        [self getPhotoWithAsset:asset photoWidth:LFAM_ScreenWidth completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-            if (isDegraded == NO) {
-                LFResultVideo *result = [LFResultVideo new];
-                result.asset = asset;
-                result.coverImage = photo;
-                if (videoPath.length) {
-                    NSDictionary *opts = [NSDictionary dictionaryWithObject:@(NO)
-                                                                     forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
-                    AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:[NSURL fileURLWithPath:videoPath] options:opts];
-                    NSData *data = [NSData dataWithContentsOfFile:videoPath];
-                    NSTimeInterval duration = CMTimeGetSeconds(urlAsset.duration);
-                    
-                    NSArray *assetVideoTracks = [urlAsset tracksWithMediaType:AVMediaTypeVideo];
-                    CGSize size = CGSizeZero;
-                    if (assetVideoTracks.count > 0)
-                    {
-                        // Insert the tracks in the composition's tracks
-                        AVAssetTrack *track = [assetVideoTracks firstObject];
-                        
-                        CGSize dimensions = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
-                        size = CGSizeMake(fabs(dimensions.width), fabs(dimensions.height));
-                    }
-                    
-                    
-                    result.data = data;
-                    result.url = [NSURL fileURLWithPath:videoPath];
-                    result.duration = duration;
-                    
-                    LFResultInfo *info = [LFResultInfo new];
-                    result.info = info;
-                    
-                    /** 文件名 */
-                    info.name = name;
-                    /** 大小 */
-                    info.byte = data.length;
-                    /** 宽高 */
-                    info.size = size;
-                }
-                if (completion) {
-                    completion(result);
-                }
+        LFResultVideo *result = [LFResultVideo new];
+        result.asset = asset;
+        result.coverImage = [LF_VideoUtils thumbnailImageForVideo:[NSURL fileURLWithPath:videoPath] atTime:1.f];
+        if (videoPath.length) {
+            NSDictionary *opts = [NSDictionary dictionaryWithObject:@(NO)
+                                                             forKey:AVURLAssetPreferPreciseDurationAndTimingKey];
+            AVURLAsset *urlAsset = [[AVURLAsset alloc] initWithURL:[NSURL fileURLWithPath:videoPath] options:opts];
+            NSData *data = [NSData dataWithContentsOfFile:videoPath];
+            NSTimeInterval duration = CMTimeGetSeconds(urlAsset.duration);
+            
+            NSArray *assetVideoTracks = [urlAsset tracksWithMediaType:AVMediaTypeVideo];
+            CGSize size = CGSizeZero;
+            if (assetVideoTracks.count > 0)
+            {
+                // Insert the tracks in the composition's tracks
+                AVAssetTrack *track = [assetVideoTracks firstObject];
+                
+                CGSize dimensions = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
+                size = CGSizeMake(fabs(dimensions.width), fabs(dimensions.height));
             }
-        } progressHandler:nil networkAccessAllowed:NO];
+            
+            
+            result.data = data;
+            result.url = [NSURL fileURLWithPath:videoPath];
+            result.duration = duration;
+            
+            LFResultInfo *info = [LFResultInfo new];
+            result.info = info;
+            
+            /** 文件名 */
+            info.name = name;
+            /** 大小 */
+            info.byte = data.length;
+            /** 宽高 */
+            info.size = size;
+        }
+        if (completion) {
+            completion(result);
+        }
     };
     
     NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:name];

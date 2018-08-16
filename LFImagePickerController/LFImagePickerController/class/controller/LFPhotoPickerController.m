@@ -260,10 +260,10 @@
     /** 可能没有model的情况，补充赋值 */
     self.navigationItem.title = _model.name;
     [imagePickerVc hideProgressHUD];
-    _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
+//    _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
+    _showTakePhotoBtn = imagePickerVc.allowTakePicture;
     
-    
-    if (_models.count == 0) {
+    if (_models.count == 0 && !_showTakePhotoBtn) {
         [self configNonePhotoView];
     } else {
         [self configCollectionView];
@@ -334,7 +334,7 @@
     collectionView.alwaysBounceHorizontal = NO;
     collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
     
-    if (_showTakePhotoBtn && imagePickerVc.allowTakePicture ) {
+    if (_showTakePhotoBtn) {
         collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
     } else {
         collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
@@ -682,10 +682,7 @@
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if (_showTakePhotoBtn) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        if (imagePickerVc.allowPickingImage && imagePickerVc.allowTakePicture) {
-            return _models.count + 1;
-        }
+        return _models.count + 1;
     }
     return _models.count;
 }
@@ -903,7 +900,8 @@
     // take a photo / 去拍照
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     if (((imagePickerVc.sortAscendingByCreateDate && indexPath.row >= _models.count) || (!imagePickerVc.sortAscendingByCreateDate && indexPath.row == 0)) && _showTakePhotoBtn)  {
-        [self takePhoto]; return;
+        [self takePhoto];
+        return;
     }
     // preview phote or video / 预览照片或视频
     NSInteger index = indexPath.row;
@@ -1247,10 +1245,7 @@
     if (_shouldScrollToBottom && _models.count > 0 && imagePickerVc.sortAscendingByCreateDate) {
         NSInteger item = _models.count - 1;
         if (_showTakePhotoBtn) {
-            LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-            if (imagePickerVc.allowPickingImage && imagePickerVc.allowTakePicture) {
-                item += 1;
-            }
+            item += 1;
         }
         [_collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
         _shouldScrollToBottom = NO;

@@ -1053,8 +1053,8 @@
                 NSInteger index = [_models indexOfObject:cell.model];
                 if (self->_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
                     index += 1;
-                    [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
                 }
+                [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
             }
         }];
         if (indexPaths.count) {
@@ -1075,7 +1075,6 @@
                 index += 1;
             }
             [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
-
         }
     }];
     if (indexPaths.count) {

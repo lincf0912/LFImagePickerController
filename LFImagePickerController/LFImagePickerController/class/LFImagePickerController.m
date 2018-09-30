@@ -38,6 +38,7 @@
 /** 预览模式，临时存储 */
 @property (nonatomic, strong) LFPhotoPreviewController *previewVc;
 @property (nonatomic, strong) LFPhotoPickerController *photoPickerVc;
+@property (nonatomic, assign) BOOL isSystemAsset;
 
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
 
@@ -165,6 +166,7 @@
     self = [super init];
     if (self) {
         [self defaultConfig];
+        _isSystemAsset = YES;
         _isPreview = YES;
 
         NSMutableArray *models = [NSMutableArray array];
@@ -426,16 +428,17 @@
         [self setViewControllers:@[self.photoPickerVc] animated:YES];
     } else
     if (self.previewVc) {
-        if (self.previewVc.isPhotoPreview) {
-            [self setViewControllers:@[self.previewVc] animated:YES];
-        } else {
+        if (self.isSystemAsset) {
             LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
             [self setViewControllers:@[photoPickerVc] animated:NO];
             [photoPickerVc pushPhotoPrevireViewController:self.previewVc];
+        } else {
+            [self setViewControllers:@[self.previewVc] animated:YES];
         }
     }
     self.photoPickerVc = nil;
     self.previewVc = nil;
+    self.isSystemAsset = NO;
 }
 
 - (void)setColumnNumber:(NSUInteger)columnNumber {

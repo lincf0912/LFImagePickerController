@@ -19,7 +19,11 @@
 
 - (UIImage *)lf_fastestCompressImageWithSize:(CGFloat)size imageSize:(NSUInteger)imageSize
 {
-    UIImage *compressedImage = [UIImage imageWithData:[self lf_fastestCompressImageSize:size imageSize:imageSize] scale:[UIScreen mainScreen].scale];
+    NSData *imageData = [self lf_fastestCompressImageSize:size imageSize:imageSize];
+    UIImage *compressedImage = nil;
+    if (imageData) {
+        compressedImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
+    }
     if (!compressedImage) {
         return self;
     }
@@ -43,22 +47,14 @@
     /** 临时图片 */
     UIImage *compressedImage = self;
     CGFloat targetSize = size * 1024; // 压缩目标大小
-    CGFloat defaultPercent = 0.8f; // 压缩系数
+    CGFloat defaultPercent = 0.65f; // 压缩系数
     CGFloat percent = defaultPercent;
-    if (size <= 10) {
-        percent = 0.01;
-    }
     /** 微调参数 */
     NSInteger microAdjustment = 8*1024;
     /** 设备分辨率 */
     CGSize pixel = [UIImage lf_appPixel];
     /** 缩放图片尺寸 */
     int MIN_UPLOAD_RESOLUTION = pixel.width * pixel.height;
-    if (size < 100) {
-        MIN_UPLOAD_RESOLUTION /= 2;
-    }
-    /** 缩放比例 */
-    float factor;
     /** 当前图片尺寸 */
     float currentResolution = self.size.height * self.size.width;
     
@@ -70,24 +66,54 @@
         imageData = LF_UIImageJPEGRepresentation(self, 1);
         imageLength = imageData.length;
         /** 没有需要压缩的必要，直接返回 */
-        if (imageLength <= targetSize) return imageData;
+        if (imageLength <= targetSize) return nil;
     } else {
         /** 没有需要压缩的必要，直接返回 */
-        if (imageLength <= targetSize) return LF_UIImageJPEGRepresentation(self, 1);
+        if (imageLength <= targetSize) return nil;
     }
     
     
-    /** 缩放图片 */
-    if (currentResolution > MIN_UPLOAD_RESOLUTION) {
-        factor = sqrt(currentResolution / MIN_UPLOAD_RESOLUTION) * 2;
-        compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
+    if (size < 100) {
+        /** 计算目标压缩占比 */
+        CGFloat targetProrate = targetSize / imageLength;
+        percent = MAX(MIN(targetProrate, percent), 0.01);
+        
+        float minSize = 200.f;
+        float factor = 1.f;
+        if (self.size.width > self.size.height) {
+            factor = minSize/self.size.height;
+        } else {
+            factor = minSize/self.size.width;
+        }
+        
+        compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width * factor, self.size.height * factor)];
+    } else if (size < 500) {
+        percent = 0.45f;
+        /** 缩放图片 */
+        if (currentResolution > MIN_UPLOAD_RESOLUTION) {
+            float factor = sqrt(currentResolution / MIN_UPLOAD_RESOLUTION) * 2;
+            compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
+        }
     }
+    
     
     /** 记录上一次的压缩大小 */
     NSInteger imageDatalength = 0;
     
+//    int index = 0;
+    
     /** 压缩核心方法 */
     do {
+        
+//        NSLog(@"compress %d", index++);
+        
+        if (imageDatalength > targetSize * 2) {
+            float scale = 0.8f;
+            CGSize newSize = CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale);
+            if (newSize.width*newSize.height > 200*200) {
+                compressedImage = [self lf_scaleWithSize:newSize];
+            }
+        }
         
         imageData = LF_UIImageJPEGRepresentation(compressedImage, percent);
         
@@ -149,6 +175,9 @@
 - (UIImage*)lf_scaleWithSize:(CGSize)newSize
 {
     
+    if (newSize.width*newSize.height > self.size.width*self.size.height) {
+        return self;
+    }
     //We prepare a bitmap with the new size
     UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
     

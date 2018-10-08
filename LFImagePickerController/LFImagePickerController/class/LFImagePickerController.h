@@ -114,12 +114,12 @@
 #pragma mark - option
 
 #pragma mark photo option
-/// Compressed image size (isSelectOriginalPhoto=YES,Invalid),Default is 100 in KB
-/// 压缩标清图的大小（没有勾选原图的情况有效）,默认为100 单位KB （只能压缩到接近该值的大小）
+/// Compressed image size (isSelectOriginalPhoto=YES,Invalid),Default is 100 in KB, not recommend changed it.
+/// 压缩标清图的大小（没有勾选原图的情况有效）,默认为100 单位KB （只能压缩到接近该值的大小）,不建议修改它
 @property (nonatomic,assign) float imageCompressSize;
 
-/// Compressed thumbnail image size,Default is 10 in KB. If it is 0, no thumbnails are generated.
-/// 压缩缩略图的大小,默认为10 单位KB. 如果为0则不会生成缩略图
+/// Compressed thumbnail image size,Default is 10 in KB, not recommend changed it. If it is 0, no thumbnails are generated.
+/// 压缩缩略图的大小,默认为10 单位KB ,不建议修改它. 如果为0则不会生成缩略图
 @property (nonatomic,assign) float thumbnailCompressSize;
 
 /// Select the maximum size of the photo,Default is 6 MB (in B unit)

@@ -1021,7 +1021,10 @@ static LFAssetManager *manager;
     }
 }
 
-- (void)getVideoResultWithAsset:(id)asset presetName:(NSString *)presetName completion:(void (^)(LFResultVideo *resultVideo))completion
+- (void)getVideoResultWithAsset:(id)asset
+                     presetName:(NSString *)presetName
+                          cache:(BOOL)cache
+                     completion:(void (^)(LFResultVideo *resultVideo))completion
 {
     NSString *name = nil;
     if ([asset isKindOfClass:[PHAsset class]]) {
@@ -1080,9 +1083,10 @@ static LFAssetManager *manager;
     
     NSString *videoPath = [[LFAssetManager CacheVideoPath] stringByAppendingPathComponent:name];
     /** 判断视频是否存在 */
-    if ([[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
+    if (cache && [[NSFileManager defaultManager] fileExistsAtPath:videoPath]) {
         if (VideoResultComplete) VideoResultComplete(videoPath);
     } else {
+        [[NSFileManager defaultManager] removeItemAtPath:videoPath error:nil];
         [self compressAndCacheVideoWithAsset:asset presetName:presetName completion:^(NSString *path) {
             if (VideoResultComplete) VideoResultComplete(path);
         }];

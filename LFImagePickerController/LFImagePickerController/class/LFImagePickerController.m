@@ -381,6 +381,7 @@
     self.allowEditing = YES;
 #endif
     self.sortAscendingByCreateDate = YES;
+    self.autoVideoCache = YES;
     self.autoDismiss = YES;
     self.supportAutorotate = NO;
     self.imageCompressSize = kCompressSize;

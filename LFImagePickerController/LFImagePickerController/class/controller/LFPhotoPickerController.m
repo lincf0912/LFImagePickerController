@@ -549,16 +549,19 @@
         [imagePickerVc showProgressHUD];
         NSMutableArray *resultArray = [NSMutableArray array];
         
-        
-        for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) { [resultArray addObject:@1];}
-        
-        
         __weak typeof(self) weakSelf = self;
         
         dispatch_globalQueue_async_safe(^{
             
             if (imagePickerVc.selectedModels.count) {
-                void (^photosComplete)(LFResultObject *, NSInteger) = ^(LFResultObject *result, NSInteger index) {
+                
+                for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) { [resultArray addObject:@0];}
+                
+                dispatch_group_t _group = dispatch_group_create();
+                int limitQueueCount = 2;
+                __block int queueCount = 0;
+                
+                void (^resultComplete)(LFResultObject *, NSInteger) = ^(LFResultObject *result, NSInteger index) {
                     
                     if (result) {
                         [resultArray replaceObjectAtIndex:index withObject:result];
@@ -567,25 +570,15 @@
                         LFResultObject *object = [LFResultObject errorResultObject:model.asset];
                         [resultArray replaceObjectAtIndex:index withObject:object];
                     }
-                    
-                    if ([resultArray containsObject:@1]) return;
-                    
-                    dispatch_main_async_safe(^{
-                        if (weakSelf == nil) return ;
-                        [imagePickerVc hideProgressHUD];
-                        if (imagePickerVc.autoDismiss) {
-                            [imagePickerVc dismissViewControllerAnimated:YES completion:^{
-                                [weakSelf callDelegateMethodWithResults:resultArray];
-                            }];
-                        } else {
-                            [weakSelf callDelegateMethodWithResults:resultArray];
-                        }
-                    });
+                    dispatch_group_leave(_group);
+                    queueCount--;
                 };
-                
                 
                 for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
                     LFAsset *model = imagePickerVc.selectedModels[i];
+                    
+                    dispatch_group_enter(_group);
+                    queueCount++;
                     
                     if (model.type == LFAssetMediaTypePhoto) {
 #ifdef LF_MEDIAEDIT
@@ -601,7 +594,7 @@
                                                                          /** 编辑图片保存到相册 */
                                                                          [[LFAssetManager manager] saveImageToCustomPhotosAlbumWithTitle:nil imageDatas:@[resultImage.originalData] complete:nil];
                                                                      }
-                                                                     photosComplete(resultImage, i);
+                                                                     resultComplete(resultImage, i);
                                                                  }];
                         } else {
 #endif
@@ -610,7 +603,7 @@
                                                                      isOriginal:imagePickerVc.isSelectOriginalPhoto
                                                                      completion:^(LFResultImage *resultImage) {
                                                                          
-                                                                         photosComplete(resultImage, i);
+                                                                         resultComplete(resultImage, i);
                                                                      }];
                             } else {
                                 [[LFAssetManager manager] getPhotoWithAsset:model.asset
@@ -620,7 +613,7 @@
                                                       thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
                                                                  completion:^(LFResultImage *resultImage) {
                                                                      
-                                                                     photosComplete(resultImage, i);
+                                                                     resultComplete(resultImage, i);
                                                                  }];
                             }
 #ifdef LF_MEDIAEDIT
@@ -635,18 +628,33 @@
                                     /** 编辑视频保存到相册 */
                                     [[LFAssetManager manager] saveVideoToCustomPhotosAlbumWithTitle:nil videoURLs:@[resultVideo.url] complete:nil];
                                 }
-                                photosComplete(resultVideo, i);
+                                resultComplete(resultVideo, i);
                             }];
                         } else {
 #endif
-                            [[LFAssetManager manager] getVideoResultWithAsset:model.asset presetName:imagePickerVc.videoCompressPresetName completion:^(LFResultVideo *resultVideo) {
-                                photosComplete(resultVideo, i);
+                            [[LFAssetManager manager] getVideoResultWithAsset:model.asset presetName:imagePickerVc.videoCompressPresetName cache:imagePickerVc.autoVideoCache completion:^(LFResultVideo *resultVideo) {
+                                resultComplete(resultVideo, i);
                             }];
 #ifdef LF_MEDIAEDIT
                         }
 #endif
                     }
+                    
+                    if (queueCount == limitQueueCount) {
+                        dispatch_group_wait(_group, DISPATCH_TIME_FOREVER);
+                    }
                 }
+                
+                dispatch_group_notify(_group, dispatch_get_main_queue(), ^{
+                    [imagePickerVc hideProgressHUD];
+                    if (imagePickerVc.autoDismiss) {
+                        [imagePickerVc dismissViewControllerAnimated:YES completion:^{
+                            [weakSelf callDelegateMethodWithResults:resultArray];
+                        }];
+                    } else {
+                        [weakSelf callDelegateMethodWithResults:resultArray];
+                    }
+                });
             } else {
                 dispatch_main_async_safe(^{
                     [imagePickerVc hideProgressHUD];
@@ -659,6 +667,7 @@
                     }
                 });
             }
+            
         });
     }
     

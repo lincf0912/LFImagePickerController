@@ -151,7 +151,10 @@
 
 /// Get video 获得视频
 - (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;
-- (void)getVideoResultWithAsset:(id)asset presetName:(NSString *)presetName completion:(void (^)(LFResultVideo *resultVideo))completion;
+- (void)getVideoResultWithAsset:(id)asset
+                     presetName:(NSString *)presetName
+                          cache:(BOOL)cache
+                     completion:(void (^)(LFResultVideo *resultVideo))completion;
 
 /**
  *  @author lincf, 16-06-15 13:06:26

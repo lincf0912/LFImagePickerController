@@ -51,7 +51,7 @@
 
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete
 {
-    [self encodeVideoWithAsset:asset outPath:outPath presetName:AVAssetExportPreset1280x720 complete:complete];
+    [self encodeVideoWithAsset:asset outPath:outPath presetName:nil complete:complete];
 }
 
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete
@@ -121,8 +121,14 @@
     if ([[NSFileManager defaultManager] fileExistsAtPath:outPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:outPath error:nil];
     }
+    
+    NSString *exprotPresetName = (presetName.length ? presetName : AVAssetExportPreset1280x720);
+    if (![[AVAssetExportSession exportPresetsCompatibleWithAsset:asset] containsObject:exprotPresetName]) {
+        exprotPresetName = AVAssetExportPresetHighestQuality;
+        NSLog(@"The video is not compatible with presetName. Use AVAssetExportPresetHighestQuality.");
+    }
 
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:(presetName.length ? presetName : AVAssetExportPreset1280x720)];
+    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:exprotPresetName];
     exportSession.outputURL = [NSURL fileURLWithPath:outPath];
     exportSession.videoComposition = waterMarkVideoComposition;
     exportSession.outputFileType = AVFileTypeQuickTimeMovie;

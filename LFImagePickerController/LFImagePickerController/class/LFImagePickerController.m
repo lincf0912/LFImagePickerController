@@ -466,7 +466,7 @@
 
 - (void)settingBtnClick {
     if (@available(iOS 8.0, *)){
-        if (@available(iOS 8.0, *)){
+        if (@available(iOS 10.0, *)){
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
         } else {
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];

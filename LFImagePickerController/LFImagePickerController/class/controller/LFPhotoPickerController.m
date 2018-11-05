@@ -562,7 +562,7 @@
                 for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) { [resultArray addObject:@0];}
                 
                 dispatch_group_t _group = dispatch_group_create();
-                int limitQueueCount = 2;
+                int limitQueueCount = 1;
                 __block int queueCount = 0;
                 __block CGFloat process = 0.f;
 

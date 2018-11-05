@@ -18,7 +18,7 @@
     UIView *_HUDContainer;
     UIActivityIndicatorView *_HUDIndicatorView;
     UILabel *_HUDLabel;
-    
+    UIProgressView *_ProgressView;
     
     UIStatusBarStyle _originStatusBarStyle;
 }
@@ -259,7 +259,11 @@
     }
 }
 
-- (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop
+- (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop {
+    [self showProgressHUDText:text isTop:isTop needProcess:NO];
+}
+
+- (void)showProgressHUDText:(NSString *)text isTop:(BOOL)isTop needProcess:(BOOL)needProcess
 {
     [self hideProgressHUD];
     
@@ -288,7 +292,14 @@
         [_HUDContainer addSubview:_HUDIndicatorView];
         [_progressHUD addSubview:_HUDContainer];
     }
-    
+    if (needProcess) {
+        _HUDContainer.frame = CGRectMake(([[UIScreen mainScreen] bounds].size.width - 120) / 2, ([[UIScreen mainScreen] bounds].size.height - 90) / 2, 120.f, 100.f);
+        if (!_ProgressView) {
+            _ProgressView = [[UIProgressView alloc] initWithFrame:CGRectMake(10.f, CGRectGetMaxY(_HUDLabel.frame), CGRectGetWidth(_HUDContainer.frame)-20.f, 2.5f)];
+            [_HUDContainer addSubview:_ProgressView];
+        }
+    }
+
     _HUDLabel.text = text ? text : self.processHintStr;
     
     [_HUDIndicatorView startAnimating];
@@ -311,7 +322,16 @@
     if (_progressHUD) {
         [_HUDIndicatorView stopAnimating];
         [_progressHUD removeFromSuperview];
+        [_ProgressView removeFromSuperview];
     }
+}
+
+- (void)showNeedProgressHUD {
+    [self showProgressHUDText:nil isTop:NO needProcess:YES];
+}
+
+- (void)setProcess:(CGFloat)process {
+    [_ProgressView setProgress:process animated:YES];
 }
 
 #pragma mark - UINavigationController Delegate Methods

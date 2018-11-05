@@ -68,4 +68,6 @@
 - (void)showProgressHUD;
 - (void)hideProgressHUD;
 
+- (void)showNeedProgressHUD;
+- (void)setProcess:(CGFloat)process;
 @end

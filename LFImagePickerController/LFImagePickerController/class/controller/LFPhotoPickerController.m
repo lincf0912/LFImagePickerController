@@ -546,7 +546,11 @@
     if (self.doneButtonClickBlock) {
         self.doneButtonClickBlock();
     } else {
-        [imagePickerVc showProgressHUD];
+        if (imagePickerVc.selectedModels.count == 1) {
+            [imagePickerVc showProgressHUD];
+        } else {
+            [imagePickerVc showNeedProgressHUD];
+        }
         NSMutableArray *resultArray = [NSMutableArray array];
         
         __weak typeof(self) weakSelf = self;
@@ -560,9 +564,9 @@
                 dispatch_group_t _group = dispatch_group_create();
                 int limitQueueCount = 2;
                 __block int queueCount = 0;
-                
+                __block CGFloat process = 0.f;
+
                 void (^resultComplete)(LFResultObject *, NSInteger) = ^(LFResultObject *result, NSInteger index) {
-                    
                     if (result) {
                         [resultArray replaceObjectAtIndex:index withObject:result];
                     } else {
@@ -570,16 +574,17 @@
                         LFResultObject *object = [LFResultObject errorResultObject:model.asset];
                         [resultArray replaceObjectAtIndex:index withObject:object];
                     }
+                    dispatch_main_async_safe(^{
+                        process += 1.f;
+                        [imagePickerVc setProcess:process/resultArray.count];
+                    });
                     dispatch_group_leave(_group);
                     queueCount--;
                 };
-                
                 for (NSInteger i = 0; i < imagePickerVc.selectedModels.count; i++) {
                     LFAsset *model = imagePickerVc.selectedModels[i];
-                    
                     dispatch_group_enter(_group);
                     queueCount++;
-                    
                     if (model.type == LFAssetMediaTypePhoto) {
 #ifdef LF_MEDIAEDIT
                         LFPhotoEdit *photoEdit = [[LFPhotoEditManager manager] photoEditForAsset:model];
@@ -639,21 +644,21 @@
                         }
 #endif
                     }
-                    
                     if (queueCount == limitQueueCount) {
                         dispatch_group_wait(_group, DISPATCH_TIME_FOREVER);
                     }
                 }
-                
                 dispatch_group_notify(_group, dispatch_get_main_queue(), ^{
-                    [imagePickerVc hideProgressHUD];
-                    if (imagePickerVc.autoDismiss) {
-                        [imagePickerVc dismissViewControllerAnimated:YES completion:^{
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [imagePickerVc hideProgressHUD];
+                        if (imagePickerVc.autoDismiss) {
+                            [imagePickerVc dismissViewControllerAnimated:YES completion:^{
+                                [weakSelf callDelegateMethodWithResults:resultArray];
+                            }];
+                        } else {
                             [weakSelf callDelegateMethodWithResults:resultArray];
-                        }];
-                    } else {
-                        [weakSelf callDelegateMethodWithResults:resultArray];
-                    }
+                        }
+                    });
                 });
             } else {
                 dispatch_main_async_safe(^{

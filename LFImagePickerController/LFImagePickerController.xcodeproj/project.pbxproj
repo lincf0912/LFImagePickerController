@@ -275,7 +275,6 @@
 				6F1201BC1E5183E000EA2198 /* controller */,
 				6F1201A71E5140C900EA2198 /* LFImagePickerController.h */,
 				6F1201A81E5140C900EA2198 /* LFImagePickerController.m */,
-				C733DC9D209454D700FB7C50 /* LFImagePickerController+property.h */,
 				6F1201C01E51884B00EA2198 /* LFLayoutPickerController.h */,
 				6F1201C11E51884B00EA2198 /* LFLayoutPickerController.m */,
 				6F1201A51E51404400EA2198 /* LFImagePickerController.bundle */,
@@ -347,6 +346,7 @@
 				6FF2861B1E5FFF170008FB5B /* LFImagePickerHeader.m */,
 				6F3378EE1EDFC0DB00DAB709 /* LFImagePickerPublicHeader.h */,
 				6F1699371F176742008B1818 /* LFResultObject_property.h */,
+				C733DC9D209454D700FB7C50 /* LFImagePickerController+property.h */,
 			);
 			path = define;
 			sourceTree = "<group>";

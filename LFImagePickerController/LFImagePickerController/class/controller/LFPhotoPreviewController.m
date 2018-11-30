@@ -606,11 +606,22 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 }
             }
             if (self.alwaysShowPreviewBar) {
-                NSInteger index = [_previewBar.dataSource indexOfObject:model];
-                if (index != NSNotFound) {
-                    [imagePickerVc.selectedModels insertObject:model atIndex:index];
-                } else {
+                NSArray *dataSource = _previewBar.dataSource;
+                NSInteger index = [dataSource indexOfObject:model];
+                if (imagePickerVc.selectedModels.count == 0) {
                     [imagePickerVc.selectedModels addObject:model];
+                } else {
+                    for (NSInteger k=0; k<imagePickerVc.selectedModels.count; k++) {
+                        LFAsset *selectedModel = imagePickerVc.selectedModels[k];
+                        NSInteger selectedIndex = [dataSource indexOfObject:selectedModel];
+                        if (selectedIndex > index) {
+                            [imagePickerVc.selectedModels insertObject:model atIndex:k];
+                            break;
+                        } else if (k == imagePickerVc.selectedModels.count-1) {
+                            [imagePickerVc.selectedModels addObject:model];
+                            break;
+                        }
+                    }
                 }
             } else {
                 [imagePickerVc.selectedModels addObject:model];

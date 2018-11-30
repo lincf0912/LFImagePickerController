@@ -75,7 +75,9 @@ static LFGifPlayerManager *_sharedInstance = nil;
     for (NSString *key in self.gifSourceMapTable) {
         GifSource *ref = [self.gifSourceMapTable objectForKey:key];
         if (ref) {
-            CFRelease(ref.gifSourceRef);
+            if (ref.gifSourceRef) {
+                CFRelease(ref.gifSourceRef);                
+            }
             ref.execution = nil;
             ref.fail = nil;
             ref = nil;
@@ -103,7 +105,9 @@ static LFGifPlayerManager *_sharedInstance = nil;
     GifSource *ref = [self.gifSourceMapTable objectForKey:key];
     if (ref) {
         [self.gifSourceMapTable removeObjectForKey:key];
-        CFRelease(ref.gifSourceRef);
+        if (ref.gifSourceRef) {
+            CFRelease(ref.gifSourceRef);
+        }
         ref.execution = nil;
         ref.fail = nil;
         ref = nil;

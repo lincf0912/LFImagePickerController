@@ -170,12 +170,12 @@
         
         if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) {
             _videoImgView.hidden = YES;
-            self.timeLength.text = @"GIF";
+            self.timeLength.text = NSLocalizedString(@"GIF", nil);
             self.timeLength.textAlignment = NSTextAlignmentRight;
             _bottomView.hidden = NO;
         } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
             _videoImgView.hidden = YES;
-            self.timeLength.text = @"Live";
+            self.timeLength.text = NSLocalizedString(@"Live", nil);
             self.timeLength.textAlignment = NSTextAlignmentRight;
             _bottomView.hidden = NO;
         } else if (self.displayPhotoName) {

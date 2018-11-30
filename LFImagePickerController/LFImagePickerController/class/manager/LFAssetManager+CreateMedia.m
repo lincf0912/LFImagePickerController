@@ -71,8 +71,9 @@ NSString *const CreateMediaFolder = @"LFAssetManager.CreateMedia";
             userInfo = @{
                          NSLocalizedDescriptionKey: NSLocalizedString(@"Could not finalize image destination", nil)
                          };
-            
-            *error = [[NSError alloc] initWithDomain:@"LFAssetManager.CreateMedia.gif.error" code:-1 userInfo:userInfo];
+            if (error) {
+                *error = [[NSError alloc] initWithDomain:@"LFAssetManager.CreateMedia.gif.error" code:-1 userInfo:userInfo];                
+            }
             return nil;
         }
         

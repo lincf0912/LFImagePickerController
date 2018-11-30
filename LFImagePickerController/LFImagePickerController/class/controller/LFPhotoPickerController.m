@@ -407,7 +407,7 @@
         [_previewButton setTitleColor:toolbarTitleColorDisabled forState:UIControlStateDisabled];
         _previewButton.enabled = imagePickerVc.selectedModels.count;
         
-        buttonX = CGRectGetMaxX(_previewButton.frame);
+//        buttonX = CGRectGetMaxX(_previewButton.frame);
     }
     
     

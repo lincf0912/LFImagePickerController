@@ -68,6 +68,9 @@
     
     NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
     AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
+    if (videoTrack == nil) {
+        complete(NO, nil);
+    }
     
     AVMutableVideoComposition *waterMarkVideoComposition;
     
@@ -172,9 +175,14 @@
     if(!thumbnailImageRef)
         NSLog(@"thumbnailImageGenerationError %@",thumbnailImageGenerationError);
     
-    UIImage *thumbnailImage = thumbnailImageRef ? [[UIImage alloc]initWithCGImage:thumbnailImageRef] : nil;
+    if (thumbnailImageRef) {
+        UIImage *thumbnailImage = [[UIImage alloc]initWithCGImage:thumbnailImageRef];
+        CGImageRelease(thumbnailImageRef);
+        
+        return thumbnailImage;
+    }
     
-    return thumbnailImage;
+    return nil;
 }
 
 + (void)GIFImageForVideo:(NSURL *)videoURL complete:(void (^)(UIImage *gifImage))complete

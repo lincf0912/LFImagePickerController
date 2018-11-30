@@ -1026,7 +1026,7 @@ static LFAssetManager *manager;
                           cache:(BOOL)cache
                      completion:(void (^)(LFResultVideo *resultVideo))completion
 {
-    NSString *name = nil;
+    NSString *name = @"default.mp4";
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
     } else if ([asset isKindOfClass:[ALAsset class]]) {
@@ -1114,7 +1114,7 @@ static LFAssetManager *manager;
     }
     
     NSString *cache = [LFAssetManager CacheVideoPath];
-    NSString *name = nil;
+    NSString *name = @"default.mp4";
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
     } else if ([asset isKindOfClass:[ALAsset class]]) {

@@ -115,6 +115,9 @@ static LFPhotoEditManager *manager;
 {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
+        CGFloat thumbnailCompress = (thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize);
+        CGFloat sourceCompress = (compressSize <=0 ? kCompressSize : compressSize);
+        
         LFPhotoEdit *photoEdit = [self photoEditForAsset:asset];
         NSString *imageName = asset.name;
         
@@ -137,8 +140,12 @@ static LFPhotoEditManager *manager;
             }
         } else {
             if (!isOriginal) { /** 标清图 */
-                sourceData = [source lf_fastestCompressImageDataWithSize:(compressSize <=0 ? kCompressSize : compressSize) imageSize:sourceData.length];
-                source = [UIImage LF_imageWithImageData:sourceData];
+                NSData *newSourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress imageSize:sourceData.length];
+                if (newSourceData) {
+                    /** 可压缩的 */
+                    sourceData = newSourceData;
+                    source = [UIImage LF_imageWithImageData:sourceData];
+                }
             }
         }
         /** 图片宽高 */
@@ -161,7 +168,13 @@ static LFPhotoEditManager *manager;
 //                CGFloat th_pixelWidth = MIN(80, imageSize.width*0.5) * 2.0; // scale
 //                CGFloat th_pixelHeight = th_pixelWidth / aspectRatio;
 //                thumbnail = [source lf_scaleToSize:CGSizeMake(th_pixelWidth, th_pixelHeight)];
-                thumbnailData = [source lf_fastestCompressImageDataWithSize:(thumbnailCompressSize <=0 ? kThumbnailCompressSize : thumbnailCompressSize) imageSize:sourceData.length];
+                NSData *newThumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:sourceData.length];
+                if (newThumbnailData) {
+                    /** 可压缩的 */
+                    thumbnailData = newThumbnailData;
+                } else {
+                    thumbnailData = [NSData dataWithData:sourceData];
+                }
                 thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
             }
         }

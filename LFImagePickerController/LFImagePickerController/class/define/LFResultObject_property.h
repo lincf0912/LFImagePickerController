@@ -16,6 +16,8 @@
 @property (nonatomic, strong) id asset;
 /** 详情 */
 @property (nonatomic, strong) LFResultInfo *info;
+/** 错误 */
+@property (nonatomic, strong) NSError *error;
 
 @end
 

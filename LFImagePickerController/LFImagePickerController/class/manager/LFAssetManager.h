@@ -113,7 +113,7 @@
  *  @param asset      PHAsset／ALAsset
  *  @param isOriginal 是否原图
  *  @param pickingGif 是否需要处理GIF图片
- *  @param completion 返回block 顺序：缩略图、原图、图片数据字典
+ *  @param completion 返回block 顺序：缩略图、原图、图片数据字典 若返回LFResultObject对象则获取error错误信息。
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
@@ -128,7 +128,7 @@
  @param pickingGif 是否需要处理GIF图片
  @param compressSize 非原图的压缩大小
  @param thumbnailCompressSize 缩略图压缩大小
- @param completion 返回block 顺序：缩略图、标清图、图片数据字典
+ @param completion 返回block 顺序：缩略图、标清图、图片数据字典 若返回LFResultObject对象则获取error错误信息。
  */
 - (void)getPhotoWithAsset:(id)asset
                isOriginal:(BOOL)isOriginal
@@ -178,7 +178,6 @@
 - (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset;
 
 - (NSString *)getAssetIdentifier:(id)asset;
-- (BOOL)isCameraRollAlbum:(NSString *)albumName;
 
 /// 检查照片大小是否满足最小要求
 - (BOOL)isPhotoSelectableWithAsset:(id)asset;

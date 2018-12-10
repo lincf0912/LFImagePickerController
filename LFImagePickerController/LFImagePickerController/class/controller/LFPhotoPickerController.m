@@ -260,7 +260,7 @@
     /** 可能没有model的情况，补充赋值 */
     self.navigationItem.title = _model.name;
     [imagePickerVc hideProgressHUD];
-//    _showTakePhotoBtn = (([[LFAssetManager manager] isCameraRollAlbum:_model.name]) && imagePickerVc.allowTakePicture);
+
     _showTakePhotoBtn = imagePickerVc.allowTakePicture;
     
     if (_models.count == 0 && !_showTakePhotoBtn) {

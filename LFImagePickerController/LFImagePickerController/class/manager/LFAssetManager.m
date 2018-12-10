@@ -80,21 +80,16 @@ static LFAssetManager *manager;
         for (PHAssetCollection *collection in smartAlbums) {
             // 有可能是PHCollectionList类的的对象，过滤掉
             if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
-            if ([self isCameraRollAlbum:collection.localizedTitle]) {
-                PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-                model = [self modelWithResult:fetchResult album:collection];
-                if (completion) completion(model);
-                break;
-            }
+            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
+            model = [self modelWithResult:fetchResult album:collection];
+            if (completion) completion(model);
+            break;
         }
     } else {
-        [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
-            if ([self isCameraRollAlbum:name]) {
-                model = [self modelWithResult:group album:nil];
-                if (completion) completion(model);
-                *stop = YES;
-            }
+        [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+            *stop = YES;
+            model = [self modelWithResult:group album:nil];
+            if (completion) completion(model);
         } failureBlock:nil];
     }
 }
@@ -108,23 +103,33 @@ static LFAssetManager *manager;
         
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
 
-        // 我的照片流 1.6.10重新加入..
+        
+        PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumUserLibrary options:nil];
+        PHAssetCollection *userCollection = nil;
+        for (PHAssetCollection *collection in userAlbums) {
+            // 有可能是PHCollectionList类的的对象，过滤掉
+            if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
+            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
+            [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
+            userCollection = collection;
+        }
+        
+        PHFetchResult *anyAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
         PHFetchResult *myPhotoStreamAlbum = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumMyPhotoStream options:nil];
-        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
         PHFetchResult *syncedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
-        PHFetchResult *sharedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumMyPhotoStream options:nil];
-        NSArray *allAlbums = @[myPhotoStreamAlbum,smartAlbums,syncedAlbums,sharedAlbums];
+        PHFetchResult *sharedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumCloudShared options:nil];
+        PHFetchResult *regularAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+        
+        NSArray *allAlbums = @[anyAlbums,myPhotoStreamAlbum,syncedAlbums,sharedAlbums,regularAlbums];
         for (PHFetchResult *fetchResult in allAlbums) {
             for (PHAssetCollection *collection in fetchResult) {
                 // 有可能是PHCollectionList类的的对象，过滤掉
                 if (![collection isKindOfClass:[PHAssetCollection class]]) continue;
-                PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-//                if ([collection.localizedTitle containsString:@"Deleted"] || [collection.localizedTitle isEqualToString:@"最近删除"]) continue;
-                if ([self isCameraRollAlbum:collection.localizedTitle]) {
-                    [albumArr insertObject:[self modelWithResult:fetchResult album:collection] atIndex:0];
-                } else {
-                    [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
+                if ([userCollection isEqual:collection]) {
+                    continue;
                 }
+                PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
+                [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
             }
         }
         if (completion) completion(albumArr);
@@ -133,16 +138,9 @@ static LFAssetManager *manager;
             if (group == nil) {
                 if (completion) completion(albumArr);
             }
-//            if ([group numberOfAssets] < 1) return;
-            NSString *name = [group valueForProperty:ALAssetsGroupPropertyName];
-            if ([self isCameraRollAlbum:name]) {
+            ALAssetsGroupType type = [[group valueForProperty:ALAssetsGroupPropertyType] integerValue];
+            if (type == ALAssetsGroupSavedPhotos) {
                 [albumArr insertObject:[self modelWithResult:group album:nil] atIndex:0];
-            } else if ([name isEqualToString:@"My Photo Stream"] || [name isEqualToString:@"我的照片流"]) {
-                if (albumArr.count) {
-                    [albumArr insertObject:[self modelWithResult:group album:nil] atIndex:1];
-                } else {
-                    [albumArr addObject:[self modelWithResult:group album:nil]];
-                }
             } else {
                 [albumArr addObject:[self modelWithResult:group album:nil]];
             }

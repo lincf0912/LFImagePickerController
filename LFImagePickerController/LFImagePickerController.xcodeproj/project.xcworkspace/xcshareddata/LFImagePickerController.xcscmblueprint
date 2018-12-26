@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D7792E7CB68C7C3F1E6097FDB1CB94249FE5ECBD",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "D7792E7CB68C7C3F1E6097FDB1CB94249FE5ECBD" : 9223372036854775807,
+    "EF1219F06EDCAAEE594E0C040FAACE941D64CB34" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "F2083490-489F-46B7-A41C-ACAEFAB8A981",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "D7792E7CB68C7C3F1E6097FDB1CB94249FE5ECBD" : "LFImagePickerController\/",
+    "EF1219F06EDCAAEE594E0C040FAACE941D64CB34" : "MEMobileV2\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "LFImagePickerController",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "LFImagePickerController.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/lincf0912\/LFImagePickerController.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D7792E7CB68C7C3F1E6097FDB1CB94249FE5ECBD"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "ssh:\/\/miracles.gnway.cc:2222\/git\/ios\/MEMobileV2\/.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "EF1219F06EDCAAEE594E0C040FAACE941D64CB34"
+    }
+  ]
+}

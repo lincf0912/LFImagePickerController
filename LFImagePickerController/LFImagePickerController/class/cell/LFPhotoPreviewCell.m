@@ -220,8 +220,6 @@
     
     if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
 
-        /** 定义最小尺寸,判断为长图，则使用放大处理 */
-        CGFloat minimumSize = 50.f;
 
         UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
         if (@available(iOS 11.0, *)) {
@@ -229,6 +227,8 @@
         }
         CGSize scrollViewSize = self.scrollView.size;
         scrollViewSize.height -= (ios11Safeinsets.top+ios11Safeinsets.bottom);
+        /** 定义最小尺寸,判断为长图，则使用放大处理 */
+        CGFloat minimumSize = scrollViewSize.width;
         CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:scrollViewSize isBoth:NO];
         
         BOOL isLongImage = (minimumSize > MIN(newSize.width, newSize.height));

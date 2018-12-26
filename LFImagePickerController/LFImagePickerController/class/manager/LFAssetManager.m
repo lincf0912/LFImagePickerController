@@ -730,8 +730,6 @@ static LFAssetManager *manager;
                     sourceData = imageData;
                 }
                 
-                NSData *originalData = sourceData ?: imageData;
-                
                 /** 图片宽高 */
                 CGSize imageSize = source.size;
                 
@@ -740,7 +738,7 @@ static LFAssetManager *manager;
                 result.thumbnailImage = thumbnail;
                 result.thumbnailData = thumbnailData;
                 result.originalImage = source;
-                result.originalData = originalData;
+                result.originalData = sourceData;
                 result.subMediaType = mediaType;
                 
                 LFResultInfo *info = [LFResultInfo new];
@@ -749,7 +747,7 @@ static LFAssetManager *manager;
                 /** 图片文件名 */
                 info.name = imageName;
                 /** 图片大小 */
-                info.byte = originalData.length;
+                info.byte = sourceData.length;
                 /** 图片宽高 */
                 info.size = imageSize;
                 

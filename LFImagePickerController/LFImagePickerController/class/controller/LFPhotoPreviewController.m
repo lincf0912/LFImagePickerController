@@ -596,7 +596,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #else
                 NSTimeInterval duration = model.duration;
 #endif
-                if (duration > imagePickerVc.maxVideoDuration) {
+                if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration) {
                     if (imagePickerVc.maxVideoDuration < 60) {
                         [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
                     } else {
@@ -708,7 +708,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #else
                 NSTimeInterval duration = model.duration;
 #endif
-                if (duration > imagePickerVc.maxVideoDuration) {
+                if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration) {
                     if (imagePickerVc.maxVideoDuration < 60) {
                         [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration]];
                     } else {
@@ -1041,10 +1041,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         if (imagePickerVc.maxVideosCount > 1) {
             /** 默认选中编辑后的视频 */
-            if (duration > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
+            if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration && _selectButton.isSelected) {
                 [self select:_selectButton];
             } else if (videoEdit.editPreviewImage && !_selectButton.isSelected) {
-                if (duration <= imagePickerVc.maxVideoDuration) {
+                if (lf_videoDuration(duration) <= imagePickerVc.maxVideoDuration) {
                     [self select:_selectButton];
                 }
             }
@@ -1074,7 +1074,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #else
         NSTimeInterval duration = model.duration;
 #endif
-        if (duration > imagePickerVc.maxVideoDuration) {
+        if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration) {
             if (imagePickerVc.maxVideoDuration < 60) {
                 _naviTipsLabel.text = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)imagePickerVc.maxVideoDuration];
             } else {

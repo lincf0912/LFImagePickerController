@@ -13,11 +13,11 @@
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 #import "UIImage+LFCommon.h"
-#import "LFPhotoEditManager.h"
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEdit.h"
-#import "LFVideoEditManager.h"
+#import "LFPhotoEditManager.h"
 #import "LFVideoEdit.h"
+#import "LFVideoEditManager.h"
 #endif
 
 #pragma mark - /// 宫格图片视图
@@ -189,10 +189,10 @@
 #ifdef LF_MEDIAEDIT
         LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
         if (videoEdit.editPosterImage) {
-            self.timeLength.text = [self getNewTimeFromDurationSecond:ceil(videoEdit.duration)];
+            self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(videoEdit.duration)];
         } else {
 #endif
-            self.timeLength.text = [self getNewTimeFromDurationSecond:ceil(self.model.duration)];
+            self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(self.model.duration)];
 #ifdef LF_MEDIAEDIT
         }
 #endif

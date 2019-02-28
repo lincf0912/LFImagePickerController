@@ -800,7 +800,7 @@
 #else
                     NSTimeInterval duration = cellModel.duration;
 #endif
-                    if (duration > weakImagePickerVc.maxVideoDuration) {
+                    if (lf_videoDuration(duration) > weakImagePickerVc.maxVideoDuration) {
                         if (weakImagePickerVc.maxVideoDuration < 60) {
                             [weakImagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_maxSelectVideoTipText_second"], (int)weakImagePickerVc.maxVideoDuration]];
                         } else {

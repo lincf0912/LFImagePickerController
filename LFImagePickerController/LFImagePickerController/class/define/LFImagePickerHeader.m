@@ -8,6 +8,12 @@
 
 #import "LFImagePickerHeader.h"
 
+/** 视频时间（取整：四舍五入） */
+NSTimeInterval lf_videoDuration(NSTimeInterval duration)
+{
+    return (NSInteger)(duration+0.5f)*1.f;
+}
+
 /** 标清图压缩大小 */
 float const kCompressSize = 100.f;
 /** 缩略图压缩大小 */

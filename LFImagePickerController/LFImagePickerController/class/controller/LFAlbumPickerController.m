@@ -67,11 +67,7 @@
     imagePickerVc.isSelectOriginalPhoto = imagePickerVc.defaultSelectOriginalPhoto;
 
 #ifdef LF_MEDIAEDIT
-    if (imagePickerVc.allowEditing || imagePickerVc.syncAlbum) {
-        [_tableView reloadData];
-    }
-#else
-    if (imagePickerVc.syncAlbum) {
+    if (imagePickerVc.allowEditing) {
         [_tableView reloadData];
     }
 #endif
@@ -202,6 +198,9 @@
         // Check for changes to the displayed album itself
         // (its existence and metadata, not its member assets).
         
+        NSMutableArray *deleteObjects = [NSMutableArray array];
+        NSMutableArray *changedObjects = [NSMutableArray array];
+        
         for (NSInteger i=0; i<self.albumArr.count; i++) {
             LFAlbum *album = self.albumArr[i];
             PHObjectChangeDetails *albumChanges = [changeInfo changeDetailsForObject:album.album];
@@ -209,12 +208,53 @@
                 // Fetch the new album and update the UI accordingly.
                 [album changedAlbum:[albumChanges objectAfterChanges]];
                 if (albumChanges.objectWasDeleted) {
-                    [self.albumArr removeObjectAtIndex:i];
-                    i--;
+                    [deleteObjects addObject:album];
+                }
+            }
+            // Check for changes to the list of assets (insertions, deletions, moves, or updates).
+            PHFetchResultChangeDetails *collectionChanges = [changeInfo changeDetailsForFetchResult:album.result];
+            if (collectionChanges) {
+                // Get the new fetch result for future change tracking.
+                [album changedResult:collectionChanges.fetchResultAfterChanges];
+                
+                if (collectionChanges.hasIncrementalChanges)  {
+                    // Tell the collection view to animate insertions/deletions/moves
+                    // and to refresh any cells that have changed content.
+                    
+                    album.models = nil;
+                    album.posterAsset = nil;
+                    
+                    [changedObjects addObject:album];
                 }
             }
         }
-        [_tableView reloadData];
+        
+        if (deleteObjects.count || changedObjects.count) {
+            [_tableView beginUpdates];
+            if (deleteObjects.count) {
+                [self.albumArr removeObjectsInArray:deleteObjects];
+                NSMutableArray *indexPaths = [NSMutableArray array];
+                for (id object in deleteObjects) {
+                    NSInteger index = [self.albumArr indexOfObject:object];
+                    [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+                }
+                [_tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
+                deleteObjects = nil;
+            }
+            if (changedObjects.count) {
+                NSMutableArray *indexPaths = [NSMutableArray array];
+                for (id object in changedObjects) {
+                    NSInteger index = [self.albumArr indexOfObject:object];
+                    [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
+                }
+                [_tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
+                changedObjects = nil;
+            }
+            
+            [_tableView endUpdates];
+        }
+        
+        
     });
 }
 @end

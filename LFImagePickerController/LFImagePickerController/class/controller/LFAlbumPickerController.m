@@ -64,7 +64,7 @@
     /** 移除数据源 */
     [imagePickerVc.selectedModels removeAllObjects];
     /** 恢复原图 */
-    imagePickerVc.isSelectOriginalPhoto = NO;
+    imagePickerVc.isSelectOriginalPhoto = imagePickerVc.defaultSelectOriginalPhoto;
 
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing || imagePickerVc.syncAlbum) {

@@ -12,4 +12,6 @@
 
 @property (nonatomic, readonly) NSMutableArray<LFAsset *> *selectedModels;
 
+@property (nonatomic, readonly) BOOL defaultSelectOriginalPhoto;
+
 @end

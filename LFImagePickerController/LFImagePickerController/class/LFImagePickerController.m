@@ -42,6 +42,8 @@
 
 @property (nonatomic, strong) NSMutableArray<LFAsset *> *selectedModels;
 
+@property (nonatomic, readonly) BOOL defaultSelectOriginalPhoto;
+
 @end
 
 @implementation LFImagePickerController
@@ -462,6 +464,15 @@
 - (NSArray<LFAsset *> *)selectedObjects
 {
     return [self.selectedModels copy];
+}
+
+- (void)setIsSelectOriginalPhoto:(BOOL)isSelectOriginalPhoto
+{
+    _isSelectOriginalPhoto = isSelectOriginalPhoto;
+    if (!self.viewControllers.count) {
+        /** 已经显示UI，不接受入参 */
+        _defaultSelectOriginalPhoto = isSelectOriginalPhoto;
+    }
 }
 
 - (void)settingBtnClick {

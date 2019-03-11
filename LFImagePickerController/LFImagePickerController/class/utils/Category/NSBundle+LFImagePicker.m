@@ -7,7 +7,7 @@
 //
 
 #import "NSBundle+LFImagePicker.h"
-#import "LFLayoutPickerController.h"
+#import "LFImagePickerController.h"
 
 NSString *const LFImagePickerStrings = @"LFImagePickerController";
 
@@ -18,7 +18,7 @@ NSString *const LFImagePickerStrings = @"LFImagePickerController";
     static NSBundle *lfImagePickerBundle = nil;
     if (lfImagePickerBundle == nil) {
         // 这里不使用mainBundle是为了适配pod 1.x和0.x
-        lfImagePickerBundle = [NSBundle bundleWithPath:[[NSBundle bundleForClass:[LFLayoutPickerController class]] pathForResource:@"LFImagePickerController" ofType:@"bundle"]];
+        lfImagePickerBundle = [NSBundle bundleWithPath:[[NSBundle bundleForClass:[LFImagePickerController class]] pathForResource:LFImagePickerStrings ofType:@"bundle"]];
     }
     return lfImagePickerBundle;
 }

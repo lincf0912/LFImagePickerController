@@ -51,8 +51,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor whiteColor];
-    
     if (!_isPreview) { /** 非预览模式 */
         if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
             

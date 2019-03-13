@@ -777,6 +777,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 /** 当前显示的图片 */
                 [videoEditingVC setVideoAsset:cell.asset placeholderImage:cell.previewImage];
             }
+
+            NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
+            
+            if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration) {
+                videoEditingVC.defaultOperationType = LFVideoEditOperationType_clip;
+            }
+            
             videoEditingVC.delegate = self;
             if (imagePickerVc.videoEditLabrary) {
                 imagePickerVc.videoEditLabrary(videoEditingVC);

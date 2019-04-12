@@ -16,4 +16,7 @@
 
 @property (nonatomic, readonly) UITapGestureRecognizer *tap1;
 @property (nonatomic, readonly) UITapGestureRecognizer *tap2;
+
+@property (nonatomic, readwrite) UIImage *previewImage;
+
 @end

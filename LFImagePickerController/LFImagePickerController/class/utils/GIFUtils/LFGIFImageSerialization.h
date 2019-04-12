@@ -8,12 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-extern __attribute__((overloadable)) NSData * LF_UIImageGIFRepresentation(UIImage *image);
+extern __attribute__((overloadable)) NSData * _Nullable LF_UIImageGIFRepresentation(UIImage * _Nonnull image);
 
-extern __attribute__((overloadable)) NSData * LF_UIImageGIFRepresentation(UIImage *image, NSTimeInterval duration, NSUInteger loopCount, NSError * __autoreleasing *error);
+extern __attribute__((overloadable)) NSData * _Nullable LF_UIImageGIFRepresentation(UIImage * _Nonnull image, NSTimeInterval duration, NSUInteger loopCount, NSError * _Nullable __autoreleasing * _Nullable error);
 
-extern __attribute__((overloadable)) NSData * LF_UIImagePNGRepresentation(UIImage *image, CGFloat compressionQuality);
+extern __attribute__((overloadable)) NSData * _Nullable LF_UIImagePNGRepresentation(UIImage * _Nonnull image, CGFloat compressionQuality);
 
-extern __attribute__((overloadable)) NSData * LF_UIImageJPEGRepresentation(UIImage *image, CGFloat compressionQuality);
+extern __attribute__((overloadable)) NSData * _Nullable LF_UIImageJPEGRepresentation(UIImage * _Nonnull image, CGFloat compressionQuality);
 
-extern __attribute__((overloadable)) NSData * LF_UIImageRepresentation(UIImage *image, CGFloat compressionQuality, CFStringRef __nonnull type, NSError * __autoreleasing *error);
+extern __attribute__((overloadable)) NSData * _Nullable LF_UIImageRepresentation(UIImage * _Nonnull image, CGFloat compressionQuality, CFStringRef __nonnull type, NSError * _Nullable __autoreleasing * _Nullable error);

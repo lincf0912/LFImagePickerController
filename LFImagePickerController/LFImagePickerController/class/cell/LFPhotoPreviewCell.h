@@ -17,7 +17,7 @@
 @property (nonatomic, weak) id<LFPhotoPreviewCellDelegate> delegate;
 
 /** 当前展示的图片 */
-@property (nonatomic, readwrite) UIImage *previewImage;
+@property (nonatomic, readonly) UIImage *previewImage;
 
 - (void)willDisplayCell;
 - (void)didEndDisplayCell;

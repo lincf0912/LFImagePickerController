@@ -200,9 +200,6 @@ NSString *const CreateMediaFolder = @"LFAssetManager.CreateMedia";
         
         // 增加frame计数
         frameCount++;
-    }
-    
-    if(buffer!=NULL){
         CVPixelBufferRelease(buffer);
     }
     

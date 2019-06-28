@@ -30,6 +30,3 @@ NSString *const kImageInfoFileOriginalData = @"ImageInfoFileOriginalData";     /
 NSString *const kImageInfoFileThumbnailData = @"ImageInfoFileThumbnailData";     // 图片数据 缩略图
 NSString *const kImageInfoMediaType = @"ImageInfoMediaType";     // 图片类型
 
-@implementation LFImagePickerHeader
-
-@end

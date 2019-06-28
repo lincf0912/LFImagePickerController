@@ -42,7 +42,3 @@ extern float const kMaxPhotoBytes;
 /** 视频最大时长 */
 extern float const kMaxVideoDurationze;
 
-
-@interface LFImagePickerHeader : NSObject
-
-@end

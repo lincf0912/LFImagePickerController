@@ -371,10 +371,7 @@
     self.minVideosCount = self.minImagesCount;
     self.autoSelectCurrentImage = YES;
     self.allowPickingOriginalPhoto = YES;
-    self.allowPickingVideo = YES;
-    self.allowPickingImage = YES;
-    self.allowPickingGif = NO;
-    self.allowPickingLivePhoto = NO;
+    self.allowPickingType = LFPickingMediaTypePhoto | LFPickingMediaTypeVideo;
     self.allowTakePicture = YES;
     self.allowPreview = YES;
 #ifdef LF_MEDIAEDIT
@@ -407,10 +404,10 @@
     if (!_didPushPhotoPickerVc) {
         _didPushPhotoPickerVc = NO;
         LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-        if (self.allowPickingImage) {
-            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_photo"];
-        } else if (self.allowPickingVideo) {
+        if (self.allowPickingType == LFPickingMediaTypeVideo) { // only video
             albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_video"];
+        } else if (self.allowPickingType > 0 && !(self.allowPickingType & LFPickingMediaTypeVideo)) { // only photo
+            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_photo"];
         }
         albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
         if (_pushPhotoPickerVc) {

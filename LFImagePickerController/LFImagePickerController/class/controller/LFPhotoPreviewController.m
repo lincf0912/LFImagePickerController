@@ -270,7 +270,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _naviSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight)];
     [_naviBar addSubview:_naviSubBar];
     
-    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(8, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
+    _backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
     _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
     /** 判断是否预览模式 */
     if (self.isPhotoPreview) {
@@ -278,11 +278,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
         CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
-        _backButton.width = editCancelWidth;
+        _backButton.width = editCancelWidth+8;
+        _backButton.titleEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 0);
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
         [_backButton setImage:image forState:UIControlStateNormal];
-        _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50, 0, 0);
+        _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50+8, 0, 0);
     }
     [_backButton setTitleColor:imagePickerVc.barItemTextColor forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -586,7 +587,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     LFAsset *model = _models[_currentIndex];
     if (!selectButton.isSelected) {
         
-        void (^selectedItem)() = ^{
+        void (^selectedItem)(void) = ^{
 
             /** 检测是否超过视频最大时长 */
             if (model.type == LFAssetMediaTypeVideo) {
@@ -606,7 +607,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 }
             }
             if (self.alwaysShowPreviewBar) {
-                NSArray *dataSource = _previewBar.dataSource;
+                NSArray *dataSource = self->_previewBar.dataSource;
                 NSInteger index = [dataSource indexOfObject:model];
                 if (imagePickerVc.selectedModels.count == 0) {
                     [imagePickerVc.selectedModels addObject:model];
@@ -877,9 +878,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (model.type == LFAssetMediaTypeVideo) {
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell" forIndexPath:indexPath];
     } else {
-        if (imagePickerVc.allowPickingGif && model.subType == LFAssetSubMediaTypeGIF) {
+        if (imagePickerVc.allowPickingType & LFPickingMediaTypeGif && model.subType == LFAssetSubMediaTypeGIF) {
             cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewGifCell" forIndexPath:indexPath];
-        } else if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
+        } else if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
             cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell" forIndexPath:indexPath];
         } else {
             cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFPhotoPreviewCell" forIndexPath:indexPath];
@@ -956,19 +957,19 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     self.isHideMyNaviBar = !self.isHideMyNaviBar;
     CGFloat alpha = self.isHideMyNaviBar ? 0.f : 1.f;
     [UIView animateWithDuration:0.25f animations:^{
-        _naviBar.alpha = alpha;
-        _toolBar.alpha = alpha;
-        _naviTipsView.alpha = (_naviTipsLabel.text.length) ? alpha : 0.f;
-        CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
-        _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+        self->_naviBar.alpha = alpha;
+        self->_toolBar.alpha = alpha;
+        self->_naviTipsView.alpha = (self->_naviTipsLabel.text.length) ? alpha : 0.f;
+        CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
+        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
         /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
-        if (!(!self.alwaysShowPreviewBar && _previewBar.dataSource.count == 0)) {
-            _previewMainBar.alpha = alpha;
+        if (!(!self.alwaysShowPreviewBar && self->_previewBar.dataSource.count == 0)) {
+            self->_previewMainBar.alpha = alpha;
         }
         
         /** live photo 标记 */
-        if (imagePickerVc.allowPickingLivePhoto && cell.model.subType == LFAssetSubMediaTypeLivePhoto) {
-            _livePhotoSignView.alpha = alpha;
+        if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && cell.model.subType == LFAssetSubMediaTypeLivePhoto) {
+            self->_livePhotoSignView.alpha = alpha;
         }
     }];
 }
@@ -991,7 +992,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [[LFPhotoEditManager manager] setPhotoEdit:photoEdit forAsset:model];
         
         /** 当前页面只显示一张图片 */
-        LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+//        LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
         
         __weak typeof(self) weakSelf = self;
         if (photoEdit) { /** 编辑存在 */
@@ -1078,7 +1079,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     LFAsset *model = _models[_currentIndex];
     _selectButton.selected = [imagePickerVc.selectedModels containsObject:model];
     if (_selectButton.selected) {
-        NSString *text = [NSString stringWithFormat:@"%zd", [imagePickerVc.selectedModels indexOfObject:model]+1];
+        NSString *text = [NSString stringWithFormat:@"%d", (int)[imagePickerVc.selectedModels indexOfObject:model]+1];
         UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }
@@ -1127,9 +1128,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
     
     [UIView animateWithDuration:0.25f animations:^{
-        _naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (showTip ? 1.f : 0.f);
-        CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
-        _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+        self->_naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (showTip ? 1.f : 0.f);
+        CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
+        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
     }];
     
     
@@ -1182,11 +1183,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (!self.alwaysShowPreviewBar) {
         if (imagePickerVc.selectedModels.count) {
             [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = (self.isHideMyNaviBar ? 0.f : 1.f);
+                self->_previewMainBar.alpha = (self.isHideMyNaviBar ? 0.f : 1.f);
             }];
         } else {
             [UIView animateWithDuration:0.25f animations:^{
-                _previewMainBar.alpha = 0.f;
+                self->_previewMainBar.alpha = 0.f;
             }];
         }
     }
@@ -1195,15 +1196,15 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _previewBar.selectAsset = model;
     
     /** live photo 标记 */
-    if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
+    if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) {
         [self selectedLivePhotobadgeImageButton:!model.closeLivePhoto];
         if (self.isHideMyNaviBar) return;
         [UIView animateWithDuration:0.25f animations:^{
-            _livePhotoSignView.alpha = 1.f;
+            self->_livePhotoSignView.alpha = 1.f;
         }];
     } else {
         [UIView animateWithDuration:0.25f animations:^{
-            _livePhotoSignView.alpha = 0.f;
+            self->_livePhotoSignView.alpha = 0.f;
         }];
     }
 }
@@ -1242,7 +1243,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)showPhotoBytes {
     if (/* DISABLES CODE */ (1)==0) {
         [[LFAssetManager manager] getPhotosBytesWithArray:@[_models[_currentIndex]] completion:^(NSString *totalBytesStr, NSInteger totalBytes) {
-            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
+            self->_originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
         }];
     }
 }

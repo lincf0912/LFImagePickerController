@@ -300,7 +300,7 @@
 
 
 #pragma mark - Save the video to a custom album
-- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURLs:(NSArray <NSURL *>*)videoURLs complete:(void(^)(id asset, NSError *error))complete
+- (void)saveVideoToCustomPhotosAlbumWithTitle:(NSString *)title videoURLs:(NSArray <NSURL *>*)videoURLs complete:(void(^)(NSArray <id /* PHAsset/ALAsset */>*assets, NSError *error))complete
 {
     if ([self authorizationStatusAuthorized]) {
         if (@available(iOS 8.0, *)){

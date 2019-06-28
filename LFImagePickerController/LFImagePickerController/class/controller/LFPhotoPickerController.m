@@ -112,7 +112,7 @@
         dispatch_globalQueue_async_safe(^{
             
             long long start = [[NSDate date] timeIntervalSince1970] * 1000;
-            void (^initDataHandle)() = ^{
+            void (^initDataHandle)(void) = ^{
                 if (weakSelf.model) {
                     if (weakSelf.model.models.count) { /** 使用缓存数据 */
                         weakSelf.models = [NSMutableArray arrayWithArray:weakSelf.model.models];
@@ -128,7 +128,8 @@
                                 ascending = !imagePickerVc.sortAscendingByCreateDate;
                             }
                         }
-                        [[LFAssetManager manager] getAssetsFromFetchResult:weakSelf.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                        
+                        [[LFAssetManager manager] getAssetsFromFetchResult:weakSelf.model.result allowPickingType:imagePickerVc.allowPickingType fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                             /** 缓存数据 */
                             weakSelf.model.models = models;
                             weakSelf.models = [NSMutableArray arrayWithArray:models];
@@ -147,9 +148,9 @@
                 }
             };
             
-            if (_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
+            if (self->_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
                 if (imagePickerVc.defaultAlbumName) { /** 有指定相册 */
-                    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
+                    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingType ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
                         for (LFAlbum *album in models) {
                             if (album.count) {
                                 if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
@@ -163,7 +164,7 @@
                         initDataHandle();
                     }];
                 } else {
-                    [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
+                    [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingType fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
                         weakSelf.model = model;
                         long long end = [[NSDate date] timeIntervalSince1970] * 1000;
                         NSLog(@"Loading album time-consuming: %lld milliseconds", end - start);
@@ -283,9 +284,9 @@
     nonePhotoView.backgroundColor = [UIColor clearColor];
     
     NSString *text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noMediaTipText"];
-    if (!imagePickerVc.allowPickingImage && imagePickerVc.allowPickingVideo) {
+    if (imagePickerVc.allowPickingType == LFPickingMediaTypeVideo) { // only video
         text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noVideoTipText"];
-    } else if (imagePickerVc.allowPickingImage && !imagePickerVc.allowPickingVideo) {
+    } else if (imagePickerVc.allowPickingType > 0 && !(imagePickerVc.allowPickingType & LFPickingMediaTypeVideo)) { // only photo
         text = [NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_noPhotoTipText"];
     }
     UIFont *font = [UIFont systemFontOfSize:18];
@@ -603,7 +604,7 @@
                                                                  }];
                         } else {
 #endif
-                            if (imagePickerVc.allowPickingLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
+                            if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
                                 [[LFAssetManager manager] getLivePhotoWithAsset:model.asset
                                                                      isOriginal:imagePickerVc.isSelectOriginalPhoto
                                                                      completion:^(LFResultImage *resultImage) {
@@ -613,7 +614,7 @@
                             } else {
                                 [[LFAssetManager manager] getPhotoWithAsset:model.asset
                                                                  isOriginal:imagePickerVc.isSelectOriginalPhoto
-                                                                 pickingGif:imagePickerVc.allowPickingGif
+                                                                 pickingGif:imagePickerVc.allowPickingType & LFPickingMediaTypeGif
                                                                compressSize:imagePickerVc.imageCompressSize
                                                       thumbnailCompressSize:imagePickerVc.thumbnailCompressSize
                                                                  completion:^(LFResultImage *resultImage) {
@@ -791,7 +792,7 @@
         } else {
             // 2. select:check if over the maxImagesCount / 选择照片,检查是否超过了最大个数的限制
             
-            void (^selectedItem)() = ^{
+            void (^selectedItem)(void) = ^{
                 /** 检测是否超过视频最大时长 */
                 if (cellModel.type == LFAssetMediaTypeVideo) {
 #ifdef LF_MEDIAEDIT
@@ -872,8 +873,8 @@
     
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
     cell.photoSelImageName = imagePickerVc.photoNumberIconImageName;
-    cell.displayGif = imagePickerVc.allowPickingGif;
-    cell.displayLivePhoto = imagePickerVc.allowPickingLivePhoto;
+    cell.displayGif = imagePickerVc.allowPickingType&LFPickingMediaTypeGif;
+    cell.displayLivePhoto = imagePickerVc.allowPickingType&LFPickingMediaTypeLivePhoto;
     cell.displayPhotoName = imagePickerVc.displayImageFilename;
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 优先级低属性，当最大数量为1时只能点击 */
@@ -1064,7 +1065,7 @@
     if (imagePickerVc.selectedModels.count) {
         [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(LFAssetCell *cell, NSUInteger idx, BOOL * _Nonnull stop) {
             if ([cell isKindOfClass:[LFAssetCell class]] && [imagePickerVc.selectedModels containsObject:cell.model]) {
-                NSInteger index = [_models indexOfObject:cell.model];
+                NSInteger index = [self->_models indexOfObject:cell.model];
                 if (self->_showTakePhotoBtn && !imagePickerVc.sortAscendingByCreateDate) {
                     index += 1;
                 }
@@ -1248,7 +1249,7 @@
     if (/* DISABLES CODE */ (1)==0) {
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
         [[LFAssetManager manager] getPhotosBytesWithArray:imagePickerVc.selectedModels completion:^(NSString *totalBytesStr, NSInteger totalBytes) {
-            _originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
+            self->_originalPhotoLabel.text = [NSString stringWithFormat:@"(%@)",totalBytesStr];
         }];
     }
 }
@@ -1338,10 +1339,10 @@
         if (albumChanges) {
             // Fetch the new album and update the UI accordingly.
             [self.model changedAlbum:[albumChanges objectAfterChanges]];
-            self.navigationItem.title = _model.name;
+            self.navigationItem.title = self->_model.name;
             if (albumChanges.objectWasDeleted) {
                 
-                void (^showAlertView)() = ^{
+                void (^showAlertView)(void) = ^{
                     [imagePickerVc showAlertWithTitle:nil message:[NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_photoAlbunDeletedError"] complete:^{
                         if (imagePickerVc.viewControllers.count > 1) {
                             [imagePickerVc popToRootViewControllerAnimated:YES];
@@ -1385,7 +1386,7 @@
                         ascending = !imagePickerVc.sortAscendingByCreateDate;
                     }
                 }
-                [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingVideo:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
+                [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingType:imagePickerVc.allowPickingType fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
                     self.model.models = models;
                     self.models = [NSMutableArray arrayWithArray:models];
                 }];
@@ -1407,7 +1408,7 @@
                 
                 if (hasData1 != hasData2) {
                     [self.view.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-                    _shouldScrollToBottom = YES;
+                    self->_shouldScrollToBottom = YES;
                     [self initSubviews];
                 } else {
                     [self.collectionView reloadData];

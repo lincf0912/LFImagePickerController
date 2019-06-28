@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 typedef void (^lf_AlertViewBlock)(UIAlertView *alertView, NSInteger buttonIndex);
-typedef void (^lf_AlertViewDidShowBlock)();
+typedef void (^lf_AlertViewDidShowBlock)(void);
 
 @interface UIAlertView (LF_Block)
 //需要自定义初始化方法，调用Block

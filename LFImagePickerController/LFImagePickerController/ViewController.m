@@ -98,6 +98,7 @@
 
 
 - (IBAction)buttonActionNormal:(id)sender {
+//    [LFAssetManager cleanCacheVideoPath];
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
     imagePicker.allowTakePicture = NO;
 //    imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
@@ -106,8 +107,7 @@
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
-    imagePicker.allowPickingGif = YES; /** 支持GIF */
-    imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
+//    imagePicker.allowPickingType = LFPickingMediaTypeALL;
 //    imagePicker.autoSelectCurrentImage = NO; /** 关闭自动选中 */
 //    imagePicker.defaultAlbumName = @"123"; /** 指定默认显示相册 */
 //    imagePicker.displayImageFilename = YES; /** 显示文件名称 */
@@ -123,8 +123,7 @@
     imagePicker.allowTakePicture = NO;
     imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
-    imagePicker.allowPickingGif = YES; /** 支持GIF */
-    imagePicker.allowPickingLivePhoto = YES; /** 支持Live Photo */
+    imagePicker.allowPickingType = LFPickingMediaTypeALL;
     imagePicker.maxVideoDuration = 10; /** 10秒视频 */
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
         imagePicker.syncAlbum = YES; /** 实时同步相册 */
@@ -134,8 +133,8 @@
 
 - (IBAction)buttonActionPreviewAsset:(id)sender {
     int limit = 10;
-    [[LFAssetManager manager] getCameraRollAlbum:YES allowPickingImage:YES fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
-        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:YES allowPickingImage:YES fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
+    [[LFAssetManager manager] getCameraRollAlbum:LFPickingMediaTypeALL fetchLimit:limit ascending:YES completion:^(LFAlbum *model) {
+        [[LFAssetManager manager] getAssetsFromFetchResult:model.result allowPickingType:LFPickingMediaTypeALL fetchLimit:limit ascending:NO completion:^(NSArray<LFAsset *> *models) {
             NSMutableArray *array = [@[] mutableCopy];
             for (LFAsset *asset in models) {
                 [array addObject:asset.asset];
@@ -200,7 +199,7 @@
     self.isCreateGif = YES;
     
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
-    imagePicker.allowPickingVideo = NO;
+    imagePicker.allowPickingType = LFPickingMediaTypePhoto;
     imagePicker.allowTakePicture = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
@@ -208,7 +207,7 @@
     self.isCreateMP4 = YES;
     
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
-    imagePicker.allowPickingVideo = NO;
+    imagePicker.allowPickingType = LFPickingMediaTypePhoto;
     imagePicker.allowTakePicture = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
 }

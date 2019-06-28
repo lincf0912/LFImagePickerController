@@ -64,13 +64,14 @@ static LFAssetManager *manager;
 #pragma mark - Get Album
 
 /// Get Album 获得相册/相册数组
-- (void)getCameraRollAlbum:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(LFAlbum *model))completion
+- (void)getCameraRollAlbum:(LFPickingMediaType)allowPickingType fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(LFAlbum *model))completion
 {
     __block LFAlbum *model;
     if (@available(iOS 8.0, *)){
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
-        if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+        if (!(allowPickingType & LFPickingMediaTypeVideo)) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+        if (allowPickingType == LFPickingMediaTypeVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+        if (allowPickingType == LFPickingMediaTypeNone) option.predicate = [NSPredicate predicateWithFormat:@"mediaType != %ld and mediaType != %ld", PHAssetMediaTypeImage, PHAssetMediaTypeVideo];
 //        option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:ascending]];
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
         if (@available(iOS 9.0, *)){
@@ -94,12 +95,14 @@ static LFAssetManager *manager;
     }
 }
 
-- (void)getAllAlbums:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAlbum *> *))completion{
+- (void)getAllAlbums:(LFPickingMediaType)allowPickingType ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAlbum *> *))completion
+{
     NSMutableArray *albumArr = [NSMutableArray array];
     if (@available(iOS 8.0, *)){
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
-        if (!allowPickingVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        if (!allowPickingImage) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+        if (!(allowPickingType & LFPickingMediaTypeVideo)) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+        if (allowPickingType == LFPickingMediaTypeVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+        if (allowPickingType == LFPickingMediaTypeNone) option.predicate = [NSPredicate predicateWithFormat:@"mediaType != %ld and mediaType != %ld", PHAssetMediaTypeImage, PHAssetMediaTypeVideo];
         
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
 
@@ -153,7 +156,7 @@ static LFAssetManager *manager;
 #pragma mark - Get Assets
 
 /// Get Assets 获得照片数组
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
+- (void)getAssetsFromFetchResult:(id)result allowPickingType:(LFPickingMediaType)allowPickingType fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion
 {
     __block NSMutableArray *photoArr = [NSMutableArray array];
     if ([result isKindOfClass:[PHFetchResult class]]) {
@@ -174,7 +177,7 @@ static LFAssetManager *manager;
         NSArray *results = [fetchResult objectsAtIndexes:indexSet];
         
         for (PHAsset *asset in results) {
-            LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+            LFAsset *model = [self assetModelWithAsset:asset allowPickingType:allowPickingType];
             if (model) {
                 if (ascending) {
                     [photoArr addObject:model];
@@ -187,18 +190,18 @@ static LFAssetManager *manager;
         
     } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
-        if (allowPickingImage && allowPickingVideo) {
-            [group setAssetsFilter:[ALAssetsFilter allAssets]];
-        } else if (allowPickingVideo) {
+        if (allowPickingType == LFPickingMediaTypeVideo) {
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
-        } else if (allowPickingImage) {
+        } else if (allowPickingType > 0 && !(allowPickingType & LFPickingMediaTypeVideo)) {
             [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+        } else if (allowPickingType != LFPickingMediaTypeNone) {
+            [group setAssetsFilter:[ALAssetsFilter allAssets]];
         }
         
         ALAssetsGroupEnumerationResultsBlock resultBlock = ^(ALAsset *asset, NSUInteger idx, BOOL *stop)
         {
             if (asset) {
-                LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+                LFAsset *model = [self assetModelWithAsset:asset allowPickingType:allowPickingType];
                 if (model) {
                     [photoArr addObject:model];
                 }
@@ -239,8 +242,7 @@ static LFAssetManager *manager;
 ///  if index beyond bounds, return nil in callback 如果索引越界, 在回调中返回 nil
 - (void)getAssetFromFetchResult:(id)result
                         atIndex:(NSInteger)index
-              allowPickingVideo:(BOOL)allowPickingVideo
-              allowPickingImage:(BOOL)allowPickingImage
+               allowPickingType:(LFPickingMediaType)allowPickingType
                       ascending:(BOOL)ascending
                      completion:(void (^)(LFAsset *))completion
 {
@@ -254,23 +256,23 @@ static LFAssetManager *manager;
             if (completion) completion(nil);
             return;
         }
-        LFAsset *model = [self assetModelWithAsset:asset allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+        LFAsset *model = [self assetModelWithAsset:asset allowPickingType:allowPickingType];
         if (completion) completion(model);
     } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
-        if (allowPickingImage && allowPickingVideo) {
-            [group setAssetsFilter:[ALAssetsFilter allAssets]];
-        } else if (allowPickingVideo) {
+        if (allowPickingType == LFPickingMediaTypeVideo) {
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
-        } else if (allowPickingImage) {
+        } else if (allowPickingType > 0 && !(allowPickingType & LFPickingMediaTypeVideo)) {
             [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+        } else if (allowPickingType != LFPickingMediaTypeNone) {
+            [group setAssetsFilter:[ALAssetsFilter allAssets]];
         }
         
         __block NSMutableArray *photoArr = [NSMutableArray array];
         
         [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
             if (result) {
-                LFAsset *model = [self assetModelWithAsset:result allowPickingVideo:allowPickingVideo allowPickingImage:allowPickingImage];
+                LFAsset *model = [self assetModelWithAsset:result allowPickingType:allowPickingType];
                 [photoArr addObject:model];
             }
         }];
@@ -296,11 +298,21 @@ static LFAssetManager *manager;
     }
 }
 
-- (LFAsset *)assetModelWithAsset:(id)asset allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage {
+- (LFAsset *)assetModelWithAsset:(id)asset allowPickingType:(LFPickingMediaType)allowPickingType {
     LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
     
-    if (!allowPickingVideo && model.type == LFAssetMediaTypeVideo) return nil;
-    if (!allowPickingImage && model.type == LFAssetMediaTypePhoto) return nil;
+    if (!(allowPickingType&LFPickingMediaTypeVideo) && model.type == LFAssetMediaTypeVideo) return nil;
+    
+    if (model.type == LFAssetMediaTypePhoto) {
+        /** 不是图片类型，判断是否可能存在gif或livePhoto */
+        if (!(allowPickingType&LFPickingMediaTypePhoto)) {
+            
+            if (allowPickingType&LFPickingMediaTypeGif && model.subType == LFAssetSubMediaTypeGIF) return model;
+            if (allowPickingType&LFPickingMediaTypeLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto) return model;
+            
+            return nil;
+        }
+    }
     
     return model;
 }

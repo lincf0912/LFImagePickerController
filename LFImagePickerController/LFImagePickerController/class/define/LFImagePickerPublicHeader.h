@@ -41,33 +41,20 @@ typedef NS_ENUM(NSUInteger, LFImagePickerSubMediaType) {
     LFImagePickerSubMediaTypeLivePhoto,
 };
 
-typedef NS_ENUM(NSUInteger, LFEditPhotoOperation) {
-    /** 绘画 */
-    LFEditPhotoOperation_draw = 1 << 0,
-    /** 贴图 */
-    LFEditPhotoOperation_sticker = 1 << 1,
-    /** 文本 */
-    LFEditPhotoOperation_text = 1 << 2,
-    /** 模糊 */
-    LFEditPhotoOperation_splash = 1 << 3,
-    /** 修剪 */
-    LFEditPhotoOperation_crop = 1 << 4,
-    /** 所有 */
-    LFEditPhotoOperation_All = ~0UL,
+typedef NS_ENUM(NSUInteger, LFPickingMediaType) {
+    /** None */
+    LFPickingMediaTypeNone = 0,
+    /** Whether the user can picking a photo */
+    LFPickingMediaTypePhoto = 1 << 0,
+    /** Whether the user can picking a gif */
+    LFPickingMediaTypeGif = 1 << 1,
+    /** Whether the user can picking a livePhoto(gif) */
+    LFPickingMediaTypeLivePhoto = 1 << 2,
+    /** Whether the user can picking a video */
+    LFPickingMediaTypeVideo = 1 << 3,
+    /** Users can picking all media types */
+    LFPickingMediaTypeALL = ~0UL,
 };
 
-typedef NS_ENUM(NSUInteger, LFEditVideoOperation) {
-    /** 绘画 */
-    LFEditVideoOperation_draw = 1 << 0,
-    /** 贴图 */
-    LFEditVideoOperation_sticker = 1 << 1,
-    /** 文本 */
-    LFEditVideoOperation_text = 1 << 2,
-    /** 音频 */
-    LFEditVideoOperation_audio = 1 << 3,
-    /** 剪辑 */
-    LFEditVideoOperation_clip = 1 << 4,
-    /** 所有 */
-    LFEditVideoOperation_All = ~0UL,
-};
+
 #endif /* LFImagePickerPublicHeader_h */

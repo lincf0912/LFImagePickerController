@@ -69,21 +69,9 @@
 /// 对照片排序,按创建时间升序,默认是YES。如果设置为NO,最新的照片会显示在最前面,内部的拍照按钮会排在第一个
 @property (nonatomic,assign) BOOL sortAscendingByCreateDate;
 
-/// Default is YES,if set NO,user can't picking video.
-/// 默认为YES,如果设置为NO,用户将不能选择视频
-@property (nonatomic,assign) BOOL allowPickingVideo;
-
-/// Default is YES,if set NO,user can't picking image.
-/// 默认为YES,如果设置为NO,用户将不能选择发送图片
-@property (nonatomic,assign) BOOL allowPickingImage;
-
-/// Default is NO,if set YES,user can picking gif.(support compress,CompressSize parameter is ignored)
-/// 默认为NO,如果设置为YES,用户可以选择gif图片(支持压缩,忽略压缩参数)
-@property (nonatomic,assign) BOOL allowPickingGif;
-
-/// Default is NO,if set YES,user can picking live photo.(support compress,CompressSize parameter is ignored)
-/// 默认为NO,如果设置为YES,用户可以选择live photo(支持压缩,忽略压缩参数)
-@property (nonatomic,assign) BOOL allowPickingLivePhoto;
+/// Default is LFPickingMediaTypePhoto|LFPickingMediaTypeVideo.
+/// 默认为LFPickingMediaTypePhoto|LFPickingMediaTypeVideo.
+@property (nonatomic,assign) LFPickingMediaType allowPickingType;
 
 /// Default is YES,if set NO,take picture will be hidden.
 /// 默认为YES,如果设置为NO,拍照按钮将隐藏
@@ -181,6 +169,20 @@
 @property (nonatomic,copy) void (^didFinishPickingResultHandle)(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *results);
 
 #pragma mark - ========================Deprecated========================
+
+/// Default is YES,if set NO,user can't picking video.
+/// 默认为YES,如果设置为NO,用户将不能选择视频
+@property (nonatomic,assign) BOOL allowPickingVideo __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is YES,if set NO,user can't picking image.
+/// 默认为YES,如果设置为NO,用户将不能选择发送图片
+@property (nonatomic,assign) BOOL allowPickingImage __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is NO,if set YES,user can picking gif.(support compress,CompressSize parameter is ignored)
+/// 默认为NO,如果设置为YES,用户可以选择gif图片(支持压缩,忽略压缩参数)
+@property (nonatomic,assign) BOOL allowPickingGif __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is NO,if set YES,user can picking live photo.(support compress,CompressSize parameter is ignored)
+/// 默认为NO,如果设置为YES,用户可以选择live photo(支持压缩,忽略压缩参数)
+@property (nonatomic,assign) BOOL allowPickingLivePhoto __deprecated_msg("property deprecated. Use `allowPickingType`");
+
 /** 图片 */
 @property (nonatomic,copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 @property (nonatomic,copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey,id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");

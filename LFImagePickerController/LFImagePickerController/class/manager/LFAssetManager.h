@@ -16,7 +16,7 @@
 #import "LFAsset.h"
 #import "LFResultImage.h"
 #import "LFResultVideo.h"
-
+#import "LFImagePickerPublicHeader.h"
 
 @interface LFAssetManager : NSObject
 
@@ -40,24 +40,22 @@
  *
  *  Get Album 获得相机胶卷相册
  *
- *  @param allowPickingVideo 是否包含视频
- *  @param allowPickingImage 是否包含相片
+ *  @param allowPickingType  媒体类型
  *  @param fetchLimit        相片最大数量（IOS8之后有效）
  *  @param ascending         顺序获取（IOS8之后有效）
  *  @param completion        回调结果
  */
-- (void)getCameraRollAlbum:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(LFAlbum *model))completion;
+- (void)getCameraRollAlbum:(LFPickingMediaType)allowPickingType fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(LFAlbum *model))completion;
 
 
 /**
  Get Album 获得所有相册/相册数组
 
- @param allowPickingVideo 是否包含视频
- @param allowPickingImage 是否包含相片
+ @param allowPickingType  媒体类型
  @param ascending 顺序获取（IOS8之后有效）
  @param completion 回调结果
  */
-- (void)getAllAlbums:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAlbum *> *))completion;
+- (void)getAllAlbums:(LFPickingMediaType)allowPickingType ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAlbum *> *))completion;
 
 /**
  *  @author lincf, 16-07-28 13:07:27
@@ -65,18 +63,16 @@
  *  Get Assets 获得Asset数组
  *
  *  @param result            LFAlbum.result 相册对象
- *  @param allowPickingVideo 是否包含视频
- *  @param allowPickingImage 是否包含相片
+ *  @param allowPickingType  媒体类型
  *  @param fetchLimit        相片最大数量
  *  @param ascending         顺序获取
  *  @param completion        回调结果
  */
-- (void)getAssetsFromFetchResult:(id)result allowPickingVideo:(BOOL)allowPickingVideo allowPickingImage:(BOOL)allowPickingImage fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
+- (void)getAssetsFromFetchResult:(id)result allowPickingType:(LFPickingMediaType)allowPickingType fetchLimit:(NSInteger)fetchLimit ascending:(BOOL)ascending completion:(void (^)(NSArray<LFAsset *> *models))completion;
 /** 获得下标为index的单个照片 */
 - (void)getAssetFromFetchResult:(id)result
                         atIndex:(NSInteger)index
-              allowPickingVideo:(BOOL)allowPickingVideo
-              allowPickingImage:(BOOL)allowPickingImage
+               allowPickingType:(LFPickingMediaType)allowPickingType
                       ascending:(BOOL)ascending
                      completion:(void (^)(LFAsset *))completion;
 

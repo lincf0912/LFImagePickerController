@@ -86,26 +86,26 @@
     [imagePickerVc showProgressHUD];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingVideo allowPickingImage:imagePickerVc.allowPickingImage ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
+        [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingType ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
             
-            _albumArr = [NSMutableArray arrayWithArray:models];
+            self->_albumArr = [NSMutableArray arrayWithArray:models];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [imagePickerVc hideProgressHUD];
-                if (!_tableView) {
-                    _tableView = [[UITableView alloc] initWithFrame:[self viewFrameWithoutNavigation] style:UITableViewStylePlain];
-                    _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-                    _tableView.tableFooterView = [[UIView alloc] init];
-                    _tableView.dataSource = self;
-                    _tableView.delegate = self;
-                    [_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
+                if (!self->_tableView) {
+                    self->_tableView = [[UITableView alloc] initWithFrame:[self viewFrameWithoutNavigation] style:UITableViewStylePlain];
+                    self->_tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                    self->_tableView.tableFooterView = [[UIView alloc] init];
+                    self->_tableView.dataSource = self;
+                    self->_tableView.delegate = self;
+                    [self->_tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
                     /** 这个设置iOS9以后才有，主要针对iPad，不设置的话，分割线左侧空出很多 */
-                    if ([_tableView respondsToSelector:@selector(setCellLayoutMarginsFollowReadableWidth:)]) {
-                        _tableView.cellLayoutMarginsFollowReadableWidth = NO;
+                    if ([self->_tableView respondsToSelector:@selector(setCellLayoutMarginsFollowReadableWidth:)]) {
+                        self->_tableView.cellLayoutMarginsFollowReadableWidth = NO;
                     }
-                    [self.view addSubview:_tableView];
+                    [self.view addSubview:self->_tableView];
                 } else {
-                    [_tableView reloadData];
+                    [self->_tableView reloadData];
                 }
             });
         }];
@@ -133,8 +133,7 @@
             }
             [[LFAssetManager manager] getAssetFromFetchResult:album.result
                                                       atIndex:index
-                                            allowPickingVideo:imagePickerVc.allowPickingVideo
-                                            allowPickingImage:imagePickerVc.allowPickingImage
+                                             allowPickingType:imagePickerVc.allowPickingType
                                                     ascending:imagePickerVc.sortAscendingByCreateDate
                                                    completion:^(LFAsset *model) {
                                                        
@@ -230,7 +229,7 @@
         }
         
         if (deleteObjects.count || changedObjects.count) {
-            [_tableView beginUpdates];
+            [self->_tableView beginUpdates];
             if (deleteObjects.count) {
                 [self.albumArr removeObjectsInArray:deleteObjects];
                 NSMutableArray *indexPaths = [NSMutableArray array];
@@ -238,7 +237,7 @@
                     NSInteger index = [self.albumArr indexOfObject:object];
                     [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
                 }
-                [_tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
+                [self->_tableView deleteRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
                 deleteObjects = nil;
             }
             if (changedObjects.count) {
@@ -247,11 +246,11 @@
                     NSInteger index = [self.albumArr indexOfObject:object];
                     [indexPaths addObject:[NSIndexPath indexPathForRow:index inSection:0]];
                 }
-                [_tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
+                [self->_tableView reloadRowsAtIndexPaths:indexPaths withRowAnimation:UITableViewRowAnimationFade];
                 changedObjects = nil;
             }
             
-            [_tableView endUpdates];
+            [self->_tableView endUpdates];
         }
         
         

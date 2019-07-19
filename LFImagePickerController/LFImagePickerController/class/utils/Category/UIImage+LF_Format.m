@@ -129,7 +129,7 @@ LFImageType LFImageDetectType(CFDataRef data) {
     UIImage *animatedImage;
     
     if (count <= 1) {
-        animatedImage = [[UIImage alloc] initWithData:data];
+        animatedImage = [[UIImage alloc] initWithData:data scale:[UIScreen mainScreen].scale];
     }
     else {
         NSMutableArray *images = [NSMutableArray array];

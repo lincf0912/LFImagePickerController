@@ -674,14 +674,17 @@ static LFAssetManager *manager;
             //        BOOL isLivePhoto = [info[kImageInfoMediaType] integerValue] == LFImagePickerSubMediaTypeLivePhoto;
             NSData *sourceData = nil; NSData *thumbnailData = nil;
             UIImage *thumbnail = nil; UIImage *source = nil;
+        
+            // gif的数据源比较特别，不取动图时，仅取第一帧图片，数据源需要重设。（如果选取多张过千帧的动图，这里的优化相当明显。）
+            NSData *originalData = imageData;
             
             LFImagePickerSubMediaType mediaType = subMediaType;
             
             if (imageData && !error) {
-                /** 原图 */
-                source = [UIImage LF_imageWithImageData:imageData];
                 
                 if (isGif && pickingGif) { /** GIF图片处理方式 */
+                    /** 原图 */
+                    source = [UIImage LF_imageWithImageData:imageData];
                     
                     CGFloat minWidth = MIN(source.size.width, source.size.height);
                     CGFloat imageRatio = 0.7f;
@@ -701,6 +704,27 @@ static LFAssetManager *manager;
                     }
                     
                 } else {
+                    
+                    if (isGif) {
+                        /** gif时只取第一帧图片 */
+                        CGImageSourceRef sourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)imageData, NULL);
+                        size_t count = CGImageSourceGetCount(sourceRef);
+                        
+                        if (count <= 1) {
+                            source = [UIImage imageWithData:imageData];
+                        } else {
+                            CGImageRef image = CGImageSourceCreateImageAtIndex(sourceRef, 0, NULL);
+                            
+                            source = [UIImage imageWithCGImage:image scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
+                            
+                            originalData = LF_UIImageRepresentation(source, 1, kUTTypeGIF, nil);
+                        }
+                        
+                        CFRelease(sourceRef);
+                    } else {
+                        /** 原图 */
+                        source = [UIImage LF_imageWithImageData:imageData];
+                    }
                     
                     /** 原图方向更正 */
                     BOOL isFixOrientation = NO;
@@ -732,14 +756,14 @@ static LFAssetManager *manager;
                     thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
                 } else {
                     /** 缩略图不需要压缩的情况 */
-                    thumbnailData = [NSData dataWithData:imageData];
+                    thumbnailData = [NSData dataWithData:originalData];
                     thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
                 }
                 if (sourceData) {
                     source = [UIImage LF_imageWithImageData:sourceData];
                 } else {
                     /** 不需要压缩的情况 */
-                    sourceData = imageData;
+                    sourceData = [NSData dataWithData:originalData];
                 }
                 
                 /** 图片宽高 */
@@ -808,7 +832,7 @@ static LFAssetManager *manager;
                     mediaType = LFImagePickerSubMediaTypeLivePhoto;
                 } else
 #endif
-                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                    if ([dataUTI isEqualToString:@"com.compuserve.gif"]) {
                     mediaType = LFImagePickerSubMediaTypeGIF;
                 }
                 NSError *error = [info objectForKey:PHImageErrorKey];
@@ -830,7 +854,7 @@ static LFAssetManager *manager;
                         mediaType = LFImagePickerSubMediaTypeLivePhoto;
                     } else
 #endif
-                        if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                        if ([dataUTI isEqualToString:@"com.compuserve.gif"]) {
                         mediaType = LFImagePickerSubMediaTypeGIF;
                     }
                     NSError *error = [info objectForKey:PHImageErrorKey];

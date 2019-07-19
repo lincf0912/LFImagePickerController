@@ -978,9 +978,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #pragma mark - LFPhotoEditingControllerDelegate
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
 {
-    if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
+//    if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
 //        self.tempEditImage = photoEditingVC.editImage;
-    }
+//    }
     
     [[self navi] popViewControllerAnimated:NO];
 }
@@ -993,34 +993,39 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         /** 当前页面只显示一张图片 */
 //        LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+        LFImagePickerController *imagePickerVc = [self navi];
         
+        BOOL pop = NO;
         __weak typeof(self) weakSelf = self;
         if (photoEdit) { /** 编辑存在 */
             if (_collectionView) {
+                pop = YES;
                 [_collectionView performBatchUpdates:^{
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    
+                    [imagePickerVc popViewControllerAnimated:NO];
                 }];
             }
         } else { /** 编辑不存在 */
             if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
                 /** 还原编辑图片 */
+                pop = YES;
                 [_collectionView performBatchUpdates:^{
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    
+                    [imagePickerVc popViewControllerAnimated:NO];
                 }];
-            } else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
-//                self.tempEditImage = photoEditingVC.editImage;
             }
+//            else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
+//                self.tempEditImage = photoEditingVC.editImage;
+//            }
         }
         
-        
-        LFImagePickerController *imagePickerVc = [self navi];
-        [imagePickerVc popViewControllerAnimated:NO];
+        if (!pop) {
+            [imagePickerVc popViewControllerAnimated:NO];
+        }
         
         if (imagePickerVc.maxImagesCount > 1) {
             /** 默认选中编辑后的图片 */

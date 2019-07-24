@@ -89,16 +89,16 @@
                 } else
 #endif
                 /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
-                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:@"com.compuserve.gif"]) {
+                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                         _subType = LFAssetSubMediaTypeGIF;
                     }
-                //                if (iOS9_1Later) {
+                //                if (@available(iOS 9.0, *)){
                 //                    /** 新判断GIF图片方法 */
                 //                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
                 //                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 //                        PHAssetResource *resource = obj;
-                //                        if ([resource.uniformTypeIdentifier isEqualToString:@"com.compuserve.gif"]) {
-                //                            type = LFAssetMediaTypeGIF;
+                //                        if ([resource.uniformTypeIdentifier isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                //                            self->_subType = LFAssetSubMediaTypeGIF;
                 //                            *stop = YES;
                 //                        }
                 //                    }];
@@ -113,7 +113,7 @@
                 //                                                                resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                 //                                                                    //gif 图片
                 //                                                                    if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                //                                                                        type = LFAssetMediaTypeGIF;
+                //                                                                        self->_subType = LFAssetSubMediaTypeGIF
                 //                                                                    }
                 //                                                                }];
                 //                }

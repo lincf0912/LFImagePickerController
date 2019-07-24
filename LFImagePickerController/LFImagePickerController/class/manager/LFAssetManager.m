@@ -467,7 +467,6 @@ static LFAssetManager *manager;
                     });
                 };
                 options.networkAccessAllowed = YES;
-                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     UIImage *resultImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
@@ -519,6 +518,7 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHImageRequestOptions *option = [[PHImageRequestOptions alloc]init];
         option.resizeMode = PHImageRequestOptionsResizeModeFast;
+        option.version = PHImageRequestOptionsVersionOriginal;
         PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
             BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
             if (downloadFinined && imageData) {
@@ -529,16 +529,16 @@ static LFAssetManager *manager;
             // Download image from iCloud / 从iCloud下载图片
             if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData && networkAccessAllowed) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
-                options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-                    dispatch_main_async_safe(^{
-                        if (progressHandler) {
+                if (progressHandler) {
+                    options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                        dispatch_main_async_safe(^{
                             progressHandler(progress, error, stop, info);
-                        }
-                    });
-                };
+                        });
+                    };
+                }
                 options.networkAccessAllowed = YES;
-                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
+                option.version = PHImageRequestOptionsVersionOriginal;
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                     if (completion) completion(imageData,info,isDegraded);
@@ -818,6 +818,11 @@ static LFAssetManager *manager;
         // 修复获取图片时出现的瞬间内存过高问题
         PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
         option.resizeMode = PHImageRequestOptionsResizeModeFast;
+        BOOL isGif = [[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF];
+        if (isGif) {
+            // GIF图片在系统相册中不能修改，它不存在编辑图或原图的区分。但是个别GIF使用默认的PHImageRequestOptionsVersionCurrent属性可能仅仅是获取第一帧。
+            option.version = PHImageRequestOptionsVersionOriginal;
+        }
         
         /** 图片文件名+图片大小 */
         [[PHImageManager defaultManager] requestImageDataForAsset:phAsset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
@@ -832,7 +837,7 @@ static LFAssetManager *manager;
                     mediaType = LFImagePickerSubMediaTypeLivePhoto;
                 } else
 #endif
-                    if ([dataUTI isEqualToString:@"com.compuserve.gif"]) {
+                    if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                     mediaType = LFImagePickerSubMediaTypeGIF;
                 }
                 NSError *error = [info objectForKey:PHImageErrorKey];
@@ -842,8 +847,11 @@ static LFAssetManager *manager;
             if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
                 options.networkAccessAllowed = YES;
-                options.version = PHImageRequestOptionsVersionOriginal;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
+                if (isGif) {
+                    // GIF图片在系统相册中不能修改，它不存在编辑图或原图的区分。但是个别GIF使用默认的PHImageRequestOptionsVersionCurrent属性可能仅仅是获取第一帧。
+                    option.version = PHImageRequestOptionsVersionOriginal;
+                }
                 [[PHImageManager defaultManager] requestImageDataForAsset:asset options:options resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                     
                     NSString *fileName = [phAsset valueForKey:@"filename"];
@@ -854,7 +862,7 @@ static LFAssetManager *manager;
                         mediaType = LFImagePickerSubMediaTypeLivePhoto;
                     } else
 #endif
-                        if ([dataUTI isEqualToString:@"com.compuserve.gif"]) {
+                        if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                         mediaType = LFImagePickerSubMediaTypeGIF;
                     }
                     NSError *error = [info objectForKey:PHImageErrorKey];

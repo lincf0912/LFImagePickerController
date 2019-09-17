@@ -248,14 +248,7 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     if (!imagePickerVc.isPreview) {
         if (imagePickerVc.defaultAlbumName && !_model) {
-            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_noDefaultAlbumName"], imagePickerVc.defaultAlbumName] complete:^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-                if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
-                    [imagePickerVc performSelector:@selector(cancelButtonClick)];
-                }
-#pragma clang diagnostic pop
-            }];
+            [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_noDefaultAlbumName"], imagePickerVc.defaultAlbumName]];
         }
     }
     /** 可能没有model的情况，补充赋值 */

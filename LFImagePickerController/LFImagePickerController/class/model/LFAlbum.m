@@ -47,4 +47,23 @@
     }
 }
 
+- (BOOL)isEqual:(id)object
+{
+    if([self class] == [object class])
+    {
+        if (self == object) {
+            return YES;
+        }
+        LFAlbum *objAlbum = (LFAlbum *)object;
+        if ([self.album isEqual: objAlbum.album] && [self.name isEqual: objAlbum.name]) {
+            return YES;
+        }
+        return NO;
+    }
+    else
+    {
+        return [super isEqual:object];
+    }
+}
+
 @end

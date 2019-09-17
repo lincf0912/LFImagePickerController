@@ -117,13 +117,13 @@ static LFAssetManager *manager;
             userCollection = collection;
         }
         
-        PHFetchResult *anyAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
+//        PHFetchResult *anyAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
         PHFetchResult *myPhotoStreamAlbum = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumMyPhotoStream options:nil];
         PHFetchResult *syncedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
         PHFetchResult *sharedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumCloudShared options:nil];
-        PHFetchResult *regularAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+        PHFetchResult *regularAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
         
-        NSArray *allAlbums = @[anyAlbums,myPhotoStreamAlbum,syncedAlbums,sharedAlbums,regularAlbums];
+        NSArray *allAlbums = @[myPhotoStreamAlbum,syncedAlbums,sharedAlbums,regularAlbums];
         for (PHFetchResult *fetchResult in allAlbums) {
             for (PHAssetCollection *collection in fetchResult) {
                 // 有可能是PHCollectionList类的的对象，过滤掉
@@ -132,7 +132,10 @@ static LFAssetManager *manager;
                     continue;
                 }
                 PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-                [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
+                LFAlbum *model = [self modelWithResult:fetchResult album:collection];
+                if (![albumArr containsObject:model]) {
+                    [albumArr addObject:model];
+                }
             }
         }
         if (completion) completion(albumArr);

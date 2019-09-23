@@ -115,6 +115,7 @@
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
         imagePicker.syncAlbum = YES; /** 实时同步相册 */
     }
+    imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:imagePicker animated:YES completion:nil];
     
 }

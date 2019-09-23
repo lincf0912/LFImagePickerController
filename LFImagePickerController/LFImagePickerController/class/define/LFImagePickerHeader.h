@@ -27,9 +27,6 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), bl
 
 #define bundleImageNamed(name) [NSBundle lf_imageNamed:name]
 
-#define LF_StatusBarHeight (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0)
-#define LF_StatusBarHeight_iOS11 (self.view.safeAreaInsets.top > 0 ? self.view.safeAreaInsets.top : (CGRectGetWidth([UIScreen mainScreen].bounds) < CGRectGetHeight([UIScreen mainScreen].bounds) ? 20 : 0))
-
 /** 视频时间（取整：四舍五入） */
 extern NSTimeInterval lf_videoDuration(NSTimeInterval duration);
 

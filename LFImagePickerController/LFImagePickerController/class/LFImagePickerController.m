@@ -111,9 +111,9 @@
         CGFloat naviBarHeight = 0, naviSubBarHeight = 0;;
         naviBarHeight = naviSubBarHeight = CGRectGetHeight(self.navigationBar.frame);
         if (@available(iOS 11.0, *)) {
-            naviBarHeight += LF_StatusBarHeight_iOS11;
+            naviBarHeight += self.view.safeAreaInsets.top;
         } else {
-            naviBarHeight += LF_StatusBarHeight;
+            naviBarHeight += CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
         }
         CGRect frame = _tip_cancelBtn.frame;
         frame.origin.y = naviBarHeight-naviSubBarHeight;

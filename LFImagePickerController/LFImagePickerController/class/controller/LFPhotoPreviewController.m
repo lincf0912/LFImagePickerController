@@ -196,9 +196,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     CGFloat naviBarHeight = 0, naviSubBarHeight = 0;
     naviBarHeight = naviSubBarHeight = CGRectGetHeight([self navi].navigationBar.frame);
     if (@available(iOS 11.0, *)) {
-        naviBarHeight += LF_StatusBarHeight_iOS11;
+        naviBarHeight += ios11Safeinsets.top;
     } else {
-        naviBarHeight += LF_StatusBarHeight;
+        naviBarHeight += CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
     }
 
     _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);

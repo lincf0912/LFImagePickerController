@@ -10,6 +10,7 @@
 #import "LFImagePickerController.h"
 
 NSString *const LFImagePickerStrings = @"LFImagePickerController";
+NSString *const LFImagePickerDrakModel = @"_Drak";
 
 @implementation NSBundle (LFImagePicker)
 
@@ -35,7 +36,28 @@ NSString *const LFImagePickerStrings = @"LFImagePickerController";
 //    } else {
 //        bundleName = [name stringByAppendingString:@"@2x"];
 //    }
-    UIImage *image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:bundleName ofType:extension]];
+    UIImage *image = nil;
+    if (@available(iOS 13.0, *)) {
+        switch (UITraitCollection.currentTraitCollection.userInterfaceStyle) {
+            case UIUserInterfaceStyleDark:
+            {
+                NSString *drakDefaultName = [defaultName stringByAppendingString:LFImagePickerDrakModel];
+                NSString *drakBundleName = [drakDefaultName stringByAppendingString:@"@2x"];
+                if (image == nil) {
+                    image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:drakBundleName ofType:extension]];
+                }
+                if (image == nil) {
+                    image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:drakDefaultName ofType:extension]];
+                }
+            }
+                break;
+            default:
+                break;
+        }
+    }
+    if (image == nil) {
+        image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:bundleName ofType:extension]];
+    }
     if (image == nil) {
         image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:defaultName ofType:extension]];
     }

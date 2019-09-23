@@ -27,9 +27,28 @@
     _model = model;
     _titleLabel.text = nil;
     _posterImageView.image = nil;
-    
-    NSMutableAttributedString *nameString = [[NSMutableAttributedString alloc] initWithString:model.name attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:[UIColor blackColor]}];
-    NSAttributedString *countString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"  (%zd)",model.count] attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
+    [self updateTraitColor];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+    [super traitCollectionDidChange:previousTraitCollection];
+    [self updateTraitColor];
+}
+
+- (void)updateTraitColor
+{
+    UIColor *color = nil;
+    UIColor *placeholderColor = nil;
+    if (@available(iOS 13.0, *)) {
+        color = [UIColor labelColor];
+        placeholderColor = [UIColor placeholderTextColor];
+    } else {
+        color = [UIColor blackColor];
+        placeholderColor = [UIColor lightGrayColor];
+    }
+    NSMutableAttributedString *nameString = [[NSMutableAttributedString alloc] initWithString:self.model.name attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:color}];
+    NSAttributedString *countString = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"  (%zd)", self.model.count] attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16],NSForegroundColorAttributeName:placeholderColor}];
     [nameString appendAttributedString:countString];
     self.titleLabel.attributedText = nameString;
 }

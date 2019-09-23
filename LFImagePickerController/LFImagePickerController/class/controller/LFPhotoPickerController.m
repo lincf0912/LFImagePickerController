@@ -133,8 +133,8 @@
                             /** 缓存数据 */
                             weakSelf.model.models = models;
                             weakSelf.models = [NSMutableArray arrayWithArray:models];
-                            [weakSelf checkDefaultSelectedModels];
                             dispatch_main_async_safe(^{
+                                [weakSelf checkDefaultSelectedModels];
                                 long long end = [[NSDate date] timeIntervalSince1970] * 1000;
                                 NSLog(@"%lu Photo loading time-consuming: %lld milliseconds", (unsigned long)models.count, end - start);
                                 [weakSelf initSubviews];

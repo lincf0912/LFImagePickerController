@@ -12,7 +12,7 @@
 ## iOS13的modalPresentationStyle使用
 
 * 设置imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;即可使用全屏。
-* 如果想使用默认的模式imagePicker.modalPresentationStyle = UIModalPresentationAutomatic;界面被下来收起时不会触发框架的代码方法。需要调用者在presentViewController:animated:completion:方法之前，增加一行imagePicker.presentationController.delegate = self;实现UIAdaptivePresentationControllerDelegate协议的presentationControllerDidDismiss:方法即可。
+* 如果想使用默认的模式imagePicker.modalPresentationStyle = UIModalPresentationAutomatic;界面被下拉收起时不会触发框架的代码方法。需要调用者在presentViewController:animated:completion:方法之前，增加一行imagePicker.presentationController.delegate = self;实现UIAdaptivePresentationControllerDelegate协议的presentationControllerDidDismiss:方法即可。
 
 ## Installation 安装
 

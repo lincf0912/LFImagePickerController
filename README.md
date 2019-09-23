@@ -9,6 +9,11 @@
 * 支持国际化配置（复制LFImagePickerController.bundle\LFImagePickerController.strings到项目中，修改对应的值即可；详情见DEMO；注意：不跟随系统语言切换显示）
 * 详细使用见LFImagePickerController.h 的初始化方法
 
+## iOS13的modalPresentationStyle使用
+
+* 设置imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;即可使用全屏。
+* 如果想使用默认的模式imagePicker.modalPresentationStyle = UIModalPresentationAutomatic;界面被下来收起时不会触发框架的代码方法。需要调用者在presentViewController:animated:completion:方法之前，增加一行imagePicker.presentationController.delegate = self;实现UIAdaptivePresentationControllerDelegate协议的presentationControllerDidDismiss:方法即可。
+
 ## Installation 安装
 
 * CocoaPods：pod 'LFImagePickerController' 或 pod 'LFImagePickerController/LFMediaEdit' (带图片编辑功能)

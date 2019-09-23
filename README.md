@@ -13,6 +13,7 @@
 
 * 设置imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;即可使用全屏。
 * 如果想使用默认的模式imagePicker.modalPresentationStyle = UIModalPresentationAutomatic;界面被下拉收起时不会触发框架的代码方法。需要调用者在presentViewController:animated:completion:方法之前，增加一行imagePicker.presentationController.delegate = self;实现UIAdaptivePresentationControllerDelegate协议的presentationControllerDidDismiss:方法即可。
+* 为什么框架不内部实现？presentationController属性会根据modalPresentationStyle的类型来创建不同的类。所以初始化时不能调用，否则modalPresentationStyle的设置将会被忽略。ViewDidiLoad时调用presentationController会产生双向强持有关系。导致无法释放。而presentationController属性是readOnly，手动打破僵局也不行。
 
 ## Installation 安装
 

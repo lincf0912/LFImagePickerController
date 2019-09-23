@@ -283,7 +283,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
         [_backButton setImage:image forState:UIControlStateNormal];
-        _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50+8, 0, 0);
+        _backButton.imageEdgeInsets = UIEdgeInsetsMake(0, image.size.width-50+8*2, 0, 0);
     }
     [_backButton setTitleColor:imagePickerVc.barItemTextColor forState:UIControlStateNormal];
     [_backButton addTarget:self action:@selector(backButtonClick) forControlEvents:UIControlEventTouchUpInside];

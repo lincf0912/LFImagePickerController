@@ -81,15 +81,20 @@
     [self.contentView addSubview:editMaskImageView];
     _editMaskImageView = editMaskImageView;
     
+    CGFloat offset = 14.0;
+    CGFloat selectButtonWidth = MIN(35, self.width/2-offset);
     /** 选择按钮 */
     UIButton *selectPhotoButton = [[UIButton alloc] init];
-    selectPhotoButton.frame = CGRectMake(self.width - 30 - kAdditionalSize, 0, 30 + kAdditionalSize, 30 + kAdditionalSize);
+    selectPhotoButton.frame = CGRectMake(self.width - selectButtonWidth - kAdditionalSize, 0, selectButtonWidth + kAdditionalSize, selectButtonWidth + kAdditionalSize);
     [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:selectPhotoButton];
     _selectPhotoButton = selectPhotoButton;
     
+    CGFloat selectImageScale = 4.0;
+    CGFloat selectImageWidth = selectButtonWidth - selectImageScale;
+    
     UIImageView *selectImageView = [[UIImageView alloc] init];
-    selectImageView.frame = CGRectMake(self.width - 28 - kAdditionalSize, 2, 26 + kAdditionalSize, 26 + kAdditionalSize);
+    selectImageView.frame = CGRectMake(self.width - (selectImageWidth+2) - kAdditionalSize, 2, selectImageWidth + kAdditionalSize, selectImageWidth + kAdditionalSize);
     [self.contentView addSubview:selectImageView];
     _selectImageView = selectImageView;
     

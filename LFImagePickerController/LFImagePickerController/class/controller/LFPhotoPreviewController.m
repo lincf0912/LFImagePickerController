@@ -92,7 +92,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     self = [super init];
     if (self) {
         self.isHiddenNavBar = YES;
-        self.isHiddenStatusBar = YES;
     }
     return self;
 }
@@ -164,6 +163,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    // 隐藏状态栏而不改变导航栏的高度
+    [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelStatusBar + 1;
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
     
@@ -174,6 +175,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelNormal;
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -204,8 +206,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);
     CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight);
     if (@available(iOS 11.0, *)) {
-        naviSubBarRect.origin.x += self.view.safeAreaInsets.left;
-        naviSubBarRect.size.width -= self.view.safeAreaInsets.left + self.view.safeAreaInsets.right;
+        naviSubBarRect.origin.x += ios11Safeinsets.left;
+        naviSubBarRect.size.width -= ios11Safeinsets.left + ios11Safeinsets.right;
     }
     _naviSubBar.frame = naviSubBarRect;
     _backButton.height = CGRectGetHeight(_naviSubBar.frame);
@@ -242,11 +244,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
     _previewBar.frame = previewBarRect;
 
+    /** 重新排版 */
+    [_collectionView.collectionViewLayout invalidateLayout];
     /* 适配宫格视图 */
     _collectionView.frame = CGRectMake(0, 0, self.view.width+cellMargin, self.view.height);
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
-    /** 重新排版 */
-    [_collectionView.collectionViewLayout invalidateLayout];
     if (_models.count) [_collectionView setContentOffset:CGPointMake((_collectionView.width) * _currentIndex, 0) animated:NO];
 }
 
@@ -271,7 +273,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [_naviBar addSubview:_naviSubBar];
     
     _backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
-    _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _backButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
     /** 判断是否预览模式 */
     if (self.isPhotoPreview) {
         /** 取消 */
@@ -290,7 +292,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [_naviSubBar addSubview:_backButton];
     
     _selectButton = [[UIButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(_naviSubBar.frame) - 30 - 8, (CGRectGetHeight(_naviSubBar.frame)-30)/2, 30, 30)];
-    _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
+    _selectButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoDefImageName) forState:UIControlStateNormal];
     [_selectButton setImage:bundleImageNamed(imagePickerVc.photoSelImageName) forState:UIControlStateSelected];
     [_selectButton addTarget:self action:@selector(select:) forControlEvents:UIControlEventTouchUpInside];
@@ -304,7 +306,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         CGFloat titleMargin = MAX(_backButton.width, _selectButton.width) + 8;
         
         _titleLabel.frame = CGRectMake(titleMargin, (CGRectGetHeight(_naviSubBar.frame)-height)/2, CGRectGetWidth(_naviSubBar.frame) - titleMargin * 2, height);
-        _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+        _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         _titleLabel.textColor = [UIColor whiteColor];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         _titleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
@@ -768,7 +770,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         } else if (model.type == LFAssetMediaTypeVideo) {
             LFVideoEditingController *videoEditingVC = [[LFVideoEditingController alloc] init];
             editingVC = videoEditingVC;
-            videoEditingVC.minClippingDuration = 3.f;
+            videoEditingVC.operationAttrs = @{LFVideoEditClipMinDurationAttributeName:@(3.f)};
             
             LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
             if (videoEdit) {
@@ -916,7 +918,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (@available(iOS 11.0, *)) {
         ios11Safeinsets = self.view.safeAreaInsets;
     }
-    return CGSizeMake(self.view.width-ios11Safeinsets.left-ios11Safeinsets.right, collectionView.height);
+    return CGSizeMake(self.view.width-ios11Safeinsets.left-ios11Safeinsets.right, self.view.height);
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section

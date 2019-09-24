@@ -228,10 +228,14 @@
         CGSize scrollViewSize = self.scrollView.size;
         scrollViewSize.height -= (ios11Safeinsets.top+ios11Safeinsets.bottom);
         /** 定义最小尺寸,判断为长图，则使用放大处理 */
-        CGFloat minimumSize = scrollViewSize.width;
         CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:scrollViewSize isBoth:NO];
         
-        BOOL isLongImage = (minimumSize > MIN(newSize.width, newSize.height));
+        BOOL isLongImage = NO;
+        if ([UIScreen mainScreen].bounds.size.width < [UIScreen mainScreen].bounds.size.height) {
+            isLongImage = scrollViewSize.width > newSize.width;
+        } else {
+            isLongImage = newSize.width < 200;
+        }
         if (isLongImage) { /** 长图 */
             newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
         }

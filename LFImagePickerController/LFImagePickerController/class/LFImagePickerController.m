@@ -10,12 +10,12 @@
 #import "LFImagePickerHeader.h"
 #import "LFAssetManager.h"
 #import "LFAssetManager+Authorization.h"
+#import "LFAssetManager+Simple.h"
 #import "LFPhotoEditManager.h"
 #import "LFVideoEditManager.h"
 #import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 
-#import "LFAlbumPickerController.h"
 #import "LFPhotoPickerController.h"
 #import "LFPhotoPickerController+preview.h"
 #import "LFPhotoPreviewController.h"
@@ -28,7 +28,6 @@
 @interface LFImagePickerController ()
 {
     NSTimer *_timer;
-    BOOL _pushPhotoPickerVc;
     BOOL _didPushPhotoPickerVc;
 }
 
@@ -50,6 +49,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    // simple
+    [LFAssetManager manager].sortAscendingByCreateDate = self.sortAscendingByCreateDate;
+    [LFAssetManager manager].allowPickingType = self.allowPickingType;
     
     if (!_isPreview) { /** 非预览模式 */
         if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
@@ -133,15 +136,27 @@
 }
 
 - (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount delegate:(id<LFImagePickerControllerDelegate>)delegate {
-    return [self initWithMaxImagesCount:maxImagesCount columnNumber:4 delegate:delegate pushPhotoPickerVc:YES];
+    return [self initWithMaxImagesCount:maxImagesCount columnNumber:4 delegate:delegate];
 }
 
 - (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate {
-    return [self initWithMaxImagesCount:maxImagesCount columnNumber:columnNumber delegate:delegate pushPhotoPickerVc:YES];
+    
+    self = [super init];
+    if (self) {
+        // Allow user picking original photo and video, you also can set No after this method
+        // 默认准许用户选择原图和视频, 你也可以在这个方法后置为NO
+        [self defaultConfig];
+        if (maxImagesCount > 0) self.maxImagesCount = maxImagesCount; // Default is 9 / 默认最大可选9张图片
+        self.maxVideosCount = self.maxImagesCount;
+        self.pickerDelegate = delegate;
+        
+        self.columnNumber = columnNumber;
+    }
+    return self;
 }
 
-- (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc {
-    _pushPhotoPickerVc = pushPhotoPickerVc;
+- (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc  __deprecated_msg("Method deprecated. Use `initWithMaxImagesCount:columnNumber:delegate:`"){
+    
     self = [super init];
     if (self) {
         // Allow user picking original photo and video, you also can set No after this method
@@ -403,19 +418,8 @@
 - (void)pushPhotoPickerVc {
     if (!_didPushPhotoPickerVc) {
         _didPushPhotoPickerVc = NO;
-        LFAlbumPickerController *albumPickerVc = [[LFAlbumPickerController alloc] init];
-        if (self.allowPickingType == LFPickingMediaTypeVideo) { // only video
-            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_video"];
-        } else if (self.allowPickingType > 0 && !(self.allowPickingType & LFPickingMediaTypeVideo)) { // only photo
-            albumPickerVc.navigationItem.title = [NSBundle lf_localizedStringForKey:@"_LFAlbumPickerController_titleText_photo"];
-        }
-        albumPickerVc.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:self.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:self action:@selector(cancelButtonClick)];
-        if (_pushPhotoPickerVc) {
-            LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-            [self setViewControllers:@[albumPickerVc, photoPickerVc] animated:YES];
-        } else {
-            [self setViewControllers:@[albumPickerVc] animated:YES];
-        }
+        LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
+        [self setViewControllers:@[photoPickerVc] animated:YES];
 
         _didPushPhotoPickerVc = YES;
     }

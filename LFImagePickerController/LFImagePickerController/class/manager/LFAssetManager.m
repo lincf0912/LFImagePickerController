@@ -22,6 +22,11 @@
 
 @interface LFAssetManager ()
 
+/** 排序 YES */
+@property (nonatomic, assign) BOOL sortAscendingByCreateDate;
+/** 类型 LFPickingMediaTypeALL */
+@property (nonatomic, assign) LFPickingMediaType allowPickingType;
+
 @end
 
 @implementation LFAssetManager

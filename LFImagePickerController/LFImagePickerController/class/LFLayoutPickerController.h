@@ -21,6 +21,7 @@
 @property (nonatomic, copy) NSString *photoOriginSelImageName;
 @property (nonatomic, copy) NSString *photoOriginDefImageName;
 @property (nonatomic, copy) NSString *photoNumberIconImageName;
+@property (nonatomic, copy) NSString *ablumSelImageName;
 
 /// 自定义外观颜色
 @property (nonatomic, strong) UIColor *oKButtonTitleColorNormal;
@@ -43,7 +44,7 @@
 /// Copy LFImagePickerController.strings to any location of your project and modify the corresponding value.
 /// 复制LFImagePickerController.strings到项目任意位置，修改对应的值。
 /// These property have the highest priority and use LFImagePickerController.strings as much as possible. Otherwise, some properties of LFImagePickerController.strings will be invalid.
-/// 这些属性拥有最高的优先级，尽可能使用LFImagePickerController.strings。否则会导致LFImagePickerController.strings某些属性失效。
+/// 这些属性拥有最高的优先级，尽可能使用LFImagePickerController.strings。否则会导致LFImagePickerController.strings对应的属性失效。
 @property (nonatomic, copy) NSString *doneBtnTitleStr;
 @property (nonatomic, copy) NSString *cancelBtnTitleStr;
 @property (nonatomic, copy) NSString *previewBtnTitleStr;

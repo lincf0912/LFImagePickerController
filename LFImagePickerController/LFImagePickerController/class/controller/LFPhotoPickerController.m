@@ -22,6 +22,9 @@
 #import "LFAssetCell.h"
 #import "LFAssetManager+Authorization.h"
 #import "LFAssetManager+SaveAlbum.h"
+#import "LFAssetManager+Simple.h"
+
+#import "LFAblumTitleView.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
@@ -60,13 +63,15 @@
     UIButton *_originalPhotoButton;
     UILabel *_originalPhotoLabel;
     
-    BOOL _shouldScrollToBottom;
     BOOL _showTakePhotoBtn;
 }
 @property (nonatomic, weak) UIView *nonePhotoView;
 @property (nonatomic, weak) LFCollectionView *collectionView;
 @property (nonatomic, weak) UIView *bottomToolBar;
 
+@property (nonatomic, weak) LFAblumTitleView *titleView;
+
+@property (nonatomic, strong) NSMutableArray <LFAlbum *>*albumArr;
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;
 
 @property (nonatomic, assign) BOOL isPhotoPreview;
@@ -97,15 +102,13 @@
     // Do any additional setup after loading the view.
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     self.view.backgroundColor = [UIColor whiteColor];
-    _shouldScrollToBottom = YES;
+    
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:imagePickerVc.cancelBtnTitleStr style:UIBarButtonItemStylePlain target:imagePickerVc action:@selector(cancelButtonClick)];
 #pragma clang diagnostic pop
     
     if (!imagePickerVc.isPreview) { /** 非预览模式 */
-        /** 优先赋值 */
-        self.navigationItem.title = _model.name;
         [imagePickerVc showProgressHUD];
         
         __weak typeof(self) weakSelf = self;
@@ -113,64 +116,40 @@
             
             long long start = [[NSDate date] timeIntervalSince1970] * 1000;
             void (^initDataHandle)(void) = ^{
-                if (weakSelf.model) {
-                    if (weakSelf.model.models.count) { /** 使用缓存数据 */
-                        weakSelf.models = [NSMutableArray arrayWithArray:weakSelf.model.models];
-                        /** check selected data */
-                        dispatch_main_async_safe(^{
-                            [weakSelf initSubviews];
-                        });
-                    } else {
-                        /** 倒序情况下。iOS8的result已支持倒序,这里的排序应该为顺序 */
-                        BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                        if (@available(iOS 8.0, *)){
-                            if (!imagePickerVc.sortAscendingByCreateDate) {
-                                ascending = !imagePickerVc.sortAscendingByCreateDate;
-                            }
-                        }
-                        
-                        [[LFAssetManager manager] getAssetsFromFetchResult:weakSelf.model.result allowPickingType:imagePickerVc.allowPickingType fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-                            /** 缓存数据 */
-                            weakSelf.model.models = models;
-                            weakSelf.models = [NSMutableArray arrayWithArray:models];
-                            dispatch_main_async_safe(^{
-                                [weakSelf checkDefaultSelectedModels];
-                                long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                                NSLog(@"%lu Photo loading time-consuming: %lld milliseconds", (unsigned long)models.count, end - start);
-                                [weakSelf initSubviews];
-                            });
-                        }];
-                    }
-                } else {
+                
+                [weakSelf loadAlbumData:^{
                     dispatch_main_async_safe(^{
+                        [weakSelf checkDefaultSelectedModels];
+                        long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                        NSLog(@"%lu Photo loading time-consuming: %lld milliseconds", (unsigned long)self.models.count, end - start);
                         [weakSelf initSubviews];
                     });
-                }
+                }];
             };
             
-            if (self->_model == nil) { /** 没有指定相册，默认显示相片胶卷 */
-                if (imagePickerVc.defaultAlbumName) { /** 有指定相册 */
-                    [[LFAssetManager manager] getAllAlbums:imagePickerVc.allowPickingType ascending:imagePickerVc.sortAscendingByCreateDate completion:^(NSArray<LFAlbum *> *models) {
+            if (self.model == nil) { /** 没有指定相册，默认显示相片胶卷 */
+                
+                [[LFAssetManager manager] getAllAlbums:^(NSArray<LFAlbum *> *models) {
+                    
+                    if (imagePickerVc.defaultAlbumName) {
                         for (LFAlbum *album in models) {
                             if (album.count) {
-                                if ([[album.name lowercaseString] isEqualToString:[imagePickerVc.defaultAlbumName lowercaseString]]) {
+                                if ([[imagePickerVc.defaultAlbumName lowercaseString] isEqualToString:[album.name lowercaseString]]) {
                                     weakSelf.model = album;
                                     break;
                                 }
                             }
                         }
-                        long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                        NSLog(@"Loading album time-consuming: %lld milliseconds", end - start);
-                        initDataHandle();
-                    }];
-                } else {
-                    [[LFAssetManager manager] getCameraRollAlbum:imagePickerVc.allowPickingType fetchLimit:0 ascending:imagePickerVc.sortAscendingByCreateDate completion:^(LFAlbum *model) {
-                        weakSelf.model = model;
-                        long long end = [[NSDate date] timeIntervalSince1970] * 1000;
-                        NSLog(@"Loading album time-consuming: %lld milliseconds", end - start);
-                        initDataHandle();
-                    }];
-                }
+                    } else {
+                        weakSelf.model = models.firstObject;
+                    }
+                    weakSelf.albumArr = [NSMutableArray arrayWithArray:models];
+                    
+                    long long end = [[NSDate date] timeIntervalSince1970] * 1000;
+                    NSLog(@"Loading all album time-consuming: %lld milliseconds", end - start);
+                    initDataHandle();
+                    
+                }];
             } else { /** 已存在相册数据 */
                 initDataHandle();
             }
@@ -184,6 +163,27 @@
         [self initSubviews];
     }
     
+}
+
+- (void)loadAlbumData:(void (^)(void))complete
+{
+    if (complete == nil) return;
+    
+    if (self.model) {
+        if (self.model.models.count) { /** 使用缓存数据 */
+            self.models = [NSMutableArray arrayWithArray:self.model.models];
+            complete();
+        } else {
+            [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result fetchLimit:0 completion:^(NSArray<LFAsset *> *models) {
+                /** 缓存数据 */
+                self.model.models = models;
+                self.models = [NSMutableArray arrayWithArray:models];
+                complete();
+            }];
+        }
+    } else {
+        complete();
+    }
 }
 
 - (void)viewWillLayoutSubviews
@@ -251,8 +251,28 @@
             [imagePickerVc showAlertWithTitle:[NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_noDefaultAlbumName"], imagePickerVc.defaultAlbumName]];
         }
     }
-    /** 可能没有model的情况，补充赋值 */
-    self.navigationItem.title = _model.name;
+    
+    if (self.model) {
+        /** 创建titleView */
+        LFAblumTitleView *titleView = [[LFAblumTitleView alloc] init];
+        titleView.albumArr = self.albumArr;
+        titleView.selectImageName = imagePickerVc.ablumSelImageName;
+        titleView.title = imagePickerVc.defaultAlbumName;
+        
+        __weak typeof(self) weakSelf = self;
+        titleView.didSelected = ^(LFAlbum * _Nonnull album, NSInteger index) {
+            if (![weakSelf.model isEqual:album]) {
+                weakSelf.model = album;
+                [weakSelf loadAlbumData:^{
+                    [weakSelf.collectionView reloadData];
+                    [weakSelf scrollCollectionViewToBottom];
+                }];
+            }
+        };
+        self.navigationItem.titleView = titleView;
+        _titleView = titleView;
+    }
+    
     [imagePickerVc hideProgressHUD];
 
     _showTakePhotoBtn = imagePickerVc.allowTakePicture;
@@ -306,7 +326,7 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
-    CGFloat margin = isiPad ? 15 : 8;
+    CGFloat margin = isiPad ? 15 : 2;
     CGFloat screenWidth = MIN(self.view.width, self.view.height);
     CGFloat itemWH = (screenWidth - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
     layout.itemSize = CGSizeMake(itemWH, itemWH);
@@ -321,21 +341,22 @@
     collectionViewRect.size.height -= toolbarHeight;
     
     LFCollectionView *collectionView = [[LFCollectionView alloc] initWithFrame:collectionViewRect collectionViewLayout:layout];
+    [collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
+    [collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
+    [collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
+    
     collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    collectionView.backgroundColor = [UIColor whiteColor];
-    collectionView.dataSource = self;
-    collectionView.delegate = self;
+    collectionView.backgroundColor = [UIColor colorWithRed:47.0/255.0 green:47.0/255.0 blue:47.0/255.0 alpha:1.0];
     collectionView.alwaysBounceHorizontal = NO;
     collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
+    collectionView.dataSource = self;
+    collectionView.delegate = self;
     
     if (_showTakePhotoBtn) {
         collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
     } else {
         collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
     }
-    [collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetPhotoCell"];
-    [collectionView registerClass:[LFAssetCell class] forCellWithReuseIdentifier:@"LFAssetVideoCell"];
-    [collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
     [self.view addSubview:collectionView];
     _collectionView = collectionView;
 }
@@ -1249,13 +1270,12 @@
 
 - (void)scrollCollectionViewToBottom {
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    if (_shouldScrollToBottom && _models.count > 0 && imagePickerVc.sortAscendingByCreateDate) {
+    if (_models.count > 0 && imagePickerVc.sortAscendingByCreateDate) {
         NSInteger item = _models.count - 1;
         if (_showTakePhotoBtn) {
             item += 1;
         }
         [_collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:item inSection:0] atScrollPosition:UICollectionViewScrollPositionBottom animated:NO];
-        _shouldScrollToBottom = NO;
     }
 }
 
@@ -1320,49 +1340,92 @@
 #pragma mark - PHPhotoLibraryChangeObserver
 //相册变化回调
 - (void)photoLibraryDidChange:(PHChange *)changeInfo {
-    
-    
     // Photos may call this method on a background queue;
     // switch to the main queue to update the UI.
     dispatch_async(dispatch_get_main_queue(), ^{
         LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
         // Check for changes to the displayed album itself
         // (its existence and metadata, not its member assets).
-        PHObjectChangeDetails *albumChanges = [changeInfo changeDetailsForObject:self.model.album];
-        if (albumChanges) {
-            // Fetch the new album and update the UI accordingly.
-            [self.model changedAlbum:[albumChanges objectAfterChanges]];
-            self.navigationItem.title = self->_model.name;
-            if (albumChanges.objectWasDeleted) {
+        
+        NSMutableArray *deleteObjects = [NSMutableArray array];
+        NSMutableArray *changedObjects = [NSMutableArray array];
+        
+        BOOL wasDeletedAlbum = NO;
+        PHFetchResultChangeDetails *currentCollectionChanges = nil;
+        
+        for (NSInteger i=0; i<self.albumArr.count; i++) {
+            LFAlbum *album = self.albumArr[i];
+            PHObjectChangeDetails *albumChanges = [changeInfo changeDetailsForObject:album.album];
+            if (albumChanges) {
+                // Fetch the new album and update the UI accordingly.
+                [album changedAlbum:[albumChanges objectAfterChanges]];
                 
-                void (^showAlertView)(void) = ^{
-                    [imagePickerVc showAlertWithTitle:nil message:[NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_photoAlbunDeletedError"] complete:^{
-                        if (imagePickerVc.viewControllers.count > 1) {
-                            [imagePickerVc popToRootViewControllerAnimated:YES];
-                        } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-                            if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
-                                [imagePickerVc performSelector:@selector(cancelButtonClick)];
-                            }
-#pragma clang diagnostic pop
-                        }
-                    }];
-                };
-                
-                if (self.presentedViewController) {
-                    [self.presentedViewController dismissViewControllerAnimated:YES completion:^{
-                        showAlertView();
-                    }];
-                } else {
-                    showAlertView();
+                if (albumChanges.objectWasDeleted) {
+                    [deleteObjects addObject:album];
+                    if ([album isEqual:self.model]) {
+                        wasDeletedAlbum = YES;
+                    }
                 }
-                return ;
+            }
+            // Check for changes to the list of assets (insertions, deletions, moves, or updates).
+            PHFetchResultChangeDetails *collectionChanges = [changeInfo changeDetailsForFetchResult:album.result];
+            if (collectionChanges) {
+                // Get the new fetch result for future change tracking.
+                [album changedResult:collectionChanges.fetchResultAfterChanges];
+                
+                if (collectionChanges.hasIncrementalChanges)  {
+                    // Tell the collection view to animate insertions/deletions/moves
+                    // and to refresh any cells that have changed content.
+                    
+                    album.models = nil;
+                    album.posterAsset = nil;
+                    
+                    [changedObjects addObject:album];
+                    
+                    if ([album isEqual:self.model]) {
+                        currentCollectionChanges = collectionChanges;
+                    }
+                }
             }
         }
         
+        if (deleteObjects.count || changedObjects.count) {
+            if (deleteObjects.count) {
+                [self.albumArr removeObjectsInArray:deleteObjects];
+            }
+            // update TitleView data && title
+            self.titleView.title = self.model.name;
+            self.titleView.albumArr = self.albumArr;
+        }
+        
+        if (wasDeletedAlbum) {
+            void (^showAlertView)(void) = ^{
+                [imagePickerVc showAlertWithTitle:nil message:[NSBundle lf_localizedStringForKey:@"_LFPhotoPickerController_photoAlbunDeletedError"] complete:^{
+                    if (imagePickerVc.viewControllers.count > 1) {
+                        [imagePickerVc popToRootViewControllerAnimated:YES];
+                    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+                        if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+                            [imagePickerVc performSelector:@selector(cancelButtonClick)];
+                        }
+#pragma clang diagnostic pop
+                    }
+                }];
+            };
+            
+            if (self.presentedViewController) {
+                [self.presentedViewController dismissViewControllerAnimated:YES completion:^{
+                    showAlertView();
+                }];
+            } else {
+                showAlertView();
+            }
+            return ;
+        }
+        
         // Check for changes to the list of assets (insertions, deletions, moves, or updates).
-        PHFetchResultChangeDetails *collectionChanges = [changeInfo changeDetailsForFetchResult:self.model.result];
+        PHFetchResultChangeDetails *collectionChanges = currentCollectionChanges;
         if (collectionChanges) {
             // Get the new fetch result for future change tracking.
             [self.model changedResult:collectionChanges.fetchResultAfterChanges];
@@ -1371,42 +1434,22 @@
                 // Tell the collection view to animate insertions/deletions/moves
                 // and to refresh any cells that have changed content.
                 
-                BOOL hasData1 = self.models.count;
-                
-                BOOL ascending = imagePickerVc.sortAscendingByCreateDate;
-                if (@available(iOS 8.0, *)){
-                    if (!imagePickerVc.sortAscendingByCreateDate) {
-                        ascending = !imagePickerVc.sortAscendingByCreateDate;
-                    }
-                }
-                [[LFAssetManager manager] getAssetsFromFetchResult:self.model.result allowPickingType:imagePickerVc.allowPickingType fetchLimit:0 ascending:ascending completion:^(NSArray<LFAsset *> *models) {
-                    self.model.models = models;
-                    self.models = [NSMutableArray arrayWithArray:models];
-                }];
-                
-                BOOL hasData2 = self.models.count;
-                
-                /** 更新已选数组 */
-                if (imagePickerVc.selectedModels.count && collectionChanges.removedObjects.count) {
-                    for (id object in collectionChanges.removedObjects) {
-                        LFAsset *asset = nil;
-                        if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
-                            asset = [[LFAsset alloc] initWithAsset:object];
-                        }
-                        if (asset) {
-                            [imagePickerVc.selectedModels removeObject:asset];
+                [self loadAlbumData:^{
+                    /** 更新已选数组 */
+                    if (imagePickerVc.selectedModels.count && collectionChanges.removedObjects.count) {
+                        for (id object in collectionChanges.removedObjects) {
+                            LFAsset *asset = nil;
+                            if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
+                                asset = [[LFAsset alloc] initWithAsset:object];
+                            }
+                            if (asset) {
+                                [imagePickerVc.selectedModels removeObject:asset];
+                            }
                         }
                     }
-                }
-                
-                if (hasData1 != hasData2) {
-                    [self.view.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-                    self->_shouldScrollToBottom = YES;
-                    [self initSubviews];
-                } else {
                     [self.collectionView reloadData];
-                }
-                
+                    [self scrollCollectionViewToBottom];
+                }];
                 
                 if (collectionChanges.removedObjects.count) {
                     /** 刷新后返回当前UI */

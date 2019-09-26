@@ -24,7 +24,6 @@
 		6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201AF1E51520400EA2198 /* LFAssetManager+Authorization.m */; };
 		6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201BE1E5183E000EA2198 /* LFPhotoPickerController.m */; };
 		6F1201C21E51884B00EA2198 /* LFLayoutPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201C11E51884B00EA2198 /* LFLayoutPickerController.m */; };
-		6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201C41E518EBE00EA2198 /* LFAlbumPickerController.m */; };
 		6F1201E51E519E8300EA2198 /* UIAlertView+LF_Block.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201D81E519E8300EA2198 /* UIAlertView+LF_Block.m */; };
 		6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201DA1E519E8300EA2198 /* UIImage+LF_ImageCompress.m */; };
 		6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201DC1E519E8300EA2198 /* UIView+LFAnimate.m */; };
@@ -60,6 +59,8 @@
 		C70BABEF205904F0005B7894 /* NSBundle+LFImagePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */; };
 		C70BABF120591F39005B7894 /* LFImagePickerController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BABF020591F39005B7894 /* LFImagePickerController.strings */; };
 		C70BAD3F205A6635005B7894 /* LFMediaEditingController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */; };
+		C75FA910233A17980034A2AB /* LFAblumTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = C75FA90F233A17980034A2AB /* LFAblumTitleView.m */; };
+		C75FA913233C4C790034A2AB /* LFAssetManager+Simple.m in Sources */ = {isa = PBXBuildFile; fileRef = C75FA912233C4C790034A2AB /* LFAssetManager+Simple.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -94,8 +95,6 @@
 		6F1201BE1E5183E000EA2198 /* LFPhotoPickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFPhotoPickerController.m; sourceTree = "<group>"; };
 		6F1201C01E51884B00EA2198 /* LFLayoutPickerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFLayoutPickerController.h; sourceTree = "<group>"; };
 		6F1201C11E51884B00EA2198 /* LFLayoutPickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFLayoutPickerController.m; sourceTree = "<group>"; };
-		6F1201C31E518EBE00EA2198 /* LFAlbumPickerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFAlbumPickerController.h; sourceTree = "<group>"; };
-		6F1201C41E518EBE00EA2198 /* LFAlbumPickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFAlbumPickerController.m; sourceTree = "<group>"; };
 		6F1201D71E519E8300EA2198 /* UIAlertView+LF_Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertView+LF_Block.h"; sourceTree = "<group>"; };
 		6F1201D81E519E8300EA2198 /* UIAlertView+LF_Block.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertView+LF_Block.m"; sourceTree = "<group>"; };
 		6F1201D91E519E8300EA2198 /* UIImage+LF_ImageCompress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+LF_ImageCompress.h"; sourceTree = "<group>"; };
@@ -167,6 +166,10 @@
 		C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = LFMediaEditingController.strings; sourceTree = "<group>"; };
 		C70FDA9E20E31EFD0053A02C /* LFAssetImageProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAssetImageProtocol.h; sourceTree = "<group>"; };
 		C733DC9D209454D700FB7C50 /* LFImagePickerController+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFImagePickerController+property.h"; sourceTree = "<group>"; };
+		C75FA90E233A17980034A2AB /* LFAblumTitleView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAblumTitleView.h; sourceTree = "<group>"; };
+		C75FA90F233A17980034A2AB /* LFAblumTitleView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LFAblumTitleView.m; sourceTree = "<group>"; };
+		C75FA911233C4C790034A2AB /* LFAssetManager+Simple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+Simple.h"; sourceTree = "<group>"; };
+		C75FA912233C4C790034A2AB /* LFAssetManager+Simple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+Simple.m"; sourceTree = "<group>"; };
 		C75FE2EB20A5211900086649 /* LFAsset+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAsset+property.h"; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
@@ -324,6 +327,8 @@
 			children = (
 				6F12019E1E513FB100EA2198 /* LFAssetManager.h */,
 				6F12019F1E513FB100EA2198 /* LFAssetManager.m */,
+				C75FA911233C4C790034A2AB /* LFAssetManager+Simple.h */,
+				C75FA912233C4C790034A2AB /* LFAssetManager+Simple.m */,
 				6F74DC961E85147A00170A95 /* LFAssetManager+SaveAlbum.h */,
 				6F74DC971E85147A00170A95 /* LFAssetManager+SaveAlbum.m */,
 				6F1201AE1E51520400EA2198 /* LFAssetManager+Authorization.h */,
@@ -368,8 +373,6 @@
 			children = (
 				6F16C5951E8224EF00B251A0 /* LFBaseViewController.h */,
 				6F16C5961E8224EF00B251A0 /* LFBaseViewController.m */,
-				6F1201C31E518EBE00EA2198 /* LFAlbumPickerController.h */,
-				6F1201C41E518EBE00EA2198 /* LFAlbumPickerController.m */,
 				6F1201BD1E5183E000EA2198 /* LFPhotoPickerController.h */,
 				C7EB651720FD84E800AC2367 /* LFPhotoPickerController+preview.h */,
 				6F1201BE1E5183E000EA2198 /* LFPhotoPickerController.m */,
@@ -473,6 +476,7 @@
 		6FAA50C01ED532AC002D88A2 /* view */ = {
 			isa = PBXGroup;
 			children = (
+				C75FA909233A0A7E0034A2AB /* ablumTitleView */,
 				6FAA50C11ED532CD002D88A2 /* previewBar */,
 			);
 			path = view;
@@ -495,6 +499,15 @@
 				6FAA50C71ED5336A002D88A2 /* LFPreviewBarCell.m */,
 			);
 			path = subView;
+			sourceTree = "<group>";
+		};
+		C75FA909233A0A7E0034A2AB /* ablumTitleView */ = {
+			isa = PBXGroup;
+			children = (
+				C75FA90E233A17980034A2AB /* LFAblumTitleView.h */,
+				C75FA90F233A17980034A2AB /* LFAblumTitleView.m */,
+			);
+			path = ablumTitleView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -606,6 +619,7 @@
 				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */,
 				6FAA50C81ED5336A002D88A2 /* LFPreviewBarCell.m in Sources */,
+				C75FA913233C4C790034A2AB /* LFAssetManager+Simple.m in Sources */,
 				6FAB0D2F1F25CE3A00C1BCFD /* LFVideoEditManager.m in Sources */,
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
@@ -623,9 +637,9 @@
 				6F3378E91EDFA01B00DAB709 /* LFPhotoPreviewLivePhotoCell.m in Sources */,
 				6F1699271F15AEB9008B1818 /* LFResultObject.m in Sources */,
 				C70BABEF205904F0005B7894 /* NSBundle+LFImagePicker.m in Sources */,
+				C75FA910233A17980034A2AB /* LFAblumTitleView.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
-				6F1201C51E518EBE00EA2198 /* LFAlbumPickerController.m in Sources */,
 				6F23174A1F5E88DC00C81B60 /* LFAssetManager+CreateMedia.m in Sources */,
 				6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */,
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,

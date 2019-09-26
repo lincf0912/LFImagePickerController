@@ -11,9 +11,12 @@
 @class LFAlbum;
 @interface LFAlbumCell : UITableViewCell
 
-@property (nonatomic, strong) LFAlbum *model;
+@property (nonatomic, strong) LFAlbum *album;
 /** 封面 */
 @property (nonatomic, setter=setPosterImage:) UIImage *posterImage;
+
+/** 设置选中图片 */
+- (void)setSelectedImage:(UIImage *)image;
 
 + (CGFloat)cellHeight;
 

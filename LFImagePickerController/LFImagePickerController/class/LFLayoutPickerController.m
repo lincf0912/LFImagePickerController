@@ -166,6 +166,7 @@
     self.photoNumberIconImageName = @"photo_number_icon";
     self.photoOriginDefImageName = @"photo_original_def";
     self.photoOriginSelImageName = @"photo_original_sel";
+    self.ablumSelImageName = @"ablum_sel";
 }
 
 #pragma mark - getter custom text

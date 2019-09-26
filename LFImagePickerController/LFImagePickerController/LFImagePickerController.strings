@@ -36,10 +36,6 @@
 "_PrivacyAuthorityJumpCancelTitle" = "抱歉";
 "_cameraTakePhotoError" = "拍照错误";
 
-/* -------- LFAlbumPickerController -------*/
-"_LFAlbumPickerController_titleText_photo" = "相册";
-"_LFAlbumPickerController_titleText_video" = "视频";
-
 /* -------- LFPhotoPickerController -------*/
 "_LFPhotoPickerController_noMediaTipText" = "没有图片或视频";
 "_LFPhotoPickerController_noPhotoTipText" = "没有图片";

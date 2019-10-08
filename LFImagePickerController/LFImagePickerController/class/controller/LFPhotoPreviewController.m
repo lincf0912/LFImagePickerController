@@ -1140,13 +1140,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
     }];
     
-    
     if (self.alwaysShowPreviewBar) {
-        _doneButton.enabled = imagePickerVc.selectedModels.count;
+        _doneButton.enabled = imagePickerVc.selectedModels.count || imagePickerVc.autoSelectCurrentImage;
     } else if (_selectButton.hidden) {
-        _doneButton.enabled = imagePickerVc.selectedModels.count || !showTip;
+        _doneButton.enabled = imagePickerVc.selectedModels.count || imagePickerVc.autoSelectCurrentImage || !showTip;
     } else {
-        _doneButton.enabled = YES;
+        _doneButton.enabled = imagePickerVc.selectedModels.count || imagePickerVc.autoSelectCurrentImage;
     }
     _doneButton.backgroundColor = _doneButton.enabled ? imagePickerVc.oKButtonTitleColorNormal : imagePickerVc.oKButtonTitleColorDisabled;
     

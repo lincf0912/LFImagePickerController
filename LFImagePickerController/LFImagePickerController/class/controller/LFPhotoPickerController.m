@@ -77,6 +77,9 @@
 @property (nonatomic, assign) BOOL isPhotoPreview;
 @property (nonatomic, copy) void (^doneButtonClickBlock)(void);
 
+/** 加载动画延时 */
+@property (nonatomic, assign) float animtionDelayTime;
+
 @end
 
 @interface LFPhotoPickerController () <UIViewControllerPreviewingDelegate, PHPhotoLibraryChangeObserver, UIAdaptivePresentationControllerDelegate>
@@ -273,6 +276,7 @@
             if (![weakSelf.model isEqual:album]) {
                 weakSelf.model = album;
                 [weakSelf loadAlbumData:^{
+                    weakSelf.animtionDelayTime = 0.01;
                     [weakSelf.collectionView reloadData];
                     [weakSelf scrollCollectionViewToBottom];
                 }];
@@ -948,6 +952,22 @@
     }
     LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[_models copy] index:index];
     [self pushPhotoPrevireViewController:photoPreviewVc];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (self.animtionDelayTime > 0) {
+        self.animtionDelayTime += 0.015;
+        cell.alpha = 0;
+        [UIView animateWithDuration:0.25 delay:self.animtionDelayTime options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            cell.alpha = 1.0;
+        } completion:^(BOOL finished) {
+            
+        }];
+        if (self.models.count - 1 == indexPath.row) {
+            self.animtionDelayTime = 0;
+        }
+    }
 }
 
 #pragma mark - 拍照图片后执行代理

@@ -1,5 +1,5 @@
 //
-//  LFAblumTitleView.h
+//  LFAlbumTitleView.h
 //  LFImagePickerController
 //
 //  Created by TsanFeng Lam on 2019/9/24.
@@ -12,9 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, LFAblumTitleViewState) {
-    LFAblumTitleViewStateInactive,
-    LFAblumTitleViewStateActivity,
+typedef NS_ENUM(NSUInteger, LFAlbumTitleViewState) {
+    LFAlbumTitleViewStateInactive,
+    LFAlbumTitleViewStateActivity,
 };
 
 @interface LFAlbumTitleView : UIView
@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, LFAblumTitleViewState) {
 /** 点击背景隐藏 default YES */
 @property(nonatomic, assign, getter=isTapBackgroundHidden) BOOL tapBackgroundHidden;
 /** 状态 */
-@property (nonatomic, assign) LFAblumTitleViewState state;
+@property (nonatomic, assign) LFAlbumTitleViewState state;
 /** 点击回调 */
 @property (nonatomic, copy) void(^didSelected)(LFAlbum *album, NSInteger index);
 

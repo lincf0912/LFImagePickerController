@@ -1,5 +1,5 @@
 //
-//  LFAblumTitleView.m
+//  LFAlbumTitleView.m
 //  LFImagePickerController
 //
 //  Created by TsanFeng Lam on 2019/9/24.
@@ -10,7 +10,7 @@
 #import "LFAlbumCell.h"
 #import "LFImagePickerHeader.h"
 
-#define LFAblumTitleViewBackgroundColor [UIColor colorWithWhite:0.2 alpha:0.2]
+#define LFAlbumTitleViewBackgroundColor [UIColor colorWithWhite:0.2 alpha:0.2]
 
 @interface LFAlbumTitleView () <UITableViewDataSource, UITableViewDelegate, UIGestureRecognizerDelegate>
 
@@ -123,7 +123,7 @@
                     self.tmpIndex = 0;
                 }
                 /** 重置状态 */
-                _state = LFAblumTitleViewStateInactive;
+                _state = LFAlbumTitleViewStateInactive;
                 
                 [self createMenuView];
             } else {
@@ -138,23 +138,23 @@
         self.currentVC = nil;
         // 释放
         [self.backgroundView removeFromSuperview];
-        _state = LFAblumTitleViewStateInactive;
+        _state = LFAlbumTitleViewStateInactive;
     }
 }
 
-- (void)setState:(LFAblumTitleViewState)state
+- (void)setState:(LFAlbumTitleViewState)state
 {
     if (self.superview == nil) return;
     if (_state != state) {
         _state = state;
         switch (state) {
-            case LFAblumTitleViewStateInactive:
+            case LFAlbumTitleViewStateInactive:
             {
                 [self hiddenMenu];
             }
                 break;
                 
-            case LFAblumTitleViewStateActivity:
+            case LFAlbumTitleViewStateActivity:
             {
                 [self showMenu];
             }
@@ -254,12 +254,12 @@
 #pragma mark - action
 - (void)tapCall
 {
-    self.state = (self.state == LFAblumTitleViewStateActivity) ? LFAblumTitleViewStateInactive : LFAblumTitleViewStateActivity;
+    self.state = (self.state == LFAlbumTitleViewStateActivity) ? LFAlbumTitleViewStateInactive : LFAlbumTitleViewStateActivity;
 }
 
 - (void)backgroundViewTapCall
 {
-    self.state = LFAblumTitleViewStateInactive;
+    self.state = LFAlbumTitleViewStateInactive;
 }
 
 #pragma mark - show / hiden
@@ -344,7 +344,7 @@
     NSIndexPath *selectedIndexPath = nil;
     if (self.selectedAlbum) {
         if ([model isEqual:self.selectedAlbum]) {
-            self.state = LFAblumTitleViewStateInactive;
+            self.state = LFAlbumTitleViewStateInactive;
             return;
         }
         /** 取消所选 */
@@ -365,7 +365,7 @@
     }
     [tableView endUpdates];
     
-    self.state = LFAblumTitleViewStateInactive;
+    self.state = LFAlbumTitleViewStateInactive;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath

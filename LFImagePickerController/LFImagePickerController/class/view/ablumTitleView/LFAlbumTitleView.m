@@ -6,13 +6,13 @@
 //  Copyright © 2019 LamTsanFeng. All rights reserved.
 //
 
-#import "LFAblumTitleView.h"
+#import "LFAlbumTitleView.h"
 #import "LFAlbumCell.h"
 #import "LFImagePickerHeader.h"
 
 #define LFAblumTitleViewBackgroundColor [UIColor colorWithWhite:0.2 alpha:0.2]
 
-@interface LFAblumTitleView () <UITableViewDataSource, UITableViewDelegate, UIGestureRecognizerDelegate>
+@interface LFAlbumTitleView () <UITableViewDataSource, UITableViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, weak) UIControl *control;
 @property(nonatomic, weak) UIImageView *imageView;
@@ -36,7 +36,7 @@
 
 @end
 
-@implementation LFAblumTitleView
+@implementation LFAlbumTitleView
 
 - (instancetype)init
 {

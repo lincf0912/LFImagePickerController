@@ -24,7 +24,7 @@
 #import "LFAssetManager+SaveAlbum.h"
 #import "LFAssetManager+Simple.h"
 
-#import "LFAblumTitleView.h"
+#import "LFAlbumTitleView.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
@@ -69,7 +69,7 @@
 @property (nonatomic, weak) LFCollectionView *collectionView;
 @property (nonatomic, weak) UIView *bottomToolBar;
 
-@property (nonatomic, weak) LFAblumTitleView *titleView;
+@property (nonatomic, weak) LFAlbumTitleView *titleView;
 
 @property (nonatomic, strong) NSMutableArray <LFAlbum *>*albumArr;
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*models;
@@ -254,7 +254,7 @@
     
     if (self.model) {
         /** 创建titleView */
-        LFAblumTitleView *titleView = [[LFAblumTitleView alloc] init];
+        LFAlbumTitleView *titleView = [[LFAlbumTitleView alloc] init];
         titleView.albumArr = self.albumArr;
         titleView.selectImageName = imagePickerVc.ablumSelImageName;
         titleView.title = imagePickerVc.defaultAlbumName;

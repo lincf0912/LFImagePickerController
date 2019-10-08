@@ -17,7 +17,7 @@ typedef NS_ENUM(NSUInteger, LFAblumTitleViewState) {
     LFAblumTitleViewStateActivity,
 };
 
-@interface LFAblumTitleView : UIView
+@interface LFAlbumTitleView : UIView
 
 + (instancetype)titleView;
 - (instancetype)initWithIndex:(NSInteger)index;

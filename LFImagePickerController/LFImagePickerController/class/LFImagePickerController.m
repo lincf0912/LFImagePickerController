@@ -54,50 +54,46 @@
     [LFAssetManager manager].sortAscendingByCreateDate = self.sortAscendingByCreateDate;
     [LFAssetManager manager].allowPickingType = self.allowPickingType;
     
-    if (!_isPreview) { /** 非预览模式 */
-        if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
-            
-            UIView *tipView = [[UIView alloc] initWithFrame:self.view.bounds];
-            
-            UILabel *_tipLabel = [[UILabel alloc] init];
-            _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
-            _tipLabel.textAlignment = NSTextAlignmentCenter;
-            _tipLabel.numberOfLines = 0;
-            _tipLabel.font = [UIFont systemFontOfSize:16];
-            _tipLabel.textColor = [UIColor blackColor];
-            NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
-            if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
-            NSString *tipText = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_photoLibraryAuthorityTipText"],appName];
-            _tipLabel.text = tipText; 
-            [tipView addSubview:_tipLabel];
-            
-            UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
-            [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
-            _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
-            _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
-            [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
-            [tipView addSubview:_settingBtn];
-            
-            CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
-            
-            UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
-            [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
-            _cancelBtn.titleLabel.font = self.barItemTextFont;
-            _cancelBtn.titleLabel.textColor = self.barItemTextColor;
-            [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
-            [tipView addSubview:_cancelBtn];
-            _tip_cancelBtn = _cancelBtn;
-            
-            [self.view addSubview:tipView];
-            _tipView = tipView;
-            
-            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
-            
-        } else {
-            [self pushPhotoPickerVc];
-        }
+    if (![[LFAssetManager manager] authorizationStatusAuthorized]) {
+        
+        UIView *tipView = [[UIView alloc] initWithFrame:self.view.bounds];
+        
+        UILabel *_tipLabel = [[UILabel alloc] init];
+        _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
+        _tipLabel.textAlignment = NSTextAlignmentCenter;
+        _tipLabel.numberOfLines = 0;
+        _tipLabel.font = [UIFont systemFontOfSize:16];
+        _tipLabel.textColor = [UIColor blackColor];
+        NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
+        if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
+        NSString *tipText = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_photoLibraryAuthorityTipText"],appName];
+        _tipLabel.text = tipText;
+        [tipView addSubview:_tipLabel];
+        
+        UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+        [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
+        _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
+        _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
+        [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
+        [tipView addSubview:_settingBtn];
+        
+        CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
+        
+        UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
+        [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
+        _cancelBtn.titleLabel.font = self.barItemTextFont;
+        _cancelBtn.titleLabel.textColor = self.barItemTextColor;
+        [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
+        [tipView addSubview:_cancelBtn];
+        _tip_cancelBtn = _cancelBtn;
+        
+        [self.view addSubview:tipView];
+        _tipView = tipView;
+        
+        _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
+        
     } else {
-        [self pushPreviewPickerVc];
+        [self pushPhotoPickerVc];
     }
 }
 
@@ -418,29 +414,32 @@
 - (void)pushPhotoPickerVc {
     if (!_didPushPhotoPickerVc) {
         _didPushPhotoPickerVc = NO;
-        LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-        [self setViewControllers:@[photoPickerVc] animated:YES];
+        
+        LFPhotoPickerController *photoPickerVc = nil;
+        if (self.photoPickerVc) {
+            photoPickerVc = self.photoPickerVc;
+        } else {
+            photoPickerVc = [[LFPhotoPickerController alloc] init];
+        }
+        
+        if (self.previewVc) {
+            if (self.isSystemAsset) {
+                // 系统相册解析
+                [self setViewControllers:@[photoPickerVc] animated:NO];
+                [photoPickerVc pushPhotoPrevireViewController:self.previewVc];
+            } else {
+                // 自定义block解析
+                [self setViewControllers:@[photoPickerVc, self.previewVc] animated:YES];
+            }
+        } else {
+            [self setViewControllers:@[photoPickerVc] animated:YES];
+        }
+        
+        self.photoPickerVc = nil;
+        self.previewVc = nil;
 
         _didPushPhotoPickerVc = YES;
     }
-}
-
-- (void)pushPreviewPickerVc {
-    if (self.photoPickerVc) {
-        [self setViewControllers:@[self.photoPickerVc] animated:YES];
-    } else
-    if (self.previewVc) {
-        if (self.isSystemAsset) {
-            LFPhotoPickerController *photoPickerVc = [[LFPhotoPickerController alloc] init];
-            [self setViewControllers:@[photoPickerVc] animated:NO];
-            [photoPickerVc pushPhotoPrevireViewController:self.previewVc];
-        } else {
-            [self setViewControllers:@[self.previewVc] animated:YES];
-        }
-    }
-    self.photoPickerVc = nil;
-    self.previewVc = nil;
-    self.isSystemAsset = NO;
 }
 
 - (void)setColumnNumber:(NSUInteger)columnNumber {

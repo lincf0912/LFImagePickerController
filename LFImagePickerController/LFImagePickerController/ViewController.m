@@ -165,6 +165,9 @@
         [self.thumbnailImageVIew setImage:nil];
         [self.imageView setImage:photos.firstObject.assetImage];
     }];
+    imagePicker.imagePickerControllerDidCancelHandle = ^{
+        
+    };
     /** 全选 */
     imagePicker.selectedAssets = array;
     /** 关闭自动选中 */
@@ -188,6 +191,9 @@
         [self.thumbnailImageVIew setImage:photos.firstObject.thumbnailImage];
         [self.imageView setImage:photos.firstObject.originalImage];
     }];
+    imagePicker.imagePickerControllerDidCancelHandle = ^{
+        
+    };
     /** 全选 */
 //    imagePicker.selectedAssets = array;
     /** 关闭自动选中 */

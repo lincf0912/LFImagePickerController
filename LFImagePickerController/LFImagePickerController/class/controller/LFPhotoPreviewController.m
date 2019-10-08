@@ -39,9 +39,9 @@ CGFloat const previewBarDefaultHeight = 64.f;
 CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 #ifdef LF_MEDIAEDIT
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
 #else
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate>
 #endif
 {
     UIView *_naviBar;
@@ -176,6 +176,19 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelNormal;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    if (@available(iOS 13.0, *)) {
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+        if (imagePickerVc.modalPresentationStyle == UIModalPresentationAutomatic || imagePickerVc.modalPresentationStyle == UIModalPresentationPageSheet) {
+            imagePickerVc.presentationController.delegate = self;
+            // 手动接收dismiss
+            self.modalInPresentation = YES;
+        }
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -1078,6 +1091,42 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
 }
 #endif
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (void)presentationControllerDidAttemptToDismiss:(UIPresentationController *)presentationController
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    if (_doneButton.enabled) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:imagePickerVc.doneBtnTitleStr style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [self doneButtonClick];
+        }]];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"Discard Select" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+            if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+                [imagePickerVc performSelector:@selector(cancelButtonClick)];
+            }
+#pragma clang diagnostic pop
+        }]];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil]];
+        
+        // The popover should point at the Cancel button
+        alert.popoverPresentationController.barButtonItem = self.navigationItem.leftBarButtonItem;
+        
+        [self presentViewController:alert animated:YES completion:nil];
+    } else {
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wundeclared-selector"
+        if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
+            [imagePickerVc performSelector:@selector(cancelButtonClick)];
+        }
+        #pragma clang diagnostic pop
+    }
+}
 
 #pragma mark - Private Method
 

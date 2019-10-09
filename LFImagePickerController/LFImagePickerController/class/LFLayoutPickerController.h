@@ -20,7 +20,6 @@
 @property (nonatomic, copy) NSString *photoDefImageName;
 @property (nonatomic, copy) NSString *photoOriginSelImageName;
 @property (nonatomic, copy) NSString *photoOriginDefImageName;
-@property (nonatomic, copy) NSString *photoNumberIconImageName;
 @property (nonatomic, copy) NSString *ablumSelImageName;
 
 /// 自定义外观颜色

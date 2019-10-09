@@ -82,7 +82,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.backgroundColor = [UIColor blackColor];
+        self.backgroundColor = [UIColor clearColor];
         
         _scrollView = [[UIScrollView alloc] init];
         _scrollView.frame = CGRectMake(0, 0, self.width, self.height);
@@ -234,7 +234,7 @@
         if ([UIScreen mainScreen].bounds.size.width < [UIScreen mainScreen].bounds.size.height) {
             isLongImage = scrollViewSize.width > newSize.width;
         } else {
-            isLongImage = newSize.width < 200;
+            isLongImage = newSize.width < self.bounds.size.height * 0.6;
         }
         if (isLongImage) { /** 长图 */
             newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];

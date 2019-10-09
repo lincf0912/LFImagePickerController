@@ -899,7 +899,7 @@
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     
     cell.photoDefImageName = imagePickerVc.photoDefImageName;
-    cell.photoSelImageName = imagePickerVc.photoNumberIconImageName;
+    cell.photoSelImageName = imagePickerVc.photoSelImageName;
     cell.displayGif = imagePickerVc.allowPickingType&LFPickingMediaTypeGif;
     cell.displayLivePhoto = imagePickerVc.allowPickingType&LFPickingMediaTypeLivePhoto;
     cell.displayPhotoName = imagePickerVc.displayImageFilename;

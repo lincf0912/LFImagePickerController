@@ -140,20 +140,20 @@
 
 - (void)configDefaultSetting {
     
-    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(26/255.0) green:(173/255.0) blue:(25/255.0) alpha:1.0];
-    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(23/255.0) green:(82/255.0) blue:(22/255.0) alpha:1.0];
-    self.naviBgColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:1.0];
+    self.oKButtonTitleColorNormal   = [UIColor colorWithRed:(32/255.0) green:(189/255.0) blue:(99/255.0) alpha:1.0];
+    self.oKButtonTitleColorDisabled = [UIColor colorWithRed:(83/255.0) green:(83/255.0) blue:(83/255.0) alpha:1.0];
+    self.naviBgColor = [UIColor colorWithRed:(50/255.0) green:(50/255.0)  blue:(50/255.0) alpha:0.9];
     self.naviTitleColor = [UIColor whiteColor];
-    self.naviTitleFont = [UIFont systemFontOfSize:17];
+    self.naviTitleFont = [UIFont systemFontOfSize:18];
     self.naviTipsTextColor = [UIColor whiteColor];
-    self.naviTipsFont = [UIFont boldSystemFontOfSize:12];
-    self.barItemTextFont = [UIFont systemFontOfSize:15];
+    self.naviTipsFont = [UIFont boldSystemFontOfSize:14];
+    self.barItemTextFont = [UIFont systemFontOfSize:17];
     self.barItemTextColor = [UIColor whiteColor];
-    self.toolbarBgColor = [UIColor colorWithWhite:.1f alpha:0.9];
+    self.toolbarBgColor = [UIColor colorWithRed:(68/255.0) green:(68/255.0)  blue:(68/255.0) alpha:0.9];
     self.toolbarTitleColorNormal = [UIColor whiteColor];
-    self.toolbarTitleColorDisabled = [UIColor colorWithRed:(92/255.0) green:(102/255.0) blue:(106/255.0) alpha:1.0];
-    self.toolbarTitleFont = [UIFont systemFontOfSize:14];
-    self.previewNaviBgColor = [UIColor colorWithRed:(36/255.0) green:(36/255.0)  blue:(36/255.0) alpha:0.9];
+    self.toolbarTitleColorDisabled = [UIColor colorWithRed:(112/255.0) green:(112/255.0) blue:(112/255.0) alpha:1.0];
+    self.toolbarTitleFont = [UIFont systemFontOfSize:17];
+    self.previewNaviBgColor = [UIColor colorWithRed:(33/255.0) green:(33/255.0)  blue:(32/255.0) alpha:0.9];
     
     
     [self configDefaultImageName];
@@ -161,9 +161,8 @@
 
 - (void)configDefaultImageName {
     self.takePictureImageName = @"takePicture";
-    self.photoSelImageName = @"photo_sel_photoPickerVc";
-    self.photoDefImageName = @"photo_def_photoPickerVc";
-    self.photoNumberIconImageName = @"photo_number_icon";
+    self.photoSelImageName = @"photo_album_sel";
+    self.photoDefImageName = @"photo_album_def";
     self.photoOriginDefImageName = @"photo_original_def";
     self.photoOriginSelImageName = @"photo_original_sel";
     self.ablumSelImageName = @"ablum_sel";

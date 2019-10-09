@@ -35,7 +35,7 @@
 CGFloat const cellMargin = 20.f;
 CGFloat const livePhotoSignMargin = 10.f;
 CGFloat const toolbarDefaultHeight = 44.f;
-CGFloat const previewBarDefaultHeight = 64.f;
+CGFloat const previewBarDefaultHeight = 88.f;
 CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 #ifdef LF_MEDIAEDIT
@@ -448,7 +448,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, 0, self.view.width, previewBarDefaultHeight)];
     _previewBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     _previewBar.backgroundColor = [UIColor clearColor];
-    _previewBar.borderWidth = 2.f;
+    _previewBar.borderWidth = 4.f;
     _previewBar.borderColor = imagePickerVc.oKButtonTitleColorNormal;
     _previewBar.dataSource = [imagePickerVc.selectedModels copy];
     /** 预览栏默认全选 */
@@ -1136,7 +1136,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _selectButton.selected = [imagePickerVc.selectedModels containsObject:model];
     if (_selectButton.selected) {
         NSString *text = [NSString stringWithFormat:@"%d", (int)[imagePickerVc.selectedModels indexOfObject:model]+1];
-        UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoNumberIconImageName) text:text];
+        UIImage *image = [UIImage lf_mergeImage:bundleImageNamed(imagePickerVc.photoSelImageName) text:text];
         [_selectButton setImage:image forState:UIControlStateSelected];
     }
     _naviTipsLabel.text = nil;

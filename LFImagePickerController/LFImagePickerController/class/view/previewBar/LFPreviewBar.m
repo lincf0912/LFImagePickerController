@@ -51,7 +51,7 @@
     _borderWidth = 2.f;
     _borderColor = [UIColor blackColor];
     
-    CGFloat margin = 5.f;
+    CGFloat margin = 15.f;
     CGFloat itemH = CGRectGetHeight(self.bounds) - margin * 2;
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
@@ -127,43 +127,49 @@
 
 - (void)setSelectAsset:(LFAsset *)selectAsset
 {
-    NSMutableArray *indexPaths = [@[] mutableCopy];
-
-    if (_selectAsset) {
-        NSInteger index = [self.myDataSource indexOfObject:_selectAsset];
-        if (index != NSNotFound) {
-            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-            [indexPaths addObject:indexPath];
-        }
-    }
-    
     if (_selectAsset != selectAsset) {
+        
+        LFAsset *oldAsset = _selectAsset;
         /** 刷新+滚动 */
         _selectAsset = selectAsset;
         
-        if (_selectAsset) {
-            NSInteger preIndex = [self.myDataSource indexOfObject:_selectAsset];
-            if (preIndex != NSNotFound) {
-                NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:preIndex inSection:0];
-                [indexPaths addObject:preIndexPath];
+        
+        if (oldAsset) {
+            NSInteger index = [self.myDataSource indexOfObject:oldAsset];
+            if (index != NSNotFound) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+                if (cell) {
+                    [self selectCell:cell asset:oldAsset];
+                } else {
+                    [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+                }
+            }
+        }
+        
+        if (selectAsset) {
+            NSInteger index = [self.myDataSource indexOfObject:selectAsset];
+            if (index != NSNotFound) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+                if (cell) {
+                    [self selectCell:cell asset:selectAsset];
+                } else {
+                    [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+                }
+                [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+            }
+        }
+    } else {
+        if (selectAsset) {
+            NSInteger index = [self.myDataSource indexOfObject:selectAsset];
+            if (index != NSNotFound) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
             }
         }
     }
     
-    if (indexPaths.count) {
-        __weak typeof(self.selectAsset) weakSelectAsset = self.selectAsset;
-        [self.collectionView performBatchUpdates:^{
-            [self.collectionView reloadItemsAtIndexPaths:indexPaths];
-        } completion:^(BOOL finished) {
-            if (weakSelectAsset) {
-                NSInteger index = [self.myDataSource indexOfObject:weakSelectAsset];
-                if (index != NSNotFound) {
-                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-                    [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
-                }
-            }
-        }];
-    }
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -183,12 +189,7 @@
     cell.asset = asset;
     cell.isSelectedAsset = [self.selectedDataSource containsObject:asset];
     
-    if (asset == self.selectAsset) {
-        cell.layer.borderColor = self.borderColor.CGColor;
-        cell.layer.borderWidth = self.borderWidth;
-    } else {
-        cell.layer.borderWidth = 0.f;
-    }
+    [self selectCell:cell asset:asset];
     
     return cell;
 }
@@ -345,6 +346,16 @@
 }
 
 #pragma mark - private
+- (void)selectCell:(UICollectionViewCell *)cell asset:(LFAsset *)asset
+{
+    if (asset == self.selectAsset) {
+        cell.layer.borderColor = self.borderColor.CGColor;
+        cell.layer.borderWidth = self.borderWidth;
+    } else {
+        cell.layer.borderWidth = 0.f;
+    }
+}
+
 - (void)starShake:(UIView *)view{
     
     CAKeyframeAnimation * keyAnimaion = [CAKeyframeAnimation animation];

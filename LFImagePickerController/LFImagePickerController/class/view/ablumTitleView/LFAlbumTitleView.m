@@ -391,11 +391,13 @@
 - (void)updateTitleView
 {
     CGFloat margin = 7.0;
+    CGFloat insetMargin = 6.0;
     CGSize imageSize = _imageView.image.size;
     if (self.frame.size.height - 2*margin < imageSize.height) {
         CGFloat tmpHeight = imageSize.height;
         imageSize.height = self.frame.size.height - 2*margin;
         imageSize.width = imageSize.width*imageSize.height/tmpHeight;
+        insetMargin = MIN(2.0, insetMargin-tmpHeight+imageSize.height);
     }
 
     CGSize textSize = [_titleLabel.text boundingRectWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font, NSForegroundColorAttributeName:_titleLabel.textColor} context:nil].size;
@@ -424,7 +426,7 @@
     
     self.control.frame = rect;
     // draw background
-    CGRect controllBounds = CGRectInset(self.control.bounds, 0, 6);
+    CGRect controllBounds = CGRectInset(self.control.bounds, 0, insetMargin);
     if (self.controlMaskLayer == nil) {
         CALayer *layer = [self createMaskLayer];
         self.control.layer.mask = layer;

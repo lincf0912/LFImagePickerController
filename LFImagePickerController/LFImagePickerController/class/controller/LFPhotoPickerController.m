@@ -39,6 +39,11 @@ CGFloat const bottomToolBarHeight = 50.f;
 
 @interface LFCollectionView : UICollectionView
 
+/** 记录屏幕旋转前的数据 */
+@property (nonatomic, assign) CGPoint oldContentOffset;
+@property (nonatomic, assign) CGSize oldContentSize;
+@property (nonatomic, assign) CGRect oldCollectionViewRect;
+
 @end
 
 @implementation LFCollectionView
@@ -247,6 +252,7 @@ CGFloat const bottomToolBarHeight = 50.f;
     if (imagePickerVc.syncAlbum) {
         [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];    //移除监听者
     }
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)dealloc
@@ -298,6 +304,9 @@ CGFloat const bottomToolBarHeight = 50.f;
         [self configCollectionView];
         [self configBottomToolBar];
         [self scrollCollectionViewToBottom];
+        
+        // 监听屏幕旋转
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
     }
     
 }
@@ -1565,6 +1574,56 @@ CGFloat const bottomToolBarHeight = 50.f;
             }
         }
     });
+}
+
+#pragma mark - UIContentContainer
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
+{
+    _collectionView.oldContentOffset = _collectionView.contentOffset;
+    _collectionView.oldContentSize = _collectionView.contentSize;
+    _collectionView.oldCollectionViewRect = _collectionView.frame;
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    _collectionView.oldContentOffset = _collectionView.contentOffset;
+    _collectionView.oldContentSize = _collectionView.contentSize;
+    _collectionView.oldCollectionViewRect = _collectionView.frame;
+}
+
+#pragma mark - UIDeviceOrientationDidChangeNotification
+- (void)orientationDidChange:(NSNotification *)notify
+{
+    if (UIDeviceOrientationIsValidInterfaceOrientation([[UIDevice currentDevice] orientation])) {
+        
+        // 计算collectionView旋转后的相对位置
+        CGRect collectionViewRect = _collectionView.frame;
+        CGRect oldCollectionViewRect = _collectionView.oldCollectionViewRect;
+        CGPoint oldContentOffset = _collectionView.oldContentOffset;
+        CGSize oldContentSize = _collectionView.oldContentSize;
+        
+        if (!CGRectEqualToRect(oldCollectionViewRect, CGRectZero) && !CGRectEqualToRect(collectionViewRect, oldCollectionViewRect)) {
+            UICollectionViewFlowLayout *flowLayout = (UICollectionViewFlowLayout *)_collectionView.collectionViewLayout;
+
+            CGFloat itemWH = flowLayout.itemSize.width;
+            CGFloat margin = flowLayout.minimumLineSpacing;
+            // 一行的数量
+            int columnNumber = (int)(collectionViewRect.size.width / (itemWH + margin));
+            // 总数/每行的数量=总行数
+            int lineNumber = (int)((_models.count + columnNumber - 1 + (_showTakePhotoBtn ? 1 : 0)) / columnNumber);
+            // 总行数*每行高度+总行数之间的间距 (上下间距 不在contentSize范围内)
+            CGFloat newContentSizeHeight = lineNumber * itemWH + (lineNumber - 1) * margin;// + margin * 2;
+
+            CGFloat contentOffsetY = -_collectionView.contentInset.top;
+            if (oldContentOffset.y+_collectionView.contentInset.top > 0) { // 临界点横屏时不用计算
+                CGFloat ratio = (oldContentOffset.y + oldCollectionViewRect.size.height) / oldContentSize.height;
+                contentOffsetY = newContentSizeHeight * ratio - collectionViewRect.size.height;
+            }
+            /** 限制有效范围 */
+            contentOffsetY = MIN(MAX(-_collectionView.contentInset.top, contentOffsetY), newContentSizeHeight-collectionViewRect.size.height+_collectionView.contentInset.top);
+            [_collectionView setContentOffset:CGPointMake(_collectionView.contentOffset.x, contentOffsetY) animated:NO];
+        }
+    }
 }
 
 @end

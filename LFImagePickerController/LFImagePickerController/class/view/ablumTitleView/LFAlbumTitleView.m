@@ -18,11 +18,12 @@
 @property(nonatomic, weak) UIImageView *imageView;
 @property(nonatomic, weak) UILabel *titleLabel;
 @property(nonatomic, weak) UIView *cornerView;
+@property(nonatomic, weak) CAShapeLayer *cornerViewMaskLayer;
 @property(nonatomic, strong) UIView *backgroundView;
 
-@property(nonatomic, weak) CALayer *controlMarkLayer;
-@property(nonatomic, weak) CALayer *titleLabelMarkLayer;
-@property(nonatomic, weak) CALayer *imageViewMarkLayer;
+@property(nonatomic, weak) CALayer *controlMaskLayer;
+@property(nonatomic, weak) CALayer *titleLabelMaskLayer;
+@property(nonatomic, weak) CALayer *imageViewMaskLayer;
 
 @property(nonatomic, weak) UITableView *tableView;
 
@@ -69,6 +70,11 @@
     [self updateTitleView];
 }
 
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (void)customInit
 {
     self.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 44.0);
@@ -102,6 +108,9 @@
     [imageView setContentMode:UIViewContentModeScaleAspectFit];
     [self.control addSubview:imageView];
     _imageView = imageView;
+    
+    // 监听屏幕旋转
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
 }
 
 + (BOOL)accessInstanceVariablesDirectly
@@ -267,6 +276,7 @@
 #pragma mark - show / hiden
 - (void)showMenu
 {
+    [self updateBackgroundView];
     UIView *view = self.currentVC.view;
     CGRect showRect = view.bounds;
     showRect.origin.y -= showRect.size.height;
@@ -380,30 +390,17 @@
 #pragma mark update frame
 - (void)updateTitleView
 {
-    // 列表
-    if (!self.isAnimating) {
-        UIView *view = self.currentVC.view;
-        UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
-        if (@available(iOS 11.0, *)) {
-            safeAreaInsets = view.safeAreaInsets;
-        }
-        self.backgroundView.frame = view.bounds;
-        // 圆角
-        self.cornerView.frame = CGRectMake(0, safeAreaInsets.top, self.backgroundView.bounds.size.width, self.backgroundView.bounds.size.height-safeAreaInsets.top-safeAreaInsets.bottom-34);
-        
-        UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.cornerView.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(8, 8)];
-        CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
-        maskLayer.frame = self.cornerView.bounds;
-        maskLayer.path = maskPath.CGPath;
-        self.cornerView.layer.mask = maskLayer;
-    }
-    
+    CGFloat margin = 7.0;
     CGSize imageSize = _imageView.image.size;
+    if (self.frame.size.height - 2*margin < imageSize.height) {
+        CGFloat tmpHeight = imageSize.height;
+        imageSize.height = self.frame.size.height - 2*margin;
+        imageSize.width = imageSize.width*imageSize.height/tmpHeight;
+    }
 
     CGSize textSize = [_titleLabel.text boundingRectWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, MAXFLOAT) options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font, NSForegroundColorAttributeName:_titleLabel.textColor} context:nil].size;
     textSize.width = ceil(textSize.width)+1.0;
     
-    CGFloat margin = 7.0;
     CGRect rect = self.control.frame;
     rect.size.height = self.frame.size.height;
     rect.size.width = textSize.width + margin*2.0;
@@ -419,55 +416,76 @@
     self.control.center = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
     
     CGRect oldRect = self.control.frame;
-    CGRect oldMarkRect = self.controlMarkLayer.frame;
-    CGRect oldTitleLabelRect = self.titleLabel.frame;
-    CGRect oldTitlelabelMarkRect = self.titleLabelMarkLayer.frame;
+    CGRect oldMaskRect = self.controlMaskLayer.frame;
+//    CGRect oldTitleLabelRect = self.titleLabel.frame;
+    CGRect oldTitlelabelMaskRect = self.titleLabelMaskLayer.frame;
     CGRect oldImageRect = self.imageView.frame;
-    CGRect oldImageMarkRect = self.imageViewMarkLayer.frame;
+    CGRect oldImageMaskRect = self.imageViewMaskLayer.frame;
     
     self.control.frame = rect;
     // draw background
     CGRect controllBounds = CGRectInset(self.control.bounds, 0, 6);
-    if (self.controlMarkLayer == nil) {
-        CALayer *layer = [self createMarkLayer];
+    if (self.controlMaskLayer == nil) {
+        CALayer *layer = [self createMaskLayer];
         self.control.layer.mask = layer;
-        self.controlMarkLayer = layer;
+        self.controlMaskLayer = layer;
     }
-    self.controlMarkLayer.bounds = (CGRect){CGPointZero, controllBounds.size};
-    self.controlMarkLayer.position = controllBounds.origin;
-    self.controlMarkLayer.cornerRadius = CGRectGetHeight(controllBounds)/2;
+    self.controlMaskLayer.bounds = (CGRect){CGPointZero, controllBounds.size};
+    self.controlMaskLayer.position = controllBounds.origin;
+    self.controlMaskLayer.cornerRadius = CGRectGetHeight(controllBounds)/2;
     
     CGRect titleLabelRect = CGRectMake(margin, (CGRectGetHeight(rect)-textSize.height)/2, textSize.width, textSize.height);
     self.titleLabel.frame = titleLabelRect;
-    if (self.titleLabelMarkLayer == nil) {
-        CALayer *layer = [self createMarkLayer];
+    if (self.titleLabelMaskLayer == nil) {
+        CALayer *layer = [self createMaskLayer];
         self.titleLabel.layer.mask = layer;
-        self.titleLabelMarkLayer = layer;
+        self.titleLabelMaskLayer = layer;
     }
-    self.titleLabelMarkLayer.bounds = self.titleLabel.bounds;
+    self.titleLabelMaskLayer.bounds = self.titleLabel.bounds;
     
     self.imageView.frame = CGRectMake(CGRectGetMaxX(titleLabelRect)+margin, (CGRectGetHeight(rect)-imageSize.height)/2, imageSize.width, imageSize.height);
     CGRect imageViewBounds = self.imageView.bounds;
-    if (self.imageViewMarkLayer == nil) {
-        CALayer *layer = [self createMarkLayer];
+    if (self.imageViewMaskLayer == nil) {
+        CALayer *layer = [self createMaskLayer];
         self.imageView.layer.mask = layer;
-        self.imageViewMarkLayer = layer;
+        self.imageViewMaskLayer = layer;
     }
-    self.imageViewMarkLayer.bounds = (CGRect){CGPointZero, imageViewBounds.size};
-    self.imageViewMarkLayer.cornerRadius = CGRectGetHeight(imageViewBounds)/2;
+    self.imageViewMaskLayer.bounds = (CGRect){CGPointZero, imageViewBounds.size};
+    self.imageViewMaskLayer.cornerRadius = CGRectGetHeight(imageViewBounds)/2;
     
     if (self.enableAnimated)
     {
         CGFloat duration = .25;
         [self makeAnimationWithDruation:duration layer:self.control.layer oldRect:oldRect cornerRadius:NO];
-        [self makeAnimationWithDruation:duration layer:self.controlMarkLayer oldRect:oldMarkRect cornerRadius:YES];
+        [self makeAnimationWithDruation:duration layer:self.controlMaskLayer oldRect:oldMaskRect cornerRadius:YES];
 //        [self makeAnimationWithDruation:duration layer:self.titleLabel.layer oldRect:oldTitleLabelRect cornerRadius:NO];
-        [self makeAnimationWithDruation:duration layer:self.titleLabelMarkLayer oldRect:oldTitlelabelMarkRect cornerRadius:NO];
+        [self makeAnimationWithDruation:duration layer:self.titleLabelMaskLayer oldRect:oldTitlelabelMaskRect cornerRadius:NO];
         [self makeAnimationWithDruation:duration layer:self.imageView.layer oldRect:oldImageRect cornerRadius:NO];
-        [self makeAnimationWithDruation:duration layer:self.imageViewMarkLayer oldRect:oldImageMarkRect cornerRadius:YES];
+        [self makeAnimationWithDruation:duration layer:self.imageViewMaskLayer oldRect:oldImageMaskRect cornerRadius:YES];
     }
     
     self.enableAnimated = NO;
+}
+
+- (void)updateBackgroundView
+{
+    UIView *view = self.currentVC.view;
+    UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        safeAreaInsets = view.safeAreaInsets;
+    }
+    self.backgroundView.frame = view.bounds;
+    // 圆角
+    self.cornerView.frame = CGRectMake(0, safeAreaInsets.top, self.backgroundView.bounds.size.width, self.backgroundView.bounds.size.height-safeAreaInsets.top-safeAreaInsets.bottom-40);
+    
+    UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.cornerView.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(8, 8)];
+    if (self.cornerViewMaskLayer == nil) {
+        CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+        maskLayer.frame = self.cornerView.bounds;
+        self.cornerView.layer.mask = maskLayer;
+        self.cornerViewMaskLayer = maskLayer;
+    }
+    self.cornerViewMaskLayer.path = maskPath.CGPath;
 }
 
 #pragma mark animated
@@ -499,6 +517,11 @@
     }
 }
 
+#pragma mark - UIDeviceOrientationDidChangeNotification
+- (void)orientationDidChange:(NSNotification *)notify
+{
+    [self updateBackgroundView];
+}
 
 #pragma mark getCurrentVC
 - (UIViewController *)getCurrentVC
@@ -536,8 +559,8 @@
     return currentVC;
 }
 
-#pragma mark - create mark layer
-- (CALayer *)createMarkLayer
+#pragma mark - create Mask layer
+- (CALayer *)createMaskLayer
 {
     CALayer *layer = [CALayer layer];
     layer.anchorPoint = CGPointZero;

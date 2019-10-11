@@ -124,11 +124,8 @@
 
 - (void)setSelectedImage:(UIImage *)image
 {
-    if (image) {
-        self.selectedImageView.image = image;
-    } else {
-        [_selectedImageView removeFromSuperview];
-    }
+    self.selectedImageView.image = image;
+    [_selectedImageView setHidden:image == nil];
 }
 
 - (void)prepareForReuse
@@ -143,8 +140,8 @@
     
     /** 居中 */
     _posterImageView.centerY = self.contentView.height/2;
-    _titleLabel.frame = CGRectMake(80, 0, self.width - 80 - 50, self.height);
-    _selectedImageView.frame = CGRectMake(self.width-30-10, (self.height-30)/2, 30, 30);
+    _titleLabel.frame = CGRectMake(80, 0, self.contentView.width - 80 - 50, self.contentView.height);
+    _selectedImageView.frame = CGRectMake(self.contentView.width-30-10, (self.contentView.height-30)/2, 30, 30);
 }
 
 + (CGFloat)cellHeight
@@ -159,7 +156,7 @@
         UIImageView *posterImageView = [[UIImageView alloc] init];
         posterImageView.contentMode = UIViewContentModeScaleAspectFill;
         posterImageView.clipsToBounds = YES;
-        posterImageView.frame = CGRectMake(0, 0, 70, 70);
+        posterImageView.frame = CGRectMake(0, 0, self.contentView.height, self.contentView.height);
         [self.contentView addSubview:posterImageView];
         _posterImageView = posterImageView;
     }
@@ -170,7 +167,7 @@
     if (_titleLabel == nil) {
         UILabel *titleLabel = [[UILabel alloc] init];
         titleLabel.font = [UIFont boldSystemFontOfSize:17];
-        titleLabel.frame = CGRectMake(80, 0, self.width - 80 - 50, self.height);
+        titleLabel.frame = CGRectMake(80, 0, self.contentView.width - 80 - 50, self.contentView.height);
         titleLabel.textColor = [UIColor blackColor];
         titleLabel.textAlignment = NSTextAlignmentLeft;
         [self.contentView addSubview:titleLabel];
@@ -185,7 +182,7 @@
         UIImageView *selectedImageView = [[UIImageView alloc] init];
         selectedImageView.contentMode = UIViewContentModeScaleAspectFit;
         selectedImageView.clipsToBounds = YES;
-        selectedImageView.frame = CGRectMake(self.width-30-10, (self.height-30)/2, 30, 30);
+        selectedImageView.frame = CGRectMake(self.contentView.width-30-10, (self.contentView.height-30)/2, 30, 30);
         [self.contentView addSubview:selectedImageView];
         _selectedImageView = selectedImageView;
     }

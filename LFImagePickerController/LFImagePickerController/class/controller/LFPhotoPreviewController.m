@@ -111,6 +111,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     self = [super init];
     if (self) {
         self.isHiddenNavBar = YES;
+        /** 刘海屏的顶部一直会存在安全区域，window的显示区域不在刘海屏范围，调整window的层级无法遮挡状态栏。 */
+        if (@available(iOS 11.0, *)) {
+            if ([[UIApplication sharedApplication] delegate].window.safeAreaInsets.bottom > 0) {
+                self.isHiddenStatusBar = YES;
+            }
+        }
     }
     return self;
 }
@@ -153,7 +159,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [self configCustomNaviBar];
         [self configBottomToolBar];
         [self configPreviewBar];
+        [self configNaviTipsView];
         [self configLivePhotoSign];
+        [self configPullDown];
+        
         [self refreshNaviBarAndBottomBarState];
     }
 }
@@ -188,20 +197,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [self configPreviewBar];
         [self configNaviTipsView];
         [self configLivePhotoSign];
-    }
-    
-    if (self.pullBackgroundView) {
-        /** 创建下拉手势 */
-        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)];
-        _panGesture.delegate = self;
-        [self.view addGestureRecognizer:_panGesture];
-        [self.view insertSubview:self.pullBackgroundView belowSubview:self.backgroundView];
+        [self configPullDown];
     }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    // 隐藏状态栏而不改变导航栏的高度
+    // 隐藏状态栏而不改变安全区域的高度
     [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelStatusBar + 1;
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
@@ -640,6 +642,17 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [_collectionView registerClass:[LFPhotoPreviewVideoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell"];
     
     [self.view addSubview:_collectionView];
+}
+
+- (void)configPullDown
+{
+    if (self.pullBackgroundView) {
+        /** 创建下拉手势 */
+        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)];
+        _panGesture.delegate = self;
+        [self.view addGestureRecognizer:_panGesture];
+        [self.view insertSubview:self.pullBackgroundView belowSubview:self.backgroundView];
+    }
 }
 
 #pragma mark - Click Event
@@ -1195,15 +1208,20 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             }
             _isPullBegan = YES;
             _beginPoint = movePoint;
-            _pullSnapshotView = cell.imageContainerView;
-            _pullSnapshotSuperView = cell.imageContainerView.superview;
-            _pullSnapshotView.frame = [cell convertRect:cell.imageContainerView.frame toView:self.view];
-            [self.view insertSubview:_pullSnapshotView aboveSubview:self.collectionView];
-            self.collectionView.hidden = YES;
         }
             break;
         case UIGestureRecognizerStateChanged:{
             if (_isPullBegan) {
+                if (!_isPulling) { // 首次触发时，创建临时视图来实现拖动
+                    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
+                    _pullSnapshotView = cell.imageContainerView;
+                    _pullSnapshotSuperView = cell.imageContainerView.superview;
+                    _pullSnapshotView.frame = [cell convertRect:cell.imageContainerView.frame toView:self.view];
+                    [self.view insertSubview:_pullSnapshotView aboveSubview:self.collectionView];
+                    self.collectionView.hidden = YES;
+                }
+                
+                
                 _isPulling = YES;
                 
                 CGFloat distance = 1.0;
@@ -1290,11 +1308,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                         panGesture.enabled = YES;
                     }];
                 }
-            } else if (_isPullBegan) { // 还原界面 没有触发到下拉条件的情况
-                self.collectionView.hidden = NO;
-                [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
-                self->_pullSnapshotView = nil;
-                self.pullSnapshotSuperView = nil;
             }
             _isPullBegan = NO;
             _isPulling = NO;
@@ -1321,11 +1334,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     self.pullSnapshotSuperView = nil;
                     panGesture.enabled = YES;
                 }];
-            } else if (_isPullBegan) { // 还原界面 没有触发到下拉条件的情况
-                self.collectionView.hidden = NO;
-                [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
-                self->_pullSnapshotView = nil;
-                self.pullSnapshotSuperView = nil;
             }
             _isPullBegan = NO;
             _isPulling = NO;

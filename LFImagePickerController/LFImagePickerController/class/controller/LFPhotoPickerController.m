@@ -106,7 +106,7 @@ CGFloat const bottomToolBarHeight = 50.f;
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor colorWithRed:47.0/255.0 green:47.0/255.0 blue:47.0/255.0 alpha:1.0];
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
@@ -361,19 +361,14 @@ CGFloat const bottomToolBarHeight = 50.f;
     [collectionView registerClass:[LFAssetCameraCell class] forCellWithReuseIdentifier:@"LFAssetCameraCell"];
     
     collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    collectionView.backgroundColor = [UIColor colorWithRed:47.0/255.0 green:47.0/255.0 blue:47.0/255.0 alpha:1.0];
+    collectionView.backgroundColor = [UIColor clearColor];
     collectionView.alwaysBounceHorizontal = NO;
     collectionView.alwaysBounceVertical = YES;
     collectionView.contentInset = UIEdgeInsetsMake(margin, margin, margin, margin);
     collectionView.dataSource = self;
     collectionView.delegate = self;
-    
-    if (_showTakePhotoBtn) {
-        collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber) / imagePickerVc.columnNumber) * self.view.width);
-    } else {
-        collectionView.contentSize = CGSizeMake(self.view.width, ((_models.count + imagePickerVc.columnNumber - 1) / imagePickerVc.columnNumber) * self.view.width);
-    }
-    self.animtionDelayTime = 0.005;
+
+    //    self.animtionDelayTime = 0.015;
     [self.view addSubview:collectionView];
     _collectionView = collectionView;
 }
@@ -1286,7 +1281,10 @@ CGFloat const bottomToolBarHeight = 50.f;
     
     LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
     if (imagePickerVc.modalPresentationStyle == UIModalPresentationFullScreen && !photoPreviewVc.isPhotoPreview) {
-        photoPreviewVc.pulldelegate = self;
+        UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if (orientation == UIInterfaceOrientationPortrait) { /** 除了竖屏进去时，其他状态也禁止它 */
+            photoPreviewVc.pulldelegate = self;
+        }
     }
     __weak typeof(self) weakSelf = self;
     [photoPreviewVc setBackButtonClickBlock:^{

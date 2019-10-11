@@ -16,6 +16,7 @@
 #import "LFPhotoPreviewGifCell.h"
 #import "LFPhotoPreviewLivePhotoCell.h"
 #import "LFPhotoPreviewVideoCell.h"
+#import "LFPhotoPreviewCell_property.h"
 #import "LFPreviewBar.h"
 #import <PhotosUI/PhotosUI.h>
 
@@ -34,14 +35,14 @@
 
 CGFloat const cellMargin = 20.f;
 CGFloat const livePhotoSignMargin = 10.f;
-CGFloat const toolbarDefaultHeight = 44.f;
+CGFloat const toolbarDefaultHeight = 50.f;
 CGFloat const previewBarDefaultHeight = 88.f;
 CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 #ifdef LF_MEDIAEDIT
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate, UIGestureRecognizerDelegate, LFPhotoEditingControllerDelegate, LFVideoEditingControllerDelegate>
 #else
-@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate>
+@interface LFPhotoPreviewController () <UICollectionViewDataSource,UICollectionViewDelegate,UIScrollViewDelegate,LFPhotoPreviewCellDelegate, UIAdaptivePresentationControllerDelegate, UIGestureRecognizerDelegate>
 #endif
 {
     UIView *_naviBar;
@@ -66,7 +67,18 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     UIView *_previewMainBar;
     LFPreviewBar *_previewBar;
+    
+    /** 下拉手势记录点 */
+    CGPoint _originalPoint;
+    CGPoint _beginPoint;
+    CGPoint _endPoint;
+    BOOL _isPullBegan;
+    BOOL _isPulling;
+    int _pullTimes;//允许尝试次数
+    UIView *_pullSnapshotView;
 }
+
+@property (nonatomic, weak) UIView *backgroundView;
 
 @property (nonatomic, strong) UICollectionView *collectionView;
 
@@ -83,6 +95,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 /** 临时编辑图片(仅用于在夸页面编辑时使用，目前已移除此需求) */
 //@property (nonatomic, strong) UIImage *tempEditImage;
+
+/** 下拉手势 */
+@property (nonatomic, strong) UIPanGestureRecognizer *panGesture;
+@property (nonatomic, strong) UIView *pullBackgroundView;
+@property (nonatomic, weak) UIView *pullSnapshotSuperView; // 下拉时获取cell的展示视图，结束后要还回去。
+
+
 @end
 
 @implementation LFPhotoPreviewController
@@ -144,8 +163,21 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     return _isPreviewing ? _previewNavi : (LFImagePickerController *)self.navigationController;
 }
 
+- (void)setPulldelegate:(id<LFPhotoPreviewControllerPullDelegate>)pulldelegate
+{
+    _pulldelegate = pulldelegate;
+    if ([pulldelegate respondsToSelector:@selector(lf_PhotoPreviewControllerPullBlackgroundView)]) {
+        self.pullBackgroundView = [pulldelegate lf_PhotoPreviewControllerPullBlackgroundView];
+    }
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    UIView *backgroundView = [[UIView alloc] initWithFrame:self.view.bounds];
+    backgroundView.backgroundColor = [UIColor blackColor];
+    [self.view addSubview:backgroundView];
+    _backgroundView = backgroundView;
     
     [self checkDefaultSelectedModels];
     
@@ -158,7 +190,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [self configLivePhotoSign];
     }
     
-    
+    if (self.pullBackgroundView) {
+        /** 创建下拉手势 */
+        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGesture:)];
+        _panGesture.delegate = self;
+        [self.view addGestureRecognizer:_panGesture];
+        [self.view insertSubview:self.pullBackgroundView belowSubview:self.backgroundView];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -182,8 +220,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [super viewDidAppear:animated];
     
     if (@available(iOS 13.0, *)) {
-        LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
-        if (imagePickerVc.modalPresentationStyle == UIModalPresentationAutomatic || imagePickerVc.modalPresentationStyle == UIModalPresentationPageSheet) {
+        LFImagePickerController *imagePickerVc = [self navi];
+        if (imagePickerVc.modalPresentationStyle == UIModalPresentationPageSheet) {
             imagePickerVc.presentationController.delegate = self;
             // 手动接收dismiss
             self.modalInPresentation = YES;
@@ -202,6 +240,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
+    
+    if (_isPulling) return;
+    
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    _panGesture.enabled = (orientation == UIInterfaceOrientationPortrait);
     
     UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
     if (@available(iOS 11.0, *)) {
@@ -257,6 +300,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
     _previewBar.frame = previewBarRect;
 
+    _backgroundView.frame = self.view.bounds;
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
     /* 适配宫格视图 */
@@ -580,19 +624,22 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 //    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, cellMargin);
     _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, self.view.height) collectionViewLayout:layout];
 //    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _collectionView.backgroundColor = [UIColor blackColor];
+    _collectionView.backgroundColor = [UIColor clearColor];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
     _collectionView.pagingEnabled = YES;
     _collectionView.scrollsToTop = NO;
+//    _collectionView.alwaysBounceHorizontal = YES;
     _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.contentOffset = CGPointMake(0, 0);
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
-    [self.view addSubview:_collectionView];
+    
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
     [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
     [_collectionView registerClass:[LFPhotoPreviewLivePhotoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell"];
     [_collectionView registerClass:[LFPhotoPreviewVideoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewVideoCell"];
+    
+    [self.view addSubview:_collectionView];
 }
 
 #pragma mark - Click Event
@@ -700,6 +747,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [imagePickerVc popViewControllerAnimated:YES];
         if (self.backButtonClickBlock) {
             self.backButtonClickBlock();
+            self.backButtonClickBlock = nil;
         }
     }
 }
@@ -751,6 +799,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
     if (self.doneButtonClickBlock) {
         self.doneButtonClickBlock();
+        self.doneButtonClickBlock = nil;
     }
 }
 
@@ -965,28 +1014,14 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             return;
         } else if (!((LFPhotoPreviewVideoCell *)cell).isPlaying && !self.isHideMyNaviBar) {
             return;
+        } else if (self.panGesture.state != UIGestureRecognizerStatePossible) {
+            return;
         }
     }
-    LFImagePickerController *imagePickerVc = [self navi];
     // show or hide naviBar / 显示或隐藏导航栏
     self.isHideMyNaviBar = !self.isHideMyNaviBar;
     CGFloat alpha = self.isHideMyNaviBar ? 0.f : 1.f;
-    [UIView animateWithDuration:0.25f animations:^{
-        self->_naviBar.alpha = alpha;
-        self->_toolBar.alpha = alpha;
-        self->_naviTipsView.alpha = (self->_naviTipsLabel.text.length) ? alpha : 0.f;
-        CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
-        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
-        /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
-        if (!(!self.alwaysShowPreviewBar && self->_previewBar.dataSource.count == 0)) {
-            self->_previewMainBar.alpha = alpha;
-        }
-        
-        /** live photo 标记 */
-        if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && cell.model.subType == LFAssetSubMediaTypeLivePhoto) {
-            self->_livePhotoSignView.alpha = alpha;
-        }
-    }];
+    [self changedAplhaWithItem:cell.model alpha:alpha];
 }
 
 #ifdef LF_MEDIAEDIT
@@ -1095,7 +1130,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #pragma mark - UIAdaptivePresentationControllerDelegate
 - (void)presentationControllerDidAttemptToDismiss:(UIPresentationController *)presentationController
 {
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     if (_doneButton.enabled) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         
@@ -1126,6 +1161,182 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         }
         #pragma clang diagnostic pop
     }
+}
+
+#pragma mark - 下拉手势处理
+-(void)panGesture:(id)sender
+{
+    UIPanGestureRecognizer *panGesture = sender;
+
+    CGPoint movePoint = [panGesture translationInView:self.view];
+    
+    /** 优先判断：
+        1、下拉
+        2、操作在2次内完成
+     */
+    if (panGesture.state == UIGestureRecognizerStateChanged && !_isPulling) {
+        if (_pullTimes > 1) return;
+        CGFloat offsetY = movePoint.y - _beginPoint.y;
+        CGFloat offsetX = fabs(movePoint.x - _beginPoint.x);
+        if (!(offsetY > 5.0 && offsetY > offsetX)) {
+            ++_pullTimes;
+            return;
+        }
+    }
+    
+    switch (panGesture.state)
+    {
+        case UIGestureRecognizerStateBegan:{
+            
+            // 缩放不触发
+            LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
+            if (cell.scrollView.zoomScale != 1.0) {
+                return;
+            }
+            _isPullBegan = YES;
+            _beginPoint = movePoint;
+            _pullSnapshotView = cell.imageContainerView;
+            _pullSnapshotSuperView = cell.imageContainerView.superview;
+            _pullSnapshotView.frame = [cell convertRect:cell.imageContainerView.frame toView:self.view];
+            [self.view insertSubview:_pullSnapshotView aboveSubview:self.collectionView];
+            self.collectionView.hidden = YES;
+        }
+            break;
+        case UIGestureRecognizerStateChanged:{
+            if (_isPullBegan) {
+                _isPulling = YES;
+                
+                CGFloat distance = 1.0;
+                CGFloat minScale = 0.4;
+                if (_beginPoint.y < movePoint.y) {
+                    CGFloat length = self.view.height * 0.65;
+                    distance = (length - (movePoint.y - _beginPoint.y)) / length;
+                    distance = MAX(distance, minScale);
+                }
+                
+                CGFloat moveX = (movePoint.x - _beginPoint.x);
+                CGFloat moveY = (movePoint.y - _beginPoint.y);
+                
+                
+                CGAffineTransform t = CGAffineTransformIdentity;
+                t = CGAffineTransformTranslate(t, moveX, moveY);
+                t = CGAffineTransformScale(t, distance, distance);
+                t = CGAffineTransformTranslate(t, 0, -_pullSnapshotView.bounds.size.height * (1-distance) / 2 / distance);
+                _pullSnapshotView.transform = t;
+                /** 通过距离计算alpha的变化 将1~0.4区间换算为1～0区间值 */
+                CGFloat n = 100; // 分n等份
+                CGFloat per = (1-minScale)/n; // 每等份的距离
+                CGFloat m = (distance - minScale) / per; // 计算第几等份 (总数-最小区间)/每等份的距离
+                CGFloat alpha = 1/n*m; // 1～0每等份的距离*第几等份=总数
+                
+                self.backgroundView.alpha = alpha;
+                if (!self.isHideMyNaviBar) {
+                    [self changedAplhaWithItem:self.models[self.currentIndex] alpha:alpha];
+                }
+            }
+        }
+            break;
+        case UIGestureRecognizerStateEnded:
+        {
+            _originalPoint = _beginPoint = _endPoint = CGPointZero;
+            if (_isPullBegan && _isPulling) { /** 有触发滑动情况 */
+                panGesture.enabled = NO;
+                if (_pullSnapshotView.transform.d <= 0.4) { // 返回上一个界面
+                    CGRect targetRect = CGRectZero;
+                    if ([self.pulldelegate respondsToSelector:@selector(lf_PhotoPreviewControllerPullItemRect:)]) {
+                        targetRect = [self.pulldelegate lf_PhotoPreviewControllerPullItemRect:self.models[self.currentIndex]];
+                    }
+                    if (CGRectEqualToRect(CGRectZero, targetRect)) {
+                        [UIView animateWithDuration:0.25 animations:^{
+                            self->_pullSnapshotView.alpha = 0.0;
+                        } completion:^(BOOL finished) {
+                            LFImagePickerController *imagePickerVc = [self navi];
+                            [imagePickerVc popViewControllerAnimated:NO];
+                            if (self.backButtonClickBlock) {
+                                self.backButtonClickBlock();
+                                self.backButtonClickBlock = nil;
+                            }
+                        }];
+                    } else {
+                        // 移动到目标位置
+                        CGRect rect = _pullSnapshotView.frame;
+                        _pullSnapshotView.transform = CGAffineTransformIdentity;
+                        _pullSnapshotView.frame = rect;
+                        [UIView animateWithDuration:0.25 animations:^{
+//                            self->_pullSnapshotView.contentMode = UIViewContentModeScaleAspectFill;
+//                            self->_pullSnapshotView.clipsToBounds = YES;
+                            self->_pullSnapshotView.frame = targetRect;
+                        } completion:^(BOOL finished) {
+                            LFImagePickerController *imagePickerVc = [self navi];
+                            [imagePickerVc popViewControllerAnimated:NO];
+                            if (self.backButtonClickBlock) {
+                                self.backButtonClickBlock();
+                                self.backButtonClickBlock = nil;
+                            }
+                        }];
+                    }
+                } else { // 还原界面
+                    [UIView animateWithDuration:0.25 animations:^{
+                        self->_pullSnapshotView.transform = CGAffineTransformIdentity;
+                        self.backgroundView.alpha = 1.0;
+                        if (!self.isHideMyNaviBar) {
+                            [self changedAplhaWithItem:self.models[self.currentIndex] alpha:1.0];
+                        }
+                    } completion:^(BOOL finished) {
+                        self.collectionView.hidden = NO;
+                        [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
+                        self->_pullSnapshotView = nil;
+                        self.pullSnapshotSuperView = nil;
+                        panGesture.enabled = YES;
+                    }];
+                }
+            } else if (_isPullBegan) { // 还原界面 没有触发到下拉条件的情况
+                self.collectionView.hidden = NO;
+                [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
+                self->_pullSnapshotView = nil;
+                self.pullSnapshotSuperView = nil;
+            }
+            _isPullBegan = NO;
+            _isPulling = NO;
+            _pullTimes = 0;
+        }
+            break;
+            
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+        {
+            _originalPoint = _beginPoint = _endPoint = CGPointZero;
+            if (_isPullBegan && _isPulling) { /** 有触发滑动情况 */
+                panGesture.enabled = NO;
+                [UIView animateWithDuration:0.25 animations:^{
+                    self->_pullSnapshotView.transform = CGAffineTransformIdentity;
+                    self.backgroundView.alpha = 1.0;
+                    if (!self.isHideMyNaviBar) {
+                        [self changedAplhaWithItem:self.models[self.currentIndex] alpha:1.0];
+                    }
+                } completion:^(BOOL finished) {
+                    self.collectionView.hidden = NO;
+                    [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
+                    self->_pullSnapshotView = nil;
+                    self.pullSnapshotSuperView = nil;
+                    panGesture.enabled = YES;
+                }];
+            } else if (_isPullBegan) { // 还原界面 没有触发到下拉条件的情况
+                self.collectionView.hidden = NO;
+                [self.pullSnapshotSuperView addSubview:self->_pullSnapshotView];
+                self->_pullSnapshotView = nil;
+                self.pullSnapshotSuperView = nil;
+            }
+            _isPullBegan = NO;
+            _isPulling = NO;
+            _pullTimes = 0;
+        }
+            break;
+        default:
+            break;
+            
+    }
+    _originalPoint = movePoint;
 }
 
 #pragma mark - Private Method
@@ -1266,7 +1477,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 - (void)checkSelectedPhotoBytes {
     __weak typeof(self) weakSelf = self;
-    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    LFImagePickerController *imagePickerVc = [self navi];
     __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
     
     NSMutableArray *newSelectedModes = [NSMutableArray arrayWithCapacity:5];
@@ -1311,6 +1522,27 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     } else {
         _livePhotobadgeImageButton.backgroundColor = [UIColor whiteColor];
     }
+}
+
+- (void)changedAplhaWithItem:(LFAsset *)item alpha:(CGFloat)alpha
+{
+    LFImagePickerController *imagePickerVc = [self navi];
+    [UIView animateWithDuration:0.25f animations:^{
+        self->_naviBar.alpha = alpha;
+        self->_toolBar.alpha = alpha;
+        self->_naviTipsView.alpha = (self->_naviTipsLabel.text.length) ? alpha : 0.f;
+        CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
+        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+        /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
+        if (!(!self.alwaysShowPreviewBar && self->_previewBar.dataSource.count == 0)) {
+            self->_previewMainBar.alpha = alpha;
+        }
+        
+        /** live photo 标记 */
+        if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && item.subType == LFAssetSubMediaTypeLivePhoto) {
+            self->_livePhotoSignView.alpha = alpha;
+        }
+    }];
 }
 
 - (void)checkDefaultSelectedModels {

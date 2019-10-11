@@ -8,6 +8,8 @@
 
 #import "LFBaseViewController.h"
 
+@protocol LFPhotoPreviewControllerPullDelegate;
+
 @class LFAsset;
 @interface LFPhotoPreviewController : LFBaseViewController
 
@@ -24,9 +26,20 @@
 
 /** 总是显示预览框 */
 @property (nonatomic, assign) BOOL alwaysShowPreviewBar;
+/** 上一个界面的截图 */
+@property (nonatomic, weak) id<LFPhotoPreviewControllerPullDelegate> pulldelegate;
+
 
 /** 3DTouch */
 - (void)beginPreviewing:(UINavigationController *)navi;
 - (void)endPreviewing;
+
+@end
+
+@protocol LFPhotoPreviewControllerPullDelegate <NSObject>
+
+- (UIView *)lf_PhotoPreviewControllerPullBlackgroundView;
+
+- (CGRect)lf_PhotoPreviewControllerPullItemRect:(LFAsset *)asset;
 
 @end

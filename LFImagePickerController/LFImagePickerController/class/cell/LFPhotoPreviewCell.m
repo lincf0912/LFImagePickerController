@@ -103,7 +103,6 @@
         _imageContainerView = [[UIView alloc] init];
         _imageContainerView.clipsToBounds = YES;
         _imageContainerView.contentMode = UIViewContentModeScaleAspectFill;
-        _imageContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [_scrollView addSubview:_imageContainerView];
         
         _imageView = [[UIImageView alloc] init];

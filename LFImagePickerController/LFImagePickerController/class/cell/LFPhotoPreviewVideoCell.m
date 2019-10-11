@@ -16,11 +16,33 @@
 #import "LFVideoEdit.h"
 #endif
 
+@interface LFPhotoPreviewVideoPlayerView : UIView
+
+@end
+
+@implementation LFPhotoPreviewVideoPlayerView
+
++ (Class)layerClass
+{
+    return [AVPlayerLayer class];
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        ((AVPlayerLayer *)self.layer).videoGravity = AVLayerVideoGravityResizeAspectFill;
+    }
+    return self;
+}
+
+@end
+
 @interface LFPhotoPreviewVideoCell ()
 
 @property (nonatomic, strong) AVPlayer *player;
 @property (nonatomic, strong) UIButton *playButton;
-@property (nonatomic, weak) AVPlayerLayer *playerLayer;
+@property (nonatomic, strong) LFPhotoPreviewVideoPlayerView *playerView;
 
 @property (nonatomic, assign) BOOL waitForReadyToPlay;
 
@@ -40,10 +62,13 @@
     return self;
 }
 
-- (void)layoutSubviews
+/** 创建显示视图 */
+- (UIView *)subViewInitDisplayView
 {
-    [super layoutSubviews];
-    _playerLayer.frame = self.contentView.bounds;
+    if (_playerView == nil) {
+        _playerView = [[LFPhotoPreviewVideoPlayerView alloc] init];
+    }
+    return _playerView;
 }
 
 /** 重置视图 */
@@ -56,9 +81,7 @@
     [_playButton removeFromSuperview];
     _playButton = nil;
     [_player.currentItem removeObserver:self forKeyPath:@"status"];
-    [_playerLayer removeFromSuperlayer];
-    _playerLayer.player = nil;
-    _playerLayer = nil;
+    ((AVPlayerLayer *)_playerView.layer).player = nil;
     _player = nil;
 }
 /** 设置数据 */
@@ -105,12 +128,7 @@
                     options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
                     context:NULL];
     _player = [AVPlayer playerWithPlayerItem:playerItem];
-    AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
-    playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
-    playerLayer.frame = self.contentView.bounds;
-    [self.contentView.layer addSublayer:playerLayer];
-    [_playerLayer removeFromSuperlayer];
-    _playerLayer = playerLayer;
+    ((AVPlayerLayer *)_playerView.layer).player = _player;
     [self configPlayButton];
     self.imageView.hidden = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
@@ -152,6 +170,7 @@
             if (currentTime.value == durationTime.value) [_player.currentItem seekToTime:CMTimeMake(0, 1)];
             [_player play];
             [_playButton setImage:nil forState:UIControlStateNormal];
+            [_playButton setImage:nil forState:UIControlStateHighlighted];
             _isPlaying = YES;
         } else {
             _waitForReadyToPlay = YES;
@@ -164,6 +183,7 @@
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         [_player pause];
         [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay") forState:UIControlStateNormal];
+        [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL") forState:UIControlStateHighlighted];
         _isPlaying = NO;
     }
 }

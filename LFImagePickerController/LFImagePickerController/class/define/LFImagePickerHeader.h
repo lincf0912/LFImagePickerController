@@ -29,6 +29,10 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), bl
 
 /** 视频时间（取整：四舍五入） */
 extern NSTimeInterval lf_videoDuration(NSTimeInterval duration);
+/** 是否长图 */
+extern BOOL lf_isPiiic(CGSize imageSize);
+/** 是否横图 */
+extern BOOL lf_isHor(CGSize imageSize);
 
 /** 标清图压缩大小 */
 extern float const kCompressSize;

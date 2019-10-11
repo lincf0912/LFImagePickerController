@@ -10,6 +10,7 @@
 #import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
+#import "LFImagePickerHeader.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
@@ -230,13 +231,16 @@
         CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:scrollViewSize isBoth:NO];
         
         BOOL isLongImage = NO;
-        if ([UIScreen mainScreen].bounds.size.width < [UIScreen mainScreen].bounds.size.height) {
-            isLongImage = scrollViewSize.width > newSize.width;
-        } else {
-            isLongImage = newSize.width < self.bounds.size.height * 0.6;
-        }
-        if (isLongImage) { /** 长图 */
-            newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
+        if (self.model.type == LFAssetMediaTypePhoto) {
+//            if ([UIScreen mainScreen].bounds.size.width < [UIScreen mainScreen].bounds.size.height) {
+//                isLongImage = scrollViewSize.width > newSize.width;
+//            } else {
+//                isLongImage = newSize.width < self.bounds.size.height * 0.6;
+//            }
+            isLongImage = lf_isPiiic(newSize);
+            if (isLongImage) { /** 长图 */
+                newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
+            }
         }
         
         _imageContainerView.size = newSize;

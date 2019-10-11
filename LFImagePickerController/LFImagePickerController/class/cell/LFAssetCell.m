@@ -202,12 +202,12 @@
             self.timeLength.textAlignment = NSTextAlignmentRight;
             _bottomView.hidden = NO;
         } else {
-            if (self.imageView.image.size.width * 2 < self.imageView.image.size.height) {
+            if (lf_isPiiic(self.imageView.image.size)) {
                 _videoImgView.hidden = YES;
                 self.timeLength.text = NSLocalizedString(@"Piiic", nil);
                 self.timeLength.textAlignment = NSTextAlignmentRight;
                 _bottomView.hidden = NO;
-            } else if (self.imageView.image.size.height * 2 < self.imageView.image.size.width) {
+            } else if (lf_isHor(self.imageView.image.size)) {
                 _videoImgView.hidden = YES;
                 self.timeLength.text = NSLocalizedString(@"Hor", nil);
                 self.timeLength.textAlignment = NSTextAlignmentRight;

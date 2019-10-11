@@ -14,6 +14,17 @@ NSTimeInterval lf_videoDuration(NSTimeInterval duration)
     return (NSInteger)(duration+0.5f)*1.f;
 }
 
+BOOL lf_isPiiic(CGSize imageSize)
+{
+    return imageSize.width * 2 < imageSize.height;
+}
+
+BOOL lf_isHor(CGSize imageSize)
+{
+    return imageSize.width > imageSize.height * 2;
+}
+
+
 /** 标清图压缩大小 */
 float const kCompressSize = 100.f;
 /** 缩略图压缩大小 */

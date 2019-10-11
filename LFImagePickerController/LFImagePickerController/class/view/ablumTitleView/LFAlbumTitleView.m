@@ -20,8 +20,9 @@
 @property(nonatomic, weak) UIView *cornerView;
 @property(nonatomic, strong) UIView *backgroundView;
 
-@property(nonatomic, weak) CAShapeLayer *shapeLayer;
-@property(nonatomic, weak) CAShapeLayer *imageViewShapeLayer;
+@property(nonatomic, weak) CALayer *controlMarkLayer;
+@property(nonatomic, weak) CALayer *titleLabelMarkLayer;
+@property(nonatomic, weak) CALayer *imageViewMarkLayer;
 
 @property(nonatomic, weak) UITableView *tableView;
 
@@ -77,6 +78,7 @@
     
     UIControl *control = [[UIControl alloc] initWithFrame:self.bounds];
     control.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.1];
+    control.clipsToBounds = YES;
     [control addTarget:self action:@selector(tapCall) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:control];
     _control = control;
@@ -412,60 +414,91 @@
     self.frame = rect;
     self.control.hidden = (self.titleLabel.text.length == 0);
     
+    if (self.control.isHidden) return;
+    
+    self.control.center = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
+    
+    CGRect oldRect = self.control.frame;
+    CGRect oldMarkRect = self.controlMarkLayer.frame;
+    CGRect oldTitleLabelRect = self.titleLabel.frame;
+    CGRect oldTitlelabelMarkRect = self.titleLabelMarkLayer.frame;
+    CGRect oldImageRect = self.imageView.frame;
+    CGRect oldImageMarkRect = self.imageViewMarkLayer.frame;
+    
     self.control.frame = rect;
     // draw background
     CGRect controllBounds = CGRectInset(self.control.bounds, 0, 6);
-    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:controllBounds cornerRadius:CGRectGetHeight(controllBounds)/2];
-    if (self.shapeLayer == nil) {
-        CAShapeLayer *shapeLayer = [CAShapeLayer layer];
-        self.control.layer.mask = shapeLayer;
-        self.shapeLayer = shapeLayer;
+    if (self.controlMarkLayer == nil) {
+        CALayer *layer = [self createMarkLayer];
+        self.control.layer.mask = layer;
+        self.controlMarkLayer = layer;
     }
-    self.shapeLayer.path = path.CGPath;
+    self.controlMarkLayer.bounds = (CGRect){CGPointZero, controllBounds.size};
+    self.controlMarkLayer.position = controllBounds.origin;
+    self.controlMarkLayer.cornerRadius = CGRectGetHeight(controllBounds)/2;
     
     CGRect titleLabelRect = CGRectMake(margin, (CGRectGetHeight(rect)-textSize.height)/2, textSize.width, textSize.height);
+    self.titleLabel.frame = titleLabelRect;
+    if (self.titleLabelMarkLayer == nil) {
+        CALayer *layer = [self createMarkLayer];
+        self.titleLabel.layer.mask = layer;
+        self.titleLabelMarkLayer = layer;
+    }
+    self.titleLabelMarkLayer.bounds = self.titleLabel.bounds;
     
     self.imageView.frame = CGRectMake(CGRectGetMaxX(titleLabelRect)+margin, (CGRectGetHeight(rect)-imageSize.height)/2, imageSize.width, imageSize.height);
     CGRect imageViewBounds = self.imageView.bounds;
-    UIBezierPath *imageViewPath = [UIBezierPath bezierPathWithRoundedRect:imageViewBounds cornerRadius:CGRectGetHeight(imageViewBounds)/2];
-    if (self.imageViewShapeLayer == nil) {
-        CAShapeLayer *imageViewShapeLayer = [CAShapeLayer layer];
-        self.imageView.layer.mask = imageViewShapeLayer;
-        self.imageViewShapeLayer = imageViewShapeLayer;
+    if (self.imageViewMarkLayer == nil) {
+        CALayer *layer = [self createMarkLayer];
+        self.imageView.layer.mask = layer;
+        self.imageViewMarkLayer = layer;
     }
-    self.imageViewShapeLayer.path = imageViewPath.CGPath;
+    self.imageViewMarkLayer.bounds = (CGRect){CGPointZero, imageViewBounds.size};
+    self.imageViewMarkLayer.cornerRadius = CGRectGetHeight(imageViewBounds)/2;
     
-    CGFloat duration = self.enableAnimated ? 0.5 : 0.0;
+    if (self.enableAnimated)
+    {
+        CGFloat duration = .25;
+        [self makeAnimationWithDruation:duration layer:self.control.layer oldRect:oldRect cornerRadius:NO];
+        [self makeAnimationWithDruation:duration layer:self.controlMarkLayer oldRect:oldMarkRect cornerRadius:YES];
+//        [self makeAnimationWithDruation:duration layer:self.titleLabel.layer oldRect:oldTitleLabelRect cornerRadius:NO];
+        [self makeAnimationWithDruation:duration layer:self.titleLabelMarkLayer oldRect:oldTitlelabelMarkRect cornerRadius:NO];
+        [self makeAnimationWithDruation:duration layer:self.imageView.layer oldRect:oldImageRect cornerRadius:NO];
+        [self makeAnimationWithDruation:duration layer:self.imageViewMarkLayer oldRect:oldImageMarkRect cornerRadius:YES];
+    }
     
-    [self doAnimateWithDuration:duration animations:^{
-        self.titleLabel.frame = titleLabelRect;
-    } completion:^{
-        self.enableAnimated = NO;
-    }];
-    
-    
-    
-    
+    self.enableAnimated = NO;
 }
 
 #pragma mark animated
-- (void)doAnimateWithDuration:(NSTimeInterval)duration animations:(void (^)(void))animations completion:(void (^)(void))completion
+- (void)makeAnimationWithDruation:(CGFloat)duration layer:(CALayer *)layer oldRect:(CGRect)oldRect cornerRadius:(BOOL)cornerRadius
 {
-    if (duration > 0) {
-        [UIView animateWithDuration:duration animations:animations completion:^(BOOL finished) {
-            if (completion) {
-                completion();
-            }
-        }];
-    } else {
-        if (animations) {
-            animations();
-        }
-        if (completion) {
-            completion();
-        }
+    CGRect newRect = layer.frame;
+    if (!CGSizeEqualToSize(oldRect.size, newRect.size)) {
+        CABasicAnimation *animate = [CABasicAnimation animationWithKeyPath:@"bounds"];
+        animate.duration = duration;
+        animate.fromValue = [NSValue valueWithCGRect:(CGRect){CGPointZero, oldRect.size}];
+        animate.toValue = [NSValue valueWithCGRect:(CGRect){CGPointZero, newRect.size}];
+        [layer addAnimation:animate forKey:@"BoundsAnimationKey"];
+    }
+    
+    if (!CGPointEqualToPoint(oldRect.origin, newRect.origin)) {
+        CABasicAnimation *animate = [CABasicAnimation animationWithKeyPath:@"position"];
+        animate.duration = duration;
+        animate.fromValue = [NSValue valueWithCGPoint:CGPointMake(oldRect.origin.x+oldRect.size.width/2, oldRect.origin.y+oldRect.size.height/2)];
+        animate.toValue = [NSValue valueWithCGPoint:CGPointMake(newRect.origin.x+newRect.size.width/2, newRect.origin.y+newRect.size.height/2)];
+        [layer addAnimation:animate forKey:@"PositionAnimationKey"];
+    }
+    
+    if (cornerRadius) {
+        CABasicAnimation *animate = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
+        animate.duration = duration;
+        animate.fromValue = @(CGRectGetHeight(oldRect)/2);
+        animate.toValue = @(layer.cornerRadius);
+        [layer addAnimation:animate forKey:@"CornerRadiusAnimationKey"];
     }
 }
+
 
 #pragma mark getCurrentVC
 - (UIViewController *)getCurrentVC
@@ -501,6 +534,18 @@
     }
     
     return currentVC;
+}
+
+#pragma mark - create mark layer
+- (CALayer *)createMarkLayer
+{
+    CALayer *layer = [CALayer layer];
+    layer.anchorPoint = CGPointZero;
+    layer.backgroundColor = [UIColor whiteColor].CGColor;
+    layer.masksToBounds = YES;
+    layer.shouldRasterize = YES;
+    layer.rasterizationScale = [UIScreen mainScreen].scale;
+    return layer;
 }
 
 @end

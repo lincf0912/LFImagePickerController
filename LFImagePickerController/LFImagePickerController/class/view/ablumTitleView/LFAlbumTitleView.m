@@ -522,7 +522,9 @@
 #pragma mark - UIDeviceOrientationDidChangeNotification
 - (void)orientationDidChange:(NSNotification *)notify
 {
-    [self updateBackgroundView];
+    if (UIDeviceOrientationIsValidInterfaceOrientation([[UIDevice currentDevice] orientation])) {
+        [self updateBackgroundView];
+    }
 }
 
 #pragma mark getCurrentVC

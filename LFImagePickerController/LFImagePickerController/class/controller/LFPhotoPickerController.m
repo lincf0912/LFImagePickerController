@@ -1068,15 +1068,17 @@ CGFloat const bottomToolBarHeight = 50.f;
 - (CGRect)lf_PhotoPreviewControllerPullItemRect:(LFAsset *)asset
 {
     if (asset) {
-        NSInteger index = [self.models indexOfObject:asset];
-        if (index != NSNotFound) {
-            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-            UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
-            if (cell) {
-                CGRect rect = [self.collectionView convertRect:cell.frame toView:self.view];
-                // 过滤顶部与底部遮挡的部分
-                if (CGRectContainsRect(self.collectionView.frame, rect)) {
-                    return rect;
+        if (asset.type == LFAssetMediaTypePhoto) { // 仅处理图片
+            NSInteger index = [self.models indexOfObject:asset];
+            if (index != NSNotFound) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+                UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+                if (cell) {
+                    CGRect rect = [self.collectionView convertRect:cell.frame toView:self.view];
+                    // 过滤顶部与底部遮挡的部分
+                    if (CGRectContainsRect(self.collectionView.frame, rect)) {
+                        return rect;
+                    }
                 }
             }
         }

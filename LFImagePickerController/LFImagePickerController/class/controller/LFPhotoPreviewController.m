@@ -1144,6 +1144,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)presentationControllerDidAttemptToDismiss:(UIPresentationController *)presentationController
 {
     LFImagePickerController *imagePickerVc = [self navi];
+    if (imagePickerVc.topViewController != self) return;
+    
     if (_doneButton.enabled) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
         

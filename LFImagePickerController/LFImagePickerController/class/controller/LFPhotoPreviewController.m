@@ -1214,6 +1214,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             break;
         case UIGestureRecognizerStateChanged:{
             if (_isPullBegan) {
+                
                 if (!_isPulling) { // 首次触发时，创建临时视图来实现拖动
                     LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
                     _pullSnapshotView = cell.imageContainerView;
@@ -1221,6 +1222,31 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     _pullSnapshotView.frame = [cell convertRect:cell.imageContainerView.frame toView:self.view];
                     [self.view insertSubview:_pullSnapshotView aboveSubview:self.collectionView];
                     self.collectionView.hidden = YES;
+                }
+                
+                CGFloat pullSnapshotViewInnerMidX = _pullSnapshotView.bounds.size.width / 2;
+                CGFloat pullSnapshotViewInnerMidY = _pullSnapshotView.bounds.size.height / 2;
+                static CGFloat ratioX = 0;
+                static CGFloat ratioY = 0;
+                if (!_isPulling) { // 首次触发时，计算落点在视图的比例
+                    CGPoint locationPoint = [panGesture locationInView:self.view];
+                    CGFloat innerX = locationPoint.x - _pullSnapshotView.origin.x;
+                    CGFloat innerY = locationPoint.y - _pullSnapshotView.origin.y;
+                    /** 计算开始拖动的点在视图的比例位置，视图位置分别是：以中心为标准值0，top，left为1，bottom，right为-1 */
+                    if (innerX > pullSnapshotViewInnerMidX) {
+                        ratioX = -1 * (innerX - pullSnapshotViewInnerMidX) / pullSnapshotViewInnerMidX;
+                    } else if (innerX < pullSnapshotViewInnerMidX) {
+                        ratioX = (pullSnapshotViewInnerMidX - innerX) / pullSnapshotViewInnerMidX;
+                    } else {
+                        ratioX = 0;
+                    }
+                    if (innerY > pullSnapshotViewInnerMidY) {
+                        ratioY = -1 * (innerY - pullSnapshotViewInnerMidY) / pullSnapshotViewInnerMidY;
+                    } else if (innerY < pullSnapshotViewInnerMidY) {
+                        ratioY = (pullSnapshotViewInnerMidY - innerY) / pullSnapshotViewInnerMidY;
+                    } else {
+                        ratioY = 0;
+                    }
                 }
                 
                 
@@ -1239,9 +1265,12 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 
                 
                 CGAffineTransform t = CGAffineTransformIdentity;
+                /** 跟随移动点移动 */
                 t = CGAffineTransformTranslate(t, moveX, moveY);
+                /** 缩放至原大小的distance倍 */
                 t = CGAffineTransformScale(t, distance, distance);
-                t = CGAffineTransformTranslate(t, 0, -_pullSnapshotView.bounds.size.height * (1-distance) / 2 / distance);
+                /** 缩放后移动点的位置会以中心为准，偏移到移动点的真实比例位置 */
+                t = CGAffineTransformTranslate(t, ratioX * -pullSnapshotViewInnerMidX * (1-distance) / distance, ratioY * -pullSnapshotViewInnerMidY * (1-distance) / distance);
                 _pullSnapshotView.transform = t;
                 /** 通过距离计算alpha的变化 将1~0.4区间换算为1～0区间值 */
                 CGFloat n = 100; // 分n等份

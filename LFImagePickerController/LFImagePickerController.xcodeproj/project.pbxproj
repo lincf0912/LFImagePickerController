@@ -61,6 +61,7 @@
 		C70BAD3F205A6635005B7894 /* LFMediaEditingController.strings in Resources */ = {isa = PBXBuildFile; fileRef = C70BAD3E205A6635005B7894 /* LFMediaEditingController.strings */; };
 		C75FA910233A17980034A2AB /* LFAlbumTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = C75FA90F233A17980034A2AB /* LFAlbumTitleView.m */; };
 		C75FA913233C4C790034A2AB /* LFAssetManager+Simple.m in Sources */ = {isa = PBXBuildFile; fileRef = C75FA912233C4C790034A2AB /* LFAssetManager+Simple.m */; };
+		C783DECA2351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m in Sources */ = {isa = PBXBuildFile; fileRef = C783DEC92351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -171,6 +172,8 @@
 		C75FA911233C4C790034A2AB /* LFAssetManager+Simple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAssetManager+Simple.h"; sourceTree = "<group>"; };
 		C75FA912233C4C790034A2AB /* LFAssetManager+Simple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "LFAssetManager+Simple.m"; sourceTree = "<group>"; };
 		C75FE2EB20A5211900086649 /* LFAsset+property.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAsset+property.h"; sourceTree = "<group>"; };
+		C783DEC82351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+LFDragAutoScroll.h"; sourceTree = "<group>"; };
+		C783DEC92351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+LFDragAutoScroll.m"; sourceTree = "<group>"; };
 		C78B9C571FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		C78B9C581FC69FA500D82F1F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		C7EB651620FD7FDF00AC2367 /* LFAssetPhotoProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LFAssetPhotoProtocol.h; sourceTree = "<group>"; };
@@ -399,6 +402,8 @@
 				6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */,
 				C70BABED205904F0005B7894 /* NSBundle+LFImagePicker.h */,
 				C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */,
+				C783DEC82351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.h */,
+				C783DEC92351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -640,6 +645,7 @@
 				C75FA910233A17980034A2AB /* LFAlbumTitleView.m in Sources */,
 				6FF286181E5EDA510008FB5B /* LFPhotoEditManager.m in Sources */,
 				6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */,
+				C783DECA2351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m in Sources */,
 				6F23174A1F5E88DC00C81B60 /* LFAssetManager+CreateMedia.m in Sources */,
 				6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */,
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,

@@ -8,6 +8,7 @@
 
 #import "LFPreviewBar.h"
 #import "LFPreviewBarCell.h"
+#import "UIScrollView+LFDragAutoScroll.h"
 
 #import "LFAsset.h"
 
@@ -17,6 +18,9 @@
 
 @property (nonatomic, strong) NSMutableArray <LFAsset *>*myDataSource;
 
+
+/**最初选中cell的NSIndexPath*/
+@property (nonatomic, strong) NSIndexPath *sourceIndexPath;
 /**之前选中cell的NSIndexPath*/
 @property (nonatomic, strong) NSIndexPath *oldIndexPath;
 /**单元格的截图*/
@@ -77,11 +81,14 @@
 #pragma mark - 长按手势
 - (void)handlelongGesture:(UILongPressGestureRecognizer *)longPress
 {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
-        [self action:longPress];
-    } else {
-        [self iOS9_Action:longPress];
-    }
+//    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
+//        [self action:longPress];
+//    } else {
+//        [self iOS9_Action:longPress];
+//    }
+    /** iOS13 当触发updateInteractiveMovementTargetPosition的问题
+     每次重新移动到原来的位置（传入的Position与移动cell的frame有交集），cell的frame会自动重置回原本坐标。不使用系统提供的方法了。 */
+    [self action:longPress];
 }
 
 - (void)setDataSource:(NSArray<LFAsset *> *)dataSource
@@ -138,12 +145,7 @@
             NSInteger index = [self.myDataSource indexOfObject:oldAsset];
             if (index != NSNotFound) {
                 NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-                UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
-                if (cell) {
-                    [self selectCell:cell asset:oldAsset];
-                } else {
-                    [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-                }
+                [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
             }
         }
         
@@ -151,12 +153,7 @@
             NSInteger index = [self.myDataSource indexOfObject:selectAsset];
             if (index != NSNotFound) {
                 NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
-                UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
-                if (cell) {
-                    [self selectCell:cell asset:selectAsset];
-                } else {
-                    [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
-                }
+                [self.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
             }
         }
@@ -276,74 +273,101 @@
         case UIGestureRecognizerStateBegan:
         { // 手势开始
             //判断手势落点位置是否在row上
-            NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[longPress locationInView:self.collectionView]];
+            CGPoint collectionPoint = [longPress locationInView:self.collectionView];
+            NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:collectionPoint];
             self.oldIndexPath = indexPath;
+            self.sourceIndexPath = indexPath;
             if (indexPath == nil) {
                 break;
             }
             UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
             // 使用系统的截图功能,得到cell的截图视图
             UIView *snapshotView = [cell snapshotViewAfterScreenUpdates:NO];
-            snapshotView.frame = cell.frame;
+            snapshotView.frame = [self.collectionView convertRect:cell.frame toView:self];
             [self addSubview:self.snapshotView = snapshotView];
             // 截图后隐藏当前cell
             cell.hidden = YES;
             [self starShake:snapshotView];
+            __weak typeof(self) weakSelf = self;
+            [self.collectionView setAutoScrollChanged:^(CGPoint position) {
+                [weakSelf updateCellMovementTargetPosition:position];
+            }];
             
-            CGPoint currentPoint = [longPress locationInView:self.collectionView];
+            CGPoint currentPoint = [longPress locationInView:self];
             [UIView animateWithDuration:0.25 animations:^{
                 snapshotView.transform = CGAffineTransformMakeScale(1.05, 1.05);
                 snapshotView.center = currentPoint;
+            } completion:^(BOOL finished) {
+                [self.collectionView autoScrollForView:snapshotView];
             }];
+            
         }
             break;
         case UIGestureRecognizerStateChanged:
         { // 手势改变
             //当前手指位置 截图视图位置随着手指移动而移动
-            CGPoint currentPoint = [longPress locationInView:self.collectionView];
+            CGPoint currentPoint = [longPress locationInView:self];
             self.snapshotView.center = currentPoint;
-            // 计算截图视图和哪个可见cell相交
-            for (UICollectionViewCell *cell in self.collectionView.visibleCells) {
-                // 当前隐藏的cell就不需要交换了,直接continue
-                if ([self.collectionView indexPathForCell:cell] == self.oldIndexPath) {
-                    continue;
-                }
-                // 计算中心距
-                CGFloat space = sqrtf(pow(self.snapshotView.center.x - cell.center.x, 2) + powf(self.snapshotView.center.y - cell.center.y, 2));
-                // 如果相交一半就移动
-                if (space <= self.snapshotView.bounds.size.width / 2) {
-                    self.moveIndexPath = [self.collectionView indexPathForCell:cell];
-                    //移动 会调用willMoveToIndexPath方法更新数据源
-                    [self.collectionView moveItemAtIndexPath:self.oldIndexPath toIndexPath:self.moveIndexPath];
-                    //设置移动后的起始indexPath
-                    self.oldIndexPath = self.moveIndexPath;
-                    break;
-                }
-            }
+            [self.collectionView autoScrollForView:self.snapshotView];
+            // 计算截图视图和哪个cell相交
+            CGPoint collectionPoint = [longPress locationInView:self.collectionView];
+            [self updateCellMovementTargetPosition:collectionPoint];
         }
             break;
         default:
         { // 手势结束和其他状态
             UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:self.oldIndexPath];
+            CGRect cellRect = [self.collectionView convertRect:cell.frame toView:self];
             // 结束动画过程中停止交互,防止出问题
             self.collectionView.userInteractionEnabled = NO;
             [self stopShake:self.snapshotView];
+            [self.collectionView autoScrollForView:nil];
             // 给截图视图一个动画移动到隐藏cell的新位置
             [UIView animateWithDuration:0.25 animations:^{
-                self.snapshotView.center = cell.center;
+                self.snapshotView.center = CGPointMake(CGRectGetMidX(cellRect), CGRectGetMidY(cellRect));
                 self.snapshotView.transform = CGAffineTransformMakeScale(1.0, 1.0);
             } completion:^(BOOL finished) {
                 // 移除截图视图,显示隐藏的cell并开始交互
                 [self.snapshotView removeFromSuperview];
-                self.oldIndexPath = nil;
-                self.moveIndexPath = nil;
                 cell.hidden = NO;
                 self.collectionView.userInteractionEnabled = YES;
+                if (self.moveIndexPath && self.sourceIndexPath != self.moveIndexPath) {
+                    if (self.didMoveItem) {
+                        self.didMoveItem(self.myDataSource[self.moveIndexPath.row], self.sourceIndexPath.row, self.moveIndexPath.row);
+                    }
+                }
+                self.oldIndexPath = nil;
+                self.moveIndexPath = nil;
+                self.sourceIndexPath = nil;
             }];
         }
             break;
     }
 }
+
+- (void)updateCellMovementTargetPosition:(CGPoint)collectionPoint
+{
+    // 计算截图视图和哪个cell相交
+    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:collectionPoint];
+    if (indexPath && indexPath != self.oldIndexPath) {
+        UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+        CGRect cellRect = [self.collectionView convertRect:cell.frame toView:self];
+        // 计算中心距
+        CGFloat space = sqrtf(pow(self.snapshotView.center.x - CGRectGetMidX(cellRect), 2) + powf(self.snapshotView.center.y - CGRectGetMidY(cellRect), 2));
+        // 如果相交一半就移动
+        if (space <= self.snapshotView.bounds.size.width / 2) {
+            self.moveIndexPath = [self.collectionView indexPathForCell:cell];
+            //更新数据源
+            [self.myDataSource exchangeObjectAtIndex:self.oldIndexPath.row withObjectAtIndex:self.moveIndexPath.row];
+            //移动
+            [self.collectionView moveItemAtIndexPath:self.oldIndexPath toIndexPath:self.moveIndexPath];
+            //设置移动后的起始indexPath
+            self.oldIndexPath = self.moveIndexPath;
+        }
+    }
+}
+
+
 
 #pragma mark - private
 - (void)selectCell:(UICollectionViewCell *)cell asset:(LFAsset *)asset

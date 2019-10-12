@@ -9,8 +9,6 @@
 * 支持国际化配置（复制LFImagePickerController.bundle\LFImagePickerController.strings到项目中，修改对应的值即可；详情见DEMO；注意：不跟随系统语言切换显示）
 * 详细使用见LFImagePickerController.h 的初始化方法
 
-## 适配iOS13的modalPresentationStyle
-
 ## Installation 安装
 
 * CocoaPods：pod 'LFImagePickerController' 或 pod 'LFImagePickerController/LFMediaEdit' (带编辑功能)
@@ -32,3 +30,7 @@
 ## 图片展示
 
 ![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot.gif)
+
+## 适配iOS13的UIModalPresentationPageSheet
+
+![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot_iOS13.gif)

@@ -22,11 +22,9 @@
 /**最初选中cell的NSIndexPath*/
 @property (nonatomic, strong) NSIndexPath *sourceIndexPath;
 /**之前选中cell的NSIndexPath*/
-@property (nonatomic, strong) NSIndexPath *oldIndexPath;
+@property (nonatomic, strong) NSIndexPath *destinationIndexPath;
 /**单元格的截图*/
 @property (nonatomic, weak) UIView *snapshotView;
-/**之前选中cell的NSIndexPath*/
-@property (nonatomic, strong) NSIndexPath *moveIndexPath;
 @end
 
 @implementation LFPreviewBar
@@ -275,8 +273,8 @@
             //判断手势落点位置是否在row上
             CGPoint collectionPoint = [longPress locationInView:self.collectionView];
             NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:collectionPoint];
-            self.oldIndexPath = indexPath;
             self.sourceIndexPath = indexPath;
+            self.destinationIndexPath = indexPath;
             if (indexPath == nil) {
                 break;
             }
@@ -284,7 +282,8 @@
             // 使用系统的截图功能,得到cell的截图视图
             UIView *snapshotView = [cell snapshotViewAfterScreenUpdates:NO];
             snapshotView.frame = [self.collectionView convertRect:cell.frame toView:self];
-            [self addSubview:self.snapshotView = snapshotView];
+            [self addSubview:snapshotView];
+            self.snapshotView = snapshotView;
             // 截图后隐藏当前cell
             cell.hidden = YES;
             [self starShake:snapshotView];
@@ -316,7 +315,7 @@
             break;
         default:
         { // 手势结束和其他状态
-            UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:self.oldIndexPath];
+            UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:self.destinationIndexPath];
             CGRect cellRect = [self.collectionView convertRect:cell.frame toView:self];
             // 结束动画过程中停止交互,防止出问题
             self.collectionView.userInteractionEnabled = NO;
@@ -331,14 +330,14 @@
                 [self.snapshotView removeFromSuperview];
                 cell.hidden = NO;
                 self.collectionView.userInteractionEnabled = YES;
-                if (self.moveIndexPath && self.sourceIndexPath != self.moveIndexPath) {
+                if (self.sourceIndexPath != self.destinationIndexPath) {
                     if (self.didMoveItem) {
-                        self.didMoveItem(self.myDataSource[self.moveIndexPath.row], self.sourceIndexPath.row, self.moveIndexPath.row);
+                        // 已经在changed时改变了数据源，取destinationIndexPath的对象
+                        self.didMoveItem(self.myDataSource[self.destinationIndexPath.row], self.sourceIndexPath.row, self.destinationIndexPath.row);
                     }
                 }
-                self.oldIndexPath = nil;
-                self.moveIndexPath = nil;
                 self.sourceIndexPath = nil;
+                self.destinationIndexPath = nil;
             }];
         }
             break;
@@ -349,20 +348,20 @@
 {
     // 计算截图视图和哪个cell相交
     NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:collectionPoint];
-    if (indexPath && indexPath != self.oldIndexPath) {
+    if (indexPath && indexPath != self.destinationIndexPath) {
         UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
         CGRect cellRect = [self.collectionView convertRect:cell.frame toView:self];
         // 计算中心距
         CGFloat space = sqrtf(pow(self.snapshotView.center.x - CGRectGetMidX(cellRect), 2) + powf(self.snapshotView.center.y - CGRectGetMidY(cellRect), 2));
         // 如果相交一半就移动
         if (space <= self.snapshotView.bounds.size.width / 2) {
-            self.moveIndexPath = [self.collectionView indexPathForCell:cell];
+            NSIndexPath *oldIndexPath = self.destinationIndexPath;
             //更新数据源
-            [self.myDataSource exchangeObjectAtIndex:self.oldIndexPath.row withObjectAtIndex:self.moveIndexPath.row];
+            [self.myDataSource exchangeObjectAtIndex:oldIndexPath.row withObjectAtIndex:indexPath.row];
             //移动
-            [self.collectionView moveItemAtIndexPath:self.oldIndexPath toIndexPath:self.moveIndexPath];
+            [self.collectionView moveItemAtIndexPath:oldIndexPath toIndexPath:indexPath];
             //设置移动后的起始indexPath
-            self.oldIndexPath = self.moveIndexPath;
+            self.destinationIndexPath = indexPath;
         }
     }
 }

@@ -14,6 +14,7 @@
 
 @interface LFLayoutPickerController : UINavigationController
 
+/// Custom photo
 /// 自定义图片
 @property (nonatomic, copy) NSString *takePictureImageName;
 @property (nonatomic, copy) NSString *photoSelImageName;
@@ -22,6 +23,7 @@
 @property (nonatomic, copy) NSString *photoOriginDefImageName;
 @property (nonatomic, copy) NSString *ablumSelImageName;
 
+/// Custom appearance color
 /// 自定义外观颜色
 @property (nonatomic, strong) UIColor *oKButtonTitleColorNormal;
 @property (nonatomic, strong) UIColor *oKButtonTitleColorDisabled;
@@ -39,10 +41,9 @@
 @property (nonatomic, strong) UIColor *previewNaviBgColor;
 
 
-/// 自定义文字
 /// Copy LFImagePickerController.strings to any location of your project and modify the corresponding value.
-/// 复制LFImagePickerController.strings到项目任意位置，修改对应的值。
 /// These property have the highest priority and use LFImagePickerController.strings as much as possible. Otherwise, some properties of LFImagePickerController.strings will be invalid.
+/// 复制LFImagePickerController.strings到项目任意位置，修改对应的值。
 /// 这些属性拥有最高的优先级，尽可能使用LFImagePickerController.strings。否则会导致LFImagePickerController.strings对应的属性失效。
 @property (nonatomic, copy) NSString *doneBtnTitleStr;
 @property (nonatomic, copy) NSString *cancelBtnTitleStr;
@@ -53,7 +54,7 @@
 @property (nonatomic, copy) NSString *processHintStr;
 
 #ifdef LF_MEDIAEDIT
-#pragma mark - 编辑模式
+#pragma mark - 编辑模式/Edit model
 @property (nonatomic, copy) void (^photoEditLabrary)(LFPhotoEditingController *lf_photoEditingVC);
 @property (nonatomic, copy) void (^videoEditLabrary)(LFVideoEditingController *lf_videoEditingVC);
 #endif

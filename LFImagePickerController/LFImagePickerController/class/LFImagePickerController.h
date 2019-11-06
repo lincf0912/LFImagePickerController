@@ -36,12 +36,15 @@
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`");
 - (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc __deprecated_msg("Method deprecated. Use `initWithMaxImagesCount:columnNumber:delegate:`");
 
-/** 预览模式 */
+
+/// Preview mode or not
+/// 是否预览模式
 @property (nonatomic,readonly) BOOL isPreview;
 
 #pragma mark - UI
 
-/** 每行的数量 默认4（2～6）  */
+/// The number of each line defaults to 4 (2-6)
+/// 每行的数量 默认4（2～6）
 @property (nonatomic,assign) NSUInteger columnNumber;
 
 /// Default is 9 / 默认最大可选9张图片
@@ -59,8 +62,8 @@
 /// 最小视频必选张数,默认与minImagesCount同值,只有maxVideosCount不等于maxImagesCount才有效
 @property (nonatomic,assign) NSUInteger minVideosCount;
 
-/// Select original
-/** 是否选择原图 */
+/// Select original or not
+/// 是否选择原图
 @property (nonatomic,assign) BOOL isSelectOriginalPhoto;
 
 /// If not selected,the current image is automatically selected,Default is YES
@@ -158,14 +161,16 @@
 
 /// Public Method
 //- (void)cancelButtonClick;
-/** 代理 */
+/** 代理/Delegate */
 @property (nonatomic,weak) id<LFImagePickerControllerDelegate> pickerDelegate;
 
-/** block回调,具体使用见LFImagePickerControllerDelegate代理描述 */
+/// For block callback, see lfimagepickercontrollerdelegate description for details.
+/// block回调,具体使用见LFImagePickerControllerDelegate代理描述
 @property (nonatomic,copy) void (^imagePickerControllerTakePhoto)(void);
 @property (nonatomic,copy) void (^imagePickerControllerDidCancelHandle)(void);
 
 /**
+ 1.2.6 replace all old interfaces with unique callback to avoid interface diversification
  👍🎉1.2.6_取代所有旧接口,唯一回调,避免接口多样化
  */
 @property (nonatomic,copy) void (^didFinishPickingResultHandle)(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *results);
@@ -203,6 +208,11 @@
 
 
 /**
+ 
+ When allowTakePicture = YES, click take picture to trigger it.
+ Scheme 1: if this method is not implemented, execute the built-in photographing module. After the photo is taken, it will be saved to the album according to autoSavePhotoAlbum.
+ Scheme 2: to implement this method, the developer will process the photographing module by yourself, and then manually dismiss or other operations.
+ 
  当allowTakePicture=YES,点击拍照会执行
  方案1：如果不实现这个代理方法,执行内置拍照模块,拍照完成后会根据autoSavePhotoAlbum是否保存到相册,执行图片回调相关代理。
  方案2：实现这个代理方法,则由开发者自己处理拍照模块,完毕后手动dismiss或其他操作。
@@ -212,6 +222,8 @@
 - (void)lf_imagePickerControllerTakePhoto:(LFImagePickerController *)picker;
 
 /**
+ 
+ Click cancel to trigger it.
  当选择器点击取消的时候,会执行回调
 
  @param picker 选择器
@@ -220,10 +232,11 @@
 
 
 /**
+ 1.2.6 replace all old interfaces with unique callback to avoid interface diversification
  👍🎉1.2.6_取代所有旧接口,唯一回调,避免接口多样化
 
- @param picker 选择器
- @param results 回调对象
+ @param picker 选择器/picker
+ @param results 回调对象/callback object
  */
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingResult:(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *)results;
 

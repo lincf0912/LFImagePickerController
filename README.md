@@ -1,8 +1,10 @@
 # LFImagePickerController
 
-* 项目UI与资源方面部分使用TZImagePickerController项目，感谢分享。
-* 兼容非系统相册的调用方式
-* 支持Gif（压缩）、视频（压缩）、图片（压缩）
+[English](https://github.com/lincf0912/LFImagePickerController/blob/master/README_EN.md)
+
+* 它起始于TZImagePickerController项目，感谢分享。
+* 兼容自定义图片/视频的展示方式
+* 支持Gif（可压缩）、视频（可压缩）、图片（可压缩）
 * 图片编辑、视频编辑（依赖LFMediaEditingController库，默认没有编辑功能）
 * 视频编辑 需要访问音乐库 需要在info.plist 添加 NSAppleMusicUsageDescription
 * 支持iPhone、iPad 横屏
@@ -12,12 +14,11 @@
 ## Installation 安装
 
 * CocoaPods：pod 'LFImagePickerController' 或 pod 'LFImagePickerController/LFMediaEdit' (带编辑功能)
-* 手动导入：将LFImagePickerController\class文件夹拽入项目中，导入头文件：#import "LFImagePickerController.h"
 
 ## Demo配置编辑功能（不用编辑功能可以忽略）
 
 * 使用pod install安装LFMediaEditingController库
-* 在LFImagePickerController的project --> Build Settings --> 搜索Preprocessor Macros --> 在Debug与Release添加LF_MEDIAEDIT=1
+* 在LFImagePickerController的project --> Build Settings --> Preprocessor Macros --> 在Debug与Release添加LF_MEDIAEDIT=1
 
 ## 调用代码
 

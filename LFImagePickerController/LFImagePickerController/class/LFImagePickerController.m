@@ -50,6 +50,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.view.backgroundColor = [UIColor whiteColor];
     // simple
     [LFAssetManager manager].sortAscendingByCreateDate = self.sortAscendingByCreateDate;
     [LFAssetManager manager].allowPickingType = self.allowPickingType;
@@ -79,7 +80,9 @@
         
         CGFloat naviBarHeight = CGRectGetHeight(self.navigationBar.frame);
         
-        UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-50, 0, 50, naviBarHeight)];
+        CGFloat cancelWidth = [self.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:self.barItemTextFont} context:nil].size.width + 2 + 32;
+        
+        UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-cancelWidth, 0, cancelWidth, naviBarHeight)];
         [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
         _cancelBtn.titleLabel.font = self.barItemTextFont;
         _cancelBtn.titleLabel.textColor = self.barItemTextColor;

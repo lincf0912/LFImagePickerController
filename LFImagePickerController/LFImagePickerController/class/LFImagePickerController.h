@@ -31,11 +31,6 @@
 /// New custom media selector (Speed Dial) / 全新自定义图片选择器(带宫格) complete => 完成后返回全新数组 （代理仅lf_imagePickerControllerDidCancel有效）
 - (instancetype)initWithSelectedPhotoObjects:(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>*)selectedPhotos complete:(void (^)(NSArray <id/* <LFAssetPhotoProtocol/LFAssetVideoProtocol> */>* photos))complete;
 
-#pragma mark - deprecated init
-- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSUInteger)index excludeVideo:(BOOL)excludeVideo __deprecated_msg("Method deprecated. Use `initWithSelectedAssets:index:`");
-- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`");
-- (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc __deprecated_msg("Method deprecated. Use `initWithMaxImagesCount:columnNumber:delegate:`");
-
 
 /// Preview mode or not
 /// 是否预览模式
@@ -175,31 +170,6 @@
  */
 @property (nonatomic,copy) void (^didFinishPickingResultHandle)(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *results);
 
-#pragma mark - ========================Deprecated========================
-
-/// Default is YES,if set NO,user can't picking video.
-/// 默认为YES,如果设置为NO,用户将不能选择视频
-@property (nonatomic,assign) BOOL allowPickingVideo __deprecated_msg("property deprecated. Use `allowPickingType`");
-/// Default is YES,if set NO,user can't picking image.
-/// 默认为YES,如果设置为NO,用户将不能选择发送图片
-@property (nonatomic,assign) BOOL allowPickingImage __deprecated_msg("property deprecated. Use `allowPickingType`");
-/// Default is NO,if set YES,user can picking gif.(support compress,CompressSize parameter is ignored)
-/// 默认为NO,如果设置为YES,用户可以选择gif图片(支持压缩,忽略压缩参数)
-@property (nonatomic,assign) BOOL allowPickingGif __deprecated_msg("property deprecated. Use `allowPickingType`");
-/// Default is NO,if set YES,user can picking live photo.(support compress,CompressSize parameter is ignored)
-/// 默认为NO,如果设置为YES,用户可以选择live photo(支持压缩,忽略压缩参数)
-@property (nonatomic,assign) BOOL allowPickingLivePhoto __deprecated_msg("property deprecated. Use `allowPickingType`");
-
-/** 图片 */
-@property (nonatomic,copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-@property (nonatomic,copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey,id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-@property (nonatomic,copy) void (^didFinishPickingImagesHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-@property (nonatomic,copy) void (^didFinishPickingImagesWithInfosHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages,NSArray<NSDictionary *> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-/** 视频 */
-@property (nonatomic,copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-@property (nonatomic,copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage,NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
-#pragma mark - ========================Deprecated========================
-
 @end
 
 
@@ -240,66 +210,34 @@
  */
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingResult:(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *)results;
 
+@end
 
+@interface LFImagePickerController (deprecated)
 
-#pragma mark - ========================Deprecated========================
-/// ======== 图片回调 ========
+- (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSUInteger)index excludeVideo:(BOOL)excludeVideo __deprecated_msg("Method deprecated. Use `initWithSelectedAssets:index:`");
+- (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`");
+- (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc __deprecated_msg("Method deprecated. Use `initWithMaxImagesCount:columnNumber:delegate:`");
 
-/**
- 当选择器点击完成的时候,会执行回调
+/// Default is YES,if set NO,user can't picking video.
+/// 默认为YES,如果设置为NO,用户将不能选择视频
+@property (nonatomic,assign) BOOL allowPickingVideo __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is YES,if set NO,user can't picking image.
+/// 默认为YES,如果设置为NO,用户将不能选择发送图片
+@property (nonatomic,assign) BOOL allowPickingImage __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is NO,if set YES,user can picking gif.(support compress,CompressSize parameter is ignored)
+/// 默认为NO,如果设置为YES,用户可以选择gif图片(支持压缩,忽略压缩参数)
+@property (nonatomic,assign) BOOL allowPickingGif __deprecated_msg("property deprecated. Use `allowPickingType`");
+/// Default is NO,if set YES,user can picking live photo.(support compress,CompressSize parameter is ignored)
+/// 默认为NO,如果设置为YES,用户可以选择live photo(支持压缩,忽略压缩参数)
+@property (nonatomic,assign) BOOL allowPickingLivePhoto __deprecated_msg("property deprecated. Use `allowPickingType`");
 
- @param picker 选择器
- @param assets 相片对象
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingAssets:(NSArray *)assets __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
+/** 图片 */
+@property (nonatomic,copy) void (^didFinishPickingPhotosHandle)(NSArray *assets) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic,copy) void (^didFinishPickingPhotosWithInfosHandle)(NSArray *assets,NSArray<NSDictionary <kImageInfoFileKey,id>*> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic,copy) void (^didFinishPickingImagesHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic,copy) void (^didFinishPickingImagesWithInfosHandle)(NSArray<UIImage *> *thumbnailImages,NSArray<UIImage *> *originalImages,NSArray<NSDictionary *> *infos) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+/** 视频 */
+@property (nonatomic,copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+@property (nonatomic,copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage,NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 
-/**
- 当选择器点击完成的时候,会执行回调
-
- @param picker 选择器
- @param assets 相片对象
- @param infos 相片信息
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingAssets:(NSArray *)assets infos:(NSArray<NSDictionary <kImageInfoFileKey,id>*> *)infos __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-
-/**
- 当选择器点击完成的时候,会执行回调
- 👍傻瓜接口：将asset方向调整为向上,生成2张图片（压缩的缩略图10k左右;原图会根据UI是否勾选原图处理,没有勾选则压缩成标清图）
- 
- @param picker 选择器
- @param thumbnailImages 缩略图
- @param originalImages 原图
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingThumbnailImages:(NSArray<UIImage *> *)thumbnailImages originalImages:(NSArray<UIImage *> *)originalImages __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-/**
- 当选择器点击完成的时候,会执行回调
- 👍傻瓜接口：将asset方向调整为向上,生成2张图片（压缩的缩略图10k左右;原图会根据UI是否勾选原图处理,没有勾选则压缩成标清图）,附带（原图/标清图）的部分信息,
- 
- @param picker 选择器
- @param thumbnailImages 缩略图
- @param originalImages 原图
- @param infos 图片信息
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingThumbnailImages:(NSArray<UIImage *> *)thumbnailImages originalImages:(NSArray<UIImage *> *)originalImages infos:(NSArray<NSDictionary <kImageInfoFileKey,id>*> *)infos __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-
-/// ======== 视频回调 ========
-
-/**
- 当选择器点击完成的时候,会执行回调
-
- @param picker 选择器
- @param coverImage 视频第一帧图片
- @param asset 相片对象
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage sourceAssets:(id)asset __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-/**
- 当选择器点击完成的时候,会执行回调
- 👍傻瓜接口：将asset提取到缓存空间并压缩视频保存,回调路径可复制到自定义目录;若需要删除缓存,缓存路径由LFAssetManager提供
- 
- @param picker 选择器
- @param coverImage 视频第一帧图片
- @param path 视频路径mp4
- */
-- (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingVideo:(UIImage *)coverImage path:(NSString *)path __deprecated_msg("Method deprecated. Use `lf_imagePickerController:didFinishPickingResult:`");
-#pragma mark - ========================Deprecated========================
 @end

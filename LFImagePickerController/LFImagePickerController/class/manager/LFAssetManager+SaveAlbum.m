@@ -109,12 +109,14 @@
                 if (complete) complete(nil, error);
             }];
         }else{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
             /** iOS7之前保存图片到自定义相册方法 */
             [self saveToAlbumIOS7EarlyWithDatas:datas customAlbumName:title completionBlock:^(NSArray<ALAsset *> *assets) {
                 if (complete) complete(assets, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
             }];
+#endif
         }
     } else {
         NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_notpermissionError"]}];
@@ -203,6 +205,7 @@
 }
 
 #pragma mark - iOS7之前保存相片/视频到自定义相册
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
 - (void)saveToAlbumIOS7EarlyWithDatas:(NSArray <id /* NSData/UIImage/NSURL */>*)datas
                       customAlbumName:(NSString *)customAlbumName
                       completionBlock:(void (^)(NSArray <ALAsset *>*assets))completionBlock
@@ -297,6 +300,7 @@
     }
     
 }
+#endif
 
 
 #pragma mark - Save the video to a custom album
@@ -314,12 +318,14 @@
                 if (complete) complete(nil, error);
             }];
         } else {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
             //注意这个方法不能保存视频到自定义相册，只能保存到系统相册。
             [self saveToAlbumIOS7EarlyWithDatas:videoURLs customAlbumName:title completionBlock:^(NSArray<ALAsset *> *assets) {
                 if (complete) complete(assets, nil);
             } failureBlock:^(NSError *error) {
                 if (complete) complete(nil, error);
             }];
+#endif
         }
     } else {
         NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_notpermissionError"]}];
@@ -406,7 +412,9 @@
                 }
             });
         }];
-    } else {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else {
         for (ALAsset *result in assets) {
             if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
                 [result setVideoAtPath:nil completionBlock:^(NSURL *assetURL, NSError *error) {
@@ -429,6 +437,7 @@
             }
         }
     }
+#endif
 }
 
 - (void)deleteAssetCollections:(NSArray <PHAssetCollection *> *)collections complete:(void (^)(NSError *error))complete

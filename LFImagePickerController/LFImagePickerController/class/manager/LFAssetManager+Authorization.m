@@ -27,9 +27,12 @@
 - (NSInteger)authorizationStatus {
     if (@available(iOS 8.0, *)){
         return [PHPhotoLibrary authorizationStatus];
-    } else {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else {
         return [ALAssetsLibrary authorizationStatus];
     }
+#endif
     return NO;
 }
 
@@ -43,8 +46,10 @@
             }];
         });
     } else {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
         } failureBlock:nil];
+#endif
     }
 }
 @end

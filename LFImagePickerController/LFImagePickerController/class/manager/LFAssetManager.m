@@ -30,7 +30,9 @@
 @end
 
 @implementation LFAssetManager
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
 @synthesize assetLibrary = _assetLibrary;
+#endif
 
 static CGFloat LFAM_ScreenWidth;
 static CGFloat LFAM_ScreenScale;
@@ -61,10 +63,12 @@ static LFAssetManager *manager;
     return LFAM_ScreenScale;
 }
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
 - (ALAssetsLibrary *)assetLibrary {
     if (_assetLibrary == nil) _assetLibrary = [[ALAssetsLibrary alloc] init];
     return _assetLibrary;
 }
+#endif
 
 #pragma mark - Get Album
 
@@ -92,11 +96,13 @@ static LFAssetManager *manager;
             break;
         }
     } else {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             *stop = YES;
             model = [self modelWithResult:group album:nil];
             if (completion) completion(model);
         } failureBlock:nil];
+#endif
     }
 }
 
@@ -145,6 +151,7 @@ static LFAssetManager *manager;
         }
         if (completion) completion(albumArr);
     } else {
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             if (group == nil) {
                 if (completion) completion(albumArr);
@@ -158,6 +165,7 @@ static LFAssetManager *manager;
         } failureBlock:^(NSError *error) {
             if (completion) completion(albumArr);
         }];
+#endif
     }
 }
 
@@ -196,7 +204,9 @@ static LFAssetManager *manager;
         }
         if (completion) completion(photoArr);
         
-    } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
         if (allowPickingType == LFPickingMediaTypeVideo) {
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
@@ -244,6 +254,7 @@ static LFAssetManager *manager;
         
         if (completion) completion(photos);
     }
+#endif
 }
 
 ///  Get asset at index 获得下标为index的单个照片
@@ -266,7 +277,9 @@ static LFAssetManager *manager;
         }
         LFAsset *model = [self assetModelWithAsset:asset allowPickingType:allowPickingType];
         if (completion) completion(model);
-    } else if ([result isKindOfClass:[ALAssetsGroup class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
         if (allowPickingType == LFPickingMediaTypeVideo) {
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
@@ -301,7 +314,9 @@ static LFAssetManager *manager;
         @catch (NSException* e) {
             if (completion) completion(nil);
         }
-    } else {
+    }
+#endif
+    else {
         if (completion) completion(nil);
     }
 }
@@ -358,7 +373,9 @@ static LFAssetManager *manager;
                     completeBlock(model);
                 }
                 
-            } else if ([model.asset isKindOfClass:[ALAsset class]]) {
+            }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+            else if ([model.asset isKindOfClass:[ALAsset class]]) {
                 
                 if (model.bytes == 0) {
                     ALAssetRepresentation *representation = [model.asset defaultRepresentation];
@@ -368,6 +385,7 @@ static LFAssetManager *manager;
                     completeBlock(model);
                 }
             }
+#endif
         } else {
             completeBlock(model);
         }
@@ -404,7 +422,9 @@ static LFAssetManager *manager;
                     completeBlock(model.bytes);
                 }
                 
-            } else if ([model.asset isKindOfClass:[ALAsset class]]) {
+            }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+            else if ([model.asset isKindOfClass:[ALAsset class]]) {
                 
                 if (model.bytes == 0) {
                     ALAssetRepresentation *representation = [model.asset defaultRepresentation];
@@ -414,6 +434,7 @@ static LFAssetManager *manager;
                     completeBlock(model.bytes);
                 }
             }
+#endif
         } else {
             completeBlock(model.bytes);
         }
@@ -489,7 +510,9 @@ static LFAssetManager *manager;
             }
         }];
         return imageRequestID;
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         
         if (photoWidth > [UIScreen mainScreen].bounds.size.width/2) {
@@ -511,7 +534,9 @@ static LFAssetManager *manager;
                 });
             });
         }
-    } else {
+    }
+#endif
+    else {
         if (completion) completion(nil,nil,NO);
     }
     return 0;
@@ -554,14 +579,18 @@ static LFAssetManager *manager;
             }
         }];
         return imageRequestID;
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
         Byte *imageBuffer = (Byte *)malloc((size_t)assetRep.size);
         NSUInteger bufferSize = [assetRep getBytes:imageBuffer fromOffset:0.0 length:(NSInteger)assetRep.size error:nil];
         NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
         if (completion) completion(imageData,nil,NO);
-    } else {
+    }
+#endif
+    else {
         if (completion) completion(nil,nil,NO);
     }
     return 0;
@@ -883,7 +912,9 @@ static LFAssetManager *manager;
             }
         }];
         
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         
         dispatch_globalQueue_async_safe(^{
@@ -907,7 +938,9 @@ static LFAssetManager *manager;
                 if (completion) completion(imageData, fileName, mediaType, nil);
             });
         });
-    } else {
+    }
+#endif
+    else {
         if (completion) completion(nil, nil, LFImagePickerSubMediaTypeNone, nil);
     }
 }
@@ -1068,7 +1101,9 @@ static LFAssetManager *manager;
             }
             
         }];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *defaultRepresentation = [alAsset defaultRepresentation];
         NSString *uti = [defaultRepresentation UTI];
@@ -1079,7 +1114,9 @@ static LFAssetManager *manager;
                 completion(playerItem,nil);
             });
         }
-    } else {
+    }
+#endif
+    else {
         if (completion) completion(nil ,nil);
     }
 }
@@ -1092,10 +1129,13 @@ static LFAssetManager *manager;
     NSString *name = @"default.mp4";
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
+#endif
     if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
@@ -1181,10 +1221,13 @@ static LFAssetManager *manager;
     NSString *name = @"default.mp4";
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
+#endif
     if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
@@ -1236,7 +1279,9 @@ static LFAssetManager *manager;
                 });
             }
         }];
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *rep = [asset defaultRepresentation];
         NSURL *videoURL = [rep url];
         [LF_VideoUtils encodeVideoWithURL:videoURL outPath:path presetName:presetName complete:^(BOOL isSuccess, NSError *error) {
@@ -1250,7 +1295,9 @@ static LFAssetManager *manager;
                 });
             }
         }];
-    }else{
+    }
+#endif
+    else{
         dispatch_main_async_safe(^{
             completion(nil);
         });
@@ -1267,35 +1314,45 @@ static LFAssetManager *manager;
         [self getPhotoWithAsset:asset photoWidth:80 completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if (completion) completion(photo);
         }];
-    } else {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else {
         ALAssetsGroup *group = model.result;
         UIImage *postImage = [UIImage imageWithCGImage:group.posterImage];
         if (completion) completion(postImage);
     }
+#endif
 }
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
 - (NSInteger)isAssetsArray:(NSArray *)assets containAsset:(id)asset {
     if (@available(iOS 8.0, *)){
         return [assets indexOfObject:asset];
-    } else {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else {
         NSMutableArray *selectedAssetUrls = [NSMutableArray array];
         for (ALAsset *asset_item in assets) {
             [selectedAssetUrls addObject:[asset_item valueForProperty:ALAssetPropertyURLs]];
         }
         return [selectedAssetUrls indexOfObject:[asset valueForProperty:ALAssetPropertyURLs]];
     }
+#endif
+    return NSNotFound;
 }
 
 - (NSString *)getAssetIdentifier:(id)asset {
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         return phAsset.localIdentifier;
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         NSURL *assetUrl = [alAsset valueForProperty:ALAssetPropertyAssetURL];
         return assetUrl.absoluteString;
     }
+#endif
     return nil;
 }
 
@@ -1314,10 +1371,13 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         return CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight);
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         return alAsset.defaultRepresentation.dimensions;
     }
+#endif
     return CGSizeZero;
 }
 
@@ -1327,12 +1387,15 @@ static LFAssetManager *manager;
         PHAsset *phAsset = (PHAsset *)asset;
         NSString *fileName = [phAsset valueForKey:@"filename"];
         if (complete) complete(fileName);
-    } else if ([asset isKindOfClass:[ALAsset class]]) {
+    }
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
         NSString *fileName = assetRep.filename;
         if (complete) complete(fileName);
     }
+#endif
 }
 
 #pragma mark - Private Method

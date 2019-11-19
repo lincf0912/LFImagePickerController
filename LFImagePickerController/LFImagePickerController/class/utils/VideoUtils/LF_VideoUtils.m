@@ -134,7 +134,7 @@
     AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:exprotPresetName];
     exportSession.outputURL = [NSURL fileURLWithPath:outPath];
     exportSession.videoComposition = waterMarkVideoComposition;
-    exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+    exportSession.outputFileType = AVFileTypeMPEG4;
     [exportSession exportAsynchronouslyWithCompletionHandler:^(void)
      {
          switch ([exportSession status])

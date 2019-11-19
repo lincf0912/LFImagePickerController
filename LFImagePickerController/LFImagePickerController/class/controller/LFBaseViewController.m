@@ -8,7 +8,6 @@
 
 #import "LFBaseViewController.h"
 #import "LFImagePickerHeader.h"
-#import "UIView+LFFrame.h"
 #import "LFImagePickerController.h"
 
 @interface LFBaseViewController ()
@@ -70,9 +69,9 @@
 - (CGRect)viewFrameWithoutNavigation
 {
     CGFloat top = [self navigationHeight];
-    CGFloat height = self.view.height - top;
+    CGFloat height = self.view.frame.size.height - top;
     
-    return CGRectMake(0, top, self.view.width, height);
+    return CGRectMake(0, top, self.view.frame.size.width, height);
 }
 
 - (void)popToViewController

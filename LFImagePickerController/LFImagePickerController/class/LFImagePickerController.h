@@ -180,11 +180,11 @@
 /**
  
  When allowTakePicture = YES, click take picture to trigger it.
- Scheme 1: if this method is not implemented, execute the built-in photographing module. After the photo is taken, it will be saved to the album according to autoSavePhotoAlbum.
+ Scheme 1: if this method is not implemented. After the photo is taken, it will be saved to the album according to autoSavePhotoAlbum, and the lf_imagePickerController:didFinishPickingResult delegate will be executed.
  Scheme 2: to implement this method, the developer will process the photographing module by yourself, and then manually dismiss or other operations.
  
  当allowTakePicture=YES,点击拍照会执行
- 方案1：如果不实现这个代理方法,执行内置拍照模块,拍照完成后会根据autoSavePhotoAlbum是否保存到相册,执行图片回调相关代理。
+ 方案1：如果不实现这个代理方法,执行内置拍照模块,拍照完成后会根据autoSavePhotoAlbum是否保存到相册,并执行lf_imagePickerController:didFinishPickingResult代理。
  方案2：实现这个代理方法,则由开发者自己处理拍照模块,完毕后手动dismiss或其他操作。
 
  @param picker 选择器

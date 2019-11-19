@@ -13,7 +13,6 @@
 #import "LFAssetManager+Simple.h"
 #import "LFPhotoEditManager.h"
 #import "LFVideoEditManager.h"
-#import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 
 #import "LFPhotoPickerController.h"
@@ -60,7 +59,7 @@
         UIView *tipView = [[UIView alloc] initWithFrame:self.view.bounds];
         
         UILabel *_tipLabel = [[UILabel alloc] init];
-        _tipLabel.frame = CGRectMake(8, 120, self.view.width - 16, 60);
+        _tipLabel.frame = CGRectMake(8, 120, self.view.frame.size.width - 16, 60);
         _tipLabel.textAlignment = NSTextAlignmentCenter;
         _tipLabel.numberOfLines = 0;
         _tipLabel.font = [UIFont systemFontOfSize:16];
@@ -73,7 +72,7 @@
         
         UIButton *_settingBtn = [UIButton buttonWithType:UIButtonTypeSystem];
         [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
-        _settingBtn.frame = CGRectMake(0, 180, self.view.width, 44);
+        _settingBtn.frame = CGRectMake(0, 180, self.view.frame.size.width, 44);
         _settingBtn.titleLabel.font = [UIFont systemFontOfSize:18];
         [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
         [tipView addSubview:_settingBtn];
@@ -82,7 +81,7 @@
         
         CGFloat cancelWidth = [self.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:self.barItemTextFont} context:nil].size.width + 2 + 32;
         
-        UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.width-cancelWidth, 0, cancelWidth, naviBarHeight)];
+        UIButton *_cancelBtn = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width-cancelWidth, 0, cancelWidth, naviBarHeight)];
         [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
         _cancelBtn.titleLabel.font = self.barItemTextFont;
         _cancelBtn.titleLabel.textColor = self.barItemTextColor;
@@ -154,6 +153,8 @@
     return self;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (instancetype)initWithMaxImagesCount:(NSUInteger)maxImagesCount columnNumber:(NSUInteger)columnNumber delegate:(id<LFImagePickerControllerDelegate>)delegate pushPhotoPickerVc:(BOOL)pushPhotoPickerVc  __deprecated_msg("Method deprecated. Use `initWithMaxImagesCount:columnNumber:delegate:`"){
     
     self = [super init];
@@ -239,6 +240,7 @@
     }
     return self;
 }
+#pragma clang diagnostic pop
 
 - (instancetype)initWithSelectedImageObjects:(NSArray <id<LFAssetImageProtocol>>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <id<LFAssetImageProtocol>>* photos))complete
 {

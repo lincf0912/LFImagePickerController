@@ -242,6 +242,8 @@
     tableView.dataSource = self;
     tableView.delegate = self;
     [tableView registerClass:[LFAlbumCell class] forCellReuseIdentifier:@"LFAlbumCell"];
+    tableView.separatorColor = [UIColor colorWithWhite:0.5 alpha:1.0];
+    tableView.separatorInset = UIEdgeInsetsZero;
     /** 这个设置iOS9以后才有，主要针对iPad，不设置的话，分割线左侧空出很多 */
     if (@available(iOS 9.0, *))
     {
@@ -291,6 +293,7 @@
         self.backgroundView.alpha = 1.0;
     } completion:^(BOOL finished) {
         self.animating = NO;
+        self.backgroundView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.6];
     }];
 }
 
@@ -299,6 +302,7 @@
     UIView *view = self.currentVC.view;
     CGRect hidenRect = view.bounds;
     hidenRect.origin.y -= hidenRect.size.height;
+    self.backgroundView.backgroundColor = [UIColor clearColor];
     
     self.animating = YES;
     [UIView animateWithDuration:0.25f animations:^{
@@ -367,6 +371,7 @@
     _selectedAlbum = model;
     self.titleLabel.text = model.name;
     self.enableAnimated = YES;
+    [self setNeedsDisplay];
     [self setNeedsLayout];
     
     [tableView beginUpdates];

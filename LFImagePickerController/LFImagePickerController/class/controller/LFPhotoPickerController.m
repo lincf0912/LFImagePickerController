@@ -12,7 +12,6 @@
 #import "LFPhotoPreviewController.h"
 
 #import "LFImagePickerHeader.h"
-#import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 #import "UIImage+LFCommon.h"
 #import "UIImage+LF_Format.h"
@@ -85,7 +84,9 @@ CGFloat const bottomToolBarHeight = 50.f;
 /** 加载动画延时 */
 @property (nonatomic, assign) float animtionDelayTime;
 /** 记录动画次数 */
-@property (nonatomic, assign) float animtionTimes;
+@property (nonatomic, assign) int animtionTimes;
+/** 记录动画完成次数 */
+@property (nonatomic, assign) int animtionFinishTimes;
 
 @end
 
@@ -213,8 +214,8 @@ CGFloat const bottomToolBarHeight = 50.f;
     _collectionView.frame = collectionViewRect;
     
     /* 适配底部栏 */
-    CGFloat yOffset = self.view.height - toolbarHeight;
-    _bottomToolBar.frame = CGRectMake(0, yOffset, self.view.width, toolbarHeight);
+    CGFloat yOffset = self.view.frame.size.height - toolbarHeight;
+    _bottomToolBar.frame = CGRectMake(0, yOffset, self.view.frame.size.width, toolbarHeight);
     
     CGRect bottomToolbarRect = _bottomToolBar.bounds;
     if (@available(iOS 11.0, *)) {
@@ -351,7 +352,7 @@ CGFloat const bottomToolBarHeight = 50.f;
     
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
     CGFloat margin = isiPad ? 15 : 2;
-    CGFloat screenWidth = MIN(self.view.width, self.view.height);
+    CGFloat screenWidth = MIN(self.view.frame.size.width, self.view.frame.size.height);
     CGFloat itemWH = (screenWidth - (imagePickerVc.columnNumber + 1) * margin) / imagePickerVc.columnNumber;
     layout.itemSize = CGSizeMake(itemWH, itemWH);
     layout.minimumInteritemSpacing = margin;
@@ -394,14 +395,14 @@ CGFloat const bottomToolBarHeight = 50.f;
     if (@available(iOS 11.0, *)) {
         height += self.view.safeAreaInsets.bottom;
     }
-    CGFloat yOffset = self.view.height - height;
+    CGFloat yOffset = self.view.frame.size.height - height;
     
     UIColor *toolbarBGColor = imagePickerVc.toolbarBgColor;
     UIColor *toolbarTitleColorNormal = imagePickerVc.toolbarTitleColorNormal;
     UIColor *toolbarTitleColorDisabled = imagePickerVc.toolbarTitleColorDisabled;
     UIFont *toolbarTitleFont = imagePickerVc.toolbarTitleFont;
     
-    UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.width, height)];
+    UIView *bottomToolBar = [[UIView alloc] initWithFrame:CGRectMake(0, yOffset, self.view.frame.size.width, height)];
     bottomToolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     bottomToolBar.backgroundColor = toolbarBGColor;
     
@@ -482,7 +483,7 @@ CGFloat const bottomToolBarHeight = 50.f;
     doneSize.width += 10;
     
     _doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _doneButton.frame = CGRectMake(self.view.width - doneSize.width - 12, (bottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
+    _doneButton.frame = CGRectMake(self.view.frame.size.width - doneSize.width - 12, (bottomToolBarHeight-doneSize.height)/2, doneSize.width, doneSize.height);
     _doneButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleBottomMargin;
     _doneButton.titleLabel.font = toolbarTitleFont;
     [_doneButton addTarget:self action:@selector(doneButtonClick) forControlEvents:UIControlEventTouchUpInside];
@@ -497,7 +498,7 @@ CGFloat const bottomToolBarHeight = 50.f;
     
     UIView *divide = [[UIView alloc] init];
     divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
-    divide.frame = CGRectMake(0, 0, self.view.width, 1);
+    divide.frame = CGRectMake(0, 0, self.view.frame.size.width, 1);
     divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     
     [bottomSubToolBar addSubview:_editButton];
@@ -969,12 +970,14 @@ CGFloat const bottomToolBarHeight = 50.f;
         [UIView animateWithDuration:0.25 delay:self.animtionTimes++ * self.animtionDelayTime options:UIViewAnimationOptionCurveEaseInOut animations:^{
             cell.alpha = 1.0;
         } completion:^(BOOL finished) {
-            
+            self.animtionFinishTimes++;
+            if (self.animtionTimes == self.animtionFinishTimes) {
+                // finish
+                self.animtionDelayTime = 0;
+                self.animtionTimes = 0;
+                self.animtionFinishTimes = 0;
+            }
         }];
-        if (self.models.count - 1 == indexPath.row) {
-            self.animtionDelayTime = 0;
-            self.animtionTimes = 0;
-        }
     }
 }
 

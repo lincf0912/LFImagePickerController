@@ -27,7 +27,6 @@
 		6F1201E51E519E8300EA2198 /* UIAlertView+LF_Block.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201D81E519E8300EA2198 /* UIAlertView+LF_Block.m */; };
 		6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201DA1E519E8300EA2198 /* UIImage+LF_ImageCompress.m */; };
 		6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201DC1E519E8300EA2198 /* UIView+LFAnimate.m */; };
-		6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201DE1E519E8300EA2198 /* UIView+LFFrame.m */; };
 		6F1201E91E519E8300EA2198 /* LF_FileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201E11E519E8300EA2198 /* LF_FileUtility.m */; };
 		6F1201EA1E519E8300EA2198 /* LF_VideoUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201E41E519E8300EA2198 /* LF_VideoUtils.m */; };
 		6F1201ED1E51A06D00EA2198 /* UIImage+LFCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */; };
@@ -102,8 +101,6 @@
 		6F1201DA1E519E8300EA2198 /* UIImage+LF_ImageCompress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LF_ImageCompress.m"; sourceTree = "<group>"; };
 		6F1201DB1E519E8300EA2198 /* UIView+LFAnimate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+LFAnimate.h"; sourceTree = "<group>"; };
 		6F1201DC1E519E8300EA2198 /* UIView+LFAnimate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+LFAnimate.m"; sourceTree = "<group>"; };
-		6F1201DD1E519E8300EA2198 /* UIView+LFFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+LFFrame.h"; sourceTree = "<group>"; };
-		6F1201DE1E519E8300EA2198 /* UIView+LFFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+LFFrame.m"; sourceTree = "<group>"; };
 		6F1201E01E519E8300EA2198 /* LF_FileUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LF_FileUtility.h; sourceTree = "<group>"; };
 		6F1201E11E519E8300EA2198 /* LF_FileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LF_FileUtility.m; sourceTree = "<group>"; };
 		6F1201E31E519E8300EA2198 /* LF_VideoUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LF_VideoUtils.h; sourceTree = "<group>"; };
@@ -394,8 +391,6 @@
 				6F1201DA1E519E8300EA2198 /* UIImage+LF_ImageCompress.m */,
 				6F1201DB1E519E8300EA2198 /* UIView+LFAnimate.h */,
 				6F1201DC1E519E8300EA2198 /* UIView+LFAnimate.m */,
-				6F1201DD1E519E8300EA2198 /* UIView+LFFrame.h */,
-				6F1201DE1E519E8300EA2198 /* UIView+LFFrame.m */,
 				6F1201EB1E51A06D00EA2198 /* UIImage+LFCommon.h */,
 				6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */,
 				6FA36E4F1EB9DC700009E2DE /* UIImage+LF_Format.h */,
@@ -621,7 +616,6 @@
 				6F16C5971E8224EF00B251A0 /* LFBaseViewController.m in Sources */,
 				6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */,
 				6F16992A1F15AEDD008B1818 /* LFResultImage.m in Sources */,
-				6F1201E81E519E8300EA2198 /* UIView+LFFrame.m in Sources */,
 				6FAA50C41ED532DF002D88A2 /* LFPreviewBar.m in Sources */,
 				6FAA50C81ED5336A002D88A2 /* LFPreviewBarCell.m in Sources */,
 				C75FA913233C4C790034A2AB /* LFAssetManager+Simple.m in Sources */,

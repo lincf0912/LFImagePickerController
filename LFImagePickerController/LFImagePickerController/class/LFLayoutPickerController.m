@@ -9,7 +9,6 @@
 #import "LFLayoutPickerController.h"
 #import "LFImagePickerHeader.h"
 #import "LFBaseViewController.h"
-#import "UIView+LFFrame.h"
 #import "UIAlertView+LF_Block.h"
 
 @interface LFLayoutPickerController () <UINavigationControllerDelegate>

@@ -10,7 +10,6 @@
 #import "LFImagePickerController.h"
 #import "LFImagePickerController+property.h"
 #import "LFImagePickerHeader.h"
-#import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 #import "LFPhotoPreviewCell.h"
 #import "LFPhotoPreviewGifCell.h"
@@ -205,7 +204,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [super viewWillAppear:animated];
     // 隐藏状态栏而不改变安全区域的高度
     [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelStatusBar + 1;
-    if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.width * _currentIndex, 0) animated:NO];
+    if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.frame.size.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
     
     if (self.isPreviewing == NO) {
@@ -261,31 +260,48 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         naviBarHeight += CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
     }
 
-    _naviBar.frame = CGRectMake(0, 0, self.view.width, naviBarHeight);
-    CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight);
+    _naviBar.frame = CGRectMake(0, 0, self.view.frame.size.width, naviBarHeight);
+    CGRect naviSubBarRect = CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.frame.size.width, naviSubBarHeight);
     if (@available(iOS 11.0, *)) {
         naviSubBarRect.origin.x += ios11Safeinsets.left;
         naviSubBarRect.size.width -= ios11Safeinsets.left + ios11Safeinsets.right;
     }
     _naviSubBar.frame = naviSubBarRect;
-    _backButton.height = CGRectGetHeight(_naviSubBar.frame);
-    _selectButton.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_selectButton.frame))/2;
-    _titleLabel.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_titleLabel.frame))/2;
+    
+    {
+        CGRect tmpRect = _backButton.frame;
+        tmpRect.size.height = CGRectGetHeight(_naviSubBar.frame);
+        _backButton.frame = tmpRect;
+    }
+    {
+        CGRect tmpRect = _selectButton.frame;
+        tmpRect.origin.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_selectButton.frame))/2;
+        _selectButton.frame = tmpRect;
+    }
+    {
+        CGRect tmpRect = _titleLabel.frame;
+        tmpRect.origin.y = (CGRectGetHeight(_naviSubBar.frame)-CGRectGetHeight(_titleLabel.frame))/2;
+        _titleLabel.frame = tmpRect;
+    }
     
     /** 适配提示栏 */
-    _naviTipsView.frame = CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.width, naviTipsViewDefaultHeight);
+    _naviTipsView.frame = CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.frame.size.width, naviTipsViewDefaultHeight);
     
     /* 适配标记图标 */
     CGFloat livePhotoSignViewY = (_naviTipsView.alpha == 0) ? CGRectGetMaxY(_naviBar.frame) : CGRectGetMaxY(_naviTipsView.frame);
-    _livePhotoSignView.x = CGRectGetMinX(_naviBar.frame) + livePhotoSignMargin + ios11Safeinsets.left;
-    _livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+    {
+        CGRect tempRect = _livePhotoSignView.frame;
+        tempRect.origin.x = CGRectGetMinX(_naviBar.frame) + livePhotoSignMargin + ios11Safeinsets.left;
+        tempRect.origin.y = livePhotoSignViewY + livePhotoSignMargin;
+        _livePhotoSignView.frame = tempRect;
+    }
     
     /* 适配底部栏 */
     CGFloat toolbarHeight = toolbarDefaultHeight;
     if (@available(iOS 11.0, *)) {
         toolbarHeight += self.view.safeAreaInsets.bottom;
     }
-    _toolBar.frame = CGRectMake(0, self.view.height - toolbarHeight, self.view.width, toolbarHeight);
+    _toolBar.frame = CGRectMake(0, self.view.frame.size.height - toolbarHeight, self.view.frame.size.width, toolbarHeight);
     CGRect toolbarRect = _toolBar.bounds;
     if (@available(iOS 11.0, *)) {
         toolbarRect.origin.x += self.view.safeAreaInsets.left;
@@ -294,7 +310,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _toolSubBar.frame = toolbarRect;
     
     /* 适配预览栏 */
-    _previewMainBar.frame = CGRectMake(0, _toolBar.y - previewBarDefaultHeight, self.view.width, previewBarDefaultHeight);;
+    _previewMainBar.frame = CGRectMake(0, _toolBar.frame.origin.y - previewBarDefaultHeight, self.view.frame.size.width, previewBarDefaultHeight);
     CGRect previewBarRect = _previewMainBar.bounds;
     if (@available(iOS 11.0, *)) {
         previewBarRect.origin.x += self.view.safeAreaInsets.left;
@@ -306,9 +322,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     /** 重新排版 */
     [_collectionView.collectionViewLayout invalidateLayout];
     /* 适配宫格视图 */
-    _collectionView.frame = CGRectMake(0, 0, self.view.width+cellMargin, self.view.height);
-    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
-    if (_models.count) [_collectionView setContentOffset:CGPointMake((_collectionView.width) * _currentIndex, 0) animated:NO];
+    _collectionView.frame = CGRectMake(0, 0, self.view.frame.size.width+cellMargin, self.view.frame.size.height);
+    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.frame.size.width), 0);
+    if (_models.count) [_collectionView setContentOffset:CGPointMake((_collectionView.frame.size.width) * _currentIndex, 0) animated:NO];
 }
 
 - (void)dealloc
@@ -325,10 +341,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         naviBarHeight += self.view.safeAreaInsets.top;
     }
     
-    _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, naviBarHeight)];
+    _naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, naviBarHeight)];
     _naviBar.backgroundColor = imagePickerVc.previewNaviBgColor;
     
-    _naviSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.width, naviSubBarHeight)];
+    _naviSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, naviBarHeight-naviSubBarHeight, self.view.frame.size.width, naviSubBarHeight)];
     [_naviBar addSubview:_naviSubBar];
     
     _backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 50, CGRectGetHeight(_naviSubBar.frame))];
@@ -339,7 +355,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
         CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
-        _backButton.width = editCancelWidth+8;
+        {
+            CGRect tempRect = _backButton.frame;
+            tempRect.size.width = editCancelWidth+8;
+            _backButton.frame = tempRect;
+        }
         _backButton.titleEdgeInsets = UIEdgeInsetsMake(0, 8, 0, 0);
     } else {
         UIImage *image = bundleImageNamed(@"navigationbar_back_arrow");
@@ -362,7 +382,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         _titleLabel.font = imagePickerVc.naviTitleFont;
         CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(_naviSubBar.frame)) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
         
-        CGFloat titleMargin = MAX(_backButton.width, _selectButton.width) + 8;
+        CGFloat titleMargin = MAX(_backButton.frame.size.width, _selectButton.frame.size.width) + 8;
         
         _titleLabel.frame = CGRectMake(titleMargin, (CGRectGetHeight(_naviSubBar.frame)-height)/2, CGRectGetWidth(_naviSubBar.frame) - titleMargin * 2, height);
         _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
@@ -388,11 +408,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         toolbarHeight += self.view.safeAreaInsets.bottom;
     }
     
-    _toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.height - toolbarHeight, self.view.width, toolbarHeight)];
+    _toolBar = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - toolbarHeight, self.view.frame.size.width, toolbarHeight)];
     _toolBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     _toolBar.backgroundColor = toolbarBGColor;
     
-    UIView *toolSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, toolbarDefaultHeight)];
+    UIView *toolSubBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, toolbarDefaultHeight)];
     toolSubBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     _toolSubBar = toolSubBar;
     
@@ -472,7 +492,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     UIView *divide = [[UIView alloc] init];
     divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
-    divide.frame = CGRectMake(0, 0, self.view.width, 1);
+    divide.frame = CGRectMake(0, 0, self.view.frame.size.width, 1);
     divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     
     [toolSubBar addSubview:_editButton];
@@ -487,11 +507,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     LFImagePickerController *imagePickerVc = [self navi];
     
-    UIView *previewMainBar = [[UIView alloc] initWithFrame:CGRectMake(0, _toolBar.y - previewBarDefaultHeight, self.view.width, previewBarDefaultHeight)];
+    UIView *previewMainBar = [[UIView alloc] initWithFrame:CGRectMake(0, _toolBar.frame.origin.y - previewBarDefaultHeight, self.view.frame.size.width, previewBarDefaultHeight)];
     previewMainBar.backgroundColor = imagePickerVc.toolbarBgColor;
     _previewMainBar = previewMainBar;
     
-    _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, 0, self.view.width, previewBarDefaultHeight)];
+    _previewBar = [[LFPreviewBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, previewBarDefaultHeight)];
     _previewBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     _previewBar.backgroundColor = [UIColor clearColor];
     _previewBar.borderWidth = 4.f;
@@ -595,9 +615,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)configNaviTipsView {
     
     LFImagePickerController *imagePickerVc = [self navi];
-    _naviTipsView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.width, naviTipsViewDefaultHeight)];
+    _naviTipsView = [[UIView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(_naviBar.frame), self.view.frame.size.width, naviTipsViewDefaultHeight)];
     _naviTipsView.backgroundColor = imagePickerVc.previewNaviBgColor;
-    _naviTipsLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 0, self.view.width-20, naviTipsViewDefaultHeight)];
+    _naviTipsLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 0, self.view.frame.size.width-20, naviTipsViewDefaultHeight)];
     _naviTipsLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _naviTipsLabel.font = imagePickerVc.naviTipsFont;
     _naviTipsLabel.textColor = imagePickerVc.naviTipsTextColor;
@@ -607,7 +627,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     UIView *divide = [[UIView alloc] init];
     divide.backgroundColor = [UIColor colorWithWhite:1.f alpha:0.1f];
-    divide.frame = CGRectMake(0, 0, self.view.width, 1);
+    divide.frame = CGRectMake(0, 0, self.view.frame.size.width, 1);
     divide.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     [_naviTipsView addSubview:divide];
     
@@ -624,7 +644,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 //    layout.minimumInteritemSpacing = 0;
 //    layout.minimumLineSpacing = cellMargin;
 //    layout.sectionInset = UIEdgeInsetsMake(0, 0, 0, cellMargin);
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.width, self.view.height) collectionViewLayout:layout];
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) collectionViewLayout:layout];
 //    _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _collectionView.backgroundColor = [UIColor clearColor];
     _collectionView.dataSource = self;
@@ -634,7 +654,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 //    _collectionView.alwaysBounceHorizontal = YES;
     _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.contentOffset = CGPointMake(0, 0);
-    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.width), 0);
+    _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.frame.size.width), 0);
     
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
     [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
@@ -926,9 +946,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     if (_isMTScroll) {        
         CGFloat offSetWidth = scrollView.contentOffset.x;
-        offSetWidth = offSetWidth +  (_collectionView.width/2);
+        offSetWidth = offSetWidth +  (_collectionView.frame.size.width/2);
         
-        NSInteger currentIndex = offSetWidth / (_collectionView.width);
+        NSInteger currentIndex = offSetWidth / (_collectionView.frame.size.width);
         
         if (currentIndex < _models.count && _currentIndex != currentIndex) {
             _currentIndex = currentIndex;
@@ -993,7 +1013,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (@available(iOS 11.0, *)) {
         ios11Safeinsets = self.view.safeAreaInsets;
     }
-    return CGSizeMake(self.view.width-ios11Safeinsets.left-ios11Safeinsets.right, self.view.height);
+    return CGSizeMake(self.view.frame.size.width-ios11Safeinsets.left-ios11Safeinsets.right, self.view.frame.size.height);
 }
 
 - (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
@@ -1039,7 +1059,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 #ifdef LF_MEDIAEDIT
 #pragma mark - LFPhotoEditingControllerDelegate
-- (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didCancelPhotoEdit:(LFPhotoEdit *)photoEdit
+- (void)lf_PhotoEditingControllerDidCancel:(LFPhotoEditingController *)photoEditingVC
 {
 //    if (photoEdit == nil && _collectionView == nil) { /** 没有编辑 并且 UI未初始化 */
 //        self.tempEditImage = photoEditingVC.editImage;
@@ -1230,8 +1250,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 static CGFloat ratioY = 0;
                 if (!_isPulling) { // 首次触发时，计算落点在视图的比例
                     CGPoint locationPoint = [panGesture locationInView:self.view];
-                    CGFloat innerX = locationPoint.x - _pullSnapshotView.origin.x;
-                    CGFloat innerY = locationPoint.y - _pullSnapshotView.origin.y;
+                    CGFloat innerX = locationPoint.x - _pullSnapshotView.frame.origin.x;
+                    CGFloat innerY = locationPoint.y - _pullSnapshotView.frame.origin.y;
                     /** 计算开始拖动的点在视图的比例位置，视图位置分别是：以中心为标准值0，top，left为1，bottom，right为-1 */
                     if (innerX > pullSnapshotViewInnerMidX) {
                         ratioX = -1 * (innerX - pullSnapshotViewInnerMidX) / pullSnapshotViewInnerMidX;
@@ -1255,7 +1275,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 CGFloat distance = 1.0;
                 CGFloat minScale = 0.4;
                 if (_beginPoint.y < movePoint.y) {
-                    CGFloat length = self.view.height * 0.65;
+                    CGFloat length = self.view.frame.size.height * 0.65;
                     distance = (length - (movePoint.y - _beginPoint.y)) / length;
                     distance = MAX(distance, minScale);
                 }
@@ -1436,7 +1456,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [UIView animateWithDuration:0.25f animations:^{
         self->_naviTipsView.alpha = self.isHideMyNaviBar ? 0.f : (showTip ? 1.f : 0.f);
         CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
-        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+        {
+            CGRect tempRect = self->_livePhotoSignView.frame;
+            tempRect.origin.y = livePhotoSignViewY + livePhotoSignMargin;
+            self->_livePhotoSignView.frame = tempRect;
+        }
     }];
     
     if (self.alwaysShowPreviewBar) {
@@ -1571,7 +1595,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         self->_toolBar.alpha = alpha;
         self->_naviTipsView.alpha = (self->_naviTipsLabel.text.length) ? alpha : 0.f;
         CGFloat livePhotoSignViewY = (self->_naviTipsView.alpha == 0) ? CGRectGetMaxY(self->_naviBar.frame) : CGRectGetMaxY(self->_naviTipsView.frame);
-        self->_livePhotoSignView.y = livePhotoSignViewY + livePhotoSignMargin;
+        {
+            CGRect tempRect = self->_livePhotoSignView.frame;
+            tempRect.origin.y = livePhotoSignViewY + livePhotoSignMargin;
+            self->_livePhotoSignView.frame = tempRect;
+        }
         /** 非总是显示模式，并且 预览栏数量为0时，已经是被隐藏，不能显示, 取反操作 */
         if (!(!self.alwaysShowPreviewBar && self->_previewBar.dataSource.count == 0)) {
             self->_previewMainBar.alpha = alpha;

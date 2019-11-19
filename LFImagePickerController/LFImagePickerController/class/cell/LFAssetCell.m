@@ -10,7 +10,6 @@
 #import "LFImagePickerHeader.h"
 #import "LFAsset.h"
 #import "LFAssetManager.h"
-#import "UIView+LFFrame.h"
 #import "UIView+LFAnimate.h"
 #import "UIImage+LFCommon.h"
 #ifdef LF_MEDIAEDIT
@@ -59,7 +58,7 @@
     
     /** 背景图片 */
     UIImageView *imageView = [[UIImageView alloc] init];
-    imageView.frame = CGRectMake(0, 0, self.width, self.height);
+    imageView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
     imageView.contentMode = UIViewContentModeScaleAspectFill;
     imageView.clipsToBounds = YES;
     [self.contentView addSubview:imageView];
@@ -75,7 +74,7 @@
     
     /** 底部状态栏 */
     UIView *bottomView = [[UIView alloc] init];
-    bottomView.frame = CGRectMake(0, self.height - kVideoBoomHeight, self.width, kVideoBoomHeight);
+    bottomView.frame = CGRectMake(0, self.frame.size.height - kVideoBoomHeight, self.frame.size.width, kVideoBoomHeight);
     [self.contentView addSubview:bottomView];
     CAGradientLayer* gradientLayer = [CAGradientLayer layer];
     gradientLayer.frame = bottomView.bounds;
@@ -95,11 +94,11 @@
     [self.contentView addSubview:editMaskImageView];
     _editMaskImageView = editMaskImageView;
     
-    CGFloat offset = self.width/2*0.1;
-    CGFloat selectButtonWidth = self.width/2*0.7;
+    CGFloat offset = self.frame.size.width/2*0.1;
+    CGFloat selectButtonWidth = self.frame.size.width/2*0.7;
     /** 选择按钮 */
     UIButton *selectPhotoButton = [[UIButton alloc] init];
-    selectPhotoButton.frame = CGRectMake(self.width - selectButtonWidth - offset, offset, selectButtonWidth, selectButtonWidth);
+    selectPhotoButton.frame = CGRectMake(self.frame.size.width - selectButtonWidth - offset, offset, selectButtonWidth, selectButtonWidth);
     [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:selectPhotoButton];
     _selectPhotoButton = selectPhotoButton;
@@ -170,7 +169,7 @@
     if (model.thumbnailImage) { /** 显示自定义图片 */
         self.imageView.image = model.thumbnailImage;
     } else {
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.frame.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([model.asset isEqual:self.model.asset]) {
                 self.imageView.image = photo;
                 [self setTypeToSubView];
@@ -332,7 +331,7 @@
             y = (_videoImgView.frame.size.height-height)/2;
         }
         
-        timeLength.frame = CGRectMake(videoImageMaxX, y, self.width - videoImageMaxX - 8, height);
+        timeLength.frame = CGRectMake(videoImageMaxX, y, self.frame.size.width - videoImageMaxX - 8, height);
         timeLength.textColor = [UIColor whiteColor];
         timeLength.textAlignment = NSTextAlignmentRight;
         timeLength.lineBreakMode = NSLineBreakByTruncatingHead;

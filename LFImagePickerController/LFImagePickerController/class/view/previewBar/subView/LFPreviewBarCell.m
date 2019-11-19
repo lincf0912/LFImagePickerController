@@ -7,7 +7,6 @@
 //
 
 #import "LFPreviewBarCell.h"
-#import "UIView+LFFrame.h"
 #import "LFImagePickerHeader.h"
 
 #import "LFAssetManager.h"
@@ -81,7 +80,7 @@
     _editMaskImageView = editMaskImageView;
     
     UIImageView *videoMaskImageView = [[UIImageView alloc] init];
-    CGRect videoFrame = CGRectMake(5, self.height - 11 - 5, 18, 11);
+    CGRect videoFrame = CGRectMake(5, self.frame.size.height - 11 - 5, 18, 11);
     videoMaskImageView.frame = videoFrame;
     [videoMaskImageView setImage:bundleImageNamed(@"fileicon_video_wall")];
     videoMaskImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -155,7 +154,7 @@
     if (asset.thumbnailImage) { /** 显示自定义图片 */
         self.imageView.image = (asset.previewImage.images.count > 0 ? asset.previewImage.images.firstObject : asset.thumbnailImage);
     }  else {
-        [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+        [[LFAssetManager manager] getPhotoWithAsset:asset.asset photoWidth:self.frame.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([asset.asset isEqual:self.asset.asset]) {
                 self.imageView.image = photo;
             } else {

@@ -7,7 +7,6 @@
 //
 
 #import "LFPhotoPreviewCell.h"
-#import "UIView+LFFrame.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
 #import "LFImagePickerHeader.h"
@@ -86,7 +85,7 @@
         self.backgroundColor = [UIColor clearColor];
         
         _scrollView = [[UIScrollView alloc] init];
-        _scrollView.frame = CGRectMake(0, 0, self.width, self.height);
+        _scrollView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
         _scrollView.bouncesZoom = YES;
         _scrollView.maximumZoomScale = 2.5;
         _scrollView.minimumZoomScale = 1.0;
@@ -214,7 +213,7 @@
 
 - (void)resizeSubviews {
     [self.scrollView setZoomScale:1.f];
-    _imageContainerView.bounds = self.scrollView.bounds;
+    _imageContainerView.frame = self.scrollView.bounds;
     
     CGSize imageSize = [self subViewImageSize];
     
@@ -225,7 +224,7 @@
         if (@available(iOS 11.0, *)) {
             ios11Safeinsets = self.safeAreaInsets;
         }
-        CGSize scrollViewSize = self.scrollView.size;
+        CGSize scrollViewSize = self.scrollView.frame.size;
         scrollViewSize.height -= (ios11Safeinsets.top+ios11Safeinsets.bottom);
         /** 定义最小尺寸,判断为长图，则使用放大处理 */
         CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:scrollViewSize isBoth:NO];
@@ -243,16 +242,19 @@
             }
         }
         
-        _imageContainerView.size = newSize;
+        CGRect _imageContainerViewRect = _imageContainerView.frame;
+        _imageContainerViewRect.size = newSize;
         if (isLongImage && newSize.height > self.scrollView.frame.size.height-(ios11Safeinsets.top+ios11Safeinsets.bottom)) {
-            _imageContainerView.origin = CGPointMake(0, 0);
+            _imageContainerViewRect.origin = CGPointMake(0, 0);
+            _imageContainerView.frame = _imageContainerViewRect;
             self.scrollView.showsVerticalScrollIndicator = YES;
             [self.scrollView setContentOffset:CGPointMake(0, -ios11Safeinsets.top)];
         } else {
+            _imageContainerView.frame = _imageContainerViewRect;
             _imageContainerView.center = self.scrollView.center;
             self.scrollView.showsVerticalScrollIndicator = NO;
         }
-        self.scrollView.contentSize = _imageContainerView.size;
+        self.scrollView.contentSize = _imageContainerView.frame.size;
         
         _imageView.frame = _imageContainerView.bounds;
         UIView *view = [self subViewInitDisplayView];
@@ -299,8 +301,8 @@
         ios11Safeinsets = self.safeAreaInsets;
     }
     if (self.imageContainerView.frame.size.height < self.scrollView.frame.size.height-(ios11Safeinsets.top+ios11Safeinsets.bottom)) {
-        CGFloat offsetX = (_scrollView.width > _scrollView.contentSize.width) ? ((_scrollView.width - _scrollView.contentSize.width) * 0.5) : 0.0;
-        CGFloat offsetY = (_scrollView.height > _scrollView.contentSize.height) ? ((_scrollView.height - _scrollView.contentSize.height) * 0.5) : 0.0;
+        CGFloat offsetX = (_scrollView.frame.size.width > _scrollView.contentSize.width) ? ((_scrollView.frame.size.width - _scrollView.contentSize.width) * 0.5) : 0.0;
+        CGFloat offsetY = (_scrollView.frame.size.height > _scrollView.contentSize.height) ? ((_scrollView.frame.size.height - _scrollView.contentSize.height) * 0.5) : 0.0;
         self.imageContainerView.center = CGPointMake(_scrollView.contentSize.width * 0.5 + offsetX, _scrollView.contentSize.height * 0.5 + offsetY);
     }
 }

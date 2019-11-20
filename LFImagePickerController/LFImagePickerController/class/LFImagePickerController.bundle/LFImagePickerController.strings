@@ -14,6 +14,7 @@
 "_fullImageBtnTitleStr" = "原图";
 "_settingBtnTitleStr" = "设置";
 "_processHintStr" = "正在处理...";
+"_discardTitleStr" = "放弃操作";
 
 
 "_alertViewCancelTitle" = "确定";

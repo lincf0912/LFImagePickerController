@@ -133,8 +133,9 @@ static LFAssetManager *manager;
         PHFetchResult *syncedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
         PHFetchResult *sharedAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumCloudShared options:nil];
         PHFetchResult *regularAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
+        PHFetchResult *customAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular options:nil];
         
-        NSArray *allAlbums = @[myPhotoStreamAlbum,syncedAlbums,sharedAlbums,regularAlbums];
+        NSArray *allAlbums = @[myPhotoStreamAlbum,syncedAlbums,sharedAlbums,regularAlbums,customAlbums];
         for (PHFetchResult *fetchResult in allAlbums) {
             for (PHAssetCollection *collection in fetchResult) {
                 // 有可能是PHCollectionList类的的对象，过滤掉

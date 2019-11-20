@@ -93,8 +93,7 @@
             if ([cell.album.posterAsset isEqual:model]) {
                 cell.posterImage = photo;
             }
-            
-        } progressHandler:nil networkAccessAllowed:NO];
+        } progressHandler:nil networkAccessAllowed:YES];
 #ifdef LF_MEDIAEDIT
     }
 #endif
@@ -138,12 +137,11 @@
     [super layoutSubviews];
     
     /** 居中 */
-    _posterImageView.frame = CGRectMake(0, 0, self.contentView.frame.size.height, self.contentView.frame.size.height);
-    _posterImageView.center = CGPointMake(_posterImageView.center.x, self.contentView.frame.size.height/2);
-    _selectedImageView.frame = CGRectMake(self.contentView.frame.size.width - 30 - 10, (self.contentView.frame.size.height - 30)/2, 30, 30);
+    self.posterImageView.frame = CGRectMake(0, 0, self.contentView.frame.size.height, self.contentView.frame.size.height);
+    self.selectedImageView.frame = CGRectMake(self.contentView.frame.size.width - 30 - 10, (self.contentView.frame.size.height - 30)/2, 30, 30);
     CGFloat left = _posterImageView.frame.size.width+10;
     CGFloat right = self.contentView.frame.size.width - (_selectedImageView.frame.origin.x+10);
-    _titleLabel.frame = CGRectMake(left, 0, self.contentView.frame.size.width - (left + right), self.contentView.frame.size.height);
+    self.titleLabel.frame = CGRectMake(left, 0, self.contentView.frame.size.width - (left + right), self.contentView.frame.size.height);
 }
 
 + (CGFloat)cellHeight

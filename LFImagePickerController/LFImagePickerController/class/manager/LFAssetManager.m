@@ -485,9 +485,9 @@ static LFAssetManager *manager;
                     result = [result lf_fixOrientation];
                 }
                 if (completion) completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-            }
+            } else
             // Download image from iCloud / 从iCloud下载图片
-            if ([info objectForKey:PHImageResultIsInCloudKey] && !result && networkAccessAllowed) {
+            if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !result && networkAccessAllowed) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
                 options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
                     dispatch_main_async_safe(^{
@@ -508,6 +508,8 @@ static LFAssetManager *manager;
                         if (completion) completion(resultImage,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
                     }
                 }];
+            } else {
+                if (completion) completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
             }
         }];
         return imageRequestID;
@@ -559,9 +561,9 @@ static LFAssetManager *manager;
                 BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                 if (completion) completion(imageData,info,isDegraded);
             }
-            
+            else
             // Download image from iCloud / 从iCloud下载图片
-            if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData && networkAccessAllowed) {
+            if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !imageData && networkAccessAllowed) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
                 if (progressHandler) {
                     options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
@@ -577,6 +579,8 @@ static LFAssetManager *manager;
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                     if (completion) completion(imageData,info,isDegraded);
                 }];
+            } else {
+                if (completion) completion(imageData,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
             }
         }];
         return imageRequestID;
@@ -627,9 +631,9 @@ static LFAssetManager *manager;
                 BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                 if (completion) completion(livePhoto,info,isDegraded);
             }
-            
+            else
             // Download image from iCloud / 从iCloud下载图片
-            if ([info objectForKey:PHImageResultIsInCloudKey] && !livePhoto && networkAccessAllowed) {
+            if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto && networkAccessAllowed) {
                 PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
                 options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
                     dispatch_main_async_safe(^{
@@ -645,6 +649,8 @@ static LFAssetManager *manager;
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                     if (completion) completion(livePhoto,info,isDegraded);
                 }];
+            } else {
+                if (completion) completion(livePhoto,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
             }
         }];
         return imageRequestID;
@@ -861,7 +867,7 @@ static LFAssetManager *manager;
             // GIF图片在系统相册中不能修改，它不存在编辑图或原图的区分。但是个别GIF使用默认的PHImageRequestOptionsVersionCurrent属性可能仅仅是获取第一帧。
             option.version = PHImageRequestOptionsVersionOriginal;
         }
-        
+        option.version = PHImageRequestOptionsVersionOriginal;
         /** 图片文件名+图片大小 */
         [[PHImageManager defaultManager] requestImageDataForAsset:phAsset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
             
@@ -882,7 +888,7 @@ static LFAssetManager *manager;
                 if (completion) completion(imageData, fileName, mediaType, error);
             } else
             // Download image from iCloud / 从iCloud下载图片
-            if ([info objectForKey:PHImageResultIsInCloudKey] && !imageData) {
+            if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !imageData) {
                 PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
                 options.networkAccessAllowed = YES;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
@@ -1042,7 +1048,7 @@ static LFAssetManager *manager;
             BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
             if (downloadFinined && livePhoto) {
                 livePhotoFinish(livePhoto);
-            } else if ([info objectForKey:PHImageResultIsInCloudKey] && !livePhoto) { // Download image from iCloud / 从iCloud下载图片
+            } else if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto) { // Download image from iCloud / 从iCloud下载图片
                 PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
                 option.networkAccessAllowed = YES;
                 option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
@@ -1083,7 +1089,7 @@ static LFAssetManager *manager;
                 dispatch_main_async_safe(^{
                     if (completion) completion(playerItem,info);
                 });
-            } else if ([info objectForKey:PHImageResultIsInCloudKey] && !playerItem) { // Download image from iCloud / 从iCloud下载图片
+            } else if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !playerItem) { // Download image from iCloud / 从iCloud下载图片
                 PHVideoRequestOptions *option = [[PHVideoRequestOptions alloc]init];
                 option.networkAccessAllowed = YES;
                 option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
@@ -1258,7 +1264,7 @@ static LFAssetManager *manager;
             BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
             if (downloadFinined && av_asset) {
                 compressAndCacheVideoFinish(av_asset);
-            } else if ([info objectForKey:PHImageResultIsInCloudKey] && !av_asset) { // Download image from iCloud / 从iCloud下载图片
+            } else if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !av_asset) { // Download image from iCloud / 从iCloud下载图片
                 PHVideoRequestOptions *option = [[PHVideoRequestOptions alloc]init];
                 option.networkAccessAllowed = YES;
                 option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;

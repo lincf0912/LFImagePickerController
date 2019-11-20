@@ -228,8 +228,10 @@
         safeAreaInsets = view.safeAreaInsets;
     }
     
+    CGFloat naviMaxY = CGRectGetMaxY(self.currentVC.navigationController.navigationBar.frame);
+    
     // 圆角
-    UIView *cornerView = [[UIView alloc] initWithFrame:CGRectMake(0, safeAreaInsets.top, backgroundView.bounds.size.width, backgroundView.bounds.size.height-safeAreaInsets.top-safeAreaInsets.bottom-34)];
+    UIView *cornerView = [[UIView alloc] initWithFrame:CGRectMake(0, naviMaxY, backgroundView.bounds.size.width, backgroundView.bounds.size.height-naviMaxY-safeAreaInsets.bottom-34)];
     cornerView.backgroundColor = [UIColor clearColor];
     
     [backgroundView addSubview:cornerView];
@@ -414,13 +416,9 @@
     if (imageSize.width > 0) {
         rect.size.width += imageSize.width + margin;
     }
-    
-    self.frame = rect;
     self.control.hidden = (self.titleLabel.text.length == 0);
     
     if (self.control.isHidden) return;
-    
-    self.control.center = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
     
     CGRect oldRect = self.control.frame;
     CGRect oldMaskRect = self.controlMaskLayer.frame;
@@ -430,6 +428,13 @@
     CGRect oldImageMaskRect = self.imageViewMaskLayer.frame;
     
     self.control.frame = rect;
+    CGPoint center = self.center;
+    // 相对屏幕的坐标
+    CGRect screenFrame = [self convertRect:self.frame toView:nil];
+    // 调整x轴的偏移量
+    center.x += -CGRectGetMinX(screenFrame)/2 + ([UIScreen mainScreen].bounds.size.width - CGRectGetMaxX(screenFrame))/2;
+    self.control.center = center;
+    
     // draw background
     CGRect controllBounds = CGRectInset(self.control.bounds, 0, insetMargin);
     if (self.controlMaskLayer == nil) {
@@ -481,9 +486,12 @@
     if (@available(iOS 11.0, *)) {
         safeAreaInsets = view.safeAreaInsets;
     }
+    
+    CGFloat naviMaxY = CGRectGetMaxY(self.currentVC.navigationController.navigationBar.frame);
+    
     self.backgroundView.frame = view.bounds;
     // 圆角
-    self.cornerView.frame = CGRectMake(0, safeAreaInsets.top, self.backgroundView.bounds.size.width, self.backgroundView.bounds.size.height-safeAreaInsets.top-safeAreaInsets.bottom-40);
+    self.cornerView.frame = CGRectMake(0, naviMaxY, self.backgroundView.bounds.size.width, self.backgroundView.bounds.size.height-naviMaxY-safeAreaInsets.bottom-40);
     
     UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:self.cornerView.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(8, 8)];
     if (self.cornerViewMaskLayer == nil) {

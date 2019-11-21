@@ -83,6 +83,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    /** 选择有透明通道的png，需要调整背景颜色才能看到图片，实际上图片是正常的。 */
+    // self.view.backgroundColor = [UIColor yellowColor];
 }
 
 - (void)didReceiveMemoryWarning {

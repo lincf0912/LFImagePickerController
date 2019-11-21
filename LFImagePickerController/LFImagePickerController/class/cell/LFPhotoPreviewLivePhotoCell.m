@@ -40,7 +40,6 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
-    [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
     if (model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
         [[LFAssetManager manager] getLivePhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:^(PHLivePhoto *livePhoto, NSDictionary *info, BOOL isDegraded) {
             
@@ -56,6 +55,8 @@
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];
+    } else {
+        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
     }
 }
 

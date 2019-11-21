@@ -113,6 +113,8 @@
 #ifdef LF_MEDIAEDIT
         }
 #endif
+    } else {
+        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
     }
 }
 

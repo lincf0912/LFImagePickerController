@@ -46,7 +46,6 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
-    [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
     if (model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:^(NSData *data, NSDictionary *info, BOOL isDegraded) {
             
@@ -67,6 +66,8 @@
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];
+    } else {
+        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
     }
 }
 

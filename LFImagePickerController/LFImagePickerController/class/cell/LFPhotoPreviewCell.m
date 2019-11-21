@@ -170,6 +170,8 @@
                     if ([model isEqual:self.model]) {
                         if ([data isKindOfClass:[UIImage class]]) { /** image */
                             self.previewImage = (UIImage *)data;
+                        } else if ([data isKindOfClass:[NSData class]]) {
+                            self.previewImage = [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
                         }
                         //                _progressView.hidden = YES;
                     }
@@ -192,6 +194,8 @@
             if ([model isEqual:self.model]) {
                 if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
+                } else if ([data isKindOfClass:[NSData class]]) {
+                    self.previewImage = [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
                 }
                 //                _progressView.hidden = YES;
             }
@@ -331,7 +335,13 @@
     /** 如果已被设置图片，忽略这次图片获取 */
     if (self.previewImage == nil) {
         /** 普通图片处理 */
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
+        if (model.type == LFAssetMediaTypePhoto) {
+            /** 图片使用data的加载方式，透明背景的png使用image的加载方式会丢失透明通道。 */
+            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
+        } else {
+            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
+;
+        }
     }
 }
 

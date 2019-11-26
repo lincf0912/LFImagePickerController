@@ -27,7 +27,7 @@
 
 @property(nonatomic, weak) UITableView *tableView;
 
-@property(nonatomic, weak) UIViewController *currentVC;
+@property(nonatomic, weak) UIViewController *contentViewController;
 /** 记录默认的序列 */
 @property(nonatomic, assign) NSInteger tmpIndex;
 
@@ -49,14 +49,18 @@
     return self;
 }
 
-+ (instancetype)titleView
-{
-    return [[self alloc] init];
-}
-
-- (instancetype)initWithIndex:(NSInteger)index
+- (instancetype)initWithContentViewController:(UIViewController *)contentViewController
 {
     self = [self init];
+    if (self) {
+        _contentViewController = contentViewController;
+    }
+    return self;
+}
+
+- (instancetype)initWithContentViewController:(UIViewController *)contentViewController index:(NSInteger)index
+{
+    self = [self initWithContentViewController:contentViewController];
     if (self) {
         _tmpIndex = index;
     }
@@ -123,7 +127,9 @@
     [super didMoveToSuperview];
    
     if (self.superview) {
-        self.currentVC = [self getCurrentVC];
+        
+        NSAssert(self.contentViewController, @"contentViewController is null");
+        
         if (!self.selectedAlbum) {
             if (self.albumArr.count) {
                 _selectedAlbum = [self.albumArr objectAtIndex:self.tmpIndex];
@@ -141,12 +147,11 @@
                 if (self.title) {
                     self.titleLabel.text = self.title;
                 } else {
-                    self.titleLabel.text = self.currentVC.title;
+                    self.titleLabel.text = self.contentViewController.title;
                 }
             }
         }
     } else {
-        self.currentVC = nil;
         // 释放
         [self.backgroundView removeFromSuperview];
         _state = LFAlbumTitleViewStateInactive;
@@ -212,7 +217,7 @@
 
 - (void)createMenuView
 {
-    UIView *view = self.currentVC.view;
+    UIView *view = self.contentViewController.view;
     // 背景view
     UIView *backgroundView = [[UIView alloc] initWithFrame:view.bounds];
     [backgroundView setBackgroundColor:[UIColor clearColor]];
@@ -228,7 +233,7 @@
         safeAreaInsets = view.safeAreaInsets;
     }
     
-    CGFloat naviMaxY = CGRectGetMaxY(self.currentVC.navigationController.navigationBar.frame);
+    CGFloat naviMaxY = CGRectGetMaxY(self.contentViewController.navigationController.navigationBar.frame);
     
     // 圆角
     UIView *cornerView = [[UIView alloc] initWithFrame:CGRectMake(0, naviMaxY, backgroundView.bounds.size.width, backgroundView.bounds.size.height-naviMaxY-safeAreaInsets.bottom-34)];
@@ -281,7 +286,7 @@
 - (void)showMenu
 {
     [self updateBackgroundView];
-    UIView *view = self.currentVC.view;
+    UIView *view = self.contentViewController.view;
     CGRect showRect = view.bounds;
     showRect.origin.y -= showRect.size.height;
     self.backgroundView.frame = showRect;
@@ -301,7 +306,7 @@
 
 - (void)hiddenMenu
 {
-    UIView *view = self.currentVC.view;
+    UIView *view = self.contentViewController.view;
     CGRect hidenRect = view.bounds;
     hidenRect.origin.y -= hidenRect.size.height;
     self.backgroundView.backgroundColor = [UIColor clearColor];
@@ -481,13 +486,13 @@
 
 - (void)updateBackgroundView
 {
-    UIView *view = self.currentVC.view;
+    UIView *view = self.contentViewController.view;
     UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
     if (@available(iOS 11.0, *)) {
         safeAreaInsets = view.safeAreaInsets;
     }
     
-    CGFloat naviMaxY = CGRectGetMaxY(self.currentVC.navigationController.navigationBar.frame);
+    CGFloat naviMaxY = CGRectGetMaxY(self.contentViewController.navigationController.navigationBar.frame);
     
     self.backgroundView.frame = view.bounds;
     // 圆角
@@ -538,42 +543,6 @@
     if (UIDeviceOrientationIsValidInterfaceOrientation([[UIDevice currentDevice] orientation])) {
         [self updateBackgroundView];
     }
-}
-
-#pragma mark getCurrentVC
-- (UIViewController *)getCurrentVC
-{
-    UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-    UIViewController *currentVC = [self getCurrentVCFrom:rootViewController];
-    
-    return currentVC;
-}
-
-- (UIViewController *)getCurrentVCFrom:(UIViewController *)rootVC
-{
-    UIViewController *currentVC = nil;
-    
-    if ([rootVC presentedViewController])
-    {
-        rootVC = [rootVC presentedViewController];
-    }
-    
-    if ([rootVC isKindOfClass:[UITabBarController class]])
-    {
-        currentVC = [self getCurrentVCFrom:[(UITabBarController *)rootVC selectedViewController]];
-        
-    }
-    else if ([rootVC isKindOfClass:[UINavigationController class]])
-    {
-        currentVC = [self getCurrentVCFrom:[(UINavigationController *)rootVC visibleViewController]];
-        
-    }
-    else
-    {
-        currentVC = rootVC;
-    }
-    
-    return currentVC;
 }
 
 #pragma mark - create Mask layer

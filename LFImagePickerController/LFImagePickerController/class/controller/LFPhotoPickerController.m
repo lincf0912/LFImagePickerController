@@ -275,7 +275,8 @@ CGFloat const bottomToolBarHeight = 50.f;
     
     if (self.model) {
         /** 创建titleView */
-        LFAlbumTitleView *titleView = [[LFAlbumTitleView alloc] init];
+        NSInteger index = [self.albumArr indexOfObject:self.model];
+        LFAlbumTitleView *titleView = [[LFAlbumTitleView alloc] initWithContentViewController:self index:index];
         titleView.albumArr = self.albumArr;
         titleView.selectImageName = imagePickerVc.ablumSelImageName;
         titleView.title = imagePickerVc.defaultAlbumName;

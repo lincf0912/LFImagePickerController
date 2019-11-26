@@ -19,8 +19,8 @@ typedef NS_ENUM(NSUInteger, LFAlbumTitleViewState) {
 
 @interface LFAlbumTitleView : UIView
 
-+ (instancetype)titleView;
-- (instancetype)initWithIndex:(NSInteger)index;
+- (instancetype)initWithContentViewController:(UIViewController *)contentViewController;
+- (instancetype)initWithContentViewController:(UIViewController *)contentViewController index:(NSInteger)index;
 
 @property (nonatomic, strong) NSArray <LFAlbum *>*albumArr;
 @property (nonatomic, readonly) LFAlbum *selectedAlbum;

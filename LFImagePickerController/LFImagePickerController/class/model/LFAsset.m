@@ -26,26 +26,26 @@
 {
     __block double dur = 0;
     /** 为了更加快速的获取相册数据，非慢动作视频不使用requestPlayerItemForVideo获取时长。 */
-    if (self.mediaSubtypes == PHAssetMediaSubtypeVideoHighFrameRate) {
-        /** 慢动作视频获取真实时长 */
-        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-        PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc] init];
-        options.version =  PHVideoRequestOptionsVersionCurrent;
-//        options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-        /** requestPlayerItemForVideo api可以获取playerItem，里面的duration可以转换为真实时长，此方法并不耗时。 */
-        //        NSTimeInterval s = [[NSDate date] timeIntervalSince1970];
-        [[PHImageManager defaultManager] requestPlayerItemForVideo:self options:options resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
-            /** 效率偏低，所有视频的值都是可靠的。 */
-            //        dur = CMTimeGetSeconds(playerItem.asset.duration);
-            /** 效率高，非慢动作视频的值是Nan，具体原因看duration的API描述。 */
-            dur = CMTimeGetSeconds(playerItem.duration);
-            //        NSLog(@"%f -- %f -- %f", dur, CMTimeGetSeconds(playerItem.asset.duration), self.duration);
-            //慢拍视频 playerItem.asset 是一个AVComposition的类
-            dispatch_semaphore_signal(semaphore);
-        }];
-        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-        //        NSLog(@"time : %f", [[NSDate date] timeIntervalSince1970] - s);
-    }
+//    if (self.mediaSubtypes == PHAssetMediaSubtypeVideoHighFrameRate) {
+//        /** 慢动作视频获取真实时长 */
+//        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+//        PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc] init];
+//        options.version =  PHVideoRequestOptionsVersionCurrent;
+////        options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+//        /** requestPlayerItemForVideo api可以获取playerItem，里面的duration可以转换为真实时长，此方法并不耗时。 */
+//        //        NSTimeInterval s = [[NSDate date] timeIntervalSince1970];
+//        [[PHImageManager defaultManager] requestPlayerItemForVideo:self options:options resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
+//            /** 效率偏低，所有视频的值都是可靠的。 */
+//            //        dur = CMTimeGetSeconds(playerItem.asset.duration);
+//            /** 效率高，非慢动作视频的值是Nan，具体原因看duration的API描述。 */
+//            dur = CMTimeGetSeconds(playerItem.duration);
+//            //        NSLog(@"%f -- %f -- %f", dur, CMTimeGetSeconds(playerItem.asset.duration), self.duration);
+//            //慢拍视频 playerItem.asset 是一个AVComposition的类
+//            dispatch_semaphore_signal(semaphore);
+//        }];
+//        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+//        //        NSLog(@"time : %f", [[NSDate date] timeIntervalSince1970] - s);
+//    }
     if (!isnan(dur) && dur>0) {
         return dur;
     }

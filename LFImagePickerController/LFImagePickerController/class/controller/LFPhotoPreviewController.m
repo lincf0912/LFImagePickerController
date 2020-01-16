@@ -880,6 +880,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             
             if (lf_videoDuration(duration) > imagePickerVc.maxVideoDuration) {
                 videoEditingVC.defaultOperationType = LFVideoEditOperationType_clip;
+                videoEditingVC.operationAttrs = @{LFVideoEditClipMaxDurationAttributeName:@(imagePickerVc.maxVideoDuration)};
             }
             
             videoEditingVC.delegate = self;
@@ -1123,7 +1124,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 }
 
 #pragma mark - LFVideoEditingControllerDelegate
-- (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didCancelPhotoEdit:(LFVideoEdit *)videoEdit
+- (void)lf_VideoEditingControllerDidCancel:(LFVideoEditingController *)videoEditingVC
 {
     [[self navi] popViewControllerAnimated:NO];
     

@@ -29,6 +29,15 @@ Thanks for sharing.
 * imagePicker.doneBtnTitleStr = @"Done"; //Modify the name of the done button
 * [self presentViewController:imagePicker animated:YES completion:nil];
 
+## Individuation
+* maxVideosCount ==> The maximum selectable number of videos. The default value is the same as the maxImagesCount value. If `maxImagesCount! = MaxImagesCount`. The mixed selection will be changed to a single selection (either pictures or videos).
+* defaultAlbumName ==> You can change the album displayed by default; for example: `defaultAlbumName = @"Animated";`
+* thumbnailCompressSize ==> If you don't need the thumbnailImage and thumbnailData of the LFResultImage. You can set `thumbnailCompressSize = 0;` The callback will be faster.
+* autoSavePhotoAlbum ==> Save the edited picture or video to the album by default.
+* syncAlbum ==> Sync with system album. If `syncAlbum = YES;` it may cause the data being edited to be lost  (The edited picture may have been deleted.).
+* selectedAssets ==> selected photos or videos by default.
+* Please preview LFImagePickerController.h for more features.
+
 ## Presentation
 
 ![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot.gif)

@@ -28,6 +28,16 @@
 * imagePicker.doneBtnTitleStr = @"发送"; //最终确定按钮名称
 * [self presentViewController:imagePicker animated:YES completion:nil];
 
+## 个性化
+* maxVideosCount ==> 视频最大可选数量，默认和maxImagesCount值一致。如果`maxImagesCount != maxImagesCount`，会由原来的混合选择转变为单一选择（要么选图片、要么选视频）。
+* defaultAlbumName ==> 可以改变默认显示的相册；例如：`defaultAlbumName = @"动图";`
+* thumbnailCompressSize ==> 如果不需要返回值LFResultImage的thumbnailImage和thumbnailData，可以`thumbnailCompressSize = 0;`回调的响应效率更快。
+* autoSavePhotoAlbum ==> 默认将编辑后的图片或视频保存到相册内
+* syncAlbum ==> 与系统相册同步。如果`syncAlbum = YES;`可能会导致正在编辑的数据丢失（可能你正在编辑的图片被删除了）。
+* selectedAssets ==> 默认已选中的数据。
+* 请预览LFImagePickerController.h了解更多功能。
+
+
 ## 图片展示
 
 ![image](https://github.com/lincf0912/LFImagePickerController/blob/master/ScreenShots/screenshot.gif)

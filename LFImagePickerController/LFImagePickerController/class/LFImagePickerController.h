@@ -128,8 +128,8 @@
 /// 默认为YES,如果设置为NO,选择视频不会读取缓存
 @property (nonatomic,assign) BOOL autoVideoCache;
 
-/// Default is YES,if set NO,The edited photo is not saved to the photo album
-/// 默认为YES,如果设置为NO,编辑后的图片不会保存到系统相册
+/// Default is YES,if set NO,The edited photo/video is not saved to the photo album
+/// 默认为YES,如果设置为NO,编辑后的图片/视频不会保存到系统相册
 @property (nonatomic,assign) BOOL autoSavePhotoAlbum;
 
 /// Default is YES,if set NO,the picker don't dismiss itself.

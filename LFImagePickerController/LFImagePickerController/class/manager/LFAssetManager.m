@@ -126,6 +126,7 @@ static LFAssetManager *manager;
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
             [albumArr addObject:[self modelWithResult:fetchResult album:collection]];
             userCollection = collection;
+            break;
         }
         
 //        PHFetchResult *anyAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];

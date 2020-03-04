@@ -16,12 +16,18 @@ NSTimeInterval lf_videoDuration(NSTimeInterval duration)
 
 BOOL lf_isPiiic(CGSize imageSize)
 {
-    return imageSize.width * 2 < imageSize.height;
+    if (imageSize.height >= [UIScreen mainScreen].bounds.size.height) {
+        return imageSize.width * 2 < imageSize.height;
+    }
+    return imageSize.width * 3 < imageSize.height;
 }
 
 BOOL lf_isHor(CGSize imageSize)
 {
-    return imageSize.width > imageSize.height * 2;
+    if (imageSize.width >= [UIScreen mainScreen].bounds.size.width) {
+        return imageSize.width > imageSize.height * 2;
+    }
+    return imageSize.width > imageSize.height * 3;
 }
 
 

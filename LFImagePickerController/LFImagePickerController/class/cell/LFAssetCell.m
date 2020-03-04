@@ -34,7 +34,7 @@
 @property (weak, nonatomic) UIView *bottomView;
 @property (weak, nonatomic) UIButton *selectPhotoButton;
 
-@property (nonatomic, weak) UIImageView *videoImgView;
+@property (nonatomic, weak) UIImageView *styleImgView;
 @property (weak, nonatomic) UILabel *timeLength;
 
 @property (weak, nonatomic) UIView *maskSelectView;
@@ -111,6 +111,10 @@
     selectImageView.frame = CGRectMake(0, 0, selectImageWidth, selectImageWidth);
     selectImageView.center = selectPhotoButton.center;
     selectImageView.contentMode = UIViewContentModeScaleAspectFit;
+    selectImageView.layer.shadowOpacity = .8;
+    selectImageView.layer.shadowRadius = 1.0;
+    selectImageView.layer.shadowColor = [UIColor blackColor].CGColor;
+    selectImageView.layer.shadowOffset = CGSizeMake(1, 1);
     [self.contentView addSubview:selectImageView];
     _selectImageView = selectImageView;
     
@@ -190,48 +194,54 @@
     if (self.model.type == LFAssetMediaTypePhoto) {
         _bottomView.hidden = YES;
         
-        if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) {
-            _videoImgView.hidden = YES;
-            self.timeLength.text = NSLocalizedString(@"GIF", nil);
-            self.timeLength.textAlignment = NSTextAlignmentRight;
+        if (self.displayPhotoName) {
+            _styleImgView.hidden = YES;
+            self.timeLength.text = [self.model.name stringByDeletingPathExtension];
+            self.timeLength.textAlignment = NSTextAlignmentCenter;
+            _bottomView.hidden = NO;
+        } else if (self.displayGif && self.model.subType == LFAssetSubMediaTypeGIF) {
+            _styleImgView.hidden = NO;
+            self.styleImgView.image = bundleImageNamed(@"fileicon_gif_wall");
             _bottomView.hidden = NO;
         } else if (self.displayLivePhoto && self.model.subType == LFAssetSubMediaTypeLivePhoto) {
-            _videoImgView.hidden = YES;
-            self.timeLength.text = NSLocalizedString(@"Live", nil);
-            self.timeLength.textAlignment = NSTextAlignmentRight;
+            _styleImgView.hidden = NO;
+            self.styleImgView.image = bundleImageNamed(@"fileicon_live_wall");
+            _bottomView.hidden = NO;
+        } else if (lf_isPiiic(self.imageView.image.size)) {
+            _styleImgView.hidden = NO;
+            self.styleImgView.image = bundleImageNamed(@"fileicon_piiic_wall");
+            _bottomView.hidden = NO;
+        } else if (self.model.subType == LFAssetSubMediaTypePhotoPanorama || lf_isHor(self.imageView.image.size)) {
+            _styleImgView.hidden = NO;
+            self.styleImgView.image = bundleImageNamed(@"fileicon_hor_wall");
             _bottomView.hidden = NO;
         } else {
-            if (lf_isPiiic(self.imageView.image.size)) {
-                _videoImgView.hidden = YES;
-                self.timeLength.text = NSLocalizedString(@"Piiic", nil);
-                self.timeLength.textAlignment = NSTextAlignmentRight;
-                _bottomView.hidden = NO;
-            } else if (lf_isHor(self.imageView.image.size)) {
-                _videoImgView.hidden = YES;
-                self.timeLength.text = NSLocalizedString(@"Hor", nil);
-                self.timeLength.textAlignment = NSTextAlignmentRight;
-                _bottomView.hidden = NO;
-            } else if (self.displayPhotoName) {
-                _videoImgView.hidden = YES;
-                self.timeLength.text = [self.model.name stringByDeletingPathExtension];
-                self.timeLength.textAlignment = NSTextAlignmentCenter;
-                _bottomView.hidden = NO;
-            }
+            _styleImgView.hidden = YES;
         }
+        
     } else if (self.model.type == LFAssetMediaTypeVideo) {
-        self.videoImgView.hidden = NO;
-#ifdef LF_MEDIAEDIT
-        LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
-        if (videoEdit.editPosterImage) {
-            self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(videoEdit.duration)];
+        
+        if (self.displayPhotoName) {
+            _styleImgView.hidden = YES;
+            self.timeLength.text = [self.model.name stringByDeletingPathExtension];
+            self.timeLength.textAlignment = NSTextAlignmentCenter;
+            _bottomView.hidden = NO;
         } else {
-#endif
-            self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(self.model.duration)];
+            _styleImgView.hidden = NO;
+            self.styleImgView.image = bundleImageNamed(@"fileicon_video_wall");
 #ifdef LF_MEDIAEDIT
-        }
+            LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:self.model];
+            if (videoEdit.editPosterImage) {
+                self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(videoEdit.duration)];
+            } else {
 #endif
-        self.timeLength.textAlignment = NSTextAlignmentRight;
-        _bottomView.hidden = NO;
+                self.timeLength.text = [self getNewTimeFromDurationSecond:lf_videoDuration(self.model.duration)];
+#ifdef LF_MEDIAEDIT
+            }
+#endif
+            self.timeLength.textAlignment = NSTextAlignmentRight;
+            _bottomView.hidden = NO;
+        }
     }
 }
 
@@ -307,16 +317,20 @@
 }
 
 #pragma mark - Lazy load
-- (UIImageView *)videoImgView {
-    if (_videoImgView == nil) {
-        UIImageView *videoImgView = [[UIImageView alloc] init];
-        videoImgView.frame = CGRectMake(8, 0, 37*0.7, 22*0.7);
-        videoImgView.contentMode = UIViewContentModeScaleAspectFit;
-        [videoImgView setImage:bundleImageNamed(@"fileicon_video_wall")];
-        [self.bottomView addSubview:videoImgView];
-        _videoImgView = videoImgView;
+- (UIImageView *)styleImgView
+{
+    if (_styleImgView == nil) {
+        UIImageView *styleImgView = [[UIImageView alloc] init];
+        if (self.model.type == LFAssetMediaTypeVideo) {
+            styleImgView.frame = CGRectMake(8, 0, 37*0.7, 22*0.7);
+        } else {
+            styleImgView.frame = CGRectMake(self.frame.size.width - 37*0.7 - 8, 1, 37*0.7, 22*0.7);
+        }
+        styleImgView.contentMode = UIViewContentModeScaleAspectFit;
+        [self.bottomView addSubview:styleImgView];
+        _styleImgView = styleImgView;
     }
-    return _videoImgView;
+    return _styleImgView;
 }
 
 - (UILabel *)timeLength {
@@ -325,10 +339,11 @@
         timeLength.font = [UIFont boldSystemFontOfSize:isiPad ? 19 : 15];
         CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, kVideoBoomHeight) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:timeLength.font} context:nil].size.height;
         
-        CGFloat videoImageMaxX = MAX(CGRectGetMaxX(_videoImgView.frame), 8);
+        CGFloat videoImageMaxX = MAX(CGRectGetMaxX(_styleImgView.frame), 8);
         CGFloat y = (22*0.7-height)/2;
-        if (_videoImgView) {
-            y = (_videoImgView.frame.size.height-height)/2;
+        
+        if (self.displayPhotoName && _styleImgView) {
+            y = (_styleImgView.frame.size.height-height)/2;
         }
         
         timeLength.frame = CGRectMake(videoImageMaxX, y, self.frame.size.width - videoImageMaxX - 8, height);

@@ -85,6 +85,9 @@
                     _subType = LFAssetSubMediaTypeLivePhoto;
                 } else
 #endif
+                    if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoPanorama) {
+                        _subType = LFAssetSubMediaTypePhotoPanorama;
+                    } else
                 /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
                     if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                         _subType = LFAssetSubMediaTypeGIF;

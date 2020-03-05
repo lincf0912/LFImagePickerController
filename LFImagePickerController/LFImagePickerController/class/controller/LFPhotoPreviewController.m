@@ -1311,7 +1311,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             _originalPoint = _beginPoint = _endPoint = CGPointZero;
             if (_isPullBegan && _isPulling) { /** 有触发滑动情况 */
                 panGesture.enabled = NO;
-                if (_pullSnapshotView.transform.d <= 0.4) { // 返回上一个界面
+                if (_pullSnapshotView.frame.size.width/_pullSnapshotSuperView.frame.size.width < .95) { // 返回上一个界面
                     CGRect targetRect = CGRectZero;
                     if ([self.pulldelegate respondsToSelector:@selector(lf_PhotoPreviewControllerPullItemRect:)]) {
                         targetRect = [self.pulldelegate lf_PhotoPreviewControllerPullItemRect:self.models[self.currentIndex]];

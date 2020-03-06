@@ -485,9 +485,18 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         
         PHAsset *phAsset = (PHAsset *)asset;
-        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        CGFloat pixelWidth = photoWidth;
-        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        CGFloat aspectRatio = 1.0;
+        CGFloat pixelWidth = phAsset.pixelWidth;
+        CGFloat pixelHeight = phAsset.pixelHeight;
+        if (pixelWidth > pixelHeight) {
+            aspectRatio = pixelHeight / (CGFloat)pixelWidth;
+            pixelWidth = photoWidth / aspectRatio;
+            pixelHeight = photoWidth;
+        } else {
+            aspectRatio = pixelWidth / (CGFloat)pixelHeight;
+            pixelWidth = photoWidth;
+            pixelHeight = pixelWidth / aspectRatio;
+        }
         CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
         // 修复获取图片时出现的瞬间内存过高问题
         // 下面两行代码，来自hsjcom，他的github是：https://github.com/hsjcom 表示感谢

@@ -85,38 +85,17 @@
                     _subType = LFAssetSubMediaTypeLivePhoto;
                 } else
 #endif
-                    if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoPanorama) {
-                        _subType = LFAssetSubMediaTypePhotoPanorama;
-                    } else
-                /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
-                    if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                        _subType = LFAssetSubMediaTypeGIF;
-                    }
-                //                if (@available(iOS 9.0, *)){
-                //                    /** 新判断GIF图片方法 */
-                //                    NSArray <PHAssetResource *>*resourceList = [PHAssetResource assetResourcesForAsset:asset];
-                //                    [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                //                        PHAssetResource *resource = obj;
-                //                        if ([resource.uniformTypeIdentifier isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                //                            self->_subType = LFAssetSubMediaTypeGIF;
-                //                            *stop = YES;
-                //                        }
-                //                    }];
-                //                } else {
-                //
-                //                    PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
-                //                    option.resizeMode = PHImageRequestOptionsResizeModeFast;
-                //                    option.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-                //                    option.synchronous = YES;
-                //                    [[PHImageManager defaultManager] requestImageDataForAsset:asset
-                //                                                                      options:option
-                //                                                                resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                //                                                                    //gif 图片
-                //                                                                    if ([dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
-                //                                                                        self->_subType = LFAssetSubMediaTypeGIF
-                //                                                                    }
-                //                                                                }];
-                //                }
+                if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoPanorama) {
+                    _subType = LFAssetSubMediaTypePhotoPanorama;
+                } else
+            /** 判断gif图片，由于公开方法效率太低，改用私有API判断 */
+                if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                    _subType = LFAssetSubMediaTypeGIF;
+                } else if (lf_isHor(CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight))){
+                    _subType = LFAssetSubMediaTypePhotoPanorama;
+                } else if (lf_isPiiic(CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight))){
+                    _subType = LFAssetSubMediaTypePhotoPiiic;
+                }
             }
         } else if ([asset isKindOfClass:[ALAsset class]]) {
             ALAsset *alAsset = (ALAsset *)asset;

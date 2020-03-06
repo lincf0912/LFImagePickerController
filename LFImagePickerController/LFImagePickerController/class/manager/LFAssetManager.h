@@ -23,10 +23,10 @@
 + (instancetype)manager NS_SWIFT_NAME(default());
 + (void)free;
 
-/** 缩放值 */
-@property (nonatomic, readonly) CGFloat screenScale;
 /** default YES，fix image orientation */
 @property (nonatomic, assign) BOOL shouldFixOrientation;
+/** default YES，decode image */
+@property (nonatomic, assign) BOOL shouldDecoded;
 
 /// 最小可选中的图片宽度，默认是0，小于这个宽度的图片不可选中
 @property (nonatomic, assign) NSInteger minPhotoWidthSelectable;

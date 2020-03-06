@@ -207,11 +207,11 @@
             _styleImgView.hidden = NO;
             self.styleImgView.image = bundleImageNamed(@"fileicon_live_wall");
             _bottomView.hidden = NO;
-        } else if (lf_isPiiic(self.imageView.image.size)) {
+        } else if (self.model.subType == LFAssetSubMediaTypePhotoPiiic) {
             _styleImgView.hidden = NO;
             self.styleImgView.image = bundleImageNamed(@"fileicon_piiic_wall");
             _bottomView.hidden = NO;
-        } else if (self.model.subType == LFAssetSubMediaTypePhotoPanorama || lf_isHor(self.imageView.image.size)) {
+        } else if (self.model.subType == LFAssetSubMediaTypePhotoPanorama) {
             _styleImgView.hidden = NO;
             self.styleImgView.image = bundleImageNamed(@"fileicon_hor_wall");
             _bottomView.hidden = NO;

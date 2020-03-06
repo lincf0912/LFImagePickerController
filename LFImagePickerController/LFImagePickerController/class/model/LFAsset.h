@@ -22,6 +22,7 @@ typedef NS_ENUM(NSUInteger, LFAssetSubMediaType) {
     LFAssetSubMediaTypeGIF = 10,
     LFAssetSubMediaTypeLivePhoto,
     LFAssetSubMediaTypePhotoPanorama,
+    LFAssetSubMediaTypePhotoPiiic,
 };
 
 @interface LFAsset : NSObject

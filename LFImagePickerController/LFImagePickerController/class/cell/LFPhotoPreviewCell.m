@@ -9,7 +9,7 @@
 #import "LFPhotoPreviewCell.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
-#import "LFImagePickerHeader.h"
+#import "UIImage+LFDecoded.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
@@ -171,7 +171,7 @@
                         if ([data isKindOfClass:[UIImage class]]) { /** image */
                             self.previewImage = (UIImage *)data;
                         } else if ([data isKindOfClass:[NSData class]]) {
-                            self.previewImage = [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
+                            self.previewImage = [[UIImage imageWithData:data] lf_decodedImage];
                         }
                         //                _progressView.hidden = YES;
                     }
@@ -195,7 +195,7 @@
                 if ([data isKindOfClass:[UIImage class]]) { /** image */
                     self.previewImage = (UIImage *)data;
                 } else if ([data isKindOfClass:[NSData class]]) {
-                    self.previewImage = [UIImage imageWithData:data scale:[UIScreen mainScreen].scale];
+                    self.previewImage = [UIImage imageWithData:data];
                 }
                 //                _progressView.hidden = YES;
             }
@@ -233,17 +233,9 @@
         /** 定义最小尺寸,判断为长图，则使用放大处理 */
         CGSize newSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:scrollViewSize isBoth:NO];
         
-        BOOL isLongImage = NO;
-        if (self.model.type == LFAssetMediaTypePhoto) {
-//            if ([UIScreen mainScreen].bounds.size.width < [UIScreen mainScreen].bounds.size.height) {
-//                isLongImage = scrollViewSize.width > newSize.width;
-//            } else {
-//                isLongImage = newSize.width < self.bounds.size.height * 0.6;
-//            }
-            isLongImage = lf_isPiiic(newSize);
-            if (isLongImage) { /** 长图 */
-                newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
-            }
+        BOOL isLongImage = self.model.subType == LFAssetSubMediaTypePhotoPiiic;
+        if (isLongImage) { /** 长图 */
+            newSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.scrollView.frame.size.width];
         }
         
         CGRect _imageContainerViewRect = _imageContainerView.frame;

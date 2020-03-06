@@ -16,6 +16,7 @@
 #import "LFToGIF.h"
 #import "LFResultObject_property.h"
 #import "LFAsset+property.h"
+#import "UIImage+LFDecoded.h"
 
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "LFGIFImageSerialization.h"
@@ -34,33 +35,28 @@
 @synthesize assetLibrary = _assetLibrary;
 #endif
 
-static CGFloat LFAM_ScreenWidth;
-static CGFloat LFAM_ScreenScale;
-
 static LFAssetManager *manager;
 + (instancetype)manager {
 
     if (manager == nil) {        
         manager = [[self alloc] init];
-        manager.shouldFixOrientation = YES;
-        LFAM_ScreenWidth = [UIScreen mainScreen].bounds.size.width;
-        // 测试发现，如果scale在plus真机上取到3.0，内存会增大特别多。故这里写死成2.0
-        LFAM_ScreenScale = 2.0;
-        if (LFAM_ScreenWidth > 700) {
-            LFAM_ScreenScale = 1.5;
-        }
     }
     return manager;
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _shouldFixOrientation = YES;
+        _shouldDecoded = YES;
+    }
+    return self;
 }
 
 + (void)free
 {
     manager = nil;
-}
-
-- (CGFloat)screenScale
-{
-    return LFAM_ScreenScale;
 }
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
@@ -477,7 +473,7 @@ static LFAssetManager *manager;
 
 /// Get photo 获得照片本身
 - (PHImageRequestID)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *, NSDictionary *, BOOL isDegraded))completion {
-    CGFloat fullScreenWidth = LFAM_ScreenWidth;
+    CGFloat fullScreenWidth = [UIScreen mainScreen].bounds.size.width;
     return [self getPhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:nil networkAccessAllowed:YES];
 }
 
@@ -490,7 +486,7 @@ static LFAssetManager *manager;
         
         PHAsset *phAsset = (PHAsset *)asset;
         CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        CGFloat pixelWidth = photoWidth * LFAM_ScreenScale;
+        CGFloat pixelWidth = photoWidth;
         CGFloat pixelHeight = pixelWidth / aspectRatio;
         CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
         // 修复获取图片时出现的瞬间内存过高问题
@@ -502,6 +498,9 @@ static LFAssetManager *manager;
             if (downloadFinined && result) {
                 if (self.shouldFixOrientation) {
                     result = [result lf_fixOrientation];
+                }
+                if (self.shouldDecoded) {
+                    result = [result lf_decodedImage];
                 }
                 if (completion) completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
             } else
@@ -520,6 +519,9 @@ static LFAssetManager *manager;
                 [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
                     if (self.shouldFixOrientation) {
                         result = [result lf_fixOrientation];
+                    }
+                    if (self.shouldDecoded) {
+                        result = [result lf_decodedImage];
                     }
                     if (completion) completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
                 }];
@@ -577,7 +579,7 @@ static LFAssetManager *manager;
         
         PHImageRequestID imageRequestID = PHInvalidImageRequestID;
         if (@available(iOS 13, *)) {
-            [[PHImageManager defaultManager] requestImageDataAndOrientationForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, CGImagePropertyOrientation orientation, NSDictionary * _Nullable info) {
+            imageRequestID = [[PHImageManager defaultManager] requestImageDataAndOrientationForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, CGImagePropertyOrientation orientation, NSDictionary * _Nullable info) {
                 BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
                 if (downloadFinined && imageData) {
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
@@ -609,7 +611,7 @@ static LFAssetManager *manager;
                 }
             }];
         } else {
-            [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+            imageRequestID = [[PHImageManager defaultManager] requestImageDataForAsset:asset options:option resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
                 BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
                 if (downloadFinined && imageData) {
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
@@ -663,7 +665,7 @@ static LFAssetManager *manager;
 #pragma mark - Get live photo
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion {
-    CGFloat fullScreenWidth = LFAM_ScreenWidth;
+    CGFloat fullScreenWidth = [UIScreen mainScreen].bounds.size.width;
     return [self getLivePhotoWithAsset:asset photoWidth:fullScreenWidth completion:completion progressHandler:nil networkAccessAllowed:NO];
 }
 
@@ -677,7 +679,7 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         PHAsset *phAsset = (PHAsset *)asset;
         CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        CGFloat pixelWidth = photoWidth * LFAM_ScreenScale;
+        CGFloat pixelWidth = photoWidth;
         CGFloat pixelHeight = pixelWidth / aspectRatio;
         CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
         
@@ -819,11 +821,14 @@ static LFAssetManager *manager;
                             CGImageRef image = CGImageSourceCreateImageAtIndex(sourceRef, 0, NULL);
                             
                             source = [UIImage imageWithCGImage:image scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
-                            
+                            if (image) {
+                                CGImageRelease(image);
+                            }
                             originalData = LF_UIImageRepresentation(source, 1, kUTTypeGIF, nil);
                         }
-                        
-                        CFRelease(sourceRef);
+                        if (sourceRef) {
+                            CFRelease(sourceRef);
+                        }
                     } else {
                         /** 原图 */
                         source = [UIImage LF_imageWithImageData:imageData];
@@ -867,6 +872,13 @@ static LFAssetManager *manager;
                 } else {
                     /** 不需要压缩的情况 */
                     sourceData = [NSData dataWithData:originalData];
+                }
+                
+                if (self.shouldDecoded && source.images.count <= 1) {
+                    thumbnail = [thumbnail lf_decodedImage];
+                }
+                if (self.shouldDecoded && source.images.count <= 1) {
+                    source = [source lf_decodedImage];
                 }
                 
                 /** 图片宽高 */
@@ -1115,6 +1127,13 @@ static LFAssetManager *manager;
                             
                             /** 图片宽高 */
                             CGSize imageSize = source.size;
+                            
+                            if (self.shouldDecoded && source.images.count <= 1) {
+                                thumbnail = [thumbnail lf_decodedImage];
+                            }
+                            if (self.shouldDecoded && source.images.count <= 1) {
+                                source = [source lf_decodedImage];
+                            }
                             
                             LFResultImage *result = [LFResultImage new];
                             result.asset = asset;

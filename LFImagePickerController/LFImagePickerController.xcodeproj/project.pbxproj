@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B7ACD732410D02E0074DC40 /* UIImage+LFDecoded.m in Sources */ = {isa = PBXBuildFile; fileRef = 3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */; };
 		6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F02A2251EE158B00063D33D /* LFToGIF.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
@@ -64,6 +65,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3B7ACD712410D02E0074DC40 /* UIImage+LFDecoded.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImage+LFDecoded.h"; sourceTree = "<group>"; };
+		3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LFDecoded.m"; sourceTree = "<group>"; };
 		6F02A2241EE158B00063D33D /* LFToGIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFToGIF.h; sourceTree = "<group>"; };
 		6F02A2251EE158B00063D33D /* LFToGIF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFToGIF.m; sourceTree = "<group>"; };
 		6F1201741E513D1B00EA2198 /* LFImagePickerController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LFImagePickerController.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -395,6 +398,8 @@
 				6F1201EC1E51A06D00EA2198 /* UIImage+LFCommon.m */,
 				6FA36E4F1EB9DC700009E2DE /* UIImage+LF_Format.h */,
 				6FA36E501EB9DC700009E2DE /* UIImage+LF_Format.m */,
+				3B7ACD712410D02E0074DC40 /* UIImage+LFDecoded.h */,
+				3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */,
 				C70BABED205904F0005B7894 /* NSBundle+LFImagePicker.h */,
 				C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */,
 				C783DEC82351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.h */,
@@ -648,6 +653,7 @@
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,
 				6F1201F01E51A6EA00EA2198 /* LFPhotoPreviewController.m in Sources */,
+				3B7ACD732410D02E0074DC40 /* UIImage+LFDecoded.m in Sources */,
 				6F1201AD1E514F9D00EA2198 /* LFAlbum.m in Sources */,
 				6F5930321EDFF7C3008EC7B0 /* LFGIFImageSerialization.m in Sources */,
 				6F1201E51E519E8300EA2198 /* UIAlertView+LF_Block.m in Sources */,

@@ -644,6 +644,7 @@ CGFloat const bottomToolBarHeight = 50.f;
                             if (imagePickerVc.allowPickingType & LFPickingMediaTypeLivePhoto && model.subType == LFAssetSubMediaTypeLivePhoto && model.closeLivePhoto == NO) {
                                 [[LFAssetManager manager] getLivePhotoWithAsset:model.asset
                                                                      isOriginal:imagePickerVc.isSelectOriginalPhoto
+                                                                  needThumbnail:(imagePickerVc.thumbnailCompressSize>0)
                                                                      completion:^(LFResultImage *resultImage) {
                                                                          
                                                                          resultComplete(resultImage, i);

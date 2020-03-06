@@ -141,10 +141,12 @@
 
  @param asset PHAsset
  @param isOriginal 是否原图
+ @param needThumbnail 需要缩略图
  @param completion  返回block 顺序：缩略图、标清图、图片数据字典
  */
 - (void)getLivePhotoWithAsset:(id)asset
                    isOriginal:(BOOL)isOriginal
+                needThumbnail:(BOOL)needThumbnail
                    completion:(void (^)(LFResultImage *resultImage))completion;
 
 /// Get video 获得视频

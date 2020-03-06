@@ -787,120 +787,120 @@ static LFAssetManager *manager;
             
             if (imageData && !error) {
                 
-                if (isGif && pickingGif) { /** GIF图片处理方式 */
-                    /** 原图 */
-                    source = [UIImage LF_imageWithImageData:imageData];
+                LFResultImage *result = [LFResultImage new];
+                
+                @autoreleasepool {
                     
-                    CGFloat minWidth = MIN(source.size.width, source.size.height);
-                    CGFloat imageRatio = 0.7f;
-                    
-                    if (!isOriginal) {
-                        /** 标清图 */
-                        sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-                    }
-                    if (thumbnailCompressSize > 0) {
-                        /** 缩略图 */
-                        imageRatio = 0.5f;
-                        if (minWidth > 100.f) {
-                            imageRatio = 50.f/minWidth;
-                        }
-                        /** 缩略图 */
-                        thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-                    }
-                    
-                } else {
-                    
-                    if (isGif) {
-                        /** gif时只取第一帧图片 */
-                        CGImageSourceRef sourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)imageData, NULL);
-                        size_t count = CGImageSourceGetCount(sourceRef);
-                        
-                        if (count <= 1) {
-                            source = [UIImage imageWithData:imageData];
-                        } else {
-                            CGImageRef image = CGImageSourceCreateImageAtIndex(sourceRef, 0, NULL);
-                            
-                            source = [UIImage imageWithCGImage:image scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
-                            if (image) {
-                                CGImageRelease(image);
-                            }
-                            originalData = LF_UIImageRepresentation(source, 1, kUTTypeGIF, nil);
-                        }
-                        if (sourceRef) {
-                            CFRelease(sourceRef);
-                        }
-                    } else {
+                    if (isGif && pickingGif) { /** GIF图片处理方式 */
                         /** 原图 */
                         source = [UIImage LF_imageWithImageData:imageData];
-                    }
-                    
-                    /** 原图方向更正 */
-                    BOOL isFixOrientation = NO;
-                    if (self.shouldFixOrientation && source.imageOrientation != UIImageOrientationUp) {
-                        source = [source lf_fixOrientation];
-                        isFixOrientation = YES;
-                    }
-                    
-                    /** 重写标记 */
-                    mediaType = LFImagePickerSubMediaTypeNone;
-                    
-                    /** 标清图 */
-                    if (!isOriginal) {
-                        sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress imageSize:imageData.length];
+                        
+                        CGFloat minWidth = MIN(source.size.width, source.size.height);
+                        CGFloat imageRatio = 0.7f;
+                        
+                        if (!isOriginal) {
+                            /** 标清图 */
+                            sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                        }
+                        if (thumbnailCompressSize > 0) {
+                            /** 缩略图 */
+                            imageRatio = 0.5f;
+                            if (minWidth > 100.f) {
+                                imageRatio = 50.f/minWidth;
+                            }
+                            /** 缩略图 */
+                            thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                        }
+                        
                     } else {
-                        if (isFixOrientation) { /** 更正方向，原图data需要更新 */
-                            sourceData = LF_UIImageJPEGRepresentation(source, 1.f);
+                        
+                        if (isGif) {
+                            /** gif时只取第一帧图片 */
+                            CGImageSourceRef sourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)imageData, NULL);
+                            size_t count = CGImageSourceGetCount(sourceRef);
+                            
+                            if (count <= 1) {
+                                source = [UIImage imageWithData:imageData];
+                            } else {
+                                CGImageRef image = CGImageSourceCreateImageAtIndex(sourceRef, 0, NULL);
+                                
+                                source = [UIImage imageWithCGImage:image scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp];
+                                if (image) {
+                                    CGImageRelease(image);
+                                }
+                                originalData = LF_UIImageRepresentation(source, 1, kUTTypeGIF, nil);
+                            }
+                            if (sourceRef) {
+                                CFRelease(sourceRef);
+                            }
+                        } else {
+                            /** 原图 */
+                            source = [UIImage LF_imageWithImageData:imageData];
+                        }
+                        
+                        /** 原图方向更正 */
+                        BOOL isFixOrientation = NO;
+                        if (self.shouldFixOrientation && source.imageOrientation != UIImageOrientationUp) {
+                            source = [source lf_fixOrientation];
+                            isFixOrientation = YES;
+                        }
+                        
+                        /** 重写标记 */
+                        mediaType = LFImagePickerSubMediaTypeNone;
+                        
+                        /** 标清图 */
+                        if (!isOriginal) {
+                            sourceData = [source lf_fastestCompressImageDataWithSize:sourceCompress imageSize:imageData.length];
+                        } else {
+                            if (isFixOrientation) { /** 更正方向，原图data需要更新 */
+                                sourceData = LF_UIImageJPEGRepresentation(source, 1.f);
+                            }
+                        }
+                        if (thumbnailCompressSize > 0) {
+                            /** 缩略图 */
+                            thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:imageData.length];
                         }
                     }
-                    if (thumbnailCompressSize > 0) {
-                        /** 缩略图 */
-                        thumbnailData = [source lf_fastestCompressImageDataWithSize:thumbnailCompress imageSize:imageData.length];
+                    
+                    /** 创建展示图片 */
+                    if (thumbnailData) {
+                        /** 缩略图数据 */
+                        thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
                     }
+                    if (sourceData) {
+                        source = [UIImage LF_imageWithImageData:sourceData];
+                    } else {
+                        /** 不需要压缩的情况 */
+                        sourceData = [NSData dataWithData:originalData];
+                    }
+                    
+                    if (self.shouldDecoded && thumbnail.images.count <= 1) {
+                        thumbnail = [thumbnail lf_decodedImage];
+                    }
+                    if (self.shouldDecoded && source.images.count <= 1) {
+                        source = [source lf_decodedImage];
+                    }
+                    /** 图片宽高 */
+                    CGSize imageSize = source.size;
+                    
+                    
+                    result.asset = asset;
+                    result.thumbnailImage = thumbnail;
+                    result.thumbnailData = thumbnailData;
+                    result.originalImage = source;
+                    result.originalData = sourceData;
+                    result.subMediaType = mediaType;
+                    
+                    LFResultInfo *info = [LFResultInfo new];
+                    result.info = info;
+                    
+                    /** 图片文件名 */
+                    info.name = imageName;
+                    /** 图片大小 */
+                    info.byte = sourceData.length;
+                    /** 图片宽高 */
+                    info.size = imageSize;
                 }
-                
-                /** 创建展示图片 */
-                if (thumbnailData) {
-                    /** 缩略图数据 */
-                    thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
-                } else {
-                    /** 缩略图不需要压缩的情况 */
-                    thumbnailData = [NSData dataWithData:originalData];
-                    thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
-                }
-                if (sourceData) {
-                    source = [UIImage LF_imageWithImageData:sourceData];
-                } else {
-                    /** 不需要压缩的情况 */
-                    sourceData = [NSData dataWithData:originalData];
-                }
-                
-                if (self.shouldDecoded && source.images.count <= 1) {
-                    thumbnail = [thumbnail lf_decodedImage];
-                }
-                if (self.shouldDecoded && source.images.count <= 1) {
-                    source = [source lf_decodedImage];
-                }
-                
-                /** 图片宽高 */
-                CGSize imageSize = source.size;
-                
-                LFResultImage *result = [LFResultImage new];
-                result.asset = asset;
-                result.thumbnailImage = thumbnail;
-                result.thumbnailData = thumbnailData;
-                result.originalImage = source;
-                result.originalData = sourceData;
-                result.subMediaType = mediaType;
-                
-                LFResultInfo *info = [LFResultInfo new];
-                result.info = info;
-                
-                /** 图片文件名 */
-                info.name = imageName;
-                /** 图片大小 */
-                info.byte = sourceData.length;
-                /** 图片宽高 */
-                info.size = imageSize;
                 
                 dispatch_main_async_safe(^{
                     if (completion) {
@@ -1076,7 +1076,10 @@ static LFAssetManager *manager;
     }
 }
 
-- (void)getLivePhotoWithAsset:(id)asset isOriginal:(BOOL)isOriginal completion:(void (^)(LFResultImage *resultImage))completion
+- (void)getLivePhotoWithAsset:(id)asset
+                   isOriginal:(BOOL)isOriginal
+                needThumbnail:(BOOL)needThumbnail
+                   completion:(void (^)(LFResultImage *resultImage))completion
 {
 #ifdef __IPHONE_9_1
     if ([asset isKindOfClass:[PHAsset class]]) {
@@ -1106,52 +1109,63 @@ static LFAssetManager *manager;
                     [LFToGIF optimalGIFfromURL:videoURL loopCount:0 completion:^(NSURL *GifURL) {
                         
                         if (GifURL) {
-                            
-                            /** 图片数据 */
-                            NSData *imageData = [NSData dataWithContentsOfURL:GifURL];
-                            /** 图片名称 */
-                            NSString *imageName = [fileFirstName stringByAppendingPathExtension:@"gif"];
-                            
-                            /** 原图 */
-                            UIImage *source = [UIImage LF_imageWithImageData:imageData];
-                            
-                            /** 缩略图 */
-                            CGFloat minWidth = MIN(source.size.width, source.size.height);
-                            CGFloat imageRatio = 0.5f;
-                            if (minWidth > 100.f) {
-                                imageRatio = 50.f/minWidth;
-                            }
-                            /** 缩略图 */
-                            NSData *thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-                            UIImage *thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
-                            
-                            /** 图片宽高 */
-                            CGSize imageSize = source.size;
-                            
-                            if (self.shouldDecoded && source.images.count <= 1) {
-                                thumbnail = [thumbnail lf_decodedImage];
-                            }
-                            if (self.shouldDecoded && source.images.count <= 1) {
-                                source = [source lf_decodedImage];
-                            }
-                            
                             LFResultImage *result = [LFResultImage new];
-                            result.asset = asset;
-                            result.thumbnailImage = thumbnail;
-                            result.thumbnailData = thumbnailData;
-                            result.originalImage = source;
-                            result.originalData = imageData;
-                            result.subMediaType = LFImagePickerSubMediaTypeGIF;
                             
-                            LFResultInfo *info = [LFResultInfo new];
-                            result.info = info;
-                            
-                            /** 图片文件名 */
-                            info.name = imageName;
-                            /** 图片大小 */
-                            info.byte = imageData.length;
-                            /** 图片宽高 */
-                            info.size = imageSize;
+                            @autoreleasepool {
+                                
+                                /** 图片数据 */
+                                NSData *sourceData = [NSData dataWithContentsOfURL:GifURL];
+                                /** 图片名称 */
+                                NSString *imageName = [fileFirstName stringByAppendingPathExtension:@"gif"];
+                                
+                                /** 原图 */
+                                UIImage *source = [UIImage LF_imageWithImageData:sourceData];
+
+                                CGFloat minWidth = MIN(source.size.width, source.size.height);
+                                CGFloat imageRatio = 0.7f;
+                                if (!isOriginal) {
+                                    /** 标清图 */
+                                    sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                                }
+                                NSData *thumbnailData = nil;
+                                UIImage *thumbnail = nil;
+                                if (needThumbnail) {
+                                    /** 缩略图 */
+                                    imageRatio = 0.5f;
+                                    if (minWidth > 100.f) {
+                                        imageRatio = 50.f/minWidth;
+                                    }
+                                    /** 缩略图 */
+                                    thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                                    thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+                                }
+                                
+                                /** 图片宽高 */
+                                CGSize imageSize = source.size;
+                                
+                                if (self.shouldDecoded && thumbnail.images.count <= 1) {
+                                    thumbnail = [thumbnail lf_decodedImage];
+                                }
+                                if (self.shouldDecoded && source.images.count <= 1) {
+                                    source = [source lf_decodedImage];
+                                }
+                                result.asset = asset;
+                                result.thumbnailImage = thumbnail;
+                                result.thumbnailData = thumbnailData;
+                                result.originalImage = source;
+                                result.originalData = sourceData;
+                                result.subMediaType = LFImagePickerSubMediaTypeGIF;
+                                
+                                LFResultInfo *info = [LFResultInfo new];
+                                result.info = info;
+                                
+                                /** 图片文件名 */
+                                info.name = imageName;
+                                /** 图片大小 */
+                                info.byte = sourceData.length;
+                                /** 图片宽高 */
+                                info.size = imageSize;
+                            }
                             
                             if (completion) completion(result);
                         } else {

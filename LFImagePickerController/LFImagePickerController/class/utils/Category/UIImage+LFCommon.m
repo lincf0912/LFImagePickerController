@@ -16,7 +16,7 @@
     if (self.imageOrientation == UIImageOrientationUp) return self;
     
     CGImageRef cgimg = [self lf_cgFixOrientation];
-    UIImage *img = [UIImage imageWithCGImage:cgimg];
+    UIImage *img = [UIImage imageWithCGImage:cgimg scale:self.scale orientation:UIImageOrientationUp];
     CGImageRelease(cgimg);
     return img;
 }
@@ -26,14 +26,17 @@
     
     UIImage *editImg = self;//[UIImage imageWithData:UIImagePNGRepresentation(self)];
     
+    CGFloat width = CGImageGetWidth(self.CGImage);
+    CGFloat height = CGImageGetHeight(self.CGImage);
+    
     // We need to calculate the proper transformation to make the image upright.
     // We do it in 2 steps: Rotate if Left/Right/Down, and then flip if Mirrored.
-    CGAffineTransform transform = [UIImage lf_exchangeOrientation:editImg.imageOrientation size:editImg.size];
+    CGAffineTransform transform = [UIImage lf_exchangeOrientation:editImg.imageOrientation size:CGSizeMake(width, height)];
     
     
     // Now we draw the underlying CGImage into a new context, applying the transform
     // calculated above.
-    CGContextRef ctx = CGBitmapContextCreate(NULL, editImg.size.width, editImg.size.height,
+    CGContextRef ctx = CGBitmapContextCreate(NULL, width, height,
                                              CGImageGetBitsPerComponent(editImg.CGImage), 0,
                                              CGImageGetColorSpace(editImg.CGImage),
                                              CGImageGetBitmapInfo(editImg.CGImage));
@@ -44,11 +47,11 @@
         case UIImageOrientationRight:
         case UIImageOrientationRightMirrored:
             // Grr...
-            CGContextDrawImage(ctx, CGRectMake(0,0, editImg.size.height, editImg.size.width), editImg.CGImage);
+            CGContextDrawImage(ctx, CGRectMake(0,0, height, width), editImg.CGImage);
             break;
             
         default:
-            CGContextDrawImage(ctx, CGRectMake(0,0, editImg.size.width, editImg.size.height), editImg.CGImage);
+            CGContextDrawImage(ctx, CGRectMake(0,0, width, height), editImg.CGImage);
             break;
     }
     

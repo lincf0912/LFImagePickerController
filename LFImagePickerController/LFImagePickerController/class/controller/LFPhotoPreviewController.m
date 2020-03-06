@@ -656,6 +656,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _collectionView.contentOffset = CGPointMake(0, 0);
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.frame.size.width), 0);
     
+    if (@available(iOS 10.0, *)) {
+        _collectionView.prefetchingEnabled = NO;
+    }
+    
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
     [_collectionView registerClass:[LFPhotoPreviewGifCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewGifCell"];
     [_collectionView registerClass:[LFPhotoPreviewLivePhotoCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewLivePhotoCell"];

@@ -17,6 +17,6 @@
 - (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size;
 - (NSData *)lf_fastestCompressImageDataWithSize:(CGFloat)size imageSize:(NSUInteger)imageSize;
 
-/** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片(动图) */
+/** 快速压缩 压缩到大约指定体积缩放 返回压缩后图片(动图) */
 - (NSData *)lf_fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio;
 @end

@@ -22,7 +22,7 @@
     NSData *imageData = [self lf_fastestCompressImageSize:size imageSize:imageSize];
     UIImage *compressedImage = nil;
     if (imageData) {
-        compressedImage = [UIImage imageWithData:imageData scale:[UIScreen mainScreen].scale];
+        compressedImage = [UIImage imageWithData:imageData scale:self.scale];
     }
     if (!compressedImage) {
         return self;
@@ -59,6 +59,8 @@
         int MIN_UPLOAD_RESOLUTION = pixel.width * pixel.height;
         /** 当前图片尺寸 */
         float currentResolution = self.size.height * self.size.width;
+        /** 偏移量 */
+        float offsetSize = size * 0.2 * 1024;
         
         /** 图片大小 */
         long long imageLength = imageSize;
@@ -74,29 +76,13 @@
             if (imageLength <= targetSize) return nil;
         }
         
-        
-        if (size < 100) {
-            /** 计算目标压缩占比 */
-            CGFloat targetProrate = targetSize / imageLength;
-            percent = MAX(MIN(targetProrate, percent), 0.01);
-            
-            float minSize = 200.f;
-            float factor = 1.f;
-            if (self.size.width > self.size.height) {
-                factor = minSize/self.size.height;
-            } else {
-                factor = minSize/self.size.width;
-            }
-            
-            compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width * factor, self.size.height * factor)];
-        } else if (size < 500) {
-            percent = 0.45f;
-            /** 缩放图片 */
-            if (currentResolution > MIN_UPLOAD_RESOLUTION) {
-                float factor = sqrt(currentResolution / MIN_UPLOAD_RESOLUTION) * 2;
-                compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
-            }
+        /** 缩放图片 */
+        if (currentResolution > MIN_UPLOAD_RESOLUTION) {
+            float factor = sqrt(currentResolution / MIN_UPLOAD_RESOLUTION) * 2;
+            compressedImage = [self lf_scaleWithSize:CGSizeMake(self.size.width / factor, self.size.height / factor)];
         }
+        
+        percent *= (targetSize/imageLength);
         
         
         /** 记录上一次的压缩大小 */
@@ -108,14 +94,6 @@
         do {
             
             //        NSLog(@"compress %d", index++);
-            
-            if (imageDatalength > targetSize * 2) {
-                float scale = 0.8f;
-                CGSize newSize = CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale);
-                if (newSize.width*newSize.height > 200*200) {
-                    compressedImage = [self lf_scaleWithSize:newSize];
-                }
-            }
             
             imageData = LF_UIImageJPEGRepresentation(compressedImage, percent);
             
@@ -138,23 +116,20 @@
             
             // 大小没有改变 & 压缩后大小可能会微略变大的情况
             if (imageDatalength > 0 && imageData.length >= imageDatalength) {
-                //            NSLog(@"压缩大小没有改变，需要调整图片尺寸");
-                //            break;
-                /** 精准缩放计算误差值 */
-                float scale = 1-diffSize/targetSize;
-                if (scale < 1.f) scale = 0.85f;
-                if (scale >= 1.f) scale = 0.5f;
+                // 压缩大小没有改变，需要调整图片尺寸
+                float scale = (targetSize/diffSize);
+                if (scale < .5f) scale = 0.5f;
+                if (scale > .85f) scale = 0.85f;
                 compressedImage = [self lf_scaleWithSize:CGSizeMake(compressedImage.size.width * scale, compressedImage.size.height * scale)];
             }
             imageDatalength = imageData.length;
-        } while (imageData.length > targetSize+1024);/** 增加1k偏移量 */
+        } while (imageData.length > targetSize+offsetSize);/** 增加偏移量 */
         
         return imageData;
     }
 }
 
-
-/** 快速压缩 压缩到大约指定体积大小(kb) 返回压缩后图片(动图) */
+/** 快速压缩 压缩到大约指定体积缩放 返回压缩后图片(动图) */
 - (NSData *)lf_fastestCompressAnimatedImageDataWithScaleRatio:(CGFloat)ratio
 {
     @autoreleasepool {    
@@ -184,7 +159,7 @@
         return self;
     }
     //We prepare a bitmap with the new size
-    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
+    UIGraphicsBeginImageContextWithOptions(newSize, NO, self.scale);
     
     //Draws a rect for the image
     [self drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
@@ -202,7 +177,7 @@
     CGRect rect_screen = [[UIScreen mainScreen]bounds];
     CGSize size_screen = rect_screen.size;
     
-    CGFloat scale_screen = [UIScreen mainScreen].scale;
+    CGFloat scale_screen = 1.0;//[UIScreen mainScreen].scale;
     
     CGFloat width = size_screen.width*scale_screen;
     CGFloat height = size_screen.height*scale_screen;

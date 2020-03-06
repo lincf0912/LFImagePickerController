@@ -87,7 +87,7 @@
         _scrollView = [[UIScrollView alloc] init];
         _scrollView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
         _scrollView.bouncesZoom = YES;
-        _scrollView.maximumZoomScale = 2.5;
+        _scrollView.maximumZoomScale = 3.5;
         _scrollView.minimumZoomScale = 1.0;
         _scrollView.multipleTouchEnabled = YES;
         _scrollView.delegate = self;

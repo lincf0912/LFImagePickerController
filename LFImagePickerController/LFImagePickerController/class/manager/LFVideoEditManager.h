@@ -24,7 +24,7 @@
  通过asset解析视频
  
  @param asset LFAsset
- @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
+ @param presetName 压缩预设名称 nil则默认为AVAssetExportPreset1280x720
  @param completion 回调
  */
 - (void)getVideoWithAsset:(LFAsset *)asset

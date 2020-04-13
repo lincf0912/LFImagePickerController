@@ -85,7 +85,7 @@ static LFVideoEditManager *manager;
  通过asset解析视频
 
  @param asset LFAsset
- @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
+ @param presetName 压缩预设名称 nil则默认为AVAssetExportPreset1280x720
  @param completion 回调
  */
 - (void)getVideoWithAsset:(LFAsset *)asset
@@ -93,7 +93,7 @@ static LFVideoEditManager *manager;
                completion:(void (^)(LFResultVideo *resultVideo))completion
 {
     if (presetName.length == 0) {
-        presetName = AVAssetExportPresetMediumQuality;
+        presetName = AVAssetExportPreset1280x720;
     }
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         

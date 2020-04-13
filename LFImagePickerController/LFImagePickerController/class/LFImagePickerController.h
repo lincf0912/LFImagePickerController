@@ -115,8 +115,8 @@
 @property (nonatomic,assign) NSUInteger maxPhotoBytes;
 
 #pragma mark video option
-/// Compressed video size,Default is AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
-/// 压缩视频大小的参数,默认为AVAssetExportPresetMediumQuality(AVAssetExportSession.m)
+/// Compressed video size. Only supports H.264. Default is AVAssetExportPreset1280x720(AVAssetExportSession.m)
+/// 压缩视频大小的参数,只支持H.264。默认为AVAssetExportPreset1280x720(AVAssetExportSession.m)
 @property (nonatomic,copy) NSString *videoCompressPresetName;
 
 /// Select the maximum duration of the video,Default is 5 minutes (in seconds unit)

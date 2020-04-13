@@ -8,34 +8,9 @@
 
 #import "LF_VideoUtils.h"
 #import "LF_FileUtility.h"
+#import "LFAssetExportSession.h"
 
 @implementation LF_VideoUtils
-
-+ (UIImageOrientation)orientationFromAVAssetTrack:(AVAssetTrack *)videoTrack
-{
-    UIImageOrientation orientation = UIImageOrientationUp;
-    
-    CGAffineTransform t = videoTrack.preferredTransform;
-    if(t.a == 0 && t.b == 1.0 && t.c == -1.0 && t.d == 0){
-        // Portrait
-        //        degress = 90;
-        orientation = UIImageOrientationRight;
-    }else if(t.a == 0 && t.b == -1.0 && t.c == 1.0 && t.d == 0){
-        // PortraitUpsideDown
-        //        degress = 270;
-        orientation = UIImageOrientationLeft;
-    }else if(t.a == 1.0 && t.b == 0 && t.c == 0 && t.d == 1.0){
-        // LandscapeRight
-        //        degress = 0;
-        orientation = UIImageOrientationUp;
-    }else if(t.a == -1.0 && t.b == 0 && t.c == 0 && t.d == -1.0){
-        // LandscapeLeft
-        //        degress = 180;
-        orientation = UIImageOrientationDown;
-    }
-    
-    return orientation;
-}
 
 /** 视频压缩 */
 + (void)encodeVideoWithURL:(NSURL *)videoURL outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete
@@ -51,7 +26,7 @@
 
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath complete:(void (^)(BOOL isSuccess, NSError *error))complete
 {
-    [self encodeVideoWithAsset:asset outPath:outPath presetName:nil complete:complete];
+    [self encodeVideoWithAsset:asset outPath:outPath presetName:AVAssetExportPreset1280x720 complete:complete];
 }
 
 + (void)encodeVideoWithAsset:(AVAsset *)asset outPath:(NSString *)outPath presetName:(NSString *)presetName complete:(void (^)(BOOL isSuccess, NSError *error))complete
@@ -66,74 +41,28 @@
     }
     CFTimeInterval time = CACurrentMediaTime();
     
-    NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-    AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
-    if (videoTrack == nil) {
-        complete(NO, nil);
-    }
-    
-    AVMutableVideoComposition *waterMarkVideoComposition;
-    
-    UIImageOrientation orientation = [self orientationFromAVAssetTrack:videoTrack];
-    
-    if (orientation != UIImageOrientationUp) {
-        waterMarkVideoComposition = [AVMutableVideoComposition videoComposition];
-        waterMarkVideoComposition.frameDuration = CMTimeMake(1, 30);
-    }
-    
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    
-    switch (orientation) {
-        case UIImageOrientationLeft:
-            //顺时针旋转270°
-            //            NSLog(@"视频旋转270度，home按键在右");
-            transform = CGAffineTransformTranslate(transform, 0.0, videoTrack.naturalSize.width);
-            transform = CGAffineTransformRotate(transform,M_PI_2*3.0);
-            waterMarkVideoComposition.renderSize = CGSizeMake(videoTrack.naturalSize.height,videoTrack.naturalSize.width);
-            break;
-        case UIImageOrientationRight:
-            //顺时针旋转90°
-            //            NSLog(@"视频旋转90度,home按键在左");
-            transform = CGAffineTransformTranslate(transform, videoTrack.naturalSize.height, 0.0);
-            transform = CGAffineTransformRotate(transform,M_PI_2);
-            waterMarkVideoComposition.renderSize = CGSizeMake(videoTrack.naturalSize.height,videoTrack.naturalSize.width);
-            break;
-        case UIImageOrientationDown:
-            //顺时针旋转180°
-            //            NSLog(@"视频旋转180度，home按键在上");
-            transform = CGAffineTransformTranslate(transform, videoTrack.naturalSize.width, videoTrack.naturalSize.height);
-            transform = CGAffineTransformRotate(transform,M_PI);
-            waterMarkVideoComposition.renderSize = CGSizeMake(videoTrack.naturalSize.width,videoTrack.naturalSize.height);
-            break;
-        default:
-            break;
-    }
-    
-    if (waterMarkVideoComposition) {
-        AVMutableVideoCompositionInstruction *roateInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-        roateInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, [asset duration]);
-        AVMutableVideoCompositionLayerInstruction *roateLayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
-        
-        [roateLayerInstruction setTransform:transform atTime:kCMTimeZero];
-        
-        roateInstruction.layerInstructions = @[roateLayerInstruction];
-        //将视频方向旋转加入到视频处理中
-        waterMarkVideoComposition.instructions = @[roateInstruction];
-    }
-    
     if ([[NSFileManager defaultManager] fileExistsAtPath:outPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:outPath error:nil];
     }
     
-    NSString *exprotPresetName = (presetName.length ? presetName : AVAssetExportPreset1280x720);
-    if (![[AVAssetExportSession exportPresetsCompatibleWithAsset:asset] containsObject:exprotPresetName]) {
-        exprotPresetName = AVAssetExportPresetHighestQuality;
-        NSLog(@"The video is not compatible with presetName. Use AVAssetExportPresetHighestQuality.");
+    LFAssetExportSessionPreset preset = LFAssetExportSessionPreset720P;
+    
+    if ([presetName isEqualToString:AVAssetExportPresetLowQuality]) {
+        preset = LFAssetExportSessionPreset360P;
+    } else if ([presetName isEqualToString:AVAssetExportPreset640x480]) {
+        preset = LFAssetExportSessionPreset480P;
+    }  else if ([presetName isEqualToString:AVAssetExportPreset960x540]) {
+        preset = LFAssetExportSessionPreset540P;
+    } else if ([presetName isEqualToString:AVAssetExportPresetMediumQuality] || [presetName isEqualToString:AVAssetExportPreset1280x720]) {
+        preset = LFAssetExportSessionPreset720P;
+    } else if ([presetName isEqualToString:AVAssetExportPreset1920x1080]) {
+        preset = LFAssetExportSessionPreset1080P;
+    } else if ([presetName isEqualToString:AVAssetExportPresetHighestQuality] || [presetName isEqualToString:AVAssetExportPreset3840x2160]) {
+        preset = LFAssetExportSessionPreset4K;
     }
-
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:exprotPresetName];
+    
+    LFAssetExportSession *exportSession = [[LFAssetExportSession alloc] initWithAsset:asset preset:preset];
     exportSession.outputURL = [NSURL fileURLWithPath:outPath];
-    exportSession.videoComposition = waterMarkVideoComposition;
     exportSession.outputFileType = AVFileTypeMPEG4;
     [exportSession exportAsynchronouslyWithCompletionHandler:^(void)
      {

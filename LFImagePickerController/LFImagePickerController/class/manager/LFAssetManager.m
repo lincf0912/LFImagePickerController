@@ -1365,7 +1365,7 @@ static LFAssetManager *manager;
  *  视频压缩并缓存压缩后视频 (将视频格式变为mp4)
  *
  *  @param asset      PHAsset／ALAsset
- *  @param presetName 压缩预设名称 nil则默认为AVAssetExportPresetMediumQuality
+ *  @param presetName 压缩预设名称 nil则默认为AVAssetExportPreset1280x720
  *  @param completion 回调压缩后视频路径，可以复制或剪切
  */
 - (void)compressAndCacheVideoWithAsset:(id)asset
@@ -1375,7 +1375,7 @@ static LFAssetManager *manager;
     if (completion == nil) return;
     
     if (presetName.length == 0) {
-        presetName = AVAssetExportPresetMediumQuality;
+        presetName = AVAssetExportPreset1280x720;
     }
     
     NSString *cache = [LFAssetManager CacheVideoPath];

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 s.name         = 'LFImagePickerController'
-s.version      = '1.7.0'
+s.version      = '1.7.1'
 s.summary      = 'A clone of UIImagePickerController, support picking multiple photos、 video and edit photo'
 s.homepage     = 'https://github.com/lincf0912/LFImagePickerController'
 s.license      = 'MIT'
@@ -17,6 +17,7 @@ ss.source_files = 'LFImagePickerController/LFImagePickerController/class/*.{h,m}
 ss.public_header_files = 'LFImagePickerController/LFImagePickerController/class/*.h','LFImagePickerController/LFImagePickerController/class/manager/*.h','LFImagePickerController/LFImagePickerController/class/model/*.h','LFImagePickerController/LFImagePickerController/class/model/**/*.h','LFImagePickerController/LFImagePickerController/class/define/LFImagePickerPublicHeader.h'
 ss.dependency 'LFImagePickerController/LFGifPlayer'
 ss.dependency 'LFImagePickerController/LFToGIF'
+ss.dependency 'LFAssetExportSession'
 end
 
 # LFGifPlayer模块

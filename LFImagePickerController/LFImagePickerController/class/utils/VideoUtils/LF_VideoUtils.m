@@ -37,9 +37,9 @@
     }
     
     if ([asset isKindOfClass:[AVURLAsset class]]) {
-        NSLog(@"压缩前：%@",[LF_FileUtility getFileSizeString:[LF_FileUtility fileSizeForPath:[((AVURLAsset *)asset).URL path]]]);
+//        NSLog(@"压缩前：%@",[LF_FileUtility getFileSizeString:[LF_FileUtility fileSizeForPath:[((AVURLAsset *)asset).URL path]]]);
     }
-    CFTimeInterval time = CACurrentMediaTime();
+//    CFTimeInterval time = CACurrentMediaTime();
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:outPath]) {
         [[NSFileManager defaultManager] removeItemAtPath:outPath error:nil];
@@ -80,9 +80,9 @@
              default:
                  break;
          }
-         NSLog(@"Completed compression in %f s",CACurrentMediaTime() - time);
-         NSString *fileSizeStr = [LF_FileUtility getFileSizeString:[LF_FileUtility fileSizeForPath:outPath]];
-         NSLog(@"压缩后：%@",fileSizeStr);
+//         NSLog(@"Completed compression in %f s",CACurrentMediaTime() - time);
+//         NSString *fileSizeStr = [LF_FileUtility getFileSizeString:[LF_FileUtility fileSizeForPath:outPath]];
+//         NSLog(@"压缩后：%@",fileSizeStr);
          complete([exportSession status] == AVAssetExportSessionStatusCompleted, exportSession.error);
      }];
 }

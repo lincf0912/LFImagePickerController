@@ -28,15 +28,17 @@
     
     CGFloat width = CGImageGetWidth(self.CGImage);
     CGFloat height = CGImageGetHeight(self.CGImage);
-    
+
+    // CGImage gets the size in normal direction.
+    CGSize size = [UIImage lf_exchangeSizeWithOrientation:editImg.imageOrientation size:CGSizeMake(width, height)];
     // We need to calculate the proper transformation to make the image upright.
     // We do it in 2 steps: Rotate if Left/Right/Down, and then flip if Mirrored.
-    CGAffineTransform transform = [UIImage lf_exchangeOrientation:editImg.imageOrientation size:CGSizeMake(width, height)];
+    CGAffineTransform transform = [UIImage lf_exchangeTransformWithOrientation:editImg.imageOrientation size:size];
     
     
     // Now we draw the underlying CGImage into a new context, applying the transform
     // calculated above.
-    CGContextRef ctx = CGBitmapContextCreate(NULL, width, height,
+    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height,
                                              CGImageGetBitsPerComponent(editImg.CGImage), 0,
                                              CGImageGetColorSpace(editImg.CGImage),
                                              CGImageGetBitmapInfo(editImg.CGImage));
@@ -47,11 +49,11 @@
         case UIImageOrientationRight:
         case UIImageOrientationRightMirrored:
             // Grr...
-            CGContextDrawImage(ctx, CGRectMake(0,0, height, width), editImg.CGImage);
+            CGContextDrawImage(ctx, CGRectMake(0,0, size.height, size.width), editImg.CGImage);
             break;
             
         default:
-            CGContextDrawImage(ctx, CGRectMake(0,0, width, height), editImg.CGImage);
+            CGContextDrawImage(ctx, CGRectMake(0,0, size.width, size.height), editImg.CGImage);
             break;
     }
     
@@ -63,7 +65,26 @@
     return cgimg;
 }
 
-+ (CGAffineTransform)lf_exchangeOrientation:(UIImageOrientation)imageOrientation size:(CGSize)size
++ (CGSize)lf_exchangeSizeWithOrientation:(UIImageOrientation)imageOrientation size:(CGSize)size
+{
+    CGSize exSize;
+    switch (imageOrientation) {
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            // Grr...
+            exSize = CGSizeMake(size.height, size.width);
+            break;
+            
+        default:
+            exSize = CGSizeMake(size.width, size.height);
+            break;
+    }
+    return exSize;
+}
+
++ (CGAffineTransform)lf_exchangeTransformWithOrientation:(UIImageOrientation)imageOrientation size:(CGSize)size
 {
     CGAffineTransform transform = CGAffineTransformIdentity;
     

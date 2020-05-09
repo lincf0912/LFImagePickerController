@@ -21,6 +21,10 @@
     
     UIStatusBarStyle _originStatusBarStyle;
 }
+
+@property (nonatomic, strong) NSMutableArray <UIAlertController *>*delayAlertControllers;
+@property (nonatomic, strong) NSTimer *delayTimer;
+
 @end
 
 @implementation LFLayoutPickerController
@@ -45,6 +49,7 @@
 
 - (void)customInit
 {
+    _delayAlertControllers = [NSMutableArray arrayWithCapacity:1];
     [self configDefaultSetting];
 }
 
@@ -243,18 +248,44 @@
 {
     if (@available(iOS 8.0, *)){
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        __weak typeof(self) weakSelf = self;
         [alertController addAction:[UIAlertAction actionWithTitle:cancelTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             if (complete) {
                 complete();
             }
+            [weakSelf presentDelayViewController];
         }]];
-        [self presentViewController:alertController animated:YES completion:nil];
+        if (self.presentedViewController) {
+            [self.delayAlertControllers addObject:alertController];
+            if (self.delayTimer == nil) {
+                self.delayTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeTopViewControllerChange) userInfo:nil repeats:YES];
+            }
+        } else {
+            [self presentViewController:alertController animated:YES completion:nil];
+        }
     } else {
         [[[UIAlertView alloc] lf_initWithTitle:title message:message cancelButtonTitle:cancelTitle otherButtonTitles:nil block:^(UIAlertView *alertView, NSInteger buttonIndex) {
             if (complete) {
                 complete();
             }
         }] show];
+    }
+}
+
+- (void)observeTopViewControllerChange {
+    if (self.presentedViewController == nil) {
+        [self.delayTimer invalidate];
+        self.delayTimer = nil;
+        [self presentDelayViewController];
+    }
+}
+
+- (void)presentDelayViewController
+{
+    UIAlertController *alertController = self.delayAlertControllers.firstObject;
+    if (alertController) {
+        [self.delayAlertControllers removeObject:alertController];
+        [self presentViewController:alertController animated:YES completion:nil];
     }
 }
 

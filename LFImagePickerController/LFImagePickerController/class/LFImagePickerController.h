@@ -99,7 +99,7 @@ typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCa
 
 /// The name of the album displayed,default SmartAlbumUserLibrary
 /// 显示的相册名称,默认为相机胶卷
-@property (nonatomic,copy) NSString *defaultAlbumName;
+@property (nonatomic,copy,nullable) NSString *defaultAlbumName;
 
 /// Default is NO,if set YES,The image file name will be displayed
 /// 默认为NO,如果设置为YES,显示图片文件名称
@@ -152,7 +152,7 @@ typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCa
 
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效
-@property (nonatomic,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>/id<LFAssetPhotoProtocol>> 任意一种 */*selectedAssets;
+@property (nonatomic,nullable,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>/id<LFAssetPhotoProtocol>> 任意一种 */*selectedAssets;
 
 /// Currently selected object list.
 /// 用户选中的对象列表
@@ -163,7 +163,7 @@ typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCa
 /// Public Method
 //- (void)cancelButtonClick;
 /** 代理/Delegate */
-@property (nonatomic,weak) id<LFImagePickerControllerDelegate> pickerDelegate;
+@property (nonatomic,weak,nullable) id<LFImagePickerControllerDelegate> pickerDelegate;
 
 /// For block callback, see lfimagepickercontrollerdelegate description for details.
 /// block回调,具体使用见LFImagePickerControllerDelegate代理描述

@@ -13,6 +13,8 @@
 #import "LFAssetManager.h"
 #import "LFAssetManager+CreateMedia.h"
 
+#import <MobileCoreServices/UTCoreTypes.h>
+
 @interface LFCustomObject : NSObject <LFAssetImageProtocol>
 
 /// LFAssetImageProtocol
@@ -60,7 +62,7 @@
 
 @end
 
-@interface ViewController () <LFImagePickerControllerDelegate, UIDocumentInteractionControllerDelegate>
+@interface ViewController () <LFImagePickerControllerDelegate, UIDocumentInteractionControllerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 {
     UITapGestureRecognizer *singleTapRecognizer;
 }
@@ -75,6 +77,8 @@
 /** share */
 @property (strong, nonatomic) UIDocumentInteractionController *documentInConVC;
 @property (strong, nonatomic) NSString *sharePath;
+
+@property (copy, nonatomic) lf_takePhotoHandler handler;
 
 @end
 
@@ -102,7 +106,7 @@
 - (IBAction)buttonActionNormal:(id)sender {
 //    [LFAssetManager cleanCacheVideoPath];
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
-    imagePicker.allowTakePicture = NO;
+//    imagePicker.allowTakePicture = NO;
 //    imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
 //    imagePicker.sortAscendingByCreateDate = NO;
 //    imagePicker.allowEditing = NO;
@@ -123,13 +127,14 @@
 }
 - (IBAction)buttonActionFriendCircle:(id)sender {
     LFImagePickerController *imagePicker = [[LFImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
-    imagePicker.allowTakePicture = NO;
+//    imagePicker.allowTakePicture = NO;
     imagePicker.maxVideosCount = 1; /** 解除混合选择- 要么1个视频，要么9个图片 */
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
     imagePicker.allowPickingType = LFPickingMediaTypeALL;
     imagePicker.maxVideoDuration = 10; /** 10秒视频 */
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
         imagePicker.syncAlbum = YES; /** 实时同步相册 */
+//        imagePicker.syncAlbum = YES; /** 实时同步相册 */
     }
     [self presentViewController:imagePicker animated:YES completion:nil];
 }
@@ -219,6 +224,53 @@
     imagePicker.allowPickingType = LFPickingMediaTypePhoto;
     imagePicker.allowTakePicture = NO;
     [self presentViewController:imagePicker animated:YES completion:nil];
+}
+
+#pragma mark - LFImagePickerControllerDelegate
+- (void)lf_imagePickerController:(LFImagePickerController *)picker takePhotoHandler:(lf_takePhotoHandler)handler
+{
+    self.handler = handler;
+    
+    BOOL onlyPhoto = NO;
+    BOOL onlyVideo = NO;
+    if (picker.selectedObjects.count) {
+        onlyPhoto = picker.maxImagesCount != picker.maxVideosCount && picker.selectedObjects.firstObject.type == LFAssetMediaTypePhoto;
+        onlyVideo = picker.maxImagesCount != picker.maxVideosCount && picker.selectedObjects.firstObject.type == LFAssetMediaTypeVideo;
+    }
+    
+    UIImagePickerController *mediaPickerController = [[UIImagePickerController alloc] init];
+    // set appearance / 改变相册选择页的导航栏外观
+    {
+        mediaPickerController.navigationBar.barTintColor = picker.navigationBar.barTintColor;
+        mediaPickerController.navigationBar.tintColor = picker.navigationBar.tintColor;
+        NSMutableDictionary *textAttrs = [NSMutableDictionary dictionary];
+        UIBarButtonItem *barItem;
+        if (@available(iOS 9.0, *)){
+            barItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UIImagePickerController class]]];
+        } else {
+            barItem = [UIBarButtonItem appearanceWhenContainedIn:[UIImagePickerController class], nil];
+        }
+        textAttrs[NSForegroundColorAttributeName] = picker.barItemTextColor;
+        textAttrs[NSFontAttributeName] = picker.barItemTextFont;
+        [barItem setTitleTextAttributes:textAttrs forState:UIControlStateNormal];
+    }
+    mediaPickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+    mediaPickerController.delegate = self;
+    
+    NSMutableArray *mediaTypes = [NSMutableArray array];
+    
+    if (picker.allowPickingType & LFPickingMediaTypePhoto && picker.selectedObjects.count < picker.maxImagesCount && !onlyVideo) {
+        [mediaTypes addObject:(NSString *)kUTTypeImage];
+    }
+    if (picker.allowPickingType & LFPickingMediaTypeVideo && picker.selectedObjects.count < picker.maxVideosCount && !onlyPhoto) {
+        [mediaTypes addObject:(NSString *)kUTTypeMovie];
+        mediaPickerController.videoMaximumDuration = picker.maxVideoDuration;
+    }
+    
+    mediaPickerController.mediaTypes = mediaTypes;
+    
+    /** warning：Snapshotting a view that has not been rendered results in an empty snapshot. Ensure your view has been rendered at least once before snapshotting or snapshot after screen updates. */
+    [picker presentViewController:mediaPickerController animated:YES completion:nil];
 }
 
 - (void)lf_imagePickerController:(LFImagePickerController *)picker didFinishPickingResult:(NSArray <LFResultObject /* <LFResultImage/LFResultVideo> */*> *)results;
@@ -369,6 +421,52 @@
 
 - (CGRect)documentInteractionControllerRectForPreview:(UIDocumentInteractionController *)controller{
     return self.view.frame;
+}
+
+#pragma mark UIImagePickerControllerDelegate methods
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    
+    BOOL hasUsingMedia = NO;
+    
+    NSString *mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+    if ([mediaType isEqualToString:(NSString *)kUTTypeImage]){
+        UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
+        if (chosenImage) {
+            hasUsingMedia = YES;
+            if (self.handler) {
+                self.handler(chosenImage, (NSString *)kUTTypeImage, ^(NSError * _Nullable error) {
+                    if (error) {
+                        NSLog(@"error:%@", error);
+                    }
+                    [picker dismissViewControllerAnimated:YES completion:nil];
+                });
+            }
+        }
+    } else if ([mediaType isEqualToString:(NSString *)kUTTypeMovie]) {
+        NSURL *videoUrl = [info objectForKey:UIImagePickerControllerMediaURL];
+        if (videoUrl) {
+            hasUsingMedia = YES;
+            if (self.handler) {
+                self.handler(videoUrl, (NSString *)kUTTypeMovie, ^(NSError * _Nullable error) {
+                    if (error) {
+                        NSLog(@"error:%@", error);
+                    }
+                    [picker dismissViewControllerAnimated:YES completion:nil];
+                });
+            }
+        }
+    }
+    
+    self.handler = nil;
+    if (!hasUsingMedia) {
+        [picker dismissViewControllerAnimated:YES completion:nil];
+    }
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

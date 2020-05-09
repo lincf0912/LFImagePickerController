@@ -846,11 +846,12 @@ CGFloat const bottomToolBarHeight = 50.f;
     cell.displayPhotoName = imagePickerVc.displayImageFilename;
     cell.onlySelected = !imagePickerVc.allowPreview;
     /** 优先级低属性，当最大数量为1时只能点击 */
-    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && model.type == LFAssetMediaTypeVideo) {
-        cell.onlyClick = imagePickerVc.maxVideosCount == 1;
-    } else {
-        cell.onlyClick = imagePickerVc.maxImagesCount == 1;
-    }
+    /** 当初实现这个属性是因为朋友圈，实际上它非常不合理。🔪 */
+//    if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount && model.type == LFAssetMediaTypeVideo) {
+//        cell.onlyClick = imagePickerVc.maxVideosCount == 1;
+//    } else {
+//        cell.onlyClick = imagePickerVc.maxImagesCount == 1;
+//    }
     /** 最大数量时，非选择部分显示不可选 */
     if (imagePickerVc.maxImagesCount != imagePickerVc.maxVideosCount) {
         /** 不能混合选择的情况 */

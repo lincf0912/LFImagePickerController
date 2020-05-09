@@ -1442,20 +1442,22 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 _naviTipsLabel.text = [NSBundle lf_localizedStringForKey:@"_mixedSelectionTipText_video"];
             }
         } else {
-            if (model.type == LFAssetMediaTypeVideo) {
-                _selectButton.hidden = imagePickerVc.maxVideosCount == 1;
-            } else if (model.type == LFAssetMediaTypePhoto) {
-                _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
-            }
+//            if (model.type == LFAssetMediaTypeVideo) {
+//                _selectButton.hidden = imagePickerVc.maxVideosCount == 1;
+//            } else if (model.type == LFAssetMediaTypePhoto) {
+//                _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
+//            }
         }
     } else {
-        _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
+//        _selectButton.hidden = imagePickerVc.maxImagesCount == 1;
     }
     
     /** 有提示显示 */
     BOOL showTip = _naviTipsLabel.text.length;
     if (showTip) {
         _selectButton.hidden = YES;
+    } else {
+        _selectButton.hidden = NO;
     }
     
     [UIView animateWithDuration:0.25f animations:^{

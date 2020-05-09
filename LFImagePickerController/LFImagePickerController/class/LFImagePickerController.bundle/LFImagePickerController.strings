@@ -33,10 +33,12 @@
 
 "_photoLibraryAuthorityTipText" = "请在\"设置-隐私-照片\"选项中，\r允许%访问相册";
 "_cameraLibraryAuthorityTipText" = "请在\"设置-隐私-相机\"中允许%访问相机";
+"_audioLibraryAuthorityTipText" = "请在\"设置-隐私-麦克风\"中允许%访问麦克风";
 "_cameraLibraryAuthorityCancelTitle" = "设置";
 "_PrivacyAuthorityJumpTipText" = "无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
 "_PrivacyAuthorityJumpCancelTitle" = "抱歉";
 "_cameraTakePhotoError" = "拍照错误";
+"_cameraTakeVideoError" = "拍摄错误";
 
 /* -------- LFPhotoPickerController -------*/
 "_LFPhotoPickerController_noMediaTipText" = "没有图片或视频";

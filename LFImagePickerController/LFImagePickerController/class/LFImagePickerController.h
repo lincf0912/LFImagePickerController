@@ -14,8 +14,14 @@
 #import "LFAssetPhotoProtocol.h"
 #import "LFAssetVideoProtocol.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class LFAsset;
 @protocol LFImagePickerControllerDelegate;
+
+typedef void(^lf_takePhotoCallback)( NSError * _Nullable error);
+typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCallback _Nullable callback);
+
 @interface LFImagePickerController : LFLayoutPickerController
 
 /// Use this init method / 用这个初始化方法
@@ -161,7 +167,7 @@
 
 /// For block callback, see lfimagepickercontrollerdelegate description for details.
 /// block回调,具体使用见LFImagePickerControllerDelegate代理描述
-@property (nonatomic,copy) void (^imagePickerControllerTakePhoto)(void);
+@property (nonatomic,copy) void (^imagePickerControllerTakePhotoHandle)(lf_takePhotoHandler handler);
 @property (nonatomic,copy) void (^imagePickerControllerDidCancelHandle)(void);
 
 /**
@@ -172,24 +178,25 @@
 
 @end
 
-
 @protocol LFImagePickerControllerDelegate <NSObject> /** 每个代理方法都有对应的block回调 */
 @optional
 
+- (void)lf_imagePickerControllerTakePhoto:(LFImagePickerController *)picker __deprecated_msg("Delegate deprecated. Use `lf_imagePickerController:takePhotoCallBackHandler:`");
 
 /**
- 
- When allowTakePicture = YES, click take picture to trigger it.
- Scheme 1: if this method is not implemented. After the photo is taken, it will be saved to the album according to autoSavePhotoAlbum, and the lf_imagePickerController:didFinishPickingResult delegate will be executed.
- Scheme 2: to implement this method, the developer will process the photographing module by yourself, and then manually dismiss or other operations.
- 
- 当allowTakePicture=YES,点击拍照会执行
- 方案1：如果不实现这个代理方法,执行内置拍照模块,拍照完成后会根据autoSavePhotoAlbum是否保存到相册,并执行lf_imagePickerController:didFinishPickingResult代理。
- 方案2：实现这个代理方法,则由开发者自己处理拍照模块,完毕后手动dismiss或其他操作。
 
- @param picker 选择器
- */
-- (void)lf_imagePickerControllerTakePhoto:(LFImagePickerController *)picker;
+When allowTakePicture = YES, click take picture to trigger it.
+Scheme 1: if this method is not implemented. After the photo is taken. It will be saved to the album, and select it..
+Scheme 2: to implement this method, the developer will process the photographing module by yourself, and then manually dismiss or other operations.
+
+当allowTakePicture=YES,点击拍照会执行
+方案1：如果不实现这个代理方法,执行内置拍照模块,拍照完成后会保存到相册,并选中它。
+方案2：实现这个代理方法,则由开发者自己处理拍照模块,完毕后手动dismiss或其他操作。
+
+@param picker 选择器
+@param handler 回调 UIImage,kUTTypeImage,callback or NSURL,kUTTypeMovie,callback
+*/
+- (void)lf_imagePickerController:(LFImagePickerController *)picker takePhotoHandler:(lf_takePhotoHandler)handler;
 
 /**
  
@@ -239,5 +246,9 @@
 /** 视频 */
 @property (nonatomic,copy) void (^didFinishPickingVideoHandle)(UIImage *coverImage,id asset) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
 @property (nonatomic,copy) void (^didFinishPickingVideoWithThumbnailAndPathHandle)(UIImage *coverImage,NSString *path) __deprecated_msg("Block type deprecated. Use `didFinishPickingResultHandle`");
+/** 拍照 */
+@property (nonatomic,copy) void (^imagePickerControllerTakePhoto)(void) __deprecated_msg("Block type deprecated. Use `imagePickerControllerTakePhotoHandle`");
 
 @end
+
+NS_ASSUME_NONNULL_END

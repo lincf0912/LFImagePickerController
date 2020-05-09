@@ -20,4 +20,8 @@
 - (CGFloat)navigationHeight;
 /** 不计算导航栏的屏幕大小 */
 - (CGRect)viewFrameWithoutNavigation;
+
+/** 相机权限 */
+- (void)requestAccessForCameraCompletionHandler:(void (^)(void))handler;
+
 @end

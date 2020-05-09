@@ -9,6 +9,8 @@
 #import "LFBaseViewController.h"
 #import "LFImagePickerHeader.h"
 #import "LFImagePickerController.h"
+#import <AVFoundation/AVFoundation.h>
+
 
 @interface LFBaseViewController ()
 
@@ -98,6 +100,63 @@
 - (BOOL)prefersStatusBarHidden
 {
     return self.isHiddenStatusBar;
+}
+
+#pragma mark - 权限
+- (void)requestAccessForCameraCompletionHandler:(void (^)(void))handler
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (granted) {
+                [AVCaptureDevice requestAccessForMediaType:AVMediaTypeAudio completionHandler:^(BOOL granted) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (granted) {
+                            if (handler) {
+                                handler();
+                            }
+                        } else {
+                            // 无权限 做一个友好的提示
+                            NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
+                            if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
+                            NSString *message = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_audioLibraryAuthorityTipText"],appName];
+                            [imagePickerVc showAlertWithTitle:nil cancelTitle:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityCancelTitle"] message:message complete:^{
+                                if (@available(iOS 8.0, *)){
+                                    if (@available(iOS 10.0, *)){
+                                        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+                                    } else {
+                                        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+                                    }
+                                } else {
+                                    NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
+                                    [imagePickerVc showAlertWithTitle:nil message:message complete:^{
+                                    }];
+                                }
+                            }];
+                        }
+                    });
+                }];
+            } else {
+                // 无权限 做一个友好的提示
+                NSString *appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleDisplayName"];
+                if (!appName) appName = [[NSBundle mainBundle].infoDictionary valueForKey:@"CFBundleName"];
+                NSString *message = [NSString stringWithFormat:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityTipText"],appName];
+                [imagePickerVc showAlertWithTitle:nil cancelTitle:[NSBundle lf_localizedStringForKey:@"_cameraLibraryAuthorityCancelTitle"] message:message complete:^{
+                    if (@available(iOS 8.0, *)){
+                        if (@available(iOS 10.0, *)){
+                            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+                        } else {
+                            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+                        }
+                    } else {
+                        NSString *message = [NSBundle lf_localizedStringForKey:@"_PrivacyAuthorityJumpTipText"];
+                        [imagePickerVc showAlertWithTitle:nil message:message complete:^{
+                        }];
+                    }
+                }];
+            }
+        });
+    }];
 }
 
 @end

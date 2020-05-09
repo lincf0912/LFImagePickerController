@@ -1218,7 +1218,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         if (_pullTimes > 1) return;
         CGFloat offsetY = movePoint.y - _beginPoint.y;
         CGFloat offsetX = fabs(movePoint.x - _beginPoint.x);
-        if (!(offsetY > 5.0 && offsetY > offsetX)) {
+        if (!(offsetY > offsetX)) {
             ++_pullTimes;
             return;
         }
@@ -1322,6 +1322,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     }
                     if (CGRectEqualToRect(CGRectZero, targetRect)) {
                         [UIView animateWithDuration:0.25 animations:^{
+                            self.backgroundView.alpha = 0.0;
+                            if (!self.isHideMyNaviBar) {
+                                [self changedAplhaWithItem:self.models[self.currentIndex] alpha:0];
+                            }
                             self->_pullSnapshotView.alpha = 0.0;
                         } completion:^(BOOL finished) {
                             LFImagePickerController *imagePickerVc = [self navi];
@@ -1339,6 +1343,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                         [UIView animateWithDuration:0.25 animations:^{
 //                            self->_pullSnapshotView.contentMode = UIViewContentModeScaleAspectFill;
 //                            self->_pullSnapshotView.clipsToBounds = YES;
+                            self.backgroundView.alpha = 0.0;
+                            if (!self.isHideMyNaviBar) {
+                                [self changedAplhaWithItem:self.models[self.currentIndex] alpha:0];
+                            }
                             self->_pullSnapshotView.frame = targetRect;
                         } completion:^(BOOL finished) {
                             LFImagePickerController *imagePickerVc = [self navi];

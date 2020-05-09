@@ -76,7 +76,6 @@ static LFAssetManager *manager;
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!(allowPickingType & LFPickingMediaTypeVideo)) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
         if (allowPickingType == LFPickingMediaTypeVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-        if (allowPickingType == LFPickingMediaTypeNone) option.predicate = [NSPredicate predicateWithFormat:@"mediaType != %ld and mediaType != %ld", PHAssetMediaTypeImage, PHAssetMediaTypeVideo];
 //        option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"modificationDate" ascending:ascending]];
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
         if (@available(iOS 9.0, *)){
@@ -109,7 +108,6 @@ static LFAssetManager *manager;
         PHFetchOptions *option = [[PHFetchOptions alloc] init];
         if (!(allowPickingType & LFPickingMediaTypeVideo)) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
         if (allowPickingType == LFPickingMediaTypeVideo) option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
-        if (allowPickingType == LFPickingMediaTypeNone) option.predicate = [NSPredicate predicateWithFormat:@"mediaType != %ld and mediaType != %ld", PHAssetMediaTypeImage, PHAssetMediaTypeVideo];
         
         option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:ascending]];
 
@@ -210,8 +208,6 @@ static LFAssetManager *manager;
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
         } else if (allowPickingType > 0 && !(allowPickingType & LFPickingMediaTypeVideo)) {
             [group setAssetsFilter:[ALAssetsFilter allPhotos]];
-        } else if (allowPickingType != LFPickingMediaTypeNone) {
-            [group setAssetsFilter:[ALAssetsFilter allAssets]];
         }
         
         ALAssetsGroupEnumerationResultsBlock resultBlock = ^(ALAsset *asset, NSUInteger idx, BOOL *stop)
@@ -283,8 +279,6 @@ static LFAssetManager *manager;
             [group setAssetsFilter:[ALAssetsFilter allVideos]];
         } else if (allowPickingType > 0 && !(allowPickingType & LFPickingMediaTypeVideo)) {
             [group setAssetsFilter:[ALAssetsFilter allPhotos]];
-        } else if (allowPickingType != LFPickingMediaTypeNone) {
-            [group setAssetsFilter:[ALAssetsFilter allAssets]];
         }
         
         __block NSMutableArray *photoArr = [NSMutableArray array];

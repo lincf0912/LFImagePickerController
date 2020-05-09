@@ -49,6 +49,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    NSAssert(self.allowPickingType != LFPickingMediaTypeNone, @"allowPickingType cann‘t be set to LFPickingMediaTypeNone.");
+    
     self.view.backgroundColor = [UIColor whiteColor];
     // simple
     [LFAssetManager manager].sortAscendingByCreateDate = self.sortAscendingByCreateDate;

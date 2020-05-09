@@ -1186,7 +1186,7 @@ CGFloat const bottomToolBarHeight = 50.f;
             LFVideoEdit *videoEdit = [[LFVideoEditManager manager] videoEditForAsset:model];
             NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
 #else
-            NSTimeInterval duration = cellModel.duration;
+            NSTimeInterval duration = model.duration;
 #endif
             if (lf_videoDuration(duration) > weakImagePickerVc.maxVideoDuration) {
                 if (weakImagePickerVc.maxVideoDuration < 60) {

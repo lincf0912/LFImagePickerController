@@ -98,7 +98,7 @@
     CGFloat selectButtonWidth = self.frame.size.width/2*0.7;
     /** 选择按钮 */
     UIButton *selectPhotoButton = [[UIButton alloc] init];
-    selectPhotoButton.frame = CGRectMake(self.frame.size.width - selectButtonWidth - offset, offset, selectButtonWidth, selectButtonWidth);
+    selectPhotoButton.frame = CGRectMake(self.frame.size.width - selectButtonWidth - offset, 0, selectButtonWidth + offset, selectButtonWidth + offset);
     [selectPhotoButton addTarget:self action:@selector(selectPhotoButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:selectPhotoButton];
     _selectPhotoButton = selectPhotoButton;

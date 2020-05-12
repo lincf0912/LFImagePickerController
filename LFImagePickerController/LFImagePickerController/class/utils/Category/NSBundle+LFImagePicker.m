@@ -62,6 +62,9 @@ NSString *const LFImagePickerDrakModel = @"_Drak";
         image = [UIImage imageWithContentsOfFile:[[self lf_imagePickerBundle] pathForResource:defaultName ofType:extension]];
     }
     if (image == nil) {
+        image = [UIImage imageWithContentsOfFile:[[NSBundle mainBundle] pathForResource:name ofType:nil]];
+    }
+    if (image == nil) {
         image = [UIImage imageNamed:name];
     }
     return image;

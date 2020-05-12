@@ -17,6 +17,7 @@
 #import "UIImage+LF_Format.h"
 
 #import "LFAlbum.h"
+#import "LFAlbum+SmartAlbum.h"
 #import "LFAsset.h"
 #import "LFAssetCell.h"
 #import "LFAssetManager+Authorization.h"
@@ -56,7 +57,7 @@ CGFloat const bottomToolBarHeight = 50.f;
 
 @end
 
-@interface LFPhotoPickerController ()<UICollectionViewDataSource,UICollectionViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate, LFPhotoPreviewControllerPullDelegate>
+@interface LFPhotoPickerController ()<UICollectionViewDataSource,UICollectionViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate, LFPhotoPreviewControllerPullDelegate, UIViewControllerPreviewingDelegate, PHPhotoLibraryChangeObserver, UIAdaptivePresentationControllerDelegate>
 {
     
     UIView *_bottomSubToolBar;
@@ -86,10 +87,6 @@ CGFloat const bottomToolBarHeight = 50.f;
 @property (nonatomic, assign) int animtionTimes;
 /** 记录动画完成次数 */
 @property (nonatomic, assign) int animtionFinishTimes;
-
-@end
-
-@interface LFPhotoPickerController () <UIViewControllerPreviewingDelegate, PHPhotoLibraryChangeObserver, UIAdaptivePresentationControllerDelegate>
 
 @end
 
@@ -1262,13 +1259,10 @@ CGFloat const bottomToolBarHeight = 50.f;
                 LFAsset *asset = [[LFAsset alloc] initWithAsset:assets.lastObject];
                 [self addLFAsset:asset refreshCell:NO];
                 if (!imagePickerVc.syncAlbum) {
-                    if (imagePickerVc.sortAscendingByCreateDate) {
-                        [self.models addObject:asset];
-                    } else {
-                        [self.models insertObject:asset atIndex:0];
-                    }
-                    self.model.models = [self.models copy];
-                    [self.collectionView reloadData];
+                    
+                    [self manualSaveAsset:asset smartAlbum:LFAlbumSmartAlbumUserLibrary];
+                    /** refresh title view */
+                    self.titleView.albumArr = self.albumArr;
                 }
             }
             [imagePickerVc hideProgressHUD];
@@ -1294,13 +1288,10 @@ CGFloat const bottomToolBarHeight = 50.f;
                 LFAsset *asset = [[LFAsset alloc] initWithAsset:assets.lastObject];
                 [self addLFAsset:asset refreshCell:NO];
                 if (!imagePickerVc.syncAlbum) {
-                    if (imagePickerVc.sortAscendingByCreateDate) {
-                        [self.models addObject:asset];
-                    } else {
-                        [self.models insertObject:asset atIndex:0];
-                    }
-                    self.model.models = [self.models copy];
-                    [self.collectionView reloadData];
+                    [self manualSaveAsset:asset smartAlbum:LFAlbumSmartAlbumUserLibrary];
+                    [self manualSaveAsset:asset smartAlbum:LFAlbumSmartAlbumVideos];
+                    /** refresh title view */
+                    self.titleView.albumArr = self.albumArr;
                 }
             }
             [imagePickerVc hideProgressHUD];
@@ -1572,6 +1563,36 @@ CGFloat const bottomToolBarHeight = 50.f;
     }
     /** 只执行一次 */
     imagePickerVc.selectedAssets = nil;
+}
+
+- (void)manualSaveAsset:(LFAsset *)asset smartAlbum:(LFAlbumSmartAlbum)smartAlbum
+{
+    LFImagePickerController *imagePickerVc = (LFImagePickerController *)self.navigationController;
+    
+    LFAlbum *model = nil;
+    for (LFAlbum *album in self.albumArr) {
+        if (album.smartAlbum == smartAlbum) {
+            model = album;
+            break;
+        }
+    }
+    
+    NSMutableArray *models = nil;
+    if ([model isEqual:self.model]) {
+        models = self.models;
+    } else {
+        models = [model.models mutableCopy];
+    }
+    
+    if (imagePickerVc.sortAscendingByCreateDate) {
+        [models addObject:asset];
+    } else {
+        [models insertObject:asset atIndex:0];
+    }
+    model.models = [models copy];
+    if ([model isEqual:self.model]) {
+        [self.collectionView reloadData];
+    }
 }
 
 - (void)didReceiveMemoryWarning {

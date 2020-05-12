@@ -13,6 +13,8 @@
 
 @implementation LFAlbum
 
+@synthesize count = _count;
+
 - (instancetype)initWithAlbum:(id)album result:(id)result
 {
     self = [super init];
@@ -45,6 +47,15 @@
         _name = collection.localizedTitle;
         
     }
+}
+
+- (NSInteger)count
+{
+    if (_models.count) {
+        // 实际显示数据为准
+        return _models.count;
+    }
+    return _count;
 }
 
 - (BOOL)isEqual:(id)object

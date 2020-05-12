@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3B7ACD732410D02E0074DC40 /* UIImage+LFDecoded.m in Sources */ = {isa = PBXBuildFile; fileRef = 3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */; };
+		3BD5A330246A848700897283 /* LFAlbum+SmartAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BD5A32F246A848700897283 /* LFAlbum+SmartAlbum.m */; };
 		6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F02A2251EE158B00063D33D /* LFToGIF.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
@@ -68,6 +69,8 @@
 		308FC559EA9F94DD1359511E /* Pods_LFImagePickerController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LFImagePickerController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B7ACD712410D02E0074DC40 /* UIImage+LFDecoded.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImage+LFDecoded.h"; sourceTree = "<group>"; };
 		3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LFDecoded.m"; sourceTree = "<group>"; };
+		3BD5A32E246A848700897283 /* LFAlbum+SmartAlbum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAlbum+SmartAlbum.h"; sourceTree = "<group>"; };
+		3BD5A32F246A848700897283 /* LFAlbum+SmartAlbum.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "LFAlbum+SmartAlbum.m"; sourceTree = "<group>"; };
 		6F02A2241EE158B00063D33D /* LFToGIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFToGIF.h; sourceTree = "<group>"; };
 		6F02A2251EE158B00063D33D /* LFToGIF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFToGIF.m; sourceTree = "<group>"; };
 		6F1201741E513D1B00EA2198 /* LFImagePickerController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LFImagePickerController.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -296,6 +299,8 @@
 				C75FE2EB20A5211900086649 /* LFAsset+property.h */,
 				6F1201AB1E514F9D00EA2198 /* LFAlbum.h */,
 				6F1201AC1E514F9D00EA2198 /* LFAlbum.m */,
+				3BD5A32E246A848700897283 /* LFAlbum+SmartAlbum.h */,
+				3BD5A32F246A848700897283 /* LFAlbum+SmartAlbum.m */,
 				C70FDA9E20E31EFD0053A02C /* LFAssetImageProtocol.h */,
 				C7EB651620FD7FDF00AC2367 /* LFAssetPhotoProtocol.h */,
 				C7EB6B3A20FF13A100AC2367 /* LFAssetVideoProtocol.h */,
@@ -672,6 +677,7 @@
 				6FF2861C1E5FFF170008FB5B /* LFImagePickerHeader.m in Sources */,
 				6F12019A1E513ECD00EA2198 /* LFAssetCell.m in Sources */,
 				6F1201A01E513FB100EA2198 /* LFAssetManager.m in Sources */,
+				3BD5A330246A848700897283 /* LFAlbum+SmartAlbum.m in Sources */,
 				6F16992D1F15AEE9008B1818 /* LFResultVideo.m in Sources */,
 				6F12019D1E513EE100EA2198 /* LFAlbumCell.m in Sources */,
 				6F1201BF1E5183E000EA2198 /* LFPhotoPickerController.m in Sources */,

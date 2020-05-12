@@ -134,7 +134,6 @@
     imagePicker.maxVideoDuration = 10; /** 10秒视频 */
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {
         imagePicker.syncAlbum = YES; /** 实时同步相册 */
-//        imagePicker.syncAlbum = YES; /** 实时同步相册 */
     }
     [self presentViewController:imagePicker animated:YES completion:nil];
 }

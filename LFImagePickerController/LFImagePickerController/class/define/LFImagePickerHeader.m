@@ -16,16 +16,29 @@ NSTimeInterval lf_videoDuration(NSTimeInterval duration)
 
 BOOL lf_isPiiic(CGSize imageSize)
 {
-    if (imageSize.height >= [UIScreen mainScreen].bounds.size.height) {
-        return imageSize.width * 2 < imageSize.height;
+    // 高度超出屏幕高度
+    if (imageSize.height > [UIScreen mainScreen].bounds.size.height) {
+        // 宽度大于屏幕宽度
+        if (imageSize.width > [UIScreen mainScreen].bounds.size.width) {
+            // 先比例缩放为屏幕大小的高度
+            CGFloat height = [UIScreen mainScreen].bounds.size.width * imageSize.height / imageSize.width;
+            
+            return height > MAX([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width);
+        }
+        return YES;
     }
+    // 宽度小于高度的3倍
     return imageSize.width * 3 < imageSize.height;
 }
 
 BOOL lf_isHor(CGSize imageSize)
 {
-    if (imageSize.width >= [UIScreen mainScreen].bounds.size.width) {
-        return imageSize.width > imageSize.height * 2;
+    if (imageSize.width > [UIScreen mainScreen].bounds.size.width) {
+        if (imageSize.height > [UIScreen mainScreen].bounds.size.height) {
+            CGFloat width = [UIScreen mainScreen].bounds.size.height * imageSize.width / imageSize.height;
+            return width > MAX([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width);
+        }
+        return YES;
     }
     return imageSize.width > imageSize.height * 3;
 }

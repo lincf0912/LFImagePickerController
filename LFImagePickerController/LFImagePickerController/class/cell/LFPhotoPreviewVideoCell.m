@@ -150,6 +150,7 @@
 
 - (void)willDisplayCell
 {
+    [super willDisplayCell];
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         
     }
@@ -157,6 +158,7 @@
 
 - (void)didEndDisplayCell
 {
+    [super didEndDisplayCell];
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         [self didPauseCell];
         [_player.currentItem seekToTime:CMTimeMake(0, 1)];

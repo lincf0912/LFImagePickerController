@@ -22,6 +22,7 @@
 #import "LFAssetManager.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetImageProtocol.h"
+#import "NSString+LFExtendedStringDrawing.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditingController.h"
@@ -354,7 +355,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         /** 取消 */
         [_backButton setTitle:imagePickerVc.cancelBtnTitleStr forState:UIControlStateNormal];
         _backButton.titleLabel.font = imagePickerVc.barItemTextFont;
-        CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_backButton.titleLabel.font} context:nil].size.width + 2;
+        CGFloat editCancelWidth = [imagePickerVc.cancelBtnTitleStr lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) font:_backButton.titleLabel.font].width + 2;
         {
             CGRect tempRect = _backButton.frame;
             tempRect.size.width = editCancelWidth+8;
@@ -380,7 +381,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (imagePickerVc.displayImageFilename) {        
         _titleLabel = [[UILabel alloc] init];
         _titleLabel.font = imagePickerVc.naviTitleFont;
-        CGFloat height = [@"A" boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(_naviSubBar.frame)) options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:_titleLabel.font} context:nil].size.height;
+        CGFloat height = [@"A" lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(_naviSubBar.frame)) font:_titleLabel.font].height;
         
         CGFloat titleMargin = MAX(_backButton.frame.size.width, _selectButton.frame.size.width) + 8;
         
@@ -418,7 +419,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
 #ifdef LF_MEDIAEDIT
     if (imagePickerVc.allowEditing) {
-        CGFloat editWidth = [imagePickerVc.editBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width + 10;
+        CGFloat editWidth = [imagePickerVc.editBtnTitleStr lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) font:toolbarTitleFont].width + 10;
         _editButton = [UIButton buttonWithType:UIButtonTypeCustom];
         _editButton.frame = CGRectMake(12, 0, editWidth, CGRectGetHeight(_toolSubBar.frame));
         _editButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
@@ -431,7 +432,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #endif
     
     if (imagePickerVc.allowPickingOriginalPhoto) {
-        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size.width;
+        CGFloat fullImageWidth = [imagePickerVc.fullImageBtnTitleStr lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) font:toolbarTitleFont].width;
         _originalPhotoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         CGFloat width = fullImageWidth + 56;
 #ifdef LF_MEDIAEDIT
@@ -472,7 +473,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
-    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:toolbarTitleFont} context:nil].size;
+    CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) font:toolbarTitleFont];
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
     doneSize.width += 10;
     
@@ -657,7 +658,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.frame.size.width), 0);
     
     if (@available(iOS 10.0, *)) {
-        _collectionView.prefetchingEnabled = NO;
+//        _collectionView.prefetchingEnabled = NO;
     }
     
     [_collectionView registerClass:[LFPhotoPreviewCell class] forCellWithReuseIdentifier:@"LFPhotoPreviewCell"];
@@ -1004,11 +1005,14 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     return cell;
 }
 
+- (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    [(LFPhotoPreviewCell *)cell willDisplayCell];
+}
+
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    if ([cell isKindOfClass:[LFPhotoPreviewVideoCell class]] && [cell isKindOfClass:[LFPhotoPreviewGifCell class]]) {
-        [(LFPhotoPreviewCell *)cell didEndDisplayCell];
-    }
+    [(LFPhotoPreviewCell *)cell didEndDisplayCell];
 }
 
 #pragma mark -  UICollectionViewDelegateFlowLayout

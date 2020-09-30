@@ -73,6 +73,7 @@
 
 - (void)willDisplayCell
 {
+    [super willDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         if (self.imageData) {
             NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
@@ -88,6 +89,7 @@
 
 - (void)didEndDisplayCell
 {
+    [super didEndDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
     }

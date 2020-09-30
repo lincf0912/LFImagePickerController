@@ -221,6 +221,11 @@
 }
 
 - (void)resizeSubviews {
+    
+    if (_imageContainerView.superview != self.scrollView) {
+        return;
+    }
+    
     [self.scrollView setZoomScale:1.f];
     _imageContainerView.frame = self.scrollView.bounds;
     
@@ -228,11 +233,10 @@
     
     if (!CGSizeEqualToSize(imageSize, CGSizeZero)) {
 
-
         UIEdgeInsets ios11Safeinsets = UIEdgeInsetsZero;
-        if (@available(iOS 11.0, *)) {
-            ios11Safeinsets = self.safeAreaInsets;
-        }
+//        if (@available(iOS 11.0, *)) {
+//            ios11Safeinsets = self.safeAreaInsets;
+//        }
         CGSize scrollViewSize = self.scrollView.frame.size;
         scrollViewSize.height -= (ios11Safeinsets.top+ios11Safeinsets.bottom);
         /** 定义最小尺寸,判断为长图，则使用放大处理 */

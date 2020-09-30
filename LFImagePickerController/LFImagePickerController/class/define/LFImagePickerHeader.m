@@ -17,30 +17,46 @@ NSTimeInterval lf_videoDuration(NSTimeInterval duration)
 BOOL lf_isPiiic(CGSize imageSize)
 {
     // 高度超出屏幕高度
-    if (imageSize.height > [UIScreen mainScreen].bounds.size.height) {
+    static CGFloat width = 0;
+    if (width == 0) {
+        width = [UIScreen mainScreen].bounds.size.width*[UIScreen mainScreen].scale;
+    }
+    static CGFloat height = 0;
+    if (height == 0) {
+        height = [UIScreen mainScreen].bounds.size.height*[UIScreen mainScreen].scale;
+    }
+    if (imageSize.height > height) {
         // 宽度大于屏幕宽度
-        if (imageSize.width > [UIScreen mainScreen].bounds.size.width) {
+        if (imageSize.width > width) {
             // 先比例缩放为屏幕大小的高度
-            CGFloat height = [UIScreen mainScreen].bounds.size.width * imageSize.height / imageSize.width;
+            CGFloat height = width * imageSize.height / imageSize.width;
             
-            return height > MAX([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width);
+            return height > MAX(height, width);
         }
         return YES;
     }
-    // 宽度小于高度的3倍
-    return imageSize.width * 3 < imageSize.height;
+    // 宽度小于高度的5倍
+    return imageSize.width * 5 < imageSize.height;
 }
 
 BOOL lf_isHor(CGSize imageSize)
 {
-    if (imageSize.width > [UIScreen mainScreen].bounds.size.width) {
-        if (imageSize.height > [UIScreen mainScreen].bounds.size.height) {
-            CGFloat width = [UIScreen mainScreen].bounds.size.height * imageSize.width / imageSize.height;
-            return width > MAX([UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width);
+    static CGFloat width = 0;
+    if (width == 0) {
+        width = [UIScreen mainScreen].bounds.size.width*[UIScreen mainScreen].scale;
+    }
+    static CGFloat height = 0;
+    if (height == 0) {
+        height = [UIScreen mainScreen].bounds.size.height*[UIScreen mainScreen].scale;
+    }
+    if (imageSize.width > width) {
+        if (imageSize.height > height) {
+            CGFloat width = height * imageSize.width / imageSize.height;
+            return width > MAX(height, width);
         }
         return YES;
     }
-    return imageSize.width > imageSize.height * 3;
+    return imageSize.width > imageSize.height * 5;
 }
 
 

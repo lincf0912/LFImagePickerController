@@ -43,3 +43,6 @@ extern float const kMaxPhotoBytes;
 /** 视频最大时长 */
 extern float const kMaxVideoDurationze;
 
+/** UIControlStateHighlighted 高亮透明度 */
+extern float const kControlStateHighlightedAlpha;
+

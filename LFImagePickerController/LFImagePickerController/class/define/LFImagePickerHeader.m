@@ -68,6 +68,8 @@ float const kThumbnailCompressSize = 10.f;
 float const kMaxPhotoBytes = 6*1024*1024.f;
 /** 视频最大时长 */
 float const kMaxVideoDurationze = 5*60.f;
+/** UIControlStateHighlighted 高亮透明度 */
+float const kControlStateHighlightedAlpha = 0.5f;
 
 NSString *const kImageInfoFileName = @"ImageInfoFileName";     // 图片名称
 NSString *const kImageInfoFileSize = @"ImageInfoFileSize";     // 图片大小［长、宽］

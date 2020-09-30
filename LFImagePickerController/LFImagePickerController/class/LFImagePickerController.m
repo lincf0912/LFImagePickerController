@@ -96,7 +96,7 @@
         _settingBtn.frame = CGRectMake((CGRectGetWidth(self.view.frame)-titleSize.width)/2, CGRectGetMaxY(_tipLabel.frame)+10, titleSize.width, titleSize.height);
         [_settingBtn setTitle:self.settingBtnTitleStr forState:UIControlStateNormal];
         [_settingBtn setTitleColor:self.contentTipsTitleColorNormal forState:UIControlStateNormal];
-        [_settingBtn setTitleColor:[self.contentTipsTitleColorNormal colorWithAlphaComponent:0.5f] forState:UIControlStateHighlighted];
+        [_settingBtn setTitleColor:[self.contentTipsTitleColorNormal colorWithAlphaComponent:kControlStateHighlightedAlpha] forState:UIControlStateHighlighted];
         _settingBtn.titleLabel.font = self.contentTipsTitleFont;
         [_settingBtn addTarget:self action:@selector(settingBtnClick) forControlEvents:UIControlEventTouchUpInside];
         [tipView addSubview:_settingBtn];
@@ -109,7 +109,7 @@
         _cancelBtn.frame = CGRectMake(self.view.frame.size.width-cancelWidth, 0, cancelWidth, naviBarHeight);
         [_cancelBtn setTitle:self.cancelBtnTitleStr forState:UIControlStateNormal];
         [_cancelBtn setTitleColor:self.barItemTextColor forState:UIControlStateNormal];
-        [_cancelBtn setTitleColor:[self.barItemTextColor colorWithAlphaComponent:0.5f] forState:UIControlStateHighlighted];
+        [_cancelBtn setTitleColor:[self.barItemTextColor colorWithAlphaComponent:kControlStateHighlightedAlpha] forState:UIControlStateHighlighted];
         _cancelBtn.titleLabel.font = self.barItemTextFont;
         [_cancelBtn addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
         [tipView addSubview:_cancelBtn];

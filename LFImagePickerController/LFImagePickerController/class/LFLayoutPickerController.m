@@ -153,6 +153,11 @@
     self.naviTipsFont = [UIFont boldSystemFontOfSize:14];
     self.barItemTextFont = [UIFont systemFontOfSize:17];
     self.barItemTextColor = [UIColor whiteColor];
+    self.contentBgColor = [UIColor colorWithRed:47.0/255.0 green:47.0/255.0 blue:47.0/255.0 alpha:1.0];
+    self.contentTipsTextColor = [UIColor lightGrayColor];
+    self.contentTipsFont = [UIFont systemFontOfSize:18];
+    self.contentTipsTitleColorNormal = [UIColor systemBlueColor];
+    self.contentTipsTitleFont = [UIFont systemFontOfSize:18];
     self.toolbarBgColor = [UIColor colorWithRed:(68/255.0) green:(68/255.0)  blue:(68/255.0) alpha:0.9];
     self.toolbarTitleColorNormal = [UIColor whiteColor];
     self.toolbarTitleColorDisabled = [UIColor colorWithRed:(112/255.0) green:(112/255.0) blue:(112/255.0) alpha:1.0];

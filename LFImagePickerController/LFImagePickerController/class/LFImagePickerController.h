@@ -16,10 +16,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class LFAsset;
+@class LFAsset, LFImagePickerController;
 @protocol LFImagePickerControllerDelegate;
 
-typedef void(^lf_takePhotoCallback)( NSError * _Nullable error);
+typedef void(^lf_takePhotoCallback)(LFImagePickerController *picker, NSError * _Nullable error);
 typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCallback _Nullable callback);
 
 @interface LFImagePickerController : LFLayoutPickerController
@@ -148,7 +148,11 @@ typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCa
 
 /// Default is NO,if set YES,The image picker will sync the system's album （The interface resets UI when the album changes）
 /// 默认为NO,如果设置为YES,同步系统相册 （相册发生变化时,界面会重置UI）
-@property (nonatomic,assign) BOOL syncAlbum NS_AVAILABLE_IOS(8_0) __TVOS_PROHIBITED;
+/// -----------------------
+/// By 2020.09.29 Adapt to iOS14, Update as follows
+/// Default is YES,if set NO （The interface resets UI when the album changes）,The image picker will not sync the system's album
+/// 默认为YES（相册发生变化时,界面会重置UI），如果设置为NO,不同步系统相册
+@property (nonatomic,assign) BOOL syncAlbum NS_AVAILABLE_IOS(8_0);
 
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效

@@ -30,8 +30,8 @@
 "_navigationBarBackTitle" = "返回";
 
 
-"_photoLibraryAuthorityTipText" = "请在\"设置-隐私-照片\"选项中，\r允许%访问相册";
-"_cameraLibraryAuthorityTipText" = "请在\"设置-隐私-相机\"中允许%访问相机";
+"_photoLibraryAuthorityTipText" = "请在\"设置-隐私-照片\"选项中 \r允许%@访问相册";
+"_cameraLibraryAuthorityTipText" = "请在\"设置-隐私-相机\"中允许%@访问相机";
 "_cameraLibraryAuthorityCancelTitle" = "设置";
 "_PrivacyAuthorityJumpTipText" = "无法跳转到隐私设置页面，请手动前往设置页面，谢谢";
 "_PrivacyAuthorityJumpCancelTitle" = "抱歉";

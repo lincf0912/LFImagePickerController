@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3B7ACD732410D02E0074DC40 /* UIImage+LFDecoded.m in Sources */ = {isa = PBXBuildFile; fileRef = 3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */; };
 		3BD5A330246A848700897283 /* LFAlbum+SmartAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BD5A32F246A848700897283 /* LFAlbum+SmartAlbum.m */; };
+		3BF58BE025233B1A00524F15 /* NSString+LFExtendedStringDrawing.m in Sources */ = {isa = PBXBuildFile; fileRef = 3BF58BDF25233B1A00524F15 /* NSString+LFExtendedStringDrawing.m */; };
 		6F02A2261EE158B00063D33D /* LFToGIF.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F02A2251EE158B00063D33D /* LFToGIF.m */; };
 		6F1201791E513D1B00EA2198 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F1201781E513D1B00EA2198 /* main.m */; };
 		6F12017C1E513D1B00EA2198 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F12017B1E513D1B00EA2198 /* AppDelegate.m */; };
@@ -71,6 +72,8 @@
 		3B7ACD722410D02E0074DC40 /* UIImage+LFDecoded.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImage+LFDecoded.m"; sourceTree = "<group>"; };
 		3BD5A32E246A848700897283 /* LFAlbum+SmartAlbum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "LFAlbum+SmartAlbum.h"; sourceTree = "<group>"; };
 		3BD5A32F246A848700897283 /* LFAlbum+SmartAlbum.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "LFAlbum+SmartAlbum.m"; sourceTree = "<group>"; };
+		3BF58BDE25233B1A00524F15 /* NSString+LFExtendedStringDrawing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+LFExtendedStringDrawing.h"; sourceTree = "<group>"; };
+		3BF58BDF25233B1A00524F15 /* NSString+LFExtendedStringDrawing.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+LFExtendedStringDrawing.m"; sourceTree = "<group>"; };
 		6F02A2241EE158B00063D33D /* LFToGIF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LFToGIF.h; sourceTree = "<group>"; };
 		6F02A2251EE158B00063D33D /* LFToGIF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LFToGIF.m; sourceTree = "<group>"; };
 		6F1201741E513D1B00EA2198 /* LFImagePickerController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LFImagePickerController.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -409,6 +412,8 @@
 				C70BABEE205904F0005B7894 /* NSBundle+LFImagePicker.m */,
 				C783DEC82351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.h */,
 				C783DEC92351CA2A0083EDBD /* UIScrollView+LFDragAutoScroll.m */,
+				3BF58BDE25233B1A00524F15 /* NSString+LFExtendedStringDrawing.h */,
+				3BF58BDF25233B1A00524F15 /* NSString+LFExtendedStringDrawing.m */,
 			);
 			path = Category;
 			sourceTree = "<group>";
@@ -656,6 +661,7 @@
 				6F1201E61E519E8300EA2198 /* UIImage+LF_ImageCompress.m in Sources */,
 				6F1201B01E51520400EA2198 /* LFAssetManager+Authorization.m in Sources */,
 				6F3378EC1EDFA09900DAB709 /* LFPhotoPreviewGifCell.m in Sources */,
+				3BF58BE025233B1A00524F15 /* NSString+LFExtendedStringDrawing.m in Sources */,
 				6F1201E71E519E8300EA2198 /* UIView+LFAnimate.m in Sources */,
 				6FA36E511EB9DC700009E2DE /* UIImage+LF_Format.m in Sources */,
 				6F12017F1E513D1B00EA2198 /* ViewController.m in Sources */,

@@ -16,7 +16,12 @@
 
 #pragma mark - 创建相册
 - (void)createCustomAlbumWithTitle:(NSString *)title complete:(void (^)(PHAssetCollection *result))complete faile:(void (^)(NSError *error))faile{
-    if ([self authorizationStatusAuthorized]) {
+    
+    LFPhotoAuthorizationStatus status = [self lf_authorizationStatus];
+    
+    BOOL isAuthorized = (status == LFPhotoAuthorizationStatusLimited || status == LFPhotoAuthorizationStatusAuthorized);
+    
+    if (isAuthorized) {
         if (title.length == 0) {
             if (complete) complete(nil);
         }else{
@@ -97,7 +102,12 @@
 }
 - (void)baseSaveImageToCustomPhotosAlbumWithTitle:(NSString *)title datas:(NSArray <id /* NSData/UIImage */>*)datas complete:(void (^)(NSArray <id /* PHAsset/ALAsset */>*assets ,NSError *error))complete
 {
-    if ([self authorizationStatusAuthorized]) {
+    
+    LFPhotoAuthorizationStatus status = [self lf_authorizationStatus];
+    
+    BOOL isAuthorized = (status == LFPhotoAuthorizationStatusLimited || status == LFPhotoAuthorizationStatusAuthorized);
+    
+    if (isAuthorized) {
         if (@available(iOS 8.0, *)){
             [self createCustomAlbumWithTitle:title complete:^(PHAssetCollection *result) {
                 [self saveToAlbumIOS8LaterWithImages:datas customAlbum:result completionBlock:^(NSArray<PHAsset *> *assets) {
@@ -122,6 +132,7 @@
         NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey:[NSBundle lf_localizedStringForKey:@"_LFAssetManager_SaveAlbum_notpermissionError"]}];
         if (complete) complete(nil, error);
     }
+    
 }
 
 #pragma mark - iOS8之后保存相片到自定义相册

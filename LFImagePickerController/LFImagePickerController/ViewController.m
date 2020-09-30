@@ -434,11 +434,12 @@
         if (chosenImage) {
             hasUsingMedia = YES;
             if (self.handler) {
-                self.handler(chosenImage, (NSString *)kUTTypeImage, ^(NSError * _Nullable error) {
-                    if (error) {
-                        NSLog(@"error:%@", error);
-                    }
-                    [picker dismissViewControllerAnimated:YES completion:nil];
+                self.handler(chosenImage, (NSString *)kUTTypeImage, ^(LFImagePickerController *picker, NSError * _Nullable error) {
+                    [picker dismissViewControllerAnimated:YES completion:^{
+                        if (error) {
+                            [picker showAlertWithTitle:nil message:error.localizedDescription complete:nil];
+                        }
+                    }];
                 });
             }
         }
@@ -447,11 +448,12 @@
         if (videoUrl) {
             hasUsingMedia = YES;
             if (self.handler) {
-                self.handler(videoUrl, (NSString *)kUTTypeMovie, ^(NSError * _Nullable error) {
-                    if (error) {
-                        NSLog(@"error:%@", error);
-                    }
-                    [picker dismissViewControllerAnimated:YES completion:nil];
+                self.handler(videoUrl, (NSString *)kUTTypeMovie, ^(LFImagePickerController *picker, NSError * _Nullable error) {
+                    [picker dismissViewControllerAnimated:YES completion:^{
+                        if (error) {
+                            [picker showAlertWithTitle:nil message:error.localizedDescription complete:nil];
+                        }
+                    }];
                 });
             }
         }

@@ -1165,14 +1165,39 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         /** 缓存对象 */
         [[LFVideoEditManager manager] setVideoEdit:videoEdit forAsset:model];
-        LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
-        if (videoEdit.editPreviewImage) { /** 编辑存在 */
-            [cell changeVideoPlayer:[AVAsset assetWithURL:videoEdit.editFinalURL] image:videoEdit.editPreviewImage];
-        } else {
-            [cell changeVideoPlayer:videoEditingVC.asset image:videoEditingVC.placeholderImage];
+        
+        BOOL pop = NO;
+        __weak typeof(self) weakSelf = self;
+        if (videoEdit) { /** 编辑存在 */
+            if (_collectionView) {
+                pop = YES;
+                [_collectionView performBatchUpdates:^{
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+                } completion:^(BOOL finished) {
+                    [imagePickerVc popViewControllerAnimated:NO];
+                }];
+            }
+        } else { /** 编辑不存在 */
+            if (_collectionView) { /** 不存在编辑不做reloadData操作，避免重新获取图片时会先获取模糊图片再到高清图片，可能出现闪烁的现象 */
+                /** 还原编辑图片 */
+                pop = YES;
+                [_collectionView performBatchUpdates:^{
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
+                } completion:^(BOOL finished) {
+                    [imagePickerVc popViewControllerAnimated:NO];
+                }];
+            }
+//            else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
+
+//            }
         }
         
-        [imagePickerVc popViewControllerAnimated:NO];
+        if (!pop) {
+            [imagePickerVc popViewControllerAnimated:NO];
+        }
+        
         
         NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;
         

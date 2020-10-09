@@ -16,6 +16,8 @@
 @interface LFPhotoPreviewGifCell ()
 
 @property (nonatomic, strong) NSData *imageData;
+@property (nonatomic, assign) CGFloat imageWidth;
+@property (nonatomic, assign) CGFloat imageHeight;
 
 @end
 
@@ -34,6 +36,12 @@
 {
     [super setPreviewImage:previewImage];
     [self.imageView startAnimating];
+}
+
+/** 图片大小 */
+- (CGSize)subViewImageSize
+{
+    return CGSizeMake(self.imageWidth, self.imageHeight);
 }
 
 /** 重置视图 */
@@ -57,12 +65,27 @@
                     }
                 } fail:^(NSString *key) {
                 }];
+                self.imageData = data;
+                // gif
+                if(data.length > 9) {
+                    // gif 6~9 位字符代表尺寸
+                    short w1 = 0, w2 = 0;
+                    [data getBytes:&w1 range:NSMakeRange(6, 1)];
+                    [data getBytes:&w2 range:NSMakeRange(7, 1)];
+                    short w = w1 + (w2 << 8);
+                    short h1 = 0, h2 = 0;
+                    [data getBytes:&h1 range:NSMakeRange(8, 1)];
+                    [data getBytes:&h2 range:NSMakeRange(9, 1)];
+                    short h = h1 + (h2 << 8);
+                    self.imageWidth = w;
+                    self.imageHeight = h;
+                }
                 /** 这个方式加载GIF内存使用非常高 */
                 //self.previewImage = [UIImage LF_imageWithImageData:data];
-                if (completeHandler) {
-                    completeHandler(data, info, isDegraded);
+                self.previewImage = nil; // 刷新subview的位置。
+                if (completeHandler) { // 不需要设置数据。
+                    completeHandler(nil, info, isDegraded);
                 }
-                self.imageData = data;
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];

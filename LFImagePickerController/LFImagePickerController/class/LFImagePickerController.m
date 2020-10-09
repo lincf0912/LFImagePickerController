@@ -207,6 +207,7 @@
 }
 - (instancetype)initWithSelectedAssets:(NSArray /**<PHAsset/ALAsset *>*/*)selectedAssets index:(NSUInteger)index
 {
+    NSAssert(selectedAssets.count > index, @"index 0 beyond bounds for selectedAssets count.");
     self = [super init];
     if (self) {
         [self defaultConfig];
@@ -225,6 +226,7 @@
 
 - (instancetype)initWithSelectedPhotos:(NSArray <UIImage *>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <UIImage *>* photos))complete __deprecated_msg("Method deprecated. Use `initWithSelectedImageObjects:index:complete:`")
 {
+    NSAssert(selectedPhotos.count > index, @"index 0 beyond bounds for selectedPhotos count.");
     self = [super init];
     if (self) {
         [self defaultConfig];
@@ -273,6 +275,7 @@
 
 - (instancetype)initWithSelectedImageObjects:(NSArray <id<LFAssetImageProtocol>>*)selectedPhotos index:(NSUInteger)index complete:(void (^)(NSArray <id<LFAssetImageProtocol>>* photos))complete
 {
+    NSAssert(selectedPhotos.count > index, @"index 0 beyond bounds for selectedPhotos count.");
     self = [super init];
     if (self) {
         [self defaultConfig];

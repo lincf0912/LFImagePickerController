@@ -47,7 +47,7 @@ BOOL lf_isHor(CGSize imageSize)
     }
     static CGFloat height = 0;
     if (height == 0) {
-        height = [UIScreen mainScreen].bounds.size.height*[UIScreen mainScreen].scale;
+        height = [UIScreen mainScreen].bounds.size.height*[UIScreen mainScreen].scale/2;
     }
     if (imageSize.width > width) {
         if (imageSize.height > height) {

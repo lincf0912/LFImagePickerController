@@ -7,6 +7,7 @@
 //
 
 #import "LFPhotoPreviewLivePhotoCell.h"
+#import "LFPhotoPreviewCell_property.h"
 #import "LFAssetManager.h"
 #import <PhotosUI/PhotosUI.h>
 
@@ -37,6 +38,13 @@
     [_livePhotoView stopPlayback];
     _livePhotoView.livePhoto = nil;
 }
+
+/** 图片大小 */
+- (CGSize)subViewImageSize
+{
+    return self.livePhotoView.livePhoto.size;
+}
+
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
@@ -49,6 +57,7 @@
                     self.livePhotoView.delegate = self;
                     [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
                 }
+                self.previewImage = nil; // 刷新subview的位置。
                 if (completeHandler) {
                     completeHandler(livePhoto, info, isDegraded);
                 }

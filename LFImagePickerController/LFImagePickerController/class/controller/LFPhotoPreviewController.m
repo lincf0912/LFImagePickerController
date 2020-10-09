@@ -585,12 +585,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 
 - (void)configLivePhotoSign
 {
-    _livePhotoSignView = [[UIView alloc] initWithFrame:CGRectMake(livePhotoSignMargin, livePhotoSignMargin + CGRectGetHeight(_naviBar.frame), 30, 30)];
+    CGFloat livePhotoSignViewHeight = 30.0;
+    _livePhotoSignView = [[UIView alloc] initWithFrame:CGRectMake(livePhotoSignMargin, livePhotoSignMargin + CGRectGetHeight(_naviBar.frame), livePhotoSignViewHeight, livePhotoSignViewHeight)];
     _livePhotoSignView.backgroundColor = [UIColor colorWithWhite:.8f alpha:.8f];
 //    _livePhotoSignView.alpha = 0.8f;
     _livePhotoSignView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
     _livePhotoSignView.layer.masksToBounds = YES;
-    _livePhotoSignView.layer.cornerRadius = 30 * 0.2f;
+    _livePhotoSignView.layer.cornerRadius = livePhotoSignViewHeight * 0.2f;
     [self.view addSubview:_livePhotoSignView];
     
     
@@ -613,6 +614,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [badgeImageButton addTarget:self action:@selector(livePhotoSignButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     [_livePhotoSignView addSubview:badgeImageButton];
     _livePhotobadgeImageButton = badgeImageButton;
+    
+    [_livePhotoSignView addSubview:badgeImageView];
     
     _livePhotoSignView.alpha = 0.f;
     

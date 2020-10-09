@@ -465,6 +465,14 @@ static LFAssetManager *manager;
 
 #pragma mark - Get Photo
 
+- (PHImageRequestID)getThumbnailWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion {
+    return [self getPhotoWithAsset:asset photoWidth:photoWidth thumbnail:YES completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+        if (completion) {
+            completion(photo, info, YES);
+        }
+    } progressHandler:nil networkAccessAllowed:YES];
+}
+
 /// Get photo 获得照片本身
 - (PHImageRequestID)getPhotoWithAsset:(id)asset completion:(void (^)(UIImage *, NSDictionary *, BOOL isDegraded))completion {
     CGFloat fullScreenWidth = [UIScreen mainScreen].bounds.size.width;
@@ -476,26 +484,38 @@ static LFAssetManager *manager;
 }
 
 - (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
+    return [self getPhotoWithAsset:asset photoWidth:photoWidth thumbnail:NO completion:completion progressHandler:progressHandler networkAccessAllowed:networkAccessAllowed];
+}
+
+- (PHImageRequestID)getPhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth thumbnail:(BOOL)thumbnail completion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
     if ([asset isKindOfClass:[PHAsset class]]) {
         
         PHAsset *phAsset = (PHAsset *)asset;
-        CGFloat aspectRatio = 1.0;
-        CGFloat pixelWidth = phAsset.pixelWidth;
-        CGFloat pixelHeight = phAsset.pixelHeight;
-        if (pixelWidth > pixelHeight) {
-            aspectRatio = pixelHeight / (CGFloat)pixelWidth;
-            pixelWidth = photoWidth / aspectRatio;
-            pixelHeight = photoWidth;
+        CGSize imageSize;
+        if (photoWidth > 0) {
+            CGFloat aspectRatio = 1.0;
+            CGFloat pixelWidth = phAsset.pixelWidth;
+            CGFloat pixelHeight = phAsset.pixelHeight;
+            if (pixelWidth > pixelHeight) {
+                aspectRatio = pixelHeight / (CGFloat)pixelWidth;
+                pixelWidth = photoWidth / aspectRatio;
+                pixelHeight = photoWidth;
+            } else {
+                aspectRatio = pixelWidth / (CGFloat)pixelHeight;
+                pixelWidth = photoWidth;
+                pixelHeight = pixelWidth / aspectRatio;
+            }
+            imageSize = CGSizeMake(pixelWidth, pixelHeight);
         } else {
-            aspectRatio = pixelWidth / (CGFloat)pixelHeight;
-            pixelWidth = photoWidth;
-            pixelHeight = pixelWidth / aspectRatio;
+            imageSize = PHImageManagerMaximumSize;
         }
-        CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
         // 修复获取图片时出现的瞬间内存过高问题
         // 下面两行代码，来自hsjcom，他的github是：https://github.com/hsjcom 表示感谢
         PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
         option.resizeMode = PHImageRequestOptionsResizeModeFast;
+        if (thumbnail) {
+            option.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+        }
         PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
             BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
             if (downloadFinined && result) {
@@ -519,6 +539,9 @@ static LFAssetManager *manager;
                 };
                 options.networkAccessAllowed = YES;
                 options.resizeMode = PHImageRequestOptionsResizeModeFast;
+                if (thumbnail) {
+                    option.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+                }
                 [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
                     if (self.shouldFixOrientation) {
                         result = [result lf_fixOrientation];
@@ -723,6 +746,11 @@ static LFAssetManager *manager;
     if (completion) completion(nil,nil,NO);
 #endif
     return 0;
+}
+
+- (void)cancelImageRequest:(PHImageRequestID)requestID
+{
+    [[PHImageManager defaultManager] cancelImageRequest:requestID];
 }
 
 /**

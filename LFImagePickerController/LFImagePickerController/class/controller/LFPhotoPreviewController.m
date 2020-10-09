@@ -868,9 +868,15 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 photoEditingVC.photoEdit = photoEdit;
             } else {
                 /** 当前页面只显示一张图片 */
-                LFPhotoPreviewCell *cell = [_collectionView visibleCells].firstObject;
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.currentIndex inSection:0];
+                LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
                 /** 当前显示的图片 */
-                photoEditingVC.editImage = cell.previewImage;
+                UIImage *image = cell.previewImage;
+                if (image == nil) {
+                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_LFPhotoPreviewController_EditPhotoTipText"] complete:nil];
+                    return;
+                }
+                photoEditingVC.editImage = image;
             }
             photoEditingVC.delegate = self;
             if (imagePickerVc.photoEditLabrary) {
@@ -885,9 +891,15 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             if (videoEdit) {
                 videoEditingVC.videoEdit = videoEdit;
             } else {
-                LFPhotoPreviewVideoCell *cell = [_collectionView visibleCells].firstObject;
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.currentIndex inSection:0];
+                LFPhotoPreviewVideoCell *cell = (LFPhotoPreviewVideoCell *)[_collectionView cellForItemAtIndexPath:indexPath];
                 /** 当前显示的图片 */
-                [videoEditingVC setVideoAsset:cell.asset placeholderImage:cell.previewImage];
+                AVAsset *asset = cell.asset;
+                if (asset == nil) {
+                    [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_LFPhotoPreviewController_EditVideoTipText"] complete:nil];
+                    return;
+                }
+                [videoEditingVC setVideoAsset:asset placeholderImage:cell.previewImage];
             }
 
             NSTimeInterval duration = videoEdit.editPreviewImage ? videoEdit.duration : model.duration;

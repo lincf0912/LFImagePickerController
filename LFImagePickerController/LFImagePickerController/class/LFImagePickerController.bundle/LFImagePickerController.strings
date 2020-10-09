@@ -47,6 +47,10 @@
 "_LFPhotoPickerController_buttonTipTitle" = "添加更多照片...";
 "_LFPhotoPickerController_photoAlbunDeletedError" = "相册已被删除!";
 
+/* -------- LFPhotoPreviewController -------*/
+"_LFPhotoPreviewController_EditPhotoTipText" = "未加载图片，请重试。";
+"_LFPhotoPreviewController_EditVideoTipText" = "未加载视频，请重试。";
+
 /* -------- LFAssetManager+SaveAlbum -------*/
 "_LFAssetManager_SaveAlbum_notpermissionError" = "没有权限访问相册";
 "_LFAssetManager_SaveAlbum_saveVideoError" = "保存视频失败";

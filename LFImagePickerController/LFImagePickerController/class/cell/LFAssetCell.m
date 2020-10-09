@@ -173,7 +173,8 @@
     if (model.thumbnailImage) { /** 显示自定义图片 */
         self.imageView.image = model.thumbnailImage;
     } else {
-        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.frame.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+        CGFloat photoWidth = self.frame.size.width * [UIScreen mainScreen].scale;
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:photoWidth completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
             if ([model.asset isEqual:self.model.asset]) {
                 self.imageView.image = photo;
                 [self setTypeToSubView];

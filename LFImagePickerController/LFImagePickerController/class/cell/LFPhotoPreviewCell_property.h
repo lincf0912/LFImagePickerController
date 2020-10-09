@@ -19,4 +19,6 @@
 
 @property (nonatomic, readwrite) UIImage *previewImage;
 
+@property (nonatomic, assign) BOOL isFinalData;
+
 @end

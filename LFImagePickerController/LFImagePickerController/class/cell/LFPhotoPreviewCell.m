@@ -75,6 +75,8 @@
 @property (nonatomic, strong) UITapGestureRecognizer *tap1;
 @property (nonatomic, strong) UITapGestureRecognizer *tap2;
 
+@property (nonatomic, assign) BOOL isFinalData;
+
 @end
 
 @implementation LFPhotoPreviewCell
@@ -137,12 +139,16 @@
 {
     [super prepareForReuse];
     [self subViewReset];
+    _isFinalData = NO;
     _model = nil;
 }
 
 - (UIImage *)previewImage
 {
-    return self.imageView.image;
+    if (self.isFinalData) {
+        return self.imageView.image;
+    }
+    return nil;
 }
 
 - (void)setPreviewImage:(UIImage *)previewImage
@@ -168,6 +174,9 @@
                 
                 void (^completion)(id data,NSDictionary *info,BOOL isDegraded) = ^(id data,NSDictionary *info,BOOL isDegraded){
                     if ([model isEqual:self.model]) {
+                        if (!isDegraded) {
+                            self.isFinalData = YES;
+                        }
                         if ([data isKindOfClass:[UIImage class]]) { /** image */
                             self.previewImage = (UIImage *)data;
                         } else if ([data isKindOfClass:[NSData class]]) {
@@ -333,16 +342,28 @@
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
-    /** 如果已被设置图片，忽略这次图片获取 */
-    if (self.previewImage == nil) {
-        /** 普通图片处理 */
-        if (model.type == LFAssetMediaTypePhoto) {
-            /** 透明背景的png使用image的加载方式会丢失透明通道。 */
-            [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
-        } else {
-            [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
-;
-        }
+    /** 普通图片处理 */
+    if (model.type == LFAssetMediaTypePhoto) {
+        // 先获取缩略图
+        PHImageRequestID imageRequestID = [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.bounds.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            
+            if (completeHandler) {
+                completeHandler(photo, info, YES);
+            }
+            
+        }];
+        /** 透明背景的png使用image的加载方式会丢失透明通道。 */
+        [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:^(NSData *data, NSDictionary *info, BOOL isDegraded) {
+
+            [[LFAssetManager manager] cancelImageRequest:imageRequestID];
+
+            if (completeHandler) {
+                completeHandler(data, info, isDegraded);
+            }
+
+        } progressHandler:progressHandler networkAccessAllowed:YES];
+    } else {
+        [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.bounds.size.width*[UIScreen mainScreen].scale completion:completeHandler progressHandler:progressHandler networkAccessAllowed:YES];
     }
 }
 

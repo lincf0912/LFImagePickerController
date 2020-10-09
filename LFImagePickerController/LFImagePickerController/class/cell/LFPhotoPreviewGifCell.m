@@ -19,6 +19,8 @@
 @property (nonatomic, assign) CGFloat imageWidth;
 @property (nonatomic, assign) CGFloat imageHeight;
 
+@property (nonatomic, assign) BOOL waitForReadyToPlay;
+
 @end
 
 @implementation LFPhotoPreviewGifCell
@@ -29,7 +31,7 @@
     if (self.imageData) {
         return [UIImage LF_imageWithImageData:self.imageData];
     }
-    return self.imageView.image;
+    return nil;
 }
 
 - (void)setPreviewImage:(UIImage *)previewImage
@@ -41,7 +43,10 @@
 /** 图片大小 */
 - (CGSize)subViewImageSize
 {
-    return CGSizeMake(self.imageWidth, self.imageHeight);
+    if (self.imageWidth && self.imageHeight) {
+        return CGSizeMake(self.imageWidth, self.imageHeight);
+    }
+    return self.imageView.image.size;
 }
 
 /** 重置视图 */
@@ -55,16 +60,29 @@
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
     if (model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
+        // 先获取缩略图
+        PHImageRequestID imageRequestID = [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.bounds.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            if (completeHandler) {
+                completeHandler(photo, info, YES);
+            }
+        }];
+        // 获取原图
         [[LFAssetManager manager] getPhotoDataWithAsset:model.asset completion:^(NSData *data, NSDictionary *info, BOOL isDegraded) {
             
             if ([model isEqual:self.model]) {
-                NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
-                [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:data key:modelKey execution:^(CGImageRef imageData, NSString *key) {
-                    if ([modelKey isEqualToString:key]) {
-                        self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
-                    }
-                } fail:^(NSString *key) {
-                }];
+                
+                [[LFAssetManager manager] cancelImageRequest:imageRequestID];
+                
+                if (self.waitForReadyToPlay) {
+                    self.waitForReadyToPlay = NO;
+                    NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
+                    [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:data key:modelKey execution:^(CGImageRef imageData, NSString *key) {
+                        if ([modelKey isEqualToString:key]) {
+                            self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                        }
+                    } fail:^(NSString *key) {
+                    }];
+                }
                 self.imageData = data;
                 // gif
                 if(data.length > 9) {
@@ -80,12 +98,10 @@
                     self.imageWidth = w;
                     self.imageHeight = h;
                 }
+                self.isFinalData = YES;
                 /** 这个方式加载GIF内存使用非常高 */
                 //self.previewImage = [UIImage LF_imageWithImageData:data];
-                self.previewImage = nil; // 刷新subview的位置。
-                if (completeHandler) { // 不需要设置数据。
-                    completeHandler(nil, info, isDegraded);
-                }
+                [self resizeSubviews]; // 刷新subview的位置。
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];
@@ -106,6 +122,8 @@
                 }
             } fail:^(NSString *key) {
             }];
+        } else {
+            _waitForReadyToPlay = YES;
         }
     }
 }
@@ -114,6 +132,7 @@
 {
     [super didEndDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
+        _waitForReadyToPlay = NO;
         [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
     }
 }

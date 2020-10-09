@@ -22,6 +22,9 @@
 - (void)willDisplayCell;
 - (void)didEndDisplayCell;
 
+/** 重置视图 */
+- (void)resizeSubviews;
+
 
 /** 子类重写 */
 /** 创建显示视图 */

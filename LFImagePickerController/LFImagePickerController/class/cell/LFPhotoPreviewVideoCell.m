@@ -46,6 +46,7 @@
 
 @property (nonatomic, assign) BOOL waitForReadyToPlay;
 
+@property (nonatomic, assign) CGSize dimensions;
 @end
 
 @implementation LFPhotoPreviewVideoCell
@@ -71,12 +72,19 @@
     return _playerView;
 }
 
+- (CGSize)subViewImageSize
+{
+    if (self.dimensions.width) {
+        return self.dimensions;
+    }
+    return self.imageView.image.size;
+}
+
 /** 重置视图 */
 - (void)subViewReset
 {
     [super subViewReset];
     _waitForReadyToPlay = NO;
-    self.imageView.hidden = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_playButton removeFromSuperview];
     _playButton = nil;
@@ -103,10 +111,21 @@
                 AVPlayerItem *playerItem = [AVPlayerItem playerItemWithURL:model.previewVideoUrl];
                 [self readyToPlay:playerItem];
             } else {
-                [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
+                // 先获取缩略图
+                PHImageRequestID imageRequestID = [[LFAssetManager manager] getPhotoWithAsset:model.asset photoWidth:self.bounds.size.width completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+                    if (completeHandler) {
+                        completeHandler(photo, info, YES);
+                    }
+                }];
                 [[LFAssetManager manager] getVideoWithAsset:model.asset completion:^(AVPlayerItem *playerItem, NSDictionary *info) {
                     if ([model isEqual:self.model]) {
+                        [[LFAssetManager manager] cancelImageRequest:imageRequestID];
                         [self readyToPlay:playerItem];
+                        AVAssetTrack *track = [[playerItem.asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+                        self.dimensions = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
+                        
+                        self.isFinalData = YES;
+                        [self resizeSubviews]; // 刷新subview的位置。
                     }
                 }];
             }
@@ -132,19 +151,18 @@
     _player = [AVPlayer playerWithPlayerItem:playerItem];
     ((AVPlayerLayer *)_playerView.layer).player = _player;
     [self configPlayButton];
-    self.imageView.hidden = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
 }
 
-- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image
-{
-    if (asset) {
-        [self subViewReset];
-        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithAsset:asset];
-        self.previewImage = image;
-        [self readyToPlay:playerItem];
-    }
-}
+//- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image
+//{
+//    if (asset) {
+//        [self subViewReset];
+//        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithAsset:asset];
+//        self.previewImage = image;
+//        [self readyToPlay:playerItem];
+//    }
+//}
 
 
 
@@ -253,6 +271,7 @@
         {
             _playButton.hidden = NO;
             if (_waitForReadyToPlay) {
+                _waitForReadyToPlay = NO;
                 [self didPlayCell];
             }
         }

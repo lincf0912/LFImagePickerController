@@ -16,5 +16,5 @@
 
 - (void)didPlayCell;
 - (void)didPauseCell;
-- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image;
+//- (void)changeVideoPlayer:(AVAsset *)asset image:(UIImage *)image;
 @end

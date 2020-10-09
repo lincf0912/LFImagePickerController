@@ -42,25 +42,28 @@
 /** 图片大小 */
 - (CGSize)subViewImageSize
 {
-    return self.livePhotoView.livePhoto.size;
+    if (self.livePhotoView.livePhoto) {
+        return self.livePhotoView.livePhoto.size;
+    }
+    return self.imageView.image.size;
 }
 
 /** 设置数据 */
 - (void)subViewSetModel:(LFAsset *)model completeHandler:(void (^)(id data,NSDictionary *info,BOOL isDegraded))completeHandler progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler
 {
     if (model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
-        [[LFAssetManager manager] getLivePhotoWithAsset:model.asset photoWidth:[UIScreen mainScreen].bounds.size.width completion:^(PHLivePhoto *livePhoto, NSDictionary *info, BOOL isDegraded) {
+        // 需要获取原图和缩略图
+        [super subViewSetModel:model completeHandler:completeHandler progressHandler:progressHandler];
+        // 获取livephoto
+        [[LFAssetManager manager] getLivePhotoWithAsset:model.asset photoWidth:0 completion:^(PHLivePhoto *livePhoto, NSDictionary *info, BOOL isDegraded) {
             
             if ([model isEqual:self.model]) { /** live photo */
                 self.livePhotoView.livePhoto = livePhoto;
-                if (model.closeLivePhoto == NO) {
-                    self.livePhotoView.delegate = self;
-                    [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
-                }
-                self.previewImage = nil; // 刷新subview的位置。
-                if (completeHandler) {
-                    completeHandler(livePhoto, info, isDegraded);
-                }
+//                if (model.closeLivePhoto == NO) {
+//                    self.livePhotoView.delegate = self;
+//                    [self.livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+//                }
+                [self resizeSubviews]; // 刷新subview的位置。
             }
             
         } progressHandler:progressHandler networkAccessAllowed:YES];

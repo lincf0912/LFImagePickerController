@@ -14,7 +14,7 @@
 "_fullImageBtnTitleStr" = "FullImage";
 "_settingBtnTitleStr" = "Setting";
 "_processHintStr" = "Process...";
-"_discardTitleStr" = "Discard";
+"_discardTitleStr" = "Discard Select";
 
 
 "_alertViewCancelTitle" = "确定";

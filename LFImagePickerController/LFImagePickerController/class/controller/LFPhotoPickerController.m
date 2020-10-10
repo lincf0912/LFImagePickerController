@@ -1095,7 +1095,11 @@ CGFloat const bottomToolBarHeight = 50.f;
             [self doneButtonClick];
         }]];
         
-        [alert addAction:[UIAlertAction actionWithTitle:@"Discard Select" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        [alert addAction:[UIAlertAction actionWithTitle:imagePickerVc.cancelBtnTitleStr style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+
+        }]];
+        
+        [alert addAction:[UIAlertAction actionWithTitle:[NSBundle lf_localizedStringForKey:@"_discardTitleStr"] style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
             if ([imagePickerVc respondsToSelector:@selector(cancelButtonClick)]) {
@@ -1103,8 +1107,6 @@ CGFloat const bottomToolBarHeight = 50.f;
             }
 #pragma clang diagnostic pop
         }]];
-        
-        [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil]];
         
         // The popover should point at the Cancel button
         alert.popoverPresentationController.barButtonItem = self.navigationItem.leftBarButtonItem;

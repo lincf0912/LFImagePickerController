@@ -155,6 +155,10 @@ typedef void(^lf_takePhotoHandler)(id media, NSString *mediaType, lf_takePhotoCa
 /// 默认为YES（相册发生变化时,界面会重置UI），如果设置为NO,不同步系统相册
 @property (nonatomic,assign) BOOL syncAlbum NS_AVAILABLE_IOS(8_0);
 
+/// Default is YES, the live photo will be played automatically when previewing; if set NO, you need to press and hold the photo to play.
+/// 默认为YES，预览时自动播放live photo；否则需要长按照片才会播放。
+@property (nonatomic,assign) BOOL autoPlayLivePhoto;
+
 /// Set picture or video have selected,valid only when initialization
 /// 设置默认选中的图片或视频,仅初始化时有效
 @property (nonatomic,nullable,setter=setSelectedAssets:) NSArray /**<PHAsset/ALAsset/id<LFAssetImageProtocol>/id<LFAssetPhotoProtocol>> 任意一种 */*selectedAssets;

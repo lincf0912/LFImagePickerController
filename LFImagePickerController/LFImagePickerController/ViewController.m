@@ -113,9 +113,10 @@
     imagePicker.supportAutorotate = YES; /** 适配横屏 */
 //    imagePicker.imageCompressSize = 200; /** 标清图压缩大小 */
 //    imagePicker.thumbnailCompressSize = 20; /** 缩略图压缩大小 */
-//    imagePicker.allowPickingType = LFPickingMediaTypeALL;
+    imagePicker.allowPickingType = LFPickingMediaTypeALL;
+//    imagePicker.autoPlayLivePhoto = NO; /** 自动播放live photo */
 //    imagePicker.autoSelectCurrentImage = NO; /** 关闭自动选中 */
-//    imagePicker.defaultAlbumName = @"123"; /** 指定默认显示相册 */
+//    imagePicker.defaultAlbumName = @"动图"; /** 指定默认显示相册 */
 //    imagePicker.displayImageFilename = YES; /** 显示文件名称 */
 //    imagePicker.thumbnailCompressSize = 0.f; /** 不需要缩略图 */
     if ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f) {

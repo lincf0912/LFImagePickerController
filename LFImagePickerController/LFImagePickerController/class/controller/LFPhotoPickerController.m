@@ -1590,6 +1590,9 @@ CGFloat const bottomToolBarHeight = 50.f;
             LFAsset *asset = nil;
             if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
                 asset = [[LFAsset alloc] initWithAsset:object];
+                if (asset.subType == LFAssetSubMediaTypeLivePhoto) {
+                    asset.closeLivePhoto = !imagePickerVc.autoPlayLivePhoto;
+                }
             }
             else if ([object conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
                 asset = [[LFAsset alloc] initWithObject:object];

@@ -50,6 +50,7 @@ static LFAssetManager *manager;
     if (self) {
         _shouldFixOrientation = YES;
         _shouldDecoded = YES;
+        _autoPlayLivePhoto = YES;
     }
     return self;
 }
@@ -315,7 +316,9 @@ static LFAssetManager *manager;
 
 - (LFAsset *)assetModelWithAsset:(id)asset allowPickingType:(LFPickingMediaType)allowPickingType {
     LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
-    
+    if (model.subType == LFAssetSubMediaTypeLivePhoto) {
+        model.closeLivePhoto = !self.autoPlayLivePhoto;        
+    }
     if (!(allowPickingType&LFPickingMediaTypeVideo) && model.type == LFAssetMediaTypeVideo) return nil;
     
     if (model.type == LFAssetMediaTypePhoto) {
@@ -1540,15 +1543,15 @@ static LFAssetManager *manager;
 }
 
 /// 检查照片大小是否满足最小要求
-- (BOOL)isPhotoSelectableWithAsset:(id)asset {
-    if (self.minPhotoWidthSelectable > 0 || self.minPhotoHeightSelectable > 0) {        
-        CGSize photoSize = [self photoSizeWithAsset:asset];
-        if (self.minPhotoWidthSelectable > photoSize.width || self.minPhotoHeightSelectable > photoSize.height) {
-            return NO;
-        }
-    }
-    return YES;
-}
+//- (BOOL)isPhotoSelectableWithAsset:(id)asset {
+//    if (self.minPhotoWidthSelectable > 0 || self.minPhotoHeightSelectable > 0) {        
+//        CGSize photoSize = [self photoSizeWithAsset:asset];
+//        if (self.minPhotoWidthSelectable > photoSize.width || self.minPhotoHeightSelectable > photoSize.height) {
+//            return NO;
+//        }
+//    }
+//    return YES;
+//}
 
 - (CGSize)photoSizeWithAsset:(id)asset {
     if ([asset isKindOfClass:[PHAsset class]]) {

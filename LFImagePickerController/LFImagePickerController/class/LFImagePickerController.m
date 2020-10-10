@@ -58,6 +58,7 @@
     // simple
     [LFAssetManager manager].sortAscendingByCreateDate = self.sortAscendingByCreateDate;
     [LFAssetManager manager].allowPickingType = self.allowPickingType;
+    [LFAssetManager manager].autoPlayLivePhoto = self.autoPlayLivePhoto;
     
     LFPhotoAuthorizationStatus status = [[LFAssetManager manager] lf_authorizationStatusAndRequestAuthorization:^(LFPhotoAuthorizationStatus status) {
         
@@ -217,6 +218,9 @@
         NSMutableArray *models = [NSMutableArray array];
         for (id asset in selectedAssets) {
             LFAsset *model = [[LFAsset alloc] initWithAsset:asset];
+            if (model.subType == LFAssetSubMediaTypeLivePhoto) {
+                model.closeLivePhoto = !self.autoPlayLivePhoto;
+            }
             [models addObject:model];
         }
         _previewVc = [[LFPhotoPreviewController alloc] initWithPhotos:models index:index];
@@ -437,6 +441,7 @@
     self.autoSavePhotoAlbum = YES;
     self.displayImageFilename = NO;
     self.syncAlbum = YES;
+    self.autoPlayLivePhoto = YES;
 }
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0

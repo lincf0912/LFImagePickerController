@@ -29,8 +29,10 @@
 @property (nonatomic, assign) BOOL shouldDecoded;
 
 /// 最小可选中的图片宽度，默认是0，小于这个宽度的图片不可选中
-@property (nonatomic, assign) NSInteger minPhotoWidthSelectable;
-@property (nonatomic, assign) NSInteger minPhotoHeightSelectable;
+//@property (nonatomic, assign) NSInteger minPhotoWidthSelectable;
+//@property (nonatomic, assign) NSInteger minPhotoHeightSelectable;
+/// 默认为YES，预览时自动播放live photo；否则需要长按照片才会播放。
+@property (nonatomic, assign) BOOL autoPlayLivePhoto;
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
 /** 默认相册对象 */
@@ -186,7 +188,7 @@
 - (NSString *)getAssetIdentifier:(id)asset;
 
 /// 检查照片大小是否满足最小要求
-- (BOOL)isPhotoSelectableWithAsset:(id)asset;
+//- (BOOL)isPhotoSelectableWithAsset:(id)asset;
 - (CGSize)photoSizeWithAsset:(id)asset;
 
 /// 获取照片名称

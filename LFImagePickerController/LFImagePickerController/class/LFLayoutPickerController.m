@@ -174,6 +174,8 @@
     self.photoDefImageName = @"photo_album_def";
     self.photoOriginDefImageName = @"photo_original_def";
     self.photoOriginSelImageName = @"photo_original_sel";
+    self.videoPlayImageName = @"video_play";
+    self.videoPauseImageName = @"video_pause";
     self.ablumSelImageName = @"ablum_sel";
 }
 

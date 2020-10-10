@@ -19,11 +19,14 @@
 /** 当前展示的图片 */
 @property (nonatomic, readonly) UIImage *previewImage;
 
+// 即将显示
 - (void)willDisplayCell;
+// 正式显示
+- (void)didDisplayCell;
+// 即将消失
+- (void)willEndDisplayCell;
+// 正式消失
 - (void)didEndDisplayCell;
-
-/** 重置视图 */
-- (void)resizeSubviews;
 
 
 /** 子类重写 */

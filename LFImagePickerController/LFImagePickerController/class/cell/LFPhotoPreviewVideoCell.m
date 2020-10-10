@@ -41,7 +41,6 @@
 @interface LFPhotoPreviewVideoCell ()
 
 @property (nonatomic, strong) AVPlayer *player;
-@property (nonatomic, strong) UIButton *playButton;
 @property (nonatomic, strong) LFPhotoPreviewVideoPlayerView *playerView;
 
 @property (nonatomic, assign) BOOL waitForReadyToPlay;
@@ -51,14 +50,16 @@
 
 @implementation LFPhotoPreviewVideoCell
 
+@dynamic delegate;
+
 #pragma mark - 重写父类方法
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.scrollView.maximumZoomScale = 1.f;
-        self.scrollView.minimumZoomScale = 1.f;
-        [self removeGestureRecognizer:self.tap1];
-        [self removeGestureRecognizer:self.tap2];
+//        self.scrollView.maximumZoomScale = 1.f;
+//        self.scrollView.minimumZoomScale = 1.f;
+//        [self removeGestureRecognizer:self.tap1];
+//        [self removeGestureRecognizer:self.tap2];
     }
     return self;
 }
@@ -86,8 +87,6 @@
     [super subViewReset];
     _waitForReadyToPlay = NO;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_playButton removeFromSuperview];
-    _playButton = nil;
     [_player.currentItem removeObserver:self forKeyPath:@"status"];
     ((AVPlayerLayer *)_playerView.layer).player = nil;
     _player = nil;
@@ -150,7 +149,6 @@
                     context:NULL];
     _player = [AVPlayer playerWithPlayerItem:playerItem];
     ((AVPlayerLayer *)_playerView.layer).player = _player;
-    [self configPlayButton];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pausePlayerNotify) name:AVPlayerItemDidPlayToEndTimeNotification object:_player.currentItem];
 }
 
@@ -166,11 +164,20 @@
 
 
 
-- (void)willDisplayCell
+- (void)didDisplayCell
 {
-    [super willDisplayCell];
+    [super didDisplayCell];
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
-        
+        [self didPlayCell];
+    }
+}
+
+- (void)willEndDisplayCell
+{
+    [super willEndDisplayCell];
+    if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
+        _waitForReadyToPlay = NO;
+        [self didPauseCell];
     }
 }
 
@@ -178,8 +185,7 @@
 {
     [super didEndDisplayCell];
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
-        [self didPauseCell];
-        [_player.currentItem seekToTime:CMTimeMake(0, 1)];
+        [_player.currentItem seekToTime:CMTimeMake(0, 1) completionHandler:nil];
     }
 }
 
@@ -189,11 +195,20 @@
         if (_player.currentItem.status == AVPlayerStatusReadyToPlay) {
             CMTime currentTime = _player.currentItem.currentTime;
             CMTime durationTime = _player.currentItem.duration;
-            if (currentTime.value == durationTime.value) [_player.currentItem seekToTime:CMTimeMake(0, 1)];
-            [_player play];
-            [_playButton setImage:nil forState:UIControlStateNormal];
-            [_playButton setImage:nil forState:UIControlStateHighlighted];
-            _isPlaying = YES;
+            if (currentTime.value == durationTime.value) {
+                __weak typeof(self) weakSelf = self;
+                [_player.currentItem seekToTime:CMTimeMake(0, 1) completionHandler:^(BOOL finished) {
+                    [weakSelf.player play];
+                    if ([weakSelf.delegate respondsToSelector:@selector(lf_photoPreviewVideoCellDidPlayHandler:)]) {
+                        [weakSelf.delegate lf_photoPreviewVideoCellDidPlayHandler:weakSelf];
+                    }
+                }];
+            } else {
+                [_player play];
+                if ([self.delegate respondsToSelector:@selector(lf_photoPreviewVideoCellDidPlayHandler:)]) {
+                    [self.delegate lf_photoPreviewVideoCellDidPlayHandler:self];
+                }
+            }
         } else {
             _waitForReadyToPlay = YES;
         }
@@ -204,48 +219,24 @@
 {
     if (self.model.type == LFAssetMediaTypeVideo) { /** 视频处理 */
         [_player pause];
-        [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay") forState:UIControlStateNormal];
-        [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL") forState:UIControlStateHighlighted];
-        _isPlaying = NO;
-    }
-}
-
-- (void)configPlayButton {
-    _playButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    _playButton.frame = self.contentView.bounds;
-    _playButton.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlay") forState:UIControlStateNormal];
-    [_playButton setImage:bundleImageNamed(@"MMVideoPreviewPlayHL") forState:UIControlStateHighlighted];
-    [_playButton addTarget:self action:@selector(playButtonClick) forControlEvents:UIControlEventTouchUpInside];
-    _playButton.hidden = YES;
-    [self.contentView addSubview:_playButton];
-}
-
-#pragma mark - Click Event
-
-- (void)playButtonClick {
-    if (_player.rate == 0.0f) {
-        [self didPlayCell];
-        if ([self.delegate respondsToSelector:@selector(lf_photoPreviewCellSingleTapHandler:)]) {
-            [self.delegate lf_photoPreviewCellSingleTapHandler:self];
+        if ([self.delegate respondsToSelector:@selector(lf_photoPreviewVideoCellDidStopHandler:)]) {
+            [self.delegate lf_photoPreviewVideoCellDidStopHandler:self];
         }
-    } else {
-        [self pausePlayerAndShowNaviBar];
     }
 }
 
-- (void)pausePlayerAndShowNaviBar {
-    [self didPauseCell];
-    if ([self.delegate respondsToSelector:@selector(lf_photoPreviewCellSingleTapHandler:)]) {
-        [self.delegate lf_photoPreviewCellSingleTapHandler:self];
-    }
+- (BOOL)isPlaying
+{
+    return _player.rate != 0.0f;
 }
 
 #pragma mark - Notification Method
 - (void)pausePlayerNotify
 {
-    [self pausePlayerAndShowNaviBar];
-    [_player.currentItem seekToTime:CMTimeMake(0, 1)];
+//    [_player.currentItem seekToTime:CMTimeMake(0, 1) completionHandler:nil];
+    if ([self.delegate respondsToSelector:@selector(lf_photoPreviewVideoCellDidStopHandler:)]) {
+        [self.delegate lf_photoPreviewVideoCellDidStopHandler:self];
+    }
 }
 
 
@@ -269,7 +260,6 @@
     {
         case AVPlayerItemStatusReadyToPlay:
         {
-            _playButton.hidden = NO;
             if (_waitForReadyToPlay) {
                 _waitForReadyToPlay = NO;
                 [self didPlayCell];

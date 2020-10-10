@@ -10,4 +10,7 @@
 
 @interface LFPhotoPreviewLivePhotoCell : LFPhotoPreviewCell
 
+- (void)didPlayCell;
+- (void)didStopCell;
+
 @end

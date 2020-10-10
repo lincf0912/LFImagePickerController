@@ -59,6 +59,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     UILabel *_originalPhotoLabel;
     UIButton *_editButton;
     
+    UIButton *_videoPlayButton;
+    
     UIView *_livePhotoSignView;
     UIButton *_livePhotobadgeImageButton;
     
@@ -89,6 +91,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 /** 手动滑动标记 */
 @property (nonatomic, assign) BOOL isMTScroll;
 
+/** 首次加载的标记 */
+@property (nonatomic, assign) BOOL isFirstLoad;
+
 /** 3DTouch预览状态 */
 @property (nonatomic, assign) BOOL isPreviewing;
 @property (nonatomic, weak) LFImagePickerController *previewNavi;
@@ -110,6 +115,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 {
     self = [super init];
     if (self) {
+        self.isFirstLoad = YES;
         self.isHiddenNavBar = YES;
         /** 刘海屏的顶部一直会存在安全区域，window的显示区域不在刘海屏范围，调整window的层级无法遮挡状态栏。 */
         if (@available(iOS 11.0, *)) {
@@ -208,9 +214,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.frame.size.width * _currentIndex, 0) animated:NO];
     [self refreshNaviBarAndBottomBarState];
     
-    if (self.isPreviewing == NO) {
-        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
-    }
+//    if (self.isPreviewing == NO) {
+//        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(willDisplayCell)];
+//    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -229,14 +235,19 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             self.modalInPresentation = YES;
         }
     }
+    if (self.isFirstLoad) {
+        self.isFirstLoad = NO;
+        // 首次启动，设置cell为播放状态。
+        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didDisplayCell)];
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    if (self.isPreviewing == NO) {
-        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didEndDisplayCell)];
-    }
+//    if (self.isPreviewing == NO) {
+//        [[_collectionView visibleCells] makeObjectsPerformSelector:@selector(didEndDisplayCell)];
+//    }
 }
 
 - (void)viewWillLayoutSubviews
@@ -478,6 +489,17 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         [_originalPhotoButton addSubview:_originalPhotoLabel];
     }
     
+    _videoPlayButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _videoPlayButton.frame = CGRectMake((CGRectGetWidth(_toolSubBar.frame)-CGRectGetHeight(_toolSubBar.frame))/2, 0, CGRectGetHeight(_toolSubBar.frame), CGRectGetHeight(_toolSubBar.frame));
+    _videoPlayButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
+    [_videoPlayButton setImage:bundleImageNamed(imagePickerVc.videoPlayImageName) forState:UIControlStateNormal];
+    [_videoPlayButton setImage:bundleImageNamed(imagePickerVc.videoPlayImageName) forState:UIControlStateNormal];
+    [_videoPlayButton setImage:bundleImageNamed(imagePickerVc.videoPauseImageName) forState:UIControlStateSelected];
+    [_videoPlayButton setImage:bundleImageNamed(imagePickerVc.videoPauseImageName) forState:UIControlStateSelected|UIControlStateHighlighted];
+    [_videoPlayButton addTarget:self action:@selector(videoPlayButtonClick) forControlEvents:UIControlEventTouchUpInside];
+    _videoPlayButton.selected = YES; // 默认播放
+    _videoPlayButton.hidden = YES;
+    
     CGSize doneSize = [[imagePickerVc.doneBtnTitleStr stringByAppendingFormat:@"(%d)", (int)imagePickerVc.maxImagesCount] lf_boundingSizeWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) font:toolbarTitleFont];
     doneSize.height = MIN(MAX(doneSize.height, CGRectGetHeight(_toolSubBar.frame)), 30);
     doneSize.width += 10;
@@ -504,6 +526,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     [toolSubBar addSubview:_editButton];
     [toolSubBar addSubview:_originalPhotoButton];
+    [toolSubBar addSubview:_videoPlayButton];
     [toolSubBar addSubview:_doneButton];
     [toolSubBar addSubview:divide];
     [_toolBar addSubview:toolSubBar];
@@ -943,6 +966,19 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
 }
 
+- (void)videoPlayButtonClick
+{
+    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
+    if ([cell isKindOfClass:LFPhotoPreviewVideoCell.class]) {
+        LFPhotoPreviewVideoCell *videoCell = (LFPhotoPreviewVideoCell *)cell;
+        if (_videoPlayButton.isSelected) {
+            [videoCell didPauseCell];
+        } else {
+            [videoCell didPlayCell];
+        }
+    }
+}
+
 - (void)livePhotoSignButtonClick:(UIButton *)button
 {
     [self selectedLivePhotobadgeImageButton:!button.isSelected];
@@ -951,10 +987,13 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     
     LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
     
-    if (model.closeLivePhoto) {
-        [cell didEndDisplayCell];
-    } else {
-        [cell willDisplayCell];
+    if ([cell isKindOfClass:LFPhotoPreviewLivePhotoCell.class]) {
+        LFPhotoPreviewLivePhotoCell *livephotoCell = (LFPhotoPreviewLivePhotoCell *)cell;
+        if (model.closeLivePhoto) {
+            [livephotoCell didStopCell];
+        } else {
+            [livephotoCell didPlayCell];
+        }
     }
 }
 
@@ -962,11 +1001,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
     _isMTScroll = YES;
-    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(__kindof UICollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[LFPhotoPreviewVideoCell class]]) {
-            [(LFPhotoPreviewVideoCell *)obj didPauseCell];
-        }
-    }];
+//    [self.collectionView.visibleCells enumerateObjectsUsingBlock:^(__kindof UICollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//        if ([obj isKindOfClass:[LFPhotoPreviewVideoCell class]]) {
+//            [(LFPhotoPreviewVideoCell *)obj didPauseCell];
+//        }
+//    }];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -978,7 +1017,17 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         NSInteger currentIndex = offSetWidth / (_collectionView.frame.size.width);
         
         if (currentIndex < _models.count && _currentIndex != currentIndex) {
+            
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_currentIndex inSection:0];
+            LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+            [cell willEndDisplayCell];
+            
             _currentIndex = currentIndex;
+            
+            indexPath = [NSIndexPath indexPathForRow:_currentIndex inSection:0];
+            cell = (LFPhotoPreviewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+            [cell didDisplayCell];
+            
             [self refreshNaviBarAndBottomBarState];
         }
     }
@@ -1017,11 +1066,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 //        self.tempEditImage = nil;
 //    }
     cell.model = model;
-    
-    /** 视频自动播放 */
-    if (self.isPreviewing && model.type == LFAssetMediaTypeVideo) {
-        [(LFPhotoPreviewVideoCell *)cell didPlayCell];
-    }
     
     return cell;
 }
@@ -1072,19 +1116,29 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #pragma mark - LFPhotoPreviewCellDelegate
 - (void)lf_photoPreviewCellSingleTapHandler:(LFPhotoPreviewCell *)cell
 {
-    if (cell.model.type == LFAssetMediaTypeVideo) {
-        if (((LFPhotoPreviewVideoCell *)cell).isPlaying && self.isHideMyNaviBar) {
-            return;
-        } else if (!((LFPhotoPreviewVideoCell *)cell).isPlaying && !self.isHideMyNaviBar) {
-            return;
-        } else if (self.panGesture.state != UIGestureRecognizerStatePossible) {
-            return;
-        }
-    }
+//    if (cell.model.type == LFAssetMediaTypeVideo) {
+//        if (((LFPhotoPreviewVideoCell *)cell).isPlaying && self.isHideMyNaviBar) {
+//            return;
+//        } else if (!((LFPhotoPreviewVideoCell *)cell).isPlaying && !self.isHideMyNaviBar) {
+//            return;
+//        } else if (self.panGesture.state != UIGestureRecognizerStatePossible) {
+//            return;
+//        }
+//    }
     // show or hide naviBar / 显示或隐藏导航栏
     self.isHideMyNaviBar = !self.isHideMyNaviBar;
     CGFloat alpha = self.isHideMyNaviBar ? 0.f : 1.f;
     [self changedAplhaWithItem:cell.model alpha:alpha];
+}
+
+#pragma mark - LFPhotoPreviewVideoCellDelegate
+- (void)lf_photoPreviewVideoCellDidPlayHandler:(LFPhotoPreviewVideoCell *)cell
+{
+    _videoPlayButton.selected = YES;
+}
+- (void)lf_photoPreviewVideoCellDidStopHandler:(LFPhotoPreviewVideoCell *)cell
+{
+    _videoPlayButton.selected = NO;
 }
 
 #ifdef LF_MEDIAEDIT
@@ -1546,6 +1600,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     }
     
     _originalPhotoButton.hidden = model.type == LFAssetMediaTypeVideo;
+    _videoPlayButton.hidden = model.type != LFAssetMediaTypeVideo;
     
     _originalPhotoButton.selected = imagePickerVc.isSelectOriginalPhoto;
     _originalPhotoLabel.hidden = !(_originalPhotoButton.selected && imagePickerVc.selectedModels.count > 0);
@@ -1687,6 +1742,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                 LFAsset *asset = nil;
                 if ([object isKindOfClass:[PHAsset class]] || [object isKindOfClass:[ALAsset class]]) {
                     asset = [[LFAsset alloc] initWithAsset:object];
+                    if (asset.subType == LFAssetSubMediaTypeLivePhoto) {
+                        asset.closeLivePhoto = !imagePickerVc.autoPlayLivePhoto;
+                    }
                 }
                 else if ([object conformsToProtocol:@protocol(LFAssetImageProtocol)]) {
                     asset = [[LFAsset alloc] initWithObject:object];

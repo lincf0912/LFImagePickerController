@@ -221,11 +221,22 @@
 
 - (void)willDisplayCell
 {
-    
+//    NSLog(@"%@ - willDisplayCell", self);
+}
+
+- (void)didDisplayCell
+{
+//    NSLog(@"%@ - didDisplayCell", self);
+}
+
+- (void)willEndDisplayCell
+{
+//    NSLog(@"%@ - willEndDisplayCell", self);
 }
 
 - (void)didEndDisplayCell
 {
+//    NSLog(@"%@ - didEndDisplayCell", self);
     [self resizeSubviews];
 }
 

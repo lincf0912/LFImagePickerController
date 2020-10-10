@@ -110,9 +110,9 @@
     }
 }
 
-- (void)willDisplayCell
+- (void)didDisplayCell
 {
-    [super willDisplayCell];
+    [super didDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         if (self.imageData) {
             NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
@@ -128,9 +128,9 @@
     }
 }
 
-- (void)didEndDisplayCell
+- (void)willEndDisplayCell
 {
-    [super didEndDisplayCell];
+    [super willEndDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         _waitForReadyToPlay = NO;
         [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];

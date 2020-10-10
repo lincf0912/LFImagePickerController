@@ -72,22 +72,34 @@
     }
 }
 
-- (void)willDisplayCell
+- (void)didDisplayCell
 {
-    [super willDisplayCell];
+    [super didDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeLivePhoto && self.model.closeLivePhoto == NO) { /** live photo */
-        _livePhotoView.delegate = self;
-        [_livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+        [self didPlayCell];
     }
 }
 
-- (void)didEndDisplayCell
+- (void)willEndDisplayCell
 {
-    [super didEndDisplayCell];
+    [super willEndDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeLivePhoto) { /** live photo */
-        _livePhotoView.delegate = nil;
-        [_livePhotoView stopPlayback];
+        [self didStopCell];
     }
+}
+
+- (void)didPlayCell
+{
+    _livePhotoView.playbackGestureRecognizer.enabled = NO;
+    _livePhotoView.delegate = self;
+    [_livePhotoView startPlaybackWithStyle:PHLivePhotoViewPlaybackStyleFull];
+}
+
+- (void)didStopCell
+{
+    _livePhotoView.playbackGestureRecognizer.enabled = YES;
+    _livePhotoView.delegate = nil;
+    [_livePhotoView stopPlayback];
 }
 
 #pragma mark - PHLivePhotoViewDelegate

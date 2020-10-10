@@ -21,6 +21,8 @@
 @property (nonatomic, copy) NSString *photoDefImageName;
 @property (nonatomic, copy) NSString *photoOriginSelImageName;
 @property (nonatomic, copy) NSString *photoOriginDefImageName;
+@property (nonatomic, copy) NSString *videoPlayImageName;
+@property (nonatomic, copy) NSString *videoPauseImageName;
 @property (nonatomic, copy) NSString *ablumSelImageName;
 
 /// Custom appearance color

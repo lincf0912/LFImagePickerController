@@ -121,8 +121,10 @@
                         [[LFAssetManager manager] cancelImageRequest:imageRequestID];
                         [self readyToPlay:playerItem];
                         AVAssetTrack *track = [[playerItem.asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
-                        self.dimensions = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
-                        
+                        CGSize dimensions = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
+                        float videoWidth = fabs(dimensions.width);
+                        float videoHeight = fabs(dimensions.height);
+                        self.dimensions = CGSizeMake(videoWidth, videoHeight);
                         self.isFinalData = YES;
                         [self resizeSubviews]; // 刷新subview的位置。
                     }

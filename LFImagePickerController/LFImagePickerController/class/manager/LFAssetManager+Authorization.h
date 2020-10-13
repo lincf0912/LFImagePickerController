@@ -28,7 +28,7 @@ typedef NS_ENUM(NSInteger, LFPhotoAuthorizationStatus) {
 - (BOOL)authorizationStatusAuthorized API_DEPRECATED_WITH_REPLACEMENT("-lf_authorizationStatusAndRequestAuthorization:", ios(8, API_TO_BE_DEPRECATED));
 - (NSInteger)authorizationStatus API_DEPRECATED_WITH_REPLACEMENT("-lf_authorizationStatus:", ios(8, API_TO_BE_DEPRECATED));
 
-- (LFPhotoAuthorizationStatus)lf_authorizationStatusAndRequestAuthorization:(void(^)(LFPhotoAuthorizationStatus status))handler NS_AVAILABLE_IOS(8_0);
+- (LFPhotoAuthorizationStatus)lf_authorizationStatusAndRequestAuthorization:(void(^)(LFPhotoAuthorizationStatus status))handler;
 - (LFPhotoAuthorizationStatus)lf_authorizationStatus;
 
 @end

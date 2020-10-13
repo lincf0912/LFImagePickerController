@@ -34,10 +34,8 @@
 /// 默认为YES，预览时自动播放live photo；否则需要长按照片才会播放。
 @property (nonatomic, assign) BOOL autoPlayLivePhoto;
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
 /** 默认相册对象 */
-@property (nonatomic, readonly) ALAssetsLibrary *assetLibrary;
-#endif
+@property (nonatomic, readonly) ALAssetsLibrary *assetLibrary AL_DEPRECATED(4, "Use PHPhotoLibrary from the Photos framework instead");
 
 /**
  *  @author lincf, 16-07-28 17:07:38
@@ -155,7 +153,7 @@
 - (void)getLivePhotoWithAsset:(id)asset
                    isOriginal:(BOOL)isOriginal
                 needThumbnail:(BOOL)needThumbnail
-                   completion:(void (^)(LFResultImage *resultImage))completion;
+                   completion:(void (^)(LFResultImage *resultImage))completion API_AVAILABLE(ios(9.1));
 
 /// Get video 获得视频
 - (void)getVideoWithAsset:(id)asset completion:(void (^)(AVPlayerItem * playerItem, NSDictionary * info))completion;

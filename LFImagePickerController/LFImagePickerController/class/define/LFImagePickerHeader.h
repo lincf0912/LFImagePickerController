@@ -13,6 +13,8 @@
 #define isiPhone (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 #define isiPad (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 
+#define IOS_VERSION [[[UIDevice currentDevice] systemVersion] floatValue]
+
 
 #define dispatch_main_async_safe(block)\
 if ([NSThread isMainThread]) {\

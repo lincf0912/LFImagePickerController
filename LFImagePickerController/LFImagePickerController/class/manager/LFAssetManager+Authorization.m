@@ -43,17 +43,13 @@
     if (@available(iOS 14, *)) {
         return [PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelReadWrite];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_14_0
     else
     if (@available(iOS 8.0, *)){
         return [PHPhotoLibrary authorizationStatus];
     }
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     else {
         return [ALAssetsLibrary authorizationStatus];
     }
-#endif
     return NO;
 }
 
@@ -61,17 +57,13 @@
     if (@available(iOS 14, *)) {
         return (LFPhotoAuthorizationStatus)[PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelReadWrite];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_14_0
     else
     if (@available(iOS 8.0, *)){
         return (LFPhotoAuthorizationStatus)[PHPhotoLibrary authorizationStatus];
     }
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     else {
         return (LFPhotoAuthorizationStatus)[ALAssetsLibrary authorizationStatus];
     }
-#endif
     return LFPhotoAuthorizationStatusNotDetermined;
 }
 
@@ -89,7 +81,6 @@
             }];
         });
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_14_0
     else
     if (@available(iOS 8.0, *)){
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -102,12 +93,9 @@
             }];
         });
     }
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     else {
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
         } failureBlock:nil];
     }
-#endif
 }
 @end

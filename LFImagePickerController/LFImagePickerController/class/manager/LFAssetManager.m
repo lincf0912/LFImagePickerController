@@ -31,9 +31,9 @@
 @end
 
 @implementation LFAssetManager
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
 @synthesize assetLibrary = _assetLibrary;
-#endif
+
 
 static LFAssetManager *manager;
 + (instancetype)manager {
@@ -60,12 +60,12 @@ static LFAssetManager *manager;
     manager = nil;
 }
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
 - (ALAssetsLibrary *)assetLibrary {
     if (_assetLibrary == nil) _assetLibrary = [[ALAssetsLibrary alloc] init];
     return _assetLibrary;
 }
-#endif
+
 
 #pragma mark - Get Album
 
@@ -92,13 +92,13 @@ static LFAssetManager *manager;
             break;
         }
     } else {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             *stop = YES;
             model = [self modelWithResult:group album:nil];
             if (completion) completion(model);
         } failureBlock:nil];
-#endif
+
     }
 }
 
@@ -148,7 +148,7 @@ static LFAssetManager *manager;
         }
         if (completion) completion(albumArr);
     } else {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
         [self.assetLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
             if (group == nil) {
                 if (completion) completion(albumArr);
@@ -162,7 +162,7 @@ static LFAssetManager *manager;
         } failureBlock:^(NSError *error) {
             if (completion) completion(albumArr);
         }];
-#endif
+
     }
 }
 
@@ -202,7 +202,7 @@ static LFAssetManager *manager;
         if (completion) completion(photoArr);
         
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
         if (allowPickingType == LFPickingMediaTypeVideo) {
@@ -249,7 +249,7 @@ static LFAssetManager *manager;
         
         if (completion) completion(photos);
     }
-#endif
+
 }
 
 ///  Get asset at index 获得下标为index的单个照片
@@ -273,7 +273,7 @@ static LFAssetManager *manager;
         LFAsset *model = [self assetModelWithAsset:asset allowPickingType:allowPickingType];
         if (completion) completion(model);
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([result isKindOfClass:[ALAssetsGroup class]]) {
         ALAssetsGroup *group = (ALAssetsGroup *)result;
         if (allowPickingType == LFPickingMediaTypeVideo) {
@@ -308,7 +308,7 @@ static LFAssetManager *manager;
             if (completion) completion(nil);
         }
     }
-#endif
+
     else {
         if (completion) completion(nil);
     }
@@ -378,7 +378,7 @@ static LFAssetManager *manager;
                 }
                 
             }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
             else if ([model.asset isKindOfClass:[ALAsset class]]) {
                 
                 if (model.bytes == 0) {
@@ -389,7 +389,7 @@ static LFAssetManager *manager;
                     completeBlock(model);
                 }
             }
-#endif
+
         } else {
             completeBlock(model);
         }
@@ -436,7 +436,7 @@ static LFAssetManager *manager;
                 }
                 
             }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
             else if ([model.asset isKindOfClass:[ALAsset class]]) {
                 
                 if (model.bytes == 0) {
@@ -447,7 +447,7 @@ static LFAssetManager *manager;
                     completeBlock(model.bytes);
                 }
             }
-#endif
+
         } else {
             completeBlock(model.bytes);
         }
@@ -560,7 +560,7 @@ static LFAssetManager *manager;
         }];
         return imageRequestID;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         
@@ -584,7 +584,7 @@ static LFAssetManager *manager;
             });
         }
     }
-#endif
+
     else {
         if (completion) completion(nil,nil,NO);
     }
@@ -675,7 +675,7 @@ static LFAssetManager *manager;
         
         return imageRequestID;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+    
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
@@ -684,7 +684,7 @@ static LFAssetManager *manager;
         NSData *imageData = [NSData dataWithBytesNoCopy:imageBuffer length:bufferSize freeWhenDone:YES];
         if (completion) completion(imageData,nil,NO);
     }
-#endif
+
     else {
         if (completion) completion(nil,nil,NO);
     }
@@ -704,50 +704,50 @@ static LFAssetManager *manager;
 
 - (PHImageRequestID)getLivePhotoWithAsset:(id)asset photoWidth:(CGFloat)photoWidth completion:(void (^)(PHLivePhoto *livePhoto,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
 
-#ifdef __IPHONE_9_1
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        PHAsset *phAsset = (PHAsset *)asset;
-        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-        CGFloat pixelWidth = photoWidth;
-        CGFloat pixelHeight = pixelWidth / aspectRatio;
-        CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
-        
-        PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
-        option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-        PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+    if (@available(iOS 9.1, *)){
+        if ([asset isKindOfClass:[PHAsset class]]) {
+            PHAsset *phAsset = (PHAsset *)asset;
+            CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+            CGFloat pixelWidth = photoWidth;
+            CGFloat pixelHeight = pixelWidth / aspectRatio;
+            CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
             
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
-            if (downloadFinined && livePhoto) {
-                BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
-                if (completion) completion(livePhoto,info,isDegraded);
-            }
-            else
-            // Download image from iCloud / 从iCloud下载图片
-            if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto && networkAccessAllowed) {
-                PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
-                options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-                    dispatch_main_async_safe(^{
-                        if (progressHandler) {
-                            progressHandler(progress, error, stop, info);
-                        }
-                    });
-                };
-                options.networkAccessAllowed = YES;
-                options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-                [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-                    
+            PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
+            option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+            PHImageRequestID imageRequestID = [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+                
+                BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
+                if (downloadFinined && livePhoto) {
                     BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
                     if (completion) completion(livePhoto,info,isDegraded);
-                }];
-            } else {
-                if (completion) completion(livePhoto,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-            }
-        }];
-        return imageRequestID;
+                }
+                else
+                    // Download image from iCloud / 从iCloud下载图片
+                    if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto && networkAccessAllowed) {
+                        PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
+                        options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                            dispatch_main_async_safe(^{
+                                if (progressHandler) {
+                                    progressHandler(progress, error, stop, info);
+                                }
+                            });
+                        };
+                        options.networkAccessAllowed = YES;
+                        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                        [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+                            
+                            BOOL isDegraded = [[info objectForKey:PHImageResultIsDegradedKey] boolValue];
+                            if (completion) completion(livePhoto,info,isDegraded);
+                        }];
+                    } else {
+                        if (completion) completion(livePhoto,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+                    }
+            }];
+            return imageRequestID;
+        }
+    } else {
+        if (completion) completion(nil,nil,NO);
     }
-#else
-    if (completion) completion(nil,nil,NO);
-#endif
     return 0;
 }
 
@@ -1078,7 +1078,7 @@ static LFAssetManager *manager;
         
         
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         
@@ -1104,7 +1104,7 @@ static LFAssetManager *manager;
             });
         });
     }
-#endif
+
     else {
         if (completion) completion(nil, nil, LFImagePickerSubMediaTypeNone, nil);
     }
@@ -1115,141 +1115,139 @@ static LFAssetManager *manager;
                 needThumbnail:(BOOL)needThumbnail
                    completion:(void (^)(LFResultImage *resultImage))completion
 {
-#ifdef __IPHONE_9_1
-    if ([asset isKindOfClass:[PHAsset class]]) {
-        
-        PHAsset *phAsset = (PHAsset *)asset;
-        
-        PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
-        option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-        
-        [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+    if (@available(iOS 9.1, *)){
+        if ([asset isKindOfClass:[PHAsset class]]) {
             
-            void (^livePhotoFinish)(PHLivePhoto *) = ^(PHLivePhoto *livePhoto){
-                NSString *fileName = [phAsset valueForKey:@"filename"];
+            PHAsset *phAsset = (PHAsset *)asset;
+            
+            PHLivePhotoRequestOptions *option = [[PHLivePhotoRequestOptions alloc]init];
+            option.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+            
+            [[PHImageManager defaultManager] requestLivePhotoForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
                 
-                NSString *fileFirstName = [fileName stringByDeletingPathExtension];
-                
-                NSArray *resourceArray = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
-                PHAssetResourceManager *arm = [PHAssetResourceManager defaultManager];
-                PHAssetResource *assetResource = resourceArray.lastObject;
-                NSString *cache = [LFAssetManager CacheVideoPath];
-                NSString *filePath = [cache stringByAppendingPathComponent:[fileFirstName stringByAppendingPathExtension:@"mov"]];
-                BOOL isExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
-                
-                NSURL *videoURL = [[NSURL alloc] initFileURLWithPath:filePath];
-                
-                void (^livePhotoToGif)(NSURL *) = ^(NSURL *videoURL){
-                    [LFToGIF optimalGIFfromURL:videoURL loopCount:0 completion:^(NSURL *GifURL) {
-                        
-                        if (GifURL) {
-                            LFResultImage *result = [LFResultImage new];
+                void (^livePhotoFinish)(PHLivePhoto *) = ^(PHLivePhoto *livePhoto){
+                    NSString *fileName = [phAsset valueForKey:@"filename"];
+                    
+                    NSString *fileFirstName = [fileName stringByDeletingPathExtension];
+                    
+                    NSArray *resourceArray = [PHAssetResource assetResourcesForLivePhoto:livePhoto];
+                    PHAssetResourceManager *arm = [PHAssetResourceManager defaultManager];
+                    PHAssetResource *assetResource = resourceArray.lastObject;
+                    NSString *cache = [LFAssetManager CacheVideoPath];
+                    NSString *filePath = [cache stringByAppendingPathComponent:[fileFirstName stringByAppendingPathExtension:@"mov"]];
+                    BOOL isExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
+                    
+                    NSURL *videoURL = [[NSURL alloc] initFileURLWithPath:filePath];
+                    
+                    void (^livePhotoToGif)(NSURL *) = ^(NSURL *videoURL){
+                        [LFToGIF optimalGIFfromURL:videoURL loopCount:0 completion:^(NSURL *GifURL) {
                             
-                            @autoreleasepool {
+                            if (GifURL) {
+                                LFResultImage *result = [LFResultImage new];
                                 
-                                /** 图片数据 */
-                                NSData *sourceData = [NSData dataWithContentsOfURL:GifURL];
-                                /** 图片名称 */
-                                NSString *imageName = [fileFirstName stringByAppendingPathExtension:@"gif"];
-                                
-                                /** 原图 */
-                                UIImage *source = [UIImage LF_imageWithImageData:sourceData];
-
-                                CGFloat minWidth = MIN(source.size.width, source.size.height);
-                                CGFloat imageRatio = 0.7f;
-                                if (!isOriginal) {
-                                    /** 标清图 */
-                                    sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-                                }
-                                NSData *thumbnailData = nil;
-                                UIImage *thumbnail = nil;
-                                if (needThumbnail) {
-                                    /** 缩略图 */
-                                    imageRatio = 0.5f;
-                                    if (minWidth > 100.f) {
-                                        imageRatio = 50.f/minWidth;
+                                @autoreleasepool {
+                                    
+                                    /** 图片数据 */
+                                    NSData *sourceData = [NSData dataWithContentsOfURL:GifURL];
+                                    /** 图片名称 */
+                                    NSString *imageName = [fileFirstName stringByAppendingPathExtension:@"gif"];
+                                    
+                                    /** 原图 */
+                                    UIImage *source = [UIImage LF_imageWithImageData:sourceData];
+                                    
+                                    CGFloat minWidth = MIN(source.size.width, source.size.height);
+                                    CGFloat imageRatio = 0.7f;
+                                    if (!isOriginal) {
+                                        /** 标清图 */
+                                        sourceData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
                                     }
-                                    /** 缩略图 */
-                                    thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
-                                    thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+                                    NSData *thumbnailData = nil;
+                                    UIImage *thumbnail = nil;
+                                    if (needThumbnail) {
+                                        /** 缩略图 */
+                                        imageRatio = 0.5f;
+                                        if (minWidth > 100.f) {
+                                            imageRatio = 50.f/minWidth;
+                                        }
+                                        /** 缩略图 */
+                                        thumbnailData = [source lf_fastestCompressAnimatedImageDataWithScaleRatio:imageRatio];
+                                        thumbnail = [UIImage LF_imageWithImageData:thumbnailData];
+                                    }
+                                    
+                                    /** 图片宽高 */
+                                    CGSize imageSize = source.size;
+                                    
+                                    if (self.shouldDecoded && thumbnail.images.count <= 1) {
+                                        thumbnail = [thumbnail lf_decodedImage];
+                                    }
+                                    if (self.shouldDecoded && source.images.count <= 1) {
+                                        source = [source lf_decodedImage];
+                                    }
+                                    result.asset = asset;
+                                    result.thumbnailImage = thumbnail;
+                                    result.thumbnailData = thumbnailData;
+                                    result.originalImage = source;
+                                    result.originalData = sourceData;
+                                    result.subMediaType = LFImagePickerSubMediaTypeGIF;
+                                    
+                                    LFResultInfo *info = [LFResultInfo new];
+                                    result.info = info;
+                                    
+                                    /** 图片文件名 */
+                                    info.name = imageName;
+                                    /** 图片大小 */
+                                    info.byte = sourceData.length;
+                                    /** 图片宽高 */
+                                    info.size = imageSize;
                                 }
                                 
-                                /** 图片宽高 */
-                                CGSize imageSize = source.size;
-                                
-                                if (self.shouldDecoded && thumbnail.images.count <= 1) {
-                                    thumbnail = [thumbnail lf_decodedImage];
-                                }
-                                if (self.shouldDecoded && source.images.count <= 1) {
-                                    source = [source lf_decodedImage];
-                                }
-                                result.asset = asset;
-                                result.thumbnailImage = thumbnail;
-                                result.thumbnailData = thumbnailData;
-                                result.originalImage = source;
-                                result.originalData = sourceData;
-                                result.subMediaType = LFImagePickerSubMediaTypeGIF;
-                                
-                                LFResultInfo *info = [LFResultInfo new];
-                                result.info = info;
-                                
-                                /** 图片文件名 */
-                                info.name = imageName;
-                                /** 图片大小 */
-                                info.byte = sourceData.length;
-                                /** 图片宽高 */
-                                info.size = imageSize;
+                                if (completion) completion(result);
+                            } else {
+                                if (completion) completion(nil);
                             }
-                            
-                            if (completion) completion(result);
+                        }];
+                    };
+                    
+                    
+                    if (isExists) {
+                        livePhotoToGif(videoURL);
+                    } else {
+                        [arm writeDataForAssetResource:assetResource toFile:videoURL options:nil completionHandler:^(NSError * _Nullable error)
+                         {
+                            if (error) {
+                                [self getPhotoWithAsset:phAsset isOriginal:isOriginal completion:completion];
+                            } else {
+                                livePhotoToGif(videoURL);
+                            }
+                        }];
+                    }
+                };
+                
+                /** 方法处理 */
+                BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
+                if (downloadFinined && livePhoto) {
+                    livePhotoFinish(livePhoto);
+                } else if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto) { // Download image from iCloud / 从iCloud下载图片
+                    PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
+                    options.networkAccessAllowed = YES;
+                    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                    
+                    [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+                        
+                        if (![info objectForKey:PHImageErrorKey]) {
+                            livePhotoFinish(livePhoto);
                         } else {
                             if (completion) completion(nil);
                         }
                     }];
-                };
-                
-                
-                if (isExists) {
-                    livePhotoToGif(videoURL);
                 } else {
-                    [arm writeDataForAssetResource:assetResource toFile:videoURL options:nil completionHandler:^(NSError * _Nullable error)
-                     {
-                         if (error) {
-                             [self getPhotoWithAsset:phAsset isOriginal:isOriginal completion:completion];
-                         } else {
-                             livePhotoToGif(videoURL);
-                         }
-                     }];
+                    if (completion) completion(nil);
                 }
-            };
-            
-            /** 方法处理 */
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey]);
-            if (downloadFinined && livePhoto) {
-                livePhotoFinish(livePhoto);
-            } else if ([[info objectForKey:PHImageResultIsInCloudKey] boolValue] && !livePhoto) { // Download image from iCloud / 从iCloud下载图片
-                PHLivePhotoRequestOptions *options = [[PHLivePhotoRequestOptions alloc]init];
-                options.networkAccessAllowed = YES;
-                options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-                
-                [[PHImageManager defaultManager] requestLivePhotoForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-                    
-                    if (![info objectForKey:PHImageErrorKey]) {
-                        livePhotoFinish(livePhoto);
-                    } else {
-                        if (completion) completion(nil);
-                    }
-                }];
-            } else {
-                if (completion) completion(nil);
-            }
-        }];
+            }];
+        }
     } else {
-#endif
         if (completion) completion(nil);
-#ifdef __IPHONE_9_1
     }
-#endif
 }
 
 #pragma mark - Get Video
@@ -1288,7 +1286,7 @@ static LFAssetManager *manager;
             
         }];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *defaultRepresentation = [alAsset defaultRepresentation];
@@ -1301,7 +1299,7 @@ static LFAssetManager *manager;
             });
         }
     }
-#endif
+
     else {
         if (completion) completion(nil ,nil);
     }
@@ -1316,12 +1314,12 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
-#endif
+
     if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
@@ -1408,12 +1406,12 @@ static LFAssetManager *manager;
     if ([asset isKindOfClass:[PHAsset class]]) {
         name = [asset valueForKey:@"filename"];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *assetRep = [asset defaultRepresentation];
         name = assetRep.filename;
     }
-#endif
+
     if (![name hasSuffix:@".mp4"]) {
         name = [name stringByDeletingPathExtension];
         name = [name stringByAppendingPathExtension:@"mp4"];
@@ -1466,7 +1464,7 @@ static LFAssetManager *manager;
             }
         }];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAssetRepresentation *rep = [asset defaultRepresentation];
         NSURL *videoURL = [rep url];
@@ -1482,7 +1480,7 @@ static LFAssetManager *manager;
             }
         }];
     }
-#endif
+
     else{
         dispatch_main_async_safe(^{
             completion(nil);
@@ -1501,13 +1499,13 @@ static LFAssetManager *manager;
             if (completion) completion(photo);
         }];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else {
         ALAssetsGroup *group = model.result;
         UIImage *postImage = [UIImage imageWithCGImage:group.posterImage];
         if (completion) completion(postImage);
     }
-#endif
+
 }
 
 /// Judge is a assets array contain the asset 判断一个assets数组是否包含这个asset
@@ -1515,7 +1513,7 @@ static LFAssetManager *manager;
     if (@available(iOS 8.0, *)){
         return [assets indexOfObject:asset];
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else {
         NSMutableArray *selectedAssetUrls = [NSMutableArray array];
         for (ALAsset *asset_item in assets) {
@@ -1523,7 +1521,7 @@ static LFAssetManager *manager;
         }
         return [selectedAssetUrls indexOfObject:[asset valueForProperty:ALAssetPropertyURLs]];
     }
-#endif
+
     return NSNotFound;
 }
 
@@ -1532,13 +1530,13 @@ static LFAssetManager *manager;
         PHAsset *phAsset = (PHAsset *)asset;
         return phAsset.localIdentifier;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         NSURL *assetUrl = [alAsset valueForProperty:ALAssetPropertyAssetURL];
         return assetUrl.absoluteString;
     }
-#endif
+
     return nil;
 }
 
@@ -1558,12 +1556,12 @@ static LFAssetManager *manager;
         PHAsset *phAsset = (PHAsset *)asset;
         return CGSizeMake(phAsset.pixelWidth, phAsset.pixelHeight);
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         return alAsset.defaultRepresentation.dimensions;
     }
-#endif
+
     return CGSizeZero;
 }
 
@@ -1574,14 +1572,14 @@ static LFAssetManager *manager;
         NSString *fileName = [phAsset valueForKey:@"filename"];
         if (complete) complete(fileName);
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
     else if ([asset isKindOfClass:[ALAsset class]]) {
         ALAsset *alAsset = (ALAsset *)asset;
         ALAssetRepresentation *assetRep = [alAsset defaultRepresentation];
         NSString *fileName = assetRep.filename;
         if (complete) complete(fileName);
     }
-#endif
+
 }
 
 #pragma mark - Private Method

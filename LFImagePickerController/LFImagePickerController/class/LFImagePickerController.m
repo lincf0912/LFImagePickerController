@@ -27,9 +27,7 @@
 
 @interface LFImagePickerController ()
 {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
-    NSTimer *_timer;
-#endif
+    NSTimer *_timer NS_DEPRECATED_IOS(2_0, 8_0);
     BOOL _didPushPhotoPickerVc;
 }
 
@@ -119,9 +117,9 @@
         [self.view addSubview:tipView];
         _tipView = tipView;
         
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
-        _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
-#endif
+        if (IOS_VERSION < 8.0) {
+            _timer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(observeAuthrizationStatusChange) userInfo:nil repeats:YES];
+        }
     } else {
         [self pushPhotoPickerVc];
     }
@@ -130,9 +128,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     if (_timer) { [_timer invalidate]; _timer = nil;}
-#endif
 }
 
 - (void)viewWillLayoutSubviews
@@ -444,7 +440,7 @@
     self.autoPlayLivePhoto = YES;
 }
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
+
 - (void)observeAuthrizationStatusChange {
     if ([[LFAssetManager manager] authorizationStatusAuthorized]) {
         [_tipView removeFromSuperview];
@@ -453,7 +449,6 @@
         [self pushPhotoPickerVc];
     }
 }
-#endif
 
 - (void)pushPhotoPickerVc {
     if (!_didPushPhotoPickerVc) {
@@ -541,9 +536,7 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     viewController.automaticallyAdjustsScrollViewInsets = NO;
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     if (_timer) { [_timer invalidate]; _timer = nil;}
-#endif
     [super pushViewController:viewController animated:animated];
 }
 
@@ -552,9 +545,7 @@
     for (UIViewController *controller in viewControllers) {
         controller.automaticallyAdjustsScrollViewInsets = NO;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_8_0
     if (_timer) { [_timer invalidate]; _timer = nil;}
-#endif
     [super setViewControllers:viewControllers animated:animated];
 }
 

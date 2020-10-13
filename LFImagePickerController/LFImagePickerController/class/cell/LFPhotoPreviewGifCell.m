@@ -116,12 +116,22 @@
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         if (self.imageData) {
             NSString *modelKey = [NSString stringWithFormat:@"%zd", [self.model hash]];
-            [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:self.imageData key:modelKey execution:^(CGImageRef imageData, NSString *key) {
-                if ([modelKey isEqualToString:key]) {
-                    self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
-                }
-            } fail:^(NSString *key) {
-            }];
+            if ([[LFGifPlayerManager shared] containGIFKey:modelKey]) {
+                [[LFGifPlayerManager shared] resumeGIFWithKey:modelKey execution:^(CGImageRef imageData, NSString *key) {
+                    if ([modelKey isEqualToString:key]) {
+                        self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                    }
+                } fail:^(NSString *key) {
+                    
+                }];
+            } else {
+                [[LFGifPlayerManager shared] transformGifDataToSampBufferRef:self.imageData key:modelKey execution:^(CGImageRef imageData, NSString *key) {
+                    if ([modelKey isEqualToString:key]) {
+                        self.imageView.layer.contents = (__bridge id _Nullable)(imageData);
+                    }
+                } fail:^(NSString *key) {
+                }];                
+            }
         } else {
             _waitForReadyToPlay = YES;
         }
@@ -131,6 +141,15 @@
 - (void)willEndDisplayCell
 {
     [super willEndDisplayCell];
+    if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
+        _waitForReadyToPlay = NO;
+        [[LFGifPlayerManager shared] suspendGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];
+    }
+}
+
+- (void)didEndDisplayCell
+{
+    [super didEndDisplayCell];
     if (self.model.subType == LFAssetSubMediaTypeGIF) { /** GIF图片处理 */
         _waitForReadyToPlay = NO;
         [[LFGifPlayerManager shared] stopGIFWithKey:[NSString stringWithFormat:@"%zd", [self.model hash]]];

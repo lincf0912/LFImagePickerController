@@ -21,8 +21,14 @@ typedef void (^GifFail) (NSString *key);
 
 /** 停止播放 */
 - (void)stopGIFWithKey:(NSString *)key;
+/** 暂停播放 */
+- (void)suspendGIFWithKey:(NSString *)key;
+/** 恢复播放 */
+- (void)resumeGIFWithKey:(NSString *)key execution:(GifExecution)executionBlock fail:(GifFail)failBlock;
 /** 是否播放 */
 - (BOOL)isGIFPlaying:(NSString *)key;
+/** 是否存在 */
+- (BOOL)containGIFKey:(NSString *)key;
 
 /**
  *  @author lincf, 16-09-14 14:09:21

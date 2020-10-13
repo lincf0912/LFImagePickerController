@@ -21,12 +21,23 @@
 @property (nonatomic, assign) CGFloat timestamp;
 @property (nonatomic, assign) CGImageSourceRef gifSourceRef;
 
+@property (nonatomic, assign, getter=isPlaying) BOOL playing;
+
 @property (nonatomic, copy) GifExecution execution;
 @property (nonatomic, copy) GifFail fail;
 @end
 
 @implementation GifSource
 @synthesize frameCount = _frameCount;
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _playing = YES;
+    }
+    return self;
+}
 
 - (NSInteger)frameCount
 {
@@ -89,7 +100,9 @@ static LFGifPlayerManager *_sharedInstance = nil;
 - (void)play{
     for (NSString *key in self.gifSourceMapTable) {
         GifSource *ref = [self.gifSourceMapTable objectForKey:key];
-        [self playGif:ref];
+        if (ref.isPlaying) {
+            [self playGif:ref];            
+        }
     }
     
 }
@@ -118,14 +131,44 @@ static LFGifPlayerManager *_sharedInstance = nil;
     }
 }
 
+/** 暂停播放 */
+- (void)suspendGIFWithKey:(NSString *)key
+{
+    GifSource *ref = [self.gifSourceMapTable objectForKey:key];
+    if (ref) {
+        ref.playing = NO;
+    }
+}
+/** 恢复播放 */
+- (void)resumeGIFWithKey:(NSString *)key execution:(GifExecution)executionBlock fail:(GifFail)failBlock
+{
+    GifSource *ref = [self.gifSourceMapTable objectForKey:key];
+    if (ref) {
+        ref.execution = [executionBlock copy];
+        ref.fail = [failBlock copy];
+        ref.playing = YES;
+    }
+}
+
 - (BOOL)isGIFPlaying:(NSString *)key
 {
-    return (BOOL)[self.gifSourceMapTable objectForKey:key];
+    GifSource *ref = [self.gifSourceMapTable objectForKey:key];
+    if (ref) {
+        return ref.isPlaying;
+    }
+    return NO;
+}
+
+/** 是否存在 */
+- (BOOL)containGIFKey:(NSString *)key
+{
+    GifSource *ref = [self.gifSourceMapTable objectForKey:key];
+    return ref != nil;
 }
 
 - (GifSource *)imageSourceCreateWithData:(id)data
 {
-    GifSource *gifSource = [GifSource new];
+    GifSource *gifSource = [[GifSource alloc] init];
     if ([data isKindOfClass:[NSData class]]) {
         gifSource.gifSourceRef = CGImageSourceCreateWithData((__bridge CFDataRef)(data), NULL);
         gifSource.gifData = data;

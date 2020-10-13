@@ -880,6 +880,9 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         /** 获取缓存编辑对象 */
         LFAsset *model = [self.models objectAtIndex:self.currentIndex];
         
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_currentIndex inSection:0];
+        LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+        
         LFBaseEditingController *editingVC = nil;
         
         if (model.type == LFAssetMediaTypePhoto) {
@@ -890,9 +893,6 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             if (photoEdit) {
                 photoEditingVC.photoEdit = photoEdit;
             } else {
-                /** 当前页面只显示一张图片 */
-                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.currentIndex inSection:0];
-                LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
                 /** 当前显示的图片 */
                 UIImage *image = cell.previewImage;
                 if (image == nil) {
@@ -914,10 +914,11 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
             if (videoEdit) {
                 videoEditingVC.videoEdit = videoEdit;
             } else {
-                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:self.currentIndex inSection:0];
-                LFPhotoPreviewVideoCell *cell = (LFPhotoPreviewVideoCell *)[_collectionView cellForItemAtIndexPath:indexPath];
-                /** 当前显示的图片 */
-                AVAsset *asset = cell.asset;
+                /** 当前显示的视频 */
+                AVAsset *asset = nil;
+                if ([cell isKindOfClass:LFPhotoPreviewVideoCell.class]) {
+                    asset = ((LFPhotoPreviewVideoCell *)cell).asset;
+                }
                 if (asset == nil) {
                     [imagePickerVc showAlertWithTitle:[NSBundle lf_localizedStringForKey:@"_LFPhotoPreviewController_EditVideoTipText"] complete:nil];
                     return;
@@ -940,6 +941,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         if (editingVC) {
             [imagePickerVc pushViewController:editingVC animated:NO];
+            [cell willEndDisplayCell]; // 暂停
+            [cell didEndDisplayCell]; // 停止
         }
     }
 }
@@ -1149,7 +1152,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 //        self.tempEditImage = photoEditingVC.editImage;
 //    }
     
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_currentIndex inSection:0];
+    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
     [[self navi] popViewControllerAnimated:NO];
+    [cell didDisplayCell];
 }
 - (void)lf_PhotoEditingController:(LFPhotoEditingController *)photoEditingVC didFinishPhotoEdit:(LFPhotoEdit *)photoEdit
 {
@@ -1164,6 +1170,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         BOOL pop = NO;
         __weak typeof(self) weakSelf = self;
+        __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
         if (photoEdit) { /** 编辑存在 */
             if (_collectionView) {
                 pop = YES;
@@ -1171,7 +1178,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    [imagePickerVc popViewControllerAnimated:NO];
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
+                    [weakImagePickerVc popViewControllerAnimated:NO];
+                    [cell didDisplayCell];
                 }];
             }
         } else { /** 编辑不存在 */
@@ -1182,7 +1192,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    [imagePickerVc popViewControllerAnimated:NO];
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
+                    [weakImagePickerVc popViewControllerAnimated:NO];
+                    [cell didDisplayCell];
                 }];
             }
 //            else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
@@ -1191,7 +1204,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         }
         
         if (!pop) {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+            LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
             [imagePickerVc popViewControllerAnimated:NO];
+            [cell didDisplayCell];
         }
         
         if (imagePickerVc.maxImagesCount > 1) {
@@ -1209,7 +1225,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
 #pragma mark - LFVideoEditingControllerDelegate
 - (void)lf_VideoEditingControllerDidCancel:(LFVideoEditingController *)videoEditingVC
 {
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:_currentIndex inSection:0];
+    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
     [[self navi] popViewControllerAnimated:NO];
+    [cell didDisplayCell];
     
 }
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didFinishPhotoEdit:(LFVideoEdit *)videoEdit
@@ -1222,6 +1241,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         
         BOOL pop = NO;
         __weak typeof(self) weakSelf = self;
+        __weak typeof(imagePickerVc) weakImagePickerVc = imagePickerVc;
         if (videoEdit) { /** 编辑存在 */
             if (_collectionView) {
                 pop = YES;
@@ -1229,7 +1249,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    [imagePickerVc popViewControllerAnimated:NO];
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
+                    [weakImagePickerVc popViewControllerAnimated:NO];
+                    [cell didDisplayCell];
                 }];
             }
         } else { /** 编辑不存在 */
@@ -1240,7 +1263,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
                     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
                     [weakSelf.collectionView reloadItemsAtIndexPaths:@[indexPath]];
                 } completion:^(BOOL finished) {
-                    [imagePickerVc popViewControllerAnimated:NO];
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+                    LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
+                    [weakImagePickerVc popViewControllerAnimated:NO];
+                    [cell didDisplayCell];
                 }];
             }
 //            else { /** UI未初始化，记录当前编辑图片，初始化后设置 */
@@ -1249,7 +1275,10 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
         }
         
         if (!pop) {
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:weakSelf.currentIndex inSection:0];
+            LFPhotoPreviewCell *cell = (LFPhotoPreviewCell *)[weakSelf.collectionView cellForItemAtIndexPath:indexPath];
             [imagePickerVc popViewControllerAnimated:NO];
+            [cell didDisplayCell];
         }
         
         

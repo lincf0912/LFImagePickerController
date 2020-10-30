@@ -94,7 +94,12 @@
     if (dataSource) {
         self.myDataSource = [NSMutableArray arrayWithArray:dataSource];
     } else {
-        self.myDataSource = nil;
+        /**
+         self.myDataSource == nil
+         NSInteger index = [self.myDataSource indexOfObject:selectAsset]
+         导致index = 0, 调用reloadItemsAtIndexPaths崩溃。
+         */
+        self.myDataSource = [NSMutableArray arrayWithCapacity:0];
     }
 }
 

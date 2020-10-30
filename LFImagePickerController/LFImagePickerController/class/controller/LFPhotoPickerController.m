@@ -814,10 +814,14 @@ CGFloat const bottomToolBarHeight = 50.f;
         cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"LFAssetVideoCell" forIndexPath:indexPath];
     }
     
-    if (@available(iOS 9.0, *)){
+    if (@available(iOS 13.0, *)){
+        /** 给cell注册 Haptic Touch的peek（预览）和pop功能 */
+        /** 已有代理实现。省缺注册 */
+//        UIContextMenuInteraction *interaction = [[UIContextMenuInteraction alloc] initWithDelegate:self];
+//        [cell addInteraction:interaction];
+    } else if (@available(iOS 9.0, *)){
         /** 给cell注册 3DTouch的peek（预览）和pop功能 */
         if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
-            //给cell注册3DTouch的peek（预览）和pop功能
             [self registerForPreviewingWithDelegate:self sourceView:cell];
         }
     }
@@ -966,6 +970,58 @@ CGFloat const bottomToolBarHeight = 50.f;
     }
 }
 
+#pragma mark - Haptic Touch - UIContextMenuInteractionDelegate
+- (nullable UIContextMenuConfiguration *)collectionView:(UICollectionView *)collectionView contextMenuConfigurationForItemAtIndexPath:(NSIndexPath *)indexPath point:(CGPoint)point API_AVAILABLE(ios(13.0))
+{
+    __weak typeof(self) weakSelf = self;
+    UIContextMenuConfiguration *configuration = [UIContextMenuConfiguration configurationWithIdentifier:nil previewProvider:^UIViewController * _Nullable{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        LFImagePickerController *imagePickerVc = (LFImagePickerController *)strongSelf.navigationController;
+        NSInteger index = indexPath.row;
+        if (!imagePickerVc.sortAscendingByCreateDate && imagePickerVc.allowTakePicture) {
+            index = indexPath.row - 1;
+        }
+        LFPhotoPreviewController *photoPreviewVc = [[LFPhotoPreviewController alloc] initWithModels:[strongSelf.models copy] index:index];
+        [photoPreviewVc beginPreviewing:imagePickerVc];
+        
+        LFAsset *model = strongSelf.models[indexPath.row];
+        PHAsset *phAsset = model.asset;
+        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+        CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * 2.0f;
+        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
+
+        CGSize contentSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:CGSizeMake(strongSelf.view.bounds.size.width, strongSelf.view.bounds.size.height) isBoth:NO];
+        
+        BOOL isLongImage = model.subType == LFAssetSubMediaTypePhotoPiiic;
+        if (isLongImage) { /** 长图 */
+            contentSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:strongSelf.view.bounds.size.width];
+            if (contentSize.height > strongSelf.view.bounds.size.height) {
+                contentSize.height = strongSelf.view.bounds.size.height;
+            }
+        }
+        
+        photoPreviewVc.preferredContentSize = CGSizeMake(contentSize.width, contentSize.height);
+        return photoPreviewVc;
+    } actionProvider:^UIMenu * _Nullable(NSArray<UIMenuElement *> * _Nonnull suggestedActions) {
+        return nil;
+    }];
+    return configuration;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willPerformPreviewActionForMenuWithConfiguration:(UIContextMenuConfiguration *)configuration animator:(id<UIContextMenuInteractionCommitAnimating>)animator API_AVAILABLE(ios(13.0))
+{
+    
+    animator.preferredCommitStyle = UIContextMenuInteractionCommitStylePop;
+    LFPhotoPreviewController *photoPreviewVc = (LFPhotoPreviewController *)animator.previewViewController;
+    __weak typeof(self) weakSelf = self;
+    [animator addCompletion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        [strongSelf pushPhotoPrevireViewController:photoPreviewVc];
+        [photoPreviewVc endPreviewing];
+    }];
+}
+
 #pragma mark - 拍照图片后执行代理
 #pragma mark UIImagePickerControllerDelegate methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
@@ -1044,6 +1100,14 @@ CGFloat const bottomToolBarHeight = 50.f;
         CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
         
         CGSize contentSize = [UIImage lf_scaleImageSizeBySize:imageSize targetSize:CGSizeMake(self.view.bounds.size.width, self.view.bounds.size.height) isBoth:NO];
+        BOOL isLongImage = cell.model.subType == LFAssetSubMediaTypePhotoPiiic;
+        if (isLongImage) { /** 长图 */
+            contentSize = [UIImage lf_imageSizeBySize:imageSize maxWidth:self.view.bounds.size.width];
+            if (contentSize.height > self.view.bounds.size.height) {
+                contentSize.height = self.view.bounds.size.height;
+            }
+        }
+        
         photoPreviewVc.preferredContentSize = CGSizeMake(contentSize.width, contentSize.height);
         return photoPreviewVc;
     }

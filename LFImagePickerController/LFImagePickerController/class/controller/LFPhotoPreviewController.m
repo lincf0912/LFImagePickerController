@@ -211,7 +211,7 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     [super viewWillAppear:animated];
     // 隐藏状态栏而不改变安全区域的高度
     [UIApplication sharedApplication].keyWindow.windowLevel = UIWindowLevelStatusBar + 1;
-    if (_currentIndex) [_collectionView setContentOffset:CGPointMake(_collectionView.frame.size.width * _currentIndex, 0) animated:NO];
+    
     [self refreshNaviBarAndBottomBarState];
     
 //    if (self.isPreviewing == NO) {
@@ -686,8 +686,8 @@ CGFloat const naviTipsViewDefaultHeight = 30.f;
     _collectionView.scrollsToTop = NO;
 //    _collectionView.alwaysBounceHorizontal = YES;
     _collectionView.showsHorizontalScrollIndicator = NO;
-    _collectionView.contentOffset = CGPointMake(0, 0);
     _collectionView.contentSize = CGSizeMake(_models.count * (_collectionView.frame.size.width), 0);
+    [_collectionView setContentOffset:CGPointMake(_collectionView.frame.size.width * _currentIndex, 0) animated:NO];
     
     if (@available(iOS 10.0, *)) {
 //        _collectionView.prefetchingEnabled = NO;

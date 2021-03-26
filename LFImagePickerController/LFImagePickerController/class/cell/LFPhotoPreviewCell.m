@@ -9,7 +9,6 @@
 #import "LFPhotoPreviewCell.h"
 #import "UIImage+LFCommon.h"
 #import "LFAssetManager.h"
-#import "UIImage+LFDecoded.h"
 
 #ifdef LF_MEDIAEDIT
 #import "LFPhotoEditManager.h"
@@ -181,7 +180,7 @@
                             self.previewImage = (UIImage *)data;
                         } else if ([data isKindOfClass:[NSData class]]) {
                             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                                UIImage *image = [[UIImage imageWithData:data] lf_decodedImage];
+                                UIImage *image = [UIImage imageWithData:data];
                                 dispatch_async(dispatch_get_main_queue(), ^{
                                     self.previewImage = image;
                                 });

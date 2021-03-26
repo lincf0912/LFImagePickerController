@@ -104,8 +104,8 @@
     _selectPhotoButton = selectPhotoButton;
     _selectPhotoButtonRect = selectPhotoButton.frame;
     
-    CGFloat selectImageScale = 16.0;
-    CGFloat selectImageWidth = selectButtonWidth - selectImageScale;
+    CGFloat selectImageScale = 0.6;
+    CGFloat selectImageWidth = selectButtonWidth * selectImageScale;
     
     UIImageView *selectImageView = [[UIImageView alloc] init];
     selectImageView.frame = CGRectMake(0, 0, selectImageWidth, selectImageWidth);
@@ -115,6 +115,8 @@
     selectImageView.layer.shadowRadius = 1.0;
     selectImageView.layer.shadowColor = [UIColor blackColor].CGColor;
     selectImageView.layer.shadowOffset = CGSizeMake(1, 1);
+    selectImageView.layer.shouldRasterize = true;
+    selectImageView.layer.rasterizationScale = [UIScreen mainScreen].scale;
     [self.contentView addSubview:selectImageView];
     _selectImageView = selectImageView;
     

@@ -34,7 +34,7 @@
  */
 - (void)getCameraRollAlbumFetchLimit:(NSInteger)fetchLimit completion:(void (^)(LFAlbum *model))completion
 {
-    [self getCameraRollAlbum:self.allowPickingType fetchLimit:fetchLimit ascending:self.sortAscendingByCreateDate_iOS8 completion:completion];
+    [self getCameraRollAlbum:self.allowPickingType fetchLimit:fetchLimit ascending:self.sortAscendingByCreateDate completion:completion];
 }
 
 
@@ -45,7 +45,7 @@
  */
 - (void)getAllAlbums:(void (^)(NSArray<LFAlbum *> *))completion
 {
-    [self getAllAlbums:self.allowPickingType ascending:self.sortAscendingByCreateDate_iOS8 completion:completion];
+    [self getAllAlbums:self.allowPickingType ascending:self.sortAscendingByCreateDate completion:completion];
 }
 
 /**

@@ -575,10 +575,16 @@
 
 - (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion
 {
-    for (UIViewController *childVC in self.childViewControllers) {
-        if ([childVC respondsToSelector:@selector(viewDidDealloc)]) {
-            [childVC performSelector:@selector(viewDidDealloc)];
-        }
+    /**
+     弹出的 UIAlertController 在销毁时也触发了 dismissViewControllerAnimated:completion
+     防止弹出的Controller 调用 self.presentingViewController 来销毁，这里判断没有presentedViewController来解决。
+     */
+    if ([self presentedViewController] == nil) {
+        for (UIViewController *childVC in self.childViewControllers) {
+            if ([childVC respondsToSelector:@selector(viewDidDealloc)]) {
+                [childVC performSelector:@selector(viewDidDealloc)];
+            }
+        }        
     }
     [super dismissViewControllerAnimated:flag completion:completion];
 }
